@@ -1,0 +1,1050 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Gratitude Garden</title>
+  <link rel="stylesheet" href="styles.css"/>
+</head>
+<body>
+
+<!-- ── Nav ──────────────────────────────────────── -->
+<nav class="top-nav">
+  <a href="#" class="nav-logo">
+    <span class="dot"></span> Gratitude Garden
+  </a>
+  <ul class="nav-links-list">
+    <li><a href="#about">About</a></li>
+    <li><a href="#gardens">Gardens</a></li>
+    <li><a href="#how">How It Works</a></li>
+    <li><a href="#flowers">Flowers</a></li>
+    <li><a href="#gardens" class="nav-cta">Open Garden</a></li>
+  </ul>
+</nav>
+
+<!-- FIX 7: Floating side nav with section icons -->
+<nav class="side-nav" id="sideNav" aria-label="Section navigation">
+  <a href="#home" class="side-nav-item active" data-section="home" data-label="Hero">
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" stroke="#429288" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><polyline points="9 22 9 12 15 12 15 22" stroke="#429288" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  </a>
+  <a href="#about" class="side-nav-item" data-section="about" data-label="About">
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="10" stroke="#429288" stroke-width="2"/><line x1="12" y1="8" x2="12" y2="12" stroke="#429288" stroke-width="2" stroke-linecap="round"/><line x1="12" y1="16" x2="12.01" y2="16" stroke="#429288" stroke-width="2" stroke-linecap="round"/></svg>
+  </a>
+  <a href="#gardens" class="side-nav-item" data-section="gardens" data-label="Gardens">
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 22V12" stroke="#429288" stroke-width="2" stroke-linecap="round"/><path d="M12 12C12 12 8 10 6 6c3 0 5.5 1.5 6 6z" stroke="#429288" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 12C12 12 16 10 18 6c-3 0-5.5 1.5-6 6z" stroke="#429288" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 22h14" stroke="#429288" stroke-width="2" stroke-linecap="round"/></svg>
+  </a>
+  <a href="#how" class="side-nav-item" data-section="how" data-label="How It Works">
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="10" stroke="#429288" stroke-width="2"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" stroke="#429288" stroke-width="2" stroke-linecap="round"/><line x1="12" y1="17" x2="12.01" y2="17" stroke="#429288" stroke-width="2" stroke-linecap="round"/></svg>
+  </a>
+  <a href="#flowers" class="side-nav-item" data-section="flowers" data-label="Flowers">
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="3" stroke="#429288" stroke-width="2"/><path d="M12 2C12 2 10 5 12 7" stroke="#429288" stroke-width="2" stroke-linecap="round"/><path d="M12 22C12 22 14 19 12 17" stroke="#429288" stroke-width="2" stroke-linecap="round"/><path d="M2 12C2 12 5 10 7 12" stroke="#429288" stroke-width="2" stroke-linecap="round"/><path d="M22 12C22 12 19 14 17 12" stroke="#429288" stroke-width="2" stroke-linecap="round"/><path d="M4.93 4.93C4.93 4.93 6.34 8 9 7" stroke="#429288" stroke-width="2" stroke-linecap="round"/><path d="M19.07 19.07C19.07 19.07 17.66 16 15 17" stroke="#429288" stroke-width="2" stroke-linecap="round"/><path d="M19.07 4.93C19.07 4.93 16 6.34 17 9" stroke="#429288" stroke-width="2" stroke-linecap="round"/><path d="M4.93 19.07C4.93 19.07 8 17.66 7 15" stroke="#429288" stroke-width="2" stroke-linecap="round"/></svg>
+  </a>
+  <a href="#wisdom" class="side-nav-item" data-section="wisdom" data-label="Garden Tips">
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M9 21h6M12 3a6 6 0 0 1 6 6c0 2.2-1.2 4.1-3 5.2V17a1 1 0 0 1-1 1h-4a1 1 0 0 1-1-1v-2.8C7.2 13.1 6 11.2 6 9a6 6 0 0 1 6-6z" stroke="#429288" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  </a>
+  <a href="#start" class="side-nav-item" data-section="start" data-label="Begin">
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M5 12h14" stroke="#429288" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="m12 5 7 7-7 7" stroke="#429288" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  </a>
+</nav>
+
+<!-- ── Hero ─────────────────────────────────────── -->
+<section class="hero" id="home">
+
+  <div class="hero-sun"></div>
+
+  <div class="cloud-wrap">
+    <div class="cloud cloud-1"><div class="bump1"></div><div class="bump2"></div><div class="body"></div></div>
+    <div class="cloud cloud-2"><div class="bump1"></div><div class="bump2"></div><div class="body"></div></div>
+    <div class="cloud cloud-3"><div class="bump1"></div><div class="bump2"></div><div class="body"></div></div>
+  </div>
+
+  <div class="hero-text-block">
+    <span class="hero-eyebrow">A daily journaling experience</span>
+    <h1 class="hero-title">
+      Grow your <em>Gratitude,</em> one bloom at a time.
+    </h1>
+    <p class="hero-subtitle">
+      Every reflection you write earns you a symbolic flower. Watch your personal garden bloom as you nurture a daily practice of mindfulness and gratitude.
+    </p>
+    <div class="hero-buttons">
+      <a href="#gardens" class="btn-primary">Explore the Gardens</a>
+      <a href="#how"     class="btn-outline">How it works</a>
+    </div>
+  </div>
+
+  <!-- Meadow canvas — p5.js draw functions exact port, full viewport width, flowers not cut -->
+  <div class="meadow-scene" style="margin-left:-5rem;margin-right:-5rem;line-height:0;overflow:hidden;">
+    <canvas id="meadow-canvas" style="display:block;"></canvas>
+  </div>
+</section>
+
+<script>
+(function(){
+  var c = document.getElementById('meadow-canvas');
+  function draw(){
+    var W = window.innerWidth;
+    var LOGICAL_W = 1440, LOGICAL_H = 310;
+    var scale = W / LOGICAL_W;
+    // Get meadow offset from top of viewport at time of draw
+    var meadowEl = c.parentElement;
+    var rect = meadowEl ? meadowEl.getBoundingClientRect() : {top: 500};
+    // rect.top is relative to viewport; add scrollY for absolute position
+    var meadowAbsTop = rect.top + window.scrollY;
+    // If we're at the top of the page (normal), use rect.top directly
+    var meadowFromViewTop = (window.scrollY < 10) ? rect.top : meadowAbsTop;
+    var viewportH = window.innerHeight;
+    var H = Math.max(Math.round(LOGICAL_H * scale), viewportH - meadowFromViewTop);
+    var LOGICAL_H_actual = Math.round(H / scale);
+    c.width = W; c.height = H;
+    c.style.width = W + 'px';
+    c.style.height = H + 'px';
+    var ctx = c.getContext('2d');
+    ctx.save(); ctx.scale(scale, scale);
+    var GY = 245;
+    // Fill ground all the way to canvas bottom (LOGICAL_H_actual may exceed 310)
+    var logH = LOGICAL_H_actual || 310;
+
+    // Solid fill from GY to bottom so no gap at viewport edge
+    ctx.fillStyle='#7ec4b4'; ctx.fillRect(-20, GY+30, 1480, logH - GY + 20);
+
+    // Accurate p5 leaf: ellipse shape placed perpendicular to stem tangent
+    function leaf(x0,y0,c1x,c1y,c2x,c2y,x3,y3,t,side){
+      var bPt=function(p0,p1,p2,p3,t){return Math.pow(1-t,3)*p0+3*Math.pow(1-t,2)*t*p1+3*(1-t)*t*t*p2+t*t*t*p3;};
+      var bTan=function(p0,p1,p2,p3,t){return 3*Math.pow(1-t,2)*(p1-p0)+6*(1-t)*t*(p2-p1)+3*t*t*(p3-p2);};
+      var px=bPt(x0,c1x,c2x,x3,t), py=bPt(y0,c1y,c2y,y3,t);
+      var tx=bTan(x0,c1x,c2x,x3,t), ty=bTan(y0,c1y,c2y,y3,t);
+      // p5: leaf angle = stem tangent + 55deg * side
+      var angle=Math.atan2(ty,tx)+side*(55*Math.PI/180);
+      var lw=32, lh=11;
+      ctx.save(); ctx.translate(px,py); ctx.rotate(angle);
+      ctx.fillStyle='hsl(125,52%,48%)';
+      ctx.beginPath(); ctx.moveTo(0,0);
+      ctx.bezierCurveTo(lw*.12,-lh*.9, lw*.5,-lh*1.4, lw,0);
+      ctx.bezierCurveTo(lw*.5,lh*1.2, lw*.1,lh*.5, 0,0);
+      ctx.fill();
+      ctx.strokeStyle='hsl(125,45%,36%)'; ctx.lineWidth=1.2; ctx.lineCap='round';
+      ctx.beginPath(); ctx.moveTo(0,0); ctx.lineTo(lw*.88,0); ctx.stroke();
+      ctx.restore();
+    }
+
+    // Draw stem + two leaves, return tip [x,y]
+    function stem(bx,sl,sw){
+      var x0=bx,y0=GY,c1x=bx+12,c1y=GY-sl*.38,c2x=bx-7,c2y=GY-sl*.72,x3=bx+2,y3=GY-sl;
+      ctx.strokeStyle='hsl(140,52%,32%)'; ctx.lineWidth=sw; ctx.lineCap='round';
+      ctx.beginPath(); ctx.moveTo(x0,y0); ctx.bezierCurveTo(c1x,c1y,c2x,c2y,x3,y3); ctx.stroke();
+      leaf(x0,y0,c1x,c1y,c2x,c2y,x3,y3,.55,-1);
+      leaf(x0,y0,c1x,c1y,c2x,c2y,x3,y3,.65,1);
+      return [x3,y3];
+    }
+
+    // HSL helper - p5 colorMode(HSL, 360,100,100,1)
+    function hsl(h,s,l,a){ return 'hsla('+h+','+s+'%,'+l+'%,'+(a==null?1:a)+')'; }
+
+    // drawDaisyBloom: 16 petals, Rd=R*0.8, ellipse(0,-Rd*0.7, Rd*0.55, Rd*1.10)
+    // center fill(50,80,70) r=Rd*0.5  fill(45,70,75) r=Rd*0.35
+    function drawDaisy(R,hue,sat,light){
+      var Rd=R*.8,w=Rd*.55,h=Rd*1.1;
+      for(var i=0;i<16;i++){
+        ctx.save(); ctx.rotate(i*22.5*Math.PI/180);
+        ctx.fillStyle=hsl(hue,sat*.9,light+8,.9);
+        ctx.beginPath(); ctx.ellipse(0,-Rd*.7,w/2,h/2,0,0,Math.PI*2); ctx.fill(); ctx.restore();
+      }
+      ctx.fillStyle=hsl(48,82,58); ctx.beginPath(); ctx.arc(0,0,Rd*.22,0,Math.PI*2); ctx.fill();
+      ctx.fillStyle=hsl(50,80,72); ctx.beginPath(); ctx.arc(0,0,Rd*.13,0,Math.PI*2); ctx.fill();
+    }
+
+    // drawSunflowerBloom: 18 petals, ellipse(0,-R*0.72, R*0.45, R*1.25)
+    // center fill(28,45,42) r=R*1.35/2  fill(23,40,58) r=R*1.05/2
+    function drawSunflower(R,hue,sat,light){
+      var w=R*.45,h=R*1.25;
+      for(var i=0;i<18;i++){
+        ctx.save(); ctx.rotate(i*20*Math.PI/180);
+        ctx.fillStyle=hsl(hue,sat*.9,light+12,.95);
+        ctx.beginPath(); ctx.ellipse(0,-R*.72,w/2,h/2,0,0,Math.PI*2); ctx.fill(); ctx.restore();
+      }
+      ctx.fillStyle=hsl(28,45,42); ctx.beginPath(); ctx.arc(0,0,R*1.35/2,0,Math.PI*2); ctx.fill();
+      ctx.fillStyle=hsl(23,40,58); ctx.beginPath(); ctx.arc(0,0,R*1.05/2,0,Math.PI*2); ctx.fill();
+    }
+
+    // drawTulipBloom: Rt=R*1.15; ellipse(0,Rt*0.25,Rt*1.05,Rt*1.1)
+    // bezier cup; inner ellipse alpha 0.4
+    function drawTulip(R,hue,sat,light){
+      var Rt=R*1.15;
+      ctx.fillStyle=hsl(hue,sat,light,.95);
+      ctx.beginPath(); ctx.ellipse(0,Rt*.25,Rt*1.05/2,Rt*1.1/2,0,0,Math.PI*2); ctx.fill();
+      ctx.beginPath();
+      ctx.moveTo(-Rt*.52,Rt*.10);
+      ctx.bezierCurveTo(-Rt*.52,-Rt*.10,-Rt*.40,-Rt*.40,-Rt*.22,-Rt*.60);
+      ctx.lineTo(0,-Rt*.40); ctx.lineTo(Rt*.22,-Rt*.60);
+      ctx.bezierCurveTo(Rt*.40,-Rt*.40,Rt*.52,-Rt*.10,Rt*.52,Rt*.10); ctx.fill();
+      ctx.fillStyle=hsl(hue,sat*.8,light+12,.4);
+      ctx.beginPath(); ctx.ellipse(0,Rt*.05,Rt*.7/2,Rt*.9/2,0,0,Math.PI*2); ctx.fill();
+    }
+
+    // drawRoseBloom: scale=R/70; 5 petal rings with exact bezier shape
+    // petal: moveTo(0,12) bz(-w/3.2,5,-w/1.4,-h/3.5,-w/4.5,-h*0.75)
+    //        bz(-w/12,-h*0.82,w/12,-h*0.82,w/4.5,-h*0.75) bz(w/1.4,-h/3.5,w/3.2,5,0,12)
+    // 5 center circles
+    function drawRose(R,hue,sat,light){
+      var sc=R/70; ctx.save(); ctx.scale(sc,sc);
+      function petal(rot,dist,w,h,sM,lM){
+        ctx.save(); ctx.rotate(rot*Math.PI/180); ctx.translate(0,-dist);
+        ctx.fillStyle=hsl(hue,sat*sM,light+lM,1);
+        ctx.beginPath(); ctx.moveTo(0,12);
+        ctx.bezierCurveTo(-w/3.2,5,-w/1.4,-h/3.5,-w/4.5,-h*.75);
+        ctx.bezierCurveTo(-w/12,-h*.82,w/12,-h*.82,w/4.5,-h*.75);
+        ctx.bezierCurveTo(w/1.4,-h/3.5,w/3.2,5,0,12);
+        ctx.fill(); ctx.restore();
+      }
+      for(var i=0;i<8;i++) petal(i*45,   35,75,44,1.00,-10);
+      for(var i=0;i<8;i++) petal(i*45+22.5,26,65,38,.95,-5);
+      for(var i=0;i<6;i++) petal(i*60+15,18,52,32,.90, 0);
+      for(var i=0;i<5;i++) petal(i*72+20,11,40,26,.85, 5);
+      for(var i=0;i<5;i++) petal(i*72+56, 6,30,22,.80,10);
+      [[24,-10],[19,-5],[14,0],[9,5],[5,10]].forEach(function(p){
+        ctx.fillStyle=hsl(hue,sat,light+p[1]);
+        ctx.beginPath(); ctx.arc(0,0,p[0]/2,0,Math.PI*2); ctx.fill();
+      });
+      ctx.restore();
+    }
+
+    // drawLilyBloom: 6 petals at 60deg, Rl=R*1.08
+    // vertex(0,-Rl) bz(Rl*.30,-Rl*.72,Rl*.42,-Rl*.30,Rl*.22,Rl*.04)
+    //               bz(Rl*.12,Rl*.20,0,Rl*.26,-Rl*.12,Rl*.20)
+    //               bz(-Rl*.22,Rl*.04,-Rl*.42,-Rl*.30,-Rl*.30,-Rl*.72)
+    function drawLily(R,hue,sat,light){
+      var Rl=R*1.08;
+      for(var i=0;i<6;i++){
+        ctx.save(); ctx.rotate(i*60*Math.PI/180);
+        ctx.fillStyle=hsl(hue,sat*.85,light+8,.9);
+        ctx.beginPath(); ctx.moveTo(0,-Rl);
+        ctx.bezierCurveTo(Rl*.30,-Rl*.72,Rl*.42,-Rl*.30,Rl*.22,Rl*.04);
+        ctx.bezierCurveTo(Rl*.12,Rl*.20,0,Rl*.26,-Rl*.12,Rl*.20);
+        ctx.bezierCurveTo(-Rl*.22,Rl*.04,-Rl*.42,-Rl*.30,-Rl*.30,-Rl*.72);
+        ctx.fill(); ctx.restore();
+      }
+      ctx.fillStyle=hsl(hue,sat*.65,light-5); ctx.beginPath(); ctx.arc(0,0,Rl*.36,0,Math.PI*2); ctx.fill();
+      ctx.fillStyle=hsl(hue,sat*.45,light+10); ctx.beginPath(); ctx.arc(0,0,Rl*.20,0,Math.PI*2); ctx.fill();
+    }
+
+    // drawCherryBloom (sakura): 5 petals at 72deg, Rb=R*1.7
+    // vertex(0,-Rb*0.65) bz(Rb*.28,-Rb*.52,Rb*.40,-Rb*.20,Rb*.28,0)
+    //                    bz(Rb*.18,Rb*.12,0,Rb*.18,-Rb*.18,Rb*.12)
+    //                    bz(-Rb*.28,0,-Rb*.40,-Rb*.20,-Rb*.28,-Rb*.52)
+    function drawSakura(R,hue,sat,light){
+      var Rb=R*1.7;
+      for(var i=0;i<5;i++){
+        ctx.save(); ctx.rotate(i*72*Math.PI/180);
+        ctx.fillStyle=hsl(hue,sat*.8,light+15,.85);
+        ctx.beginPath(); ctx.moveTo(0,-Rb*.65);
+        ctx.bezierCurveTo(Rb*.28,-Rb*.52,Rb*.40,-Rb*.20,Rb*.28,0);
+        ctx.bezierCurveTo(Rb*.18,Rb*.12,0,Rb*.18,-Rb*.18,Rb*.12);
+        ctx.bezierCurveTo(-Rb*.28,0,-Rb*.40,-Rb*.20,-Rb*.28,-Rb*.52);
+        ctx.fill(); ctx.restore();
+      }
+      ctx.fillStyle=hsl(hue,sat*.6,light-5); ctx.beginPath(); ctx.arc(0,0,Rb*.24,0,Math.PI*2); ctx.fill();
+    }
+
+    // drawLotusBloom: petal moveTo(0,0) bz(R*.5,R*-.5,R*.5,R*-1.5,0,R*-2) bz(-R*.5,R*-1.5,-R*.5,R*-.5,0,0)
+    // 6 calls: scaleX=0.9, scaleY=[1,.75,.75,.9,.9,1], rot=[0,-50,50,-30,30,0]
+    function drawLotus(R,hue,sat,light){
+      [[.9,1,0],[.9,.75,-50],[.9,.75,50],[.9,.9,-30],[.9,.9,30],[.9,1,0]].forEach(function(cfg){
+        ctx.save(); ctx.rotate(cfg[2]*Math.PI/180); ctx.scale(cfg[0],cfg[1]);
+        ctx.fillStyle=hsl(hue,sat,light,.8);
+        ctx.beginPath(); ctx.moveTo(0,0);
+        ctx.bezierCurveTo(R*.5,R*-.5,R*.5,R*-1.5,0,R*-2);
+        ctx.bezierCurveTo(-R*.5,R*-1.5,-R*.5,R*-.5,0,0);
+        ctx.fill(); ctx.restore();
+      });
+    }
+
+    // drawLavenderBloom: exact p5.js port
+    // h=R*1.5, levels=8, sp=(h/levels)*1.15
+    // pW=lerp(14,7,t), pH=pW*1.6, xO=lerp(7,2,t)
+    // Two paired ellipses at ±40deg per level, tip bud on last level
+    function drawLavender(R,hue,sat,light){
+      var s=R/30;
+      var hh=R*1.5, levels=8, sp=(hh/levels)*1.15;
+      for(var i=0;i<levels;i++){
+        var t=i/(levels-1);
+        var y=-i*sp;
+        var pW=(14-t*7)*s, pH=pW*1.6;
+        var xO=(7-t*5)*s;
+        var bL=light-10+t*20;
+        ctx.save(); ctx.translate(-xO,y); ctx.rotate(-40*Math.PI/180);
+        ctx.fillStyle=hsl(hue,sat,bL,.88);
+        ctx.beginPath(); ctx.ellipse(0,0,pW/2,pH/2,0,0,Math.PI*2); ctx.fill(); ctx.restore();
+        ctx.save(); ctx.translate(xO,y); ctx.rotate(40*Math.PI/180);
+        ctx.fillStyle=hsl(hue,sat,bL+4,.88);
+        ctx.beginPath(); ctx.ellipse(0,0,pW/2,pH/2,0,0,Math.PI*2); ctx.fill(); ctx.restore();
+      }
+      // Tip drawn AFTER petals — slightly above top petal pair
+      var topY=-(levels-1)*sp - sp*0.7;
+      ctx.fillStyle=hsl(hue,sat+8,light+22,.96);
+      ctx.beginPath(); ctx.ellipse(0,topY,R*.10,R*.25,0,0,Math.PI*2); ctx.fill();
+    }
+    // All 12 flowers — unique hues, no two consecutive the same color
+    var allFlowers=[
+      [100, 95,3,  drawDaisy,    16, 15,55,76],   // peach daisy
+      [222,115,3,  drawSunflower,19, 44,62,65],   // golden sunflower
+      [348,130,3.5,drawTulip,    19,290,52,62],   // purple tulip
+      [476,100,3,  drawRose,     17,350,58,55],   // deep pink rose
+      [608,150,4,  drawSunflower,23, 38,55,62],   // warm sunflower
+      [735,112,3.5,drawLily,     17,185,42,70],   // teal lily
+      [858, 96,3,  drawSakura,   16,340,40,78],   // pale pink sakura
+      [985,142,4,  drawLotus,    17,320,50,68],   // mauve lotus
+      [1105,108,3, drawLavender, 17,268,56,68],   // lavender
+      [1226,136,3.5,drawSunflower,21, 50,60,62],  // orange-yellow sunflower
+      [1340, 92,3, drawDaisy,    15, 15,55,76]    // peach daisy
+    ];
+    // 1. Back hills (behind flowers)
+    ctx.fillStyle='#a9d9cf';
+    [[-80,258,500,92],[360,265,540,88],[870,268,580,86],[1400,262,540,88],[1600,258,500,92]].forEach(function(e){
+      ctx.beginPath(); ctx.ellipse(e[0],e[1],e[2],e[3],0,0,Math.PI*2); ctx.fill();
+    });
+    // 2. Flowers in front of back hills — fewer on smaller screens
+    // Space flowers evenly: on small screens use only every Nth flower
+    var minSpacing = W < 480 ? 200 : W < 768 ? 150 : 0; // min pixel gap between flowers
+    var lastDrawnX = -9999;
+    allFlowers.forEach(function(row){
+      var screenX = row[0] * scale; // convert logical x to screen pixels
+      if(row[0] > LOGICAL_W - 60) return;
+      if(minSpacing > 0 && screenX - lastDrawnX < minSpacing) return;
+      lastDrawnX = screenX;
+      var pos=stem(row[0],row[1],row[2]);
+      ctx.save(); ctx.translate(pos[0],pos[1]);
+      row[3](row[4],row[5],row[6],row[7]);
+      ctx.restore();
+    });
+    // 3. Front ground strip over stem bases — flowers appear to grow from ground
+    ctx.fillStyle='#8fcfbe'; ctx.fillRect(-20,GY,1480,60);
+    ctx.fillStyle='#7ec4b4'; ctx.fillRect(-20,GY+42,1480, logH - GY + 20);
+
+    ctx.restore();
+  }
+
+  function drawAfterLayout(){ draw(); setTimeout(draw, 100); }
+  if(document.readyState==='loading'){ document.addEventListener('DOMContentLoaded', drawAfterLayout); }
+  else { drawAfterLayout(); }
+  window.addEventListener('resize', function(){ draw(); setTimeout(draw,60); });
+})();
+</script>
+
+
+<!-- About: left=text, right=2x2 feature cards -->
+<section class="about" id="about">
+
+  <div class="about-left reveal">
+    <div>
+      <span class="section-label">What is it?</span>
+      <h2 class="section-title">Two gardens. One practice of <em>gratitude.</em></h2>
+    </div>
+    <p class="section-desc">
+      Gratitude Garden is made up of two separate experiences. The first is a personal daily journal where you answer a few reflective prompts, and in return receive a symbolic flower dedicated just to you. Each species carries its own meaning, chosen based on the words and emotions in your entry.
+    </p>
+    <p class="section-desc">
+      The second is a shared community space where you can post a moment of gratitude and plant your own symbolic bloom for others to see. Together, these two gardens turn everyday feelings into something living, beautiful, and worth returning to.
+    </p>
+  </div>
+
+  <div class="about-right reveal">
+      <div class="feature-card">
+        <svg class="feature-icon" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="8" y="16" width="20" height="14" rx="3" fill="#b7e4e7" stroke="#429288" stroke-width="2"/><path d="M12 16V12a6 6 0 1 1 12 0v4" stroke="#429288" stroke-width="2" stroke-linecap="round"/><circle cx="18" cy="23" r="2.5" fill="#1d6466"/></svg>
+        <div class="feature-card-text">
+          <div class="feature-title">Private Garden</div>
+          <p class="feature-desc">Daily prompts earn you a symbolic flower, yours alone.</p>
+        </div>
+      </div>
+      <div class="feature-card">
+        <svg class="feature-icon" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="18" cy="18" r="12" stroke="#429288" stroke-width="2" fill="#b7e4e7"/><ellipse cx="18" cy="18" rx="5" ry="12" stroke="#429288" stroke-width="1.5" fill="none"/><line x1="6" y1="18" x2="30" y2="18" stroke="#429288" stroke-width="1.5"/></svg>
+        <div class="feature-card-text">
+          <div class="feature-title">Public Garden</div>
+          <p class="feature-desc">Share a gratitude note in the community meadow.</p>
+        </div>
+      </div>
+      <div class="feature-card">
+        <svg class="feature-icon" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg"><ellipse cx="18" cy="10" rx="5" ry="8" fill="#f4c6c6"/><ellipse cx="18" cy="10" rx="5" ry="8" fill="#f4c6c6" transform="rotate(72 18 18)"/><ellipse cx="18" cy="10" rx="5" ry="8" fill="#f4c6c6" transform="rotate(144 18 18)"/><ellipse cx="18" cy="10" rx="5" ry="8" fill="#f4c6c6" transform="rotate(216 18 18)"/><ellipse cx="18" cy="10" rx="5" ry="8" fill="#f4c6c6" transform="rotate(288 18 18)"/><circle cx="18" cy="18" r="5" fill="#c8a050"/></svg>
+        <div class="feature-card-text">
+          <div class="feature-title">8 Symbolic Species</div>
+          <p class="feature-desc">Every flower carries a meaning tied to your emotion.</p>
+        </div>
+      </div>
+      <div class="feature-card">
+        <svg class="feature-icon" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg"><polyline points="6,28 13,18 20,22 28,10" stroke="#429288" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/><circle cx="28" cy="10" r="3" fill="#1d6466"/><line x1="6" y1="30" x2="30" y2="30" stroke="#b7e4e7" stroke-width="2"/></svg>
+        <div class="feature-card-text">
+          <div class="feature-title">Yours to Keep</div>
+          <p class="feature-desc">Your garden saves automatically and grows with every visit.</p>
+        </div>
+      </div>
+
+  </div>
+
+</section>
+
+<!-- ── Gardens ── -->
+<section class="gardens" id="gardens">
+  <div class="gardens-header reveal">
+    <span class="section-label">Two spaces, one practice</span>
+    <h2 class="section-title">Choose your <em>garden</em></h2>
+    <p class="section-desc">Your gratitude practice can be intimate or communal. Gratitude Garden holds space for both.</p>
+  </div>
+  <div class="gardens-grid">
+    <div class="garden-card reveal">
+      <div class="garden-card-inner card-private">
+        <canvas class="card-scene-canvas" id="cardPrivate" style="position:absolute;bottom:0;left:0;right:0;pointer-events:none;opacity:0.65;z-index:0;display:block;"></canvas>
+        <div style="position:absolute;bottom:0;left:0;right:0;height:65%;background:linear-gradient(to top,rgba(29,80,78,0.95) 0%,rgba(29,100,102,0.72) 35%,rgba(29,100,102,0.20) 65%,transparent 100%);pointer-events:none;z-index:1;border-radius:0 0 22px 22px;"></div>
+        <div style="position:relative;z-index:2;">
+          <span class="garden-badge badge-private"><svg class="badge-icon" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="2" y="6" width="10" height="7" rx="1.5" fill="rgba(255,255,255,0.5)"/><path d="M4 6V4.5a3 3 0 0 1 6 0V6" stroke="rgba(255,255,255,0.8)" stroke-width="1.5" stroke-linecap="round"/></svg>Private</span>
+          <h3 class="garden-card-title">My Personal Garden</h3>
+          <p class="garden-card-desc">A private daily journal just for you. Each time you complete the prompts and share a reflection, you receive a symbolic flower chosen specifically for that entry. Only you can see your garden grow over time.</p>
+          <div class="password-note"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="7" cy="7" r="6" stroke="rgba(251,228,132,0.8)" stroke-width="1.5"/><line x1="7" y1="5" x2="7" y2="8" stroke="rgba(251,228,132,0.9)" stroke-width="1.5" stroke-linecap="round"/><circle cx="7" cy="10" r="0.8" fill="rgba(251,228,132,0.9)"/></svg>Saved locally on your device. One garden per browser.</div>
+          <ul class="garden-perks">
+            <li><span class="perk-dot"></span>Keyword analysis selects your flower species</li>
+            <li><span class="perk-dot"></span>Full history of every bloom you have planted</li>
+            <li><span class="perk-dot"></span>Save your garden as a PNG keepsake</li>
+          </ul>
+        </div>
+        <a style="position:relative;z-index:2;" href="https://editor.p5js.org/kenishagw/full/ce9DKly6F" target="_blank" rel="noopener" onclick="setTimeout(function(){alert('Opened in a new tab!');},100)" class="btn-card-light">Open Private Garden</a>
+      </div>
+    </div>
+
+    <div class="garden-card reveal">
+      <div class="garden-card-inner card-public">
+        <canvas class="card-scene-canvas" id="cardPublic" style="position:absolute;bottom:0;left:0;right:0;pointer-events:none;opacity:0.55;z-index:0;display:block;"></canvas>
+        <div style="position:absolute;bottom:0;left:0;right:0;height:65%;background:linear-gradient(to top,rgba(253,240,160,0.96) 0%,rgba(253,240,160,0.80) 35%,rgba(253,240,160,0.30) 65%,transparent 100%);pointer-events:none;z-index:1;border-radius:0 0 22px 22px;"></div>
+        <div style="position:relative;z-index:2;">
+          <span class="garden-badge badge-public"><svg class="badge-icon" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="7" cy="7" r="6" stroke="rgba(29,100,102,0.6)" stroke-width="1.5" fill="rgba(29,100,102,0.08)"/><ellipse cx="7" cy="7" rx="2.5" ry="6" stroke="rgba(29,100,102,0.6)" stroke-width="1" fill="none"/><line x1="1" y1="7" x2="13" y2="7" stroke="rgba(29,100,102,0.6)" stroke-width="1"/></svg>Public</span>
+          <h3 class="garden-card-title">The Shared Garden</h3>
+          <p class="garden-card-desc">A community space where anyone can post a moment of gratitude and plant a symbolic bloom. Every flower in this meadow represents a real feeling shared by a real person. Come and contribute yours.</p>
+          <div class="password-note public-note">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="7" cy="7" r="6" stroke="#1d6466" stroke-width="1.5"/><line x1="7" y1="5" x2="7" y2="8" stroke="#1d6466" stroke-width="1.5" stroke-linecap="round"/><circle cx="7" cy="10" r="0.8" fill="#1d6466"/></svg>
+            Open to everyone &bull; Resets weekly
+          </div>
+          <ul class="garden-perks">
+            <li><span class="perk-dot"></span>Anonymous contributions, no account needed</li>
+            <li><span class="perk-dot"></span>Plant one bloom, see the collective mood</li>
+            <li><span class="perk-dot"></span>A living artwork that changes weekly</li>
+          </ul>
+        </div>
+        <a style="position:relative;z-index:2;" href="https://editor.p5js.org/kenishagw/full/NMmNhw0E-" target="_blank" rel="noopener" onclick="setTimeout(function(){alert('Opened in a new tab!');},100)" class="btn-card-dark">Visit Public Garden</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── How It Works ── -->
+<section class="how" id="how">
+  <div class="how-intro reveal">
+    <span class="section-label">Simple by design</span>
+    <h2 class="section-title">From words to <em>wildflowers</em></h2>
+    <p class="section-desc" style="margin: 0 auto; text-align: center;">Two different paths, both ending in a garden that blooms with you.</p>
+  </div>
+  <div class="how-cols">
+    <div class="how-col how-col-private">
+      <div class="how-col-label">
+        <svg class="how-col-label-icon" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="9" width="16" height="11" rx="2" fill="#b7e4e7" stroke="#429288" stroke-width="1.5"/><path d="M7 9V7a4 4 0 0 1 8 0v2" stroke="#429288" stroke-width="1.5" stroke-linecap="round"/><circle cx="11" cy="15" r="2" fill="#1d6466"/></svg>
+        Private Garden
+      </div>
+      <div class="how-steps">
+        <div class="step-row reveal"><div class="step-circle"><svg class="step-icon" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M5 20 L17 8 L21 12 L9 24 Z" fill="#b7e4e7" stroke="#429288" stroke-width="1.5" stroke-linejoin="round"/><path d="M17 8 L20 5 L23 8 L20 11 Z" fill="#fbe484" stroke="#429288" stroke-width="1.5" stroke-linejoin="round"/><path d="M5 24 L8 24 L5 21 Z" fill="#429288"/></svg></div><div class="step-body"><div class="step-num">Step 01</div><div class="step-title">Daily Reflection</div><p class="step-desc">Choose your mood from the button grid, pick what shaped your day, then add any extra thoughts in the journal field.</p></div></div>
+        <div class="step-row reveal"><div class="step-circle c2"><svg class="step-icon" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="7" stroke="#429288" stroke-width="2" fill="#e1f7f7"/><line x1="17" y1="17" x2="23" y2="23" stroke="#429288" stroke-width="2.5" stroke-linecap="round"/></svg></div><div class="step-body"><div class="step-num">Step 02</div><div class="step-title">Keyword Analysis</div><p class="step-desc">The app scores your words against 8 emotional keyword banks to determine your flower species.</p></div></div>
+        <div class="step-row reveal"><div class="step-circle c3"><svg class="step-icon" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg"><ellipse cx="14" cy="7" rx="4" ry="7" fill="#f4c6c6" opacity="0.9"/><ellipse cx="14" cy="7" rx="4" ry="7" fill="#f4c6c6" opacity="0.9" transform="rotate(72 14 14)"/><ellipse cx="14" cy="7" rx="4" ry="7" fill="#f4c6c6" opacity="0.9" transform="rotate(144 14 14)"/><ellipse cx="14" cy="7" rx="4" ry="7" fill="#f4c6c6" opacity="0.9" transform="rotate(216 14 14)"/><ellipse cx="14" cy="7" rx="4" ry="7" fill="#f4c6c6" opacity="0.9" transform="rotate(288 14 14)"/><circle cx="14" cy="14" r="4" fill="#c8a050"/></svg></div><div class="step-body"><div class="step-num">Step 03</div><div class="step-title">Flower Blooms</div><p class="step-desc">A unique flower is drawn for you. Use the hue slider to personalize its color before planting.</p></div></div>
+        <div class="step-row reveal"><div class="step-circle c4"><svg class="step-icon" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg"><line x1="14" y1="24" x2="14" y2="12" stroke="#3d7a60" stroke-width="2" stroke-linecap="round"/><ellipse cx="10" cy="16" rx="6" ry="3" fill="#6aaa80" transform="rotate(-25 10 16)"/><ellipse cx="14" cy="12" rx="4" ry="6" fill="#f4c6c6" opacity="0.88" transform="rotate(-10 14 12)"/><ellipse cx="14" cy="12" rx="4" ry="6" fill="#f4c6c6" opacity="0.88" transform="rotate(62 14 12)"/><ellipse cx="14" cy="12" rx="4" ry="6" fill="#f4c6c6" opacity="0.88" transform="rotate(134 14 12)"/><ellipse cx="14" cy="12" rx="4" ry="6" fill="#f4c6c6" opacity="0.88" transform="rotate(206 14 12)"/><ellipse cx="14" cy="12" rx="4" ry="6" fill="#f4c6c6" opacity="0.88" transform="rotate(278 14 12)"/><circle cx="14" cy="12" r="3" fill="#c8a050"/></svg></div><div class="step-body"><div class="step-num">Step 04</div><div class="step-title">Garden Grows</div><p class="step-desc">Your flower is planted alongside every previous day. Return tomorrow to add another bloom to your meadow.</p></div></div>
+      </div>
+    </div>
+    <div class="how-col how-col-public">
+      <div class="how-col-label">
+        <svg class="how-col-label-icon" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="11" cy="11" r="9" stroke="#429288" stroke-width="1.5" fill="#e1f7f7"/><ellipse cx="11" cy="11" rx="3.5" ry="9" stroke="#429288" stroke-width="1" fill="none"/><line x1="2" y1="11" x2="20" y2="11" stroke="#429288" stroke-width="1"/></svg>
+        Public Garden
+      </div>
+      <div class="how-steps">
+        <div class="step-row reveal"><div class="step-circle"><svg class="step-icon" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M14 22 C14 22 4 15 4 9 A5 5 0 0 1 14 8 A5 5 0 0 1 24 9 C24 15 14 22 14 22Z" fill="#f4c6c6" stroke="#d4a5b5" stroke-width="1.5"/></svg></div><div class="step-body"><div class="step-num">Step 01</div><div class="step-title">Write What You Are Thankful For</div><p class="step-desc">Share a short gratitude note. It can be anything, big or small, from today or from your heart.</p></div></div>
+        <div class="step-row reveal"><div class="step-circle c2"><svg class="step-icon" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M5 5 H16 L23 12 L16 19 H5 V5Z" fill="#fefce4" stroke="#429288" stroke-width="1.5" stroke-linejoin="round"/><circle cx="9" cy="12" r="2" fill="#1d6466"/></svg></div><div class="step-body"><div class="step-num">Step 02</div><div class="step-title">Choose Your Name</div><p class="step-desc">Pick a display name or stay anonymous. Your entry stays private; only your bloom is shared.</p></div></div>
+        <div class="step-row reveal"><div class="step-circle c3"><svg class="step-icon" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="4" y="7" width="20" height="4" rx="2" fill="url(#hue)" stroke="none"/><defs><linearGradient id="hue" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#f4c6c6"/><stop offset="33%" stop-color="#fbe484"/><stop offset="66%" stop-color="#b7e4e7"/><stop offset="100%" stop-color="#c8c0e0"/></linearGradient></defs><circle cx="16" cy="9" r="4" fill="white" stroke="#429288" stroke-width="1.5"/><rect x="4" y="18" width="20" height="3" rx="1.5" fill="#e1f7f7"/><circle cx="11" cy="19.5" r="3.5" fill="white" stroke="#429288" stroke-width="1.5"/></svg></div><div class="step-body"><div class="step-num">Step 03</div><div class="step-title">Customize Your Flower</div><p class="step-desc">A flower species is chosen from your words. Adjust the hue slider to make it uniquely yours.</p></div></div>
+        <div class="step-row reveal"><div class="step-circle c4"><svg class="step-icon" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg"><line x1="7" y1="24" x2="7" y2="18" stroke="#3d7a60" stroke-width="1.8" stroke-linecap="round"/><line x1="14" y1="24" x2="14" y2="14" stroke="#3d7a60" stroke-width="1.8" stroke-linecap="round"/><line x1="21" y1="24" x2="21" y2="17" stroke="#3d7a60" stroke-width="1.8" stroke-linecap="round"/><ellipse cx="5" cy="16" rx="4" ry="2" fill="#6aaa80" transform="rotate(-20 5 16)"/><ellipse cx="12" cy="12" rx="4" ry="2" fill="#6aaa80" transform="rotate(-20 12 12)"/><ellipse cx="19" cy="15" rx="4" ry="2" fill="#6aaa80" transform="rotate(-20 19 15)"/><circle cx="7" cy="18" r="3" fill="#f4c6c6"/><circle cx="14" cy="14" r="3" fill="#fbe484"/><circle cx="21" cy="17" r="3" fill="#c8c0e0"/></svg></div><div class="step-body"><div class="step-num">Step 04</div><div class="step-title">Plant and See the Community Garden</div><p class="step-desc">Your bloom joins the shared meadow. Hover over any flower to see the mood it represents.</p></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── FIX 4: Flower Catalogue — no "Plant yours" button, click to expand ── -->
+<section class="catalogue" id="flowers">
+  <div class="catalogue-header reveal">
+    <div>
+      <span class="section-label">The flower guide</span>
+      <h2 class="section-title">Every mood has a <em>symbolic bloom</em></h2>
+    </div>
+    <!-- FIX 4: removed "Plant yours" button -->
+  </div>
+  <div class="flowers-grid">
+
+    <!-- ROSE -->
+    <div class="flower-tile reveal" onclick="openFlowerModal('rose')">
+      <div class="flower-svg-wrap">
+        <canvas class="flower-canvas" data-flower="rose" data-hue="340" data-sat="55" data-light="55" width="80" height="100"></canvas>
+      </div>
+      <div class="flower-name">Rose</div>
+      <div class="flower-mood">Love and depth</div>
+      <span class="flower-chip chip-rose">love, heart, care</span>
+    </div>
+
+    <!-- SUNFLOWER -->
+    <div class="flower-tile reveal" onclick="openFlowerModal('sunflower')">
+      <div class="flower-svg-wrap">
+        <canvas class="flower-canvas" data-flower="sunflower" data-hue="45" data-sat="60" data-light="65" width="80" height="100"></canvas>
+      </div>
+      <div class="flower-name">Sunflower</div>
+      <div class="flower-mood">Hope and resilience</div>
+      <span class="flower-chip chip-sun">happy, sun, bright</span>
+    </div>
+
+    <!-- LOTUS -->
+    <div class="flower-tile reveal" onclick="openFlowerModal('lotus')">
+      <div class="flower-svg-wrap">
+        <canvas class="flower-canvas" data-flower="lotus" data-hue="340" data-sat="50" data-light="70" width="80" height="100"></canvas>
+      </div>
+      <div class="flower-name">Lotus</div>
+      <div class="flower-mood">Resilience and strength</div>
+      <span class="flower-chip chip-lotus">strong, enduring, persist</span>
+    </div>
+
+    <!-- LAVENDER -->
+    <div class="flower-tile reveal" onclick="openFlowerModal('lavender')">
+      <div class="flower-svg-wrap">
+        <canvas class="flower-canvas" data-flower="lavender" data-hue="270" data-sat="55" data-light="68" width="80" height="100"></canvas>
+      </div>
+      <div class="flower-name">Lavender</div>
+      <div class="flower-mood">Calm and safety</div>
+      <span class="flower-chip chip-lav">anxious, stressed, tense</span>
+    </div>
+
+    <!-- TULIP -->
+    <div class="flower-tile reveal" onclick="openFlowerModal('tulip')">
+      <div class="flower-svg-wrap">
+        <canvas class="flower-canvas" data-flower="tulip" data-hue="280" data-sat="50" data-light="60" width="80" height="100"></canvas>
+      </div>
+      <div class="flower-name">Tulip</div>
+      <div class="flower-mood">Renewal and change</div>
+      <span class="flower-chip chip-tulip">hope, new, beginning</span>
+    </div>
+
+    <!-- DAISY -->
+    <div class="flower-tile reveal" onclick="openFlowerModal('daisy')">
+      <div class="flower-svg-wrap">
+        <canvas class="flower-canvas" data-flower="daisy" data-hue="55" data-sat="45" data-light="65" width="80" height="100"></canvas>
+      </div>
+      <div class="flower-name">Daisy</div>
+      <div class="flower-mood">Simplicity and lightness</div>
+      <span class="flower-chip chip-daisy">calm, content, gentle</span>
+    </div>
+
+    <!-- LILY -->
+    <div class="flower-tile reveal" onclick="openFlowerModal('lily')">
+      <div class="flower-svg-wrap">
+        <canvas class="flower-canvas" data-flower="lily" data-hue="185" data-sat="40" data-light="70" width="80" height="100"></canvas>
+      </div>
+      <div class="flower-name">Lily</div>
+      <div class="flower-mood">Peace and restoration</div>
+      <span class="flower-chip chip-lily">tired, rest, recover</span>
+    </div>
+
+    <!-- SAKURA -->
+    <div class="flower-tile reveal" onclick="openFlowerModal('sakura')">
+      <div class="flower-svg-wrap">
+        <canvas class="flower-canvas" data-flower="sakura" data-hue="340" data-sat="40" data-light="75" width="80" height="100"></canvas>
+      </div>
+      <div class="flower-name">Sakura</div>
+      <div class="flower-mood">Reflection and presence</div>
+      <span class="flower-chip chip-sakura">grateful, memory, notice</span>
+    </div>
+
+  </div>
+</section>
+
+<!-- FIX 4: Flower detail modal -->
+<div class="flower-modal-overlay" id="flowerModal" onclick="closeFlowerModal(event)">
+  <div class="flower-modal" id="flowerModalContent">
+    <button class="flower-modal-close" onclick="document.getElementById('flowerModal').classList.remove('open')">&#x2715;</button>
+    <canvas id="modalCanvas" class="flower-modal-svg" width="180" height="180" style="display:block;margin:0 auto 1.2rem;"></canvas>
+    <div class="flower-modal-name" id="modalName"></div>
+    <div class="flower-modal-meaning" id="modalMeaning"></div>
+    <div class="flower-modal-keywords" id="modalKeywords"></div>
+    <p class="flower-modal-quote" id="modalQuote"></p>
+  </div>
+</div>
+
+<!-- FIX 5: Garden Wisdom — "garden" em now yellow on dark bg -->
+<section class="wisdom" id="wisdom">
+  <div class="wisdom-inner">
+    <span class="section-label reveal">Garden wisdom</span>
+    <h2 class="section-title reveal">How to tend your <em>garden</em></h2>
+    <div class="tips-grid">
+
+      <!-- Tip 1: Do it anywhere -->
+      <div class="tip-card reveal">
+        <div class="tip-header">
+          <div class="tip-icon-wrap">
+            <svg class="tip-icon-svg" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M18 5 C12 5 8 9.5 8 14.5 C8 22 18 32 18 32 C18 32 28 22 28 14.5 C28 9.5 24 5 18 5Z" fill="#fbe484" opacity="0.95" stroke="#fbe484" stroke-width="1.5"/>
+              <circle cx="18" cy="14.5" r="4.5" fill="rgba(29,100,102,0.7)"/>
+            </svg>
+          </div>
+          <div class="tip-title">Do it anywhere</div>
+        </div>
+        <p class="tip-text">You do not need a quiet desk or a special routine. Reflect at lunch, on the bus, or before you sleep.</p>
+      </div>
+
+      <!-- Tip 2: Be specific -->
+      <div class="tip-card reveal">
+        <div class="tip-header">
+          <div class="tip-icon-wrap">
+            <svg class="tip-icon-svg" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect x="7" y="6" width="18" height="24" rx="2.5" fill="rgba(183,228,231,0.35)" stroke="#b7e4e7" stroke-width="1.8"/>
+              <line x1="11" y1="13" x2="21" y2="13" stroke="#e1f7f7" stroke-width="1.8" stroke-linecap="round"/>
+              <line x1="11" y1="18" x2="21" y2="18" stroke="#e1f7f7" stroke-width="1.8" stroke-linecap="round"/>
+              <line x1="11" y1="23" x2="17" y2="23" stroke="#e1f7f7" stroke-width="1.8" stroke-linecap="round"/>
+              <path d="M22 24 L28 18 L30 20 L24 26 Z" fill="#fbe484" stroke="#b7e4e7" stroke-width="1.2" stroke-linejoin="round"/>
+              <path d="M22 24 L23 27 L25 26 Z" fill="#b7e4e7"/>
+            </svg>
+          </div>
+          <div class="tip-title">Be specific, not general</div>
+        </div>
+        <p class="tip-text">"The coffee tasted perfect today" grows a truer bloom than "I am grateful." The more specific, the richer the keywords.</p>
+      </div>
+
+      <!-- Tip 3: Save milestones -->
+      <div class="tip-card reveal">
+        <div class="tip-header">
+          <div class="tip-icon-wrap">
+            <svg class="tip-icon-svg" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect x="4" y="12" width="28" height="19" rx="3.5" fill="rgba(244,198,198,0.3)" stroke="#f9d8d8" stroke-width="1.8"/>
+              <path d="M13 12 L15 8 L21 8 L23 12" stroke="#f9d8d8" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+              <circle cx="18" cy="21.5" r="5.5" stroke="#f9d8d8" stroke-width="2"/>
+              <circle cx="18" cy="21.5" r="2.5" fill="#f9d8d8"/>
+              <circle cx="27" cy="16" r="1.8" fill="#f9d8d8"/>
+            </svg>
+          </div>
+          <div class="tip-title">Save your milestones</div>
+        </div>
+        <p class="tip-text">Use the Save PNG button at meaningful moments. One week, one month, one full season tells a story worth keeping.</p>
+      </div>
+
+      <!-- Tip 4: Trust what you feel -->
+      <div class="tip-card reveal">
+        <div class="tip-header">
+          <div class="tip-icon-wrap">
+            <svg class="tip-icon-svg" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M18 30 C18 30 5 21 5 13 A7 7 0 0 1 18 11 A7 7 0 0 1 31 13 C31 21 18 30 18 30Z" fill="#d8d0f0" opacity="0.95" stroke="#d8d0f0" stroke-width="1.5"/>
+              <path d="M18 27 C18 27 9 20.5 9 14.5 A5 5 0 0 1 18 13 A5 5 0 0 1 27 14.5 C27 20.5 18 27 18 27Z" fill="#c8c0e0" opacity="0.35"/>
+            </svg>
+          </div>
+          <div class="tip-title">Trust what you feel</div>
+        </div>
+        <p class="tip-text">The symbolic flower is chosen from your own words. Honest, unfiltered entries lead to the blooms that resonate most.</p>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<section class="cta" id="start">
+  <div class="cta-inner reveal">
+    <span class="section-label">Ready to begin?</span>
+    <h2 class="section-title">Plant your first flower <em>today</em></h2>
+    <p class="section-desc">Your garden is waiting. It takes two minutes and a little bit of honesty. Let your words grow into something beautiful.</p>
+    <div class="cta-buttons">
+      <a href="https://editor.p5js.org/kenishagw/full/ce9DKly6F" target="_blank" rel="noopener" onclick="setTimeout(function(){alert('Opening in a new tab!');},100)" class="btn-primary">Open Private Garden</a>
+      <a href="https://editor.p5js.org/kenishagw/full/NMmNhw0E-" target="_blank" rel="noopener" onclick="setTimeout(function(){alert('Opening in a new tab!');},100)" class="btn-outline">Explore Public Garden</a>
+    </div>
+  </div>
+</section>
+
+<!-- FIX 6: Footer — removed Sampoerna University, Keni → Kenisha Gabriella Wijaya -->
+<footer>
+  <div class="footer-top" style="align-items:flex-start;">
+    <div>
+      <span class="footer-brand-logo">Gratitude Garden</span>
+      <p class="footer-desc">A personal journaling experience where your reflections bloom into a living digital garden.</p>
+    </div>
+    <div class="footer-col">
+      <h4>The Gardens</h4>
+      <ul>
+        <li><a href="#gardens">My Personal Garden</a></li>
+        <li><a href="#gardens">The Public Garden</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>2026 Gratitude Garden &nbsp;&nbsp; Kenisha Gabriella Wijaya</span>
+    <a href="https://linktr.ee/kenoijam" target="_blank" rel="noopener" class="footer-logo-link" title="Kenisha's Linktree">
+      <img src="LOGO-01.png" alt="Kenisha Gabriella Wijaya" class="footer-logo-img"/>
+    </a>
+  </div>
+</footer>
+
+<script>
+  // Scroll reveal
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const siblings = entry.target.parentElement.querySelectorAll('.reveal');
+        siblings.forEach((el, idx) => { setTimeout(() => el.classList.add('visible'), idx * 80); });
+        entry.target.classList.add('visible');
+      }
+    });
+  }, { threshold: 0.1 });
+  document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+  // FIX 7: Side nav active state tracking
+  const sectionIds = ['home','about','gardens','how','flowers','wisdom','start'];
+  const sectionEls = sectionIds.map(id => document.getElementById(id)).filter(Boolean);
+  const sideItems = document.querySelectorAll('.side-nav-item');
+  function updateSideNav() {
+    let current = 'home';
+    const scrollY = window.scrollY + window.innerHeight * 0.4;
+    sectionEls.forEach(sec => { if (sec && sec.offsetTop <= scrollY) current = sec.id; });
+    sideItems.forEach(item => {
+      item.classList.toggle('active', item.dataset.section === current);
+    });
+  }
+  window.addEventListener('scroll', updateSideNav, { passive: true });
+  updateSideNav();
+
+  // FIX 4: Flower modal data
+  const flowerData = {
+    rose:      { name: 'Rose',      meaning: 'Love & depth',            keywords: ['love','heart','care','longing','connection'],  quote: 'Feeling deeply is a kind of courage. Your heart is open and that is a beautiful thing.' },
+    sunflower: { name: 'Sunflower', meaning: 'Hope & resilience',        keywords: ['happy','joy','excited','positive','energized'], quote: 'Even on the cloudiest days, you are still reaching toward the light. That counts for a lot.' },
+    lotus:     { name: 'Lotus',     meaning: 'Resilience & strength',    keywords: ['difficult','struggling','strong','persevering','kept going'], quote: 'You moved through something hard today. That quiet strength matters more than you know.' },
+    lavender:  { name: 'Lavender',  meaning: 'Calm & safety',            keywords: ['anxious','stressed','nervous','tense','worried'],  quote: 'You made it through the noise today. Take a breath. You are safe, and you are okay.' },
+    tulip:     { name: 'Tulip',     meaning: 'Renewal & change',         keywords: ['change','new','beginning','fresh','transition'],  quote: 'Something new is taking root in you. Trust the direction you are growing in.' },
+    daisy:     { name: 'Daisy',     meaning: 'Simplicity & lightness',   keywords: ['calm','content','gentle','quiet','peaceful'],    quote: 'There is real wisdom in finding beauty in the ordinary. Today was enough, and so are you.' },
+    lily:      { name: 'Lily',      meaning: 'Peace & restoration',      keywords: ['tired','rest','recover','exhausted','recharging'], quote: 'Rest is not giving up. It is how you come back to yourself. You are allowed to slow down.' },
+    sakura:    { name: 'Sakura',    meaning: 'Reflection & presence',    keywords: ['grateful','memory','notice','appreciating','thankful'], quote: 'You noticed something worth holding onto today. That kind of awareness is rare and beautiful.' }
+  };
+
+  const modalSvgs = {
+    rose: '<svg width="120" height="120" viewBox="-40 -40 80 80" xmlns="http://www.w3.org/2000/svg"><line x1="0" y1="4" x2="0" y2="38" stroke="#3d7a60" stroke-width="2.5" stroke-linecap="round"/><ellipse cx="-9" cy="20" rx="11" ry="5" fill="#6aaa80" transform="rotate(-28 -9 20)"/><ellipse cx="0" cy="-22" rx="8" ry="13" fill="#f0b0c0" opacity="0.85"/><ellipse cx="0" cy="-22" rx="8" ry="13" fill="#f4c6c6" opacity="0.85" transform="rotate(45)"/><ellipse cx="0" cy="-22" rx="8" ry="13" fill="#f0b0c0" opacity="0.85" transform="rotate(90)"/><ellipse cx="0" cy="-22" rx="8" ry="13" fill="#f4c6c6" opacity="0.85" transform="rotate(135)"/><ellipse cx="0" cy="-22" rx="8" ry="13" fill="#f0b0c0" opacity="0.85" transform="rotate(180)"/><ellipse cx="0" cy="-22" rx="8" ry="13" fill="#f4c6c6" opacity="0.85" transform="rotate(225)"/><ellipse cx="0" cy="-22" rx="8" ry="13" fill="#f0b0c0" opacity="0.85" transform="rotate(270)"/><ellipse cx="0" cy="-22" rx="8" ry="13" fill="#f4c6c6" opacity="0.85" transform="rotate(315)"/><ellipse cx="0" cy="-16" rx="7" ry="10" fill="#f0a0b8" opacity="0.9"/><ellipse cx="0" cy="-16" rx="7" ry="10" fill="#f0a0b8" opacity="0.9" transform="rotate(45)"/><ellipse cx="0" cy="-16" rx="7" ry="10" fill="#f0a0b8" opacity="0.9" transform="rotate(90)"/><ellipse cx="0" cy="-16" rx="7" ry="10" fill="#f0a0b8" opacity="0.9" transform="rotate(135)"/><ellipse cx="0" cy="-16" rx="7" ry="10" fill="#f0a0b8" opacity="0.9" transform="rotate(180)"/><ellipse cx="0" cy="-16" rx="7" ry="10" fill="#f0a0b8" opacity="0.9" transform="rotate(225)"/><ellipse cx="0" cy="-16" rx="7" ry="10" fill="#f0a0b8" opacity="0.9" transform="rotate(270)"/><ellipse cx="0" cy="-16" rx="7" ry="10" fill="#f0a0b8" opacity="0.9" transform="rotate(315)"/><circle r="7" fill="#d4788a"/><circle r="5" fill="#c06070"/><circle r="3" fill="#a84858"/></svg>',
+    sunflower: '<svg width="120" height="120" viewBox="-40 -40 80 80" xmlns="http://www.w3.org/2000/svg"><line x1="0" y1="6" x2="0" y2="38" stroke="#3d7a60" stroke-width="2.5" stroke-linecap="round"/><ellipse cx="10" cy="22" rx="11" ry="5" fill="#6aaa80" transform="rotate(28 10 22)"/><ellipse cx="0" cy="-22" rx="7" ry="14" fill="#fbe484" opacity="0.95"/><ellipse cx="0" cy="-22" rx="7" ry="14" fill="#f8dc70" opacity="0.95" transform="rotate(20)"/><ellipse cx="0" cy="-22" rx="7" ry="14" fill="#fbe484" opacity="0.95" transform="rotate(40)"/><ellipse cx="0" cy="-22" rx="7" ry="14" fill="#f8dc70" opacity="0.95" transform="rotate(60)"/><ellipse cx="0" cy="-22" rx="7" ry="14" fill="#fbe484" opacity="0.95" transform="rotate(80)"/><ellipse cx="0" cy="-22" rx="7" ry="14" fill="#f8dc70" opacity="0.95" transform="rotate(100)"/><ellipse cx="0" cy="-22" rx="7" ry="14" fill="#fbe484" opacity="0.95" transform="rotate(120)"/><ellipse cx="0" cy="-22" rx="7" ry="14" fill="#f8dc70" opacity="0.95" transform="rotate(140)"/><ellipse cx="0" cy="-22" rx="7" ry="14" fill="#fbe484" opacity="0.95" transform="rotate(160)"/><ellipse cx="0" cy="-22" rx="7" ry="14" fill="#f8dc70" opacity="0.95" transform="rotate(180)"/><ellipse cx="0" cy="-22" rx="7" ry="14" fill="#fbe484" opacity="0.95" transform="rotate(200)"/><ellipse cx="0" cy="-22" rx="7" ry="14" fill="#f8dc70" opacity="0.95" transform="rotate(220)"/><ellipse cx="0" cy="-22" rx="7" ry="14" fill="#fbe484" opacity="0.95" transform="rotate(240)"/><ellipse cx="0" cy="-22" rx="7" ry="14" fill="#f8dc70" opacity="0.95" transform="rotate(260)"/><ellipse cx="0" cy="-22" rx="7" ry="14" fill="#fbe484" opacity="0.95" transform="rotate(280)"/><ellipse cx="0" cy="-22" rx="7" ry="14" fill="#f8dc70" opacity="0.95" transform="rotate(300)"/><ellipse cx="0" cy="-22" rx="7" ry="14" fill="#fbe484" opacity="0.95" transform="rotate(320)"/><ellipse cx="0" cy="-22" rx="7" ry="14" fill="#f8dc70" opacity="0.95" transform="rotate(340)"/><circle r="13" fill="#3a2408"/><circle r="10" fill="#4a3010"/><circle r="7" fill="#5a3a18"/></svg>',
+    lotus: '<svg width="120" height="120" viewBox="-40 -40 80 80" xmlns="http://www.w3.org/2000/svg"><line x1="0" y1="10" x2="0" y2="38" stroke="#3d7a60" stroke-width="2.5" stroke-linecap="round"/><ellipse cx="0" cy="10" rx="20" ry="7" fill="#7bbfa0" opacity="0.7"/><path d="M0,8 C10,-2 10,-22 0,-32 C-10,-22 -10,-2 0,8Z" fill="#f4c6c6" opacity="0.88"/><path d="M0,8 C10,-2 10,-22 0,-32 C-10,-22 -10,-2 0,8Z" fill="#f0b8c0" opacity="0.88" transform="rotate(-50 0 8)"/><path d="M0,8 C10,-2 10,-22 0,-32 C-10,-22 -10,-2 0,8Z" fill="#f4c6c6" opacity="0.88" transform="rotate(50 0 8)"/><path d="M0,8 C10,-2 10,-22 0,-32 C-10,-22 -10,-2 0,8Z" fill="#f0b8c0" opacity="0.88" transform="rotate(-28 0 8)"/><path d="M0,8 C10,-2 10,-22 0,-32 C-10,-22 -10,-2 0,8Z" fill="#f4c6c6" opacity="0.88" transform="rotate(28 0 8)"/><circle cx="0" cy="-2" r="6" fill="#fbe484"/><circle cx="0" cy="-2" r="4" fill="#f0d060"/></svg>',
+    lavender: '<svg width="120" height="120" viewBox="-40 -40 80 80" xmlns="http://www.w3.org/2000/svg"><line x1="0" y1="2" x2="0" y2="38" stroke="#3d7a60" stroke-width="2" stroke-linecap="round"/><ellipse cx="-7" cy="-4" rx="6.5" ry="10" fill="#b0a8c8" transform="rotate(-40 -7 -4)"/><ellipse cx="7" cy="-4" rx="6.5" ry="10" fill="#b0a8c8" transform="rotate(40 7 -4)"/><ellipse cx="-6" cy="-13" rx="6" ry="9" fill="#b8b0d0" transform="rotate(-40 -6 -13)"/><ellipse cx="6" cy="-13" rx="6" ry="9" fill="#b8b0d0" transform="rotate(40 6 -13)"/><ellipse cx="-5" cy="-21" rx="5.5" ry="8.5" fill="#c0b8d8" transform="rotate(-40 -5 -21)"/><ellipse cx="5" cy="-21" rx="5.5" ry="8.5" fill="#c0b8d8" transform="rotate(40 5 -21)"/><ellipse cx="-4" cy="-28" rx="5" ry="8" fill="#c8c0e0" transform="rotate(-40 -4 -28)"/><ellipse cx="4" cy="-28" rx="5" ry="8" fill="#c8c0e0" transform="rotate(40 4 -28)"/><ellipse cx="-3" cy="-34" rx="4" ry="6.5" fill="#d0c8e8" transform="rotate(-40 -3 -34)"/><ellipse cx="3" cy="-34" rx="4" ry="6.5" fill="#d0c8e8" transform="rotate(40 3 -34)"/><ellipse cx="0" cy="-39" rx="3.5" ry="7" fill="#c8c0e0" opacity="0.95"/></svg>',
+    tulip: '<svg width="120" height="120" viewBox="-40 -40 80 80" xmlns="http://www.w3.org/2000/svg"><line x1="0" y1="4" x2="0" y2="38" stroke="#3d7a60" stroke-width="2.5" stroke-linecap="round"/><ellipse cx="0" cy="-4" rx="14" ry="12" fill="#d4b8e0" opacity="0.9"/><path d="M-14,-4 C-18,-8 -20,-20 -12,-26 C-6,-22 -4,-14 -6,-4 Z" fill="#c8a8d8" opacity="0.9"/><path d="M14,-4 C18,-8 20,-20 12,-26 C6,-22 4,-14 6,-4 Z" fill="#c8a8d8" opacity="0.9"/><path d="M-8,-4 C-10,-16 -6,-28 0,-32 C6,-28 10,-16 8,-4 Z" fill="#d8c0e8" opacity="0.92"/></svg>',
+    daisy: '<svg width="120" height="120" viewBox="-40 -40 80 80" xmlns="http://www.w3.org/2000/svg"><line x1="0" y1="4" x2="0" y2="38" stroke="#3d7a60" stroke-width="2.5" stroke-linecap="round"/><ellipse cx="0" cy="-18" rx="5" ry="11" fill="#f8f8f0" opacity="0.95"/><ellipse cx="0" cy="-18" rx="5" ry="11" fill="#f8f8f0" opacity="0.95" transform="rotate(22.5)"/><ellipse cx="0" cy="-18" rx="5" ry="11" fill="#f8f8f0" opacity="0.95" transform="rotate(45)"/><ellipse cx="0" cy="-18" rx="5" ry="11" fill="#f8f8f0" opacity="0.95" transform="rotate(67.5)"/><ellipse cx="0" cy="-18" rx="5" ry="11" fill="#f8f8f0" opacity="0.95" transform="rotate(90)"/><ellipse cx="0" cy="-18" rx="5" ry="11" fill="#f8f8f0" opacity="0.95" transform="rotate(112.5)"/><ellipse cx="0" cy="-18" rx="5" ry="11" fill="#f8f8f0" opacity="0.95" transform="rotate(135)"/><ellipse cx="0" cy="-18" rx="5" ry="11" fill="#f8f8f0" opacity="0.95" transform="rotate(157.5)"/><ellipse cx="0" cy="-18" rx="5" ry="11" fill="#f8f8f0" opacity="0.95" transform="rotate(180)"/><ellipse cx="0" cy="-18" rx="5" ry="11" fill="#f8f8f0" opacity="0.95" transform="rotate(202.5)"/><ellipse cx="0" cy="-18" rx="5" ry="11" fill="#f8f8f0" opacity="0.95" transform="rotate(225)"/><ellipse cx="0" cy="-18" rx="5" ry="11" fill="#f8f8f0" opacity="0.95" transform="rotate(247.5)"/><ellipse cx="0" cy="-18" rx="5" ry="11" fill="#f8f8f0" opacity="0.95" transform="rotate(270)"/><ellipse cx="0" cy="-18" rx="5" ry="11" fill="#f8f8f0" opacity="0.95" transform="rotate(292.5)"/><ellipse cx="0" cy="-18" rx="5" ry="11" fill="#f8f8f0" opacity="0.95" transform="rotate(315)"/><ellipse cx="0" cy="-18" rx="5" ry="11" fill="#f8f8f0" opacity="0.95" transform="rotate(337.5)"/><circle r="11" fill="#c8a050"/><circle r="8" fill="#d4b060"/><circle r="5" fill="#e0c070"/></svg>',
+    lily: '<svg width="120" height="120" viewBox="-40 -40 80 80" xmlns="http://www.w3.org/2000/svg"><line x1="0" y1="4" x2="0" y2="38" stroke="#3d7a60" stroke-width="2.5" stroke-linecap="round"/><path d="M0,-4 C-10,-12 -14,-26 -8,2 C-4,4 0,6 4,4 C10,-10 10,-12 0,-4Z" fill="#b7e4e7" opacity="0.9"/><path d="M0,-4 C-10,-12 -14,-26 -8,2 C-4,4 0,6 4,4 C10,-10 10,-12 0,-4Z" fill="#a0d0d8" opacity="0.9" transform="rotate(60)"/><path d="M0,-4 C-10,-12 -14,-26 -8,2 C-4,4 0,6 4,4 C10,-10 10,-12 0,-4Z" fill="#b7e4e7" opacity="0.9" transform="rotate(120)"/><path d="M0,-4 C-10,-12 -14,-26 -8,2 C-4,4 0,6 4,4 C10,-10 10,-12 0,-4Z" fill="#a0d0d8" opacity="0.9" transform="rotate(180)"/><path d="M0,-4 C-10,-12 -14,-26 -8,2 C-4,4 0,6 4,4 C10,-10 10,-12 0,-4Z" fill="#b7e4e7" opacity="0.9" transform="rotate(240)"/><path d="M0,-4 C-10,-12 -14,-26 -8,2 C-4,4 0,6 4,4 C10,-10 10,-12 0,-4Z" fill="#a0d0d8" opacity="0.9" transform="rotate(300)"/><circle r="6" fill="#429288"/><circle r="4" fill="#5aaa98"/></svg>',
+    sakura: '<svg width="120" height="120" viewBox="-40 -40 80 80" xmlns="http://www.w3.org/2000/svg"><line x1="0" y1="4" x2="0" y2="38" stroke="#3d7a60" stroke-width="2.5" stroke-linecap="round"/><path d="M0,-26 C10,-21 16,-9 11,2 C7,8 0,10 -11,2 C-16,-9 -10,-21 0,-26Z" fill="#f8d8e4" opacity="0.88"/><path d="M0,-26 C10,-21 16,-9 11,2 C7,8 0,10 -11,2 C-16,-9 -10,-21 0,-26Z" fill="#f8d8e4" opacity="0.88" transform="rotate(72)"/><path d="M0,-26 C10,-21 16,-9 11,2 C7,8 0,10 -11,2 C-16,-9 -10,-21 0,-26Z" fill="#f8d8e4" opacity="0.88" transform="rotate(144)"/><path d="M0,-26 C10,-21 16,-9 11,2 C7,8 0,10 -11,2 C-16,-9 -10,-21 0,-26Z" fill="#f8d8e4" opacity="0.88" transform="rotate(216)"/><path d="M0,-26 C10,-21 16,-9 11,2 C7,8 0,10 -11,2 C-16,-9 -10,-21 0,-26Z" fill="#f8d8e4" opacity="0.88" transform="rotate(288)"/><circle r="5" fill="#d4a5b5"/><circle r="3" fill="#c08898"/></svg>'
+  };
+
+  const chipClasses = { rose:'chip-rose', sunflower:'chip-sun', lotus:'chip-lotus', lavender:'chip-lav', tulip:'chip-tulip', daisy:'chip-daisy', lily:'chip-lily', sakura:'chip-sakura' };
+
+  function openFlowerModal(id) {
+    const d = flowerData[id];
+    // Draw p5.js bloom on modal canvas (same as catalogue tiles)
+    const mc = document.getElementById('modalCanvas');
+    if(mc && window._bloomFns && window._bloomFns[id]) {
+      const sz = 180, dpr = window.devicePixelRatio || 1;
+      mc.width = Math.round(sz*dpr); mc.height = Math.round(sz*dpr);
+      mc.style.width = sz+'px'; mc.style.height = sz+'px';
+      const mctx = mc.getContext('2d');
+      mctx.scale(dpr,dpr); mctx.clearRect(0,0,sz,sz);
+      const hue = parseInt(mc.dataset.hue||'340');
+      // Get hue from the tile
+      const tile = document.querySelector('[data-flower="'+id+'"]');
+      const th = tile ? parseInt(tile.dataset.hue)||340 : 340;
+      const ts = tile ? parseInt(tile.dataset.sat)||50 : 50;
+      const tl = tile ? parseInt(tile.dataset.light)||65 : 65;
+      var cx = sz*.5, cy = sz*.5, R = sz*.32;
+      if(id === 'lavender')  { cy = sz*.80; R = sz*.18; }
+      else if(id === 'lotus'){ cy = sz*.68; R = sz*.22; }
+      else if(id === 'tulip'){ cy = sz*.60; R = sz*.28; }
+      window._bloomFns[id](mctx, cx, cy, R, th, ts, tl);
+    } else if(mc && modalSvgs[id]) {
+      // Fallback SVG
+      mc.style.display='none';
+      let svgDiv = document.getElementById('modalSvgFallback');
+      if(!svgDiv){ svgDiv=document.createElement('div'); svgDiv.id='modalSvgFallback'; svgDiv.style.textAlign='center'; mc.parentNode.insertBefore(svgDiv,mc); }
+      svgDiv.innerHTML = modalSvgs[id];
+    }
+    document.getElementById('modalName').textContent = d.name;
+    document.getElementById('modalMeaning').textContent = d.meaning;
+    document.getElementById('modalKeywords').innerHTML = d.keywords.map(k => `<span class="flower-chip ${chipClasses[id]}">${k}</span>`).join('');
+    document.getElementById('modalQuote').textContent = '"'+ d.quote + '"';
+    document.getElementById('flowerModal').classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+  function closeFlowerModal(e) {
+    if (e.target === document.getElementById('flowerModal')) {
+      document.getElementById('flowerModal').classList.remove('open');
+      document.body.style.overflow = '';
+    }
+  }
+  document.getElementById('flowerModal').querySelector('.flower-modal-close').addEventListener('click', function(){
+    document.getElementById('flowerModal').classList.remove('open');
+    document.body.style.overflow = '';
+  });
+  document.addEventListener('keydown', function(e){ if(e.key==='Escape') { document.getElementById('flowerModal').classList.remove('open'); document.body.style.overflow=''; } });
+</script>
+
+<script>
+// ── Card gardens + Catalogue blooms (exact p5.js math) ──
+(function(){
+  function hsl(h,s,l,a){ return 'hsla('+h+','+s+'%,'+l+'%,'+(a==null?1:a)+')'; }
+
+  /* ── Stem with two bezier leaves ── */
+  function drawStem(ctx,cx,bottomY,tipY,sw){
+    var c1x=cx+8, c1y=bottomY-(bottomY-tipY)*.36,
+        c2x=cx-5, c2y=bottomY-(bottomY-tipY)*.72;
+    ctx.strokeStyle='hsl(140,52%,28%)'; ctx.lineWidth=sw; ctx.lineCap='round';
+    ctx.beginPath(); ctx.moveTo(cx,bottomY);
+    ctx.bezierCurveTo(c1x,c1y,c2x,c2y,cx,tipY); ctx.stroke();
+    function bPt(p0,p1,p2,p3,t){return Math.pow(1-t,3)*p0+3*Math.pow(1-t,2)*t*p1+3*(1-t)*t*t*p2+t*t*t*p3;}
+    function bTan(p0,p1,p2,p3,t){return 3*Math.pow(1-t,2)*(p1-p0)+6*(1-t)*t*(p2-p1)+3*t*t*(p3-p2);}
+    function leaf(t,side){
+      var lx=bPt(cx,c1x,c2x,cx,t), ly=bPt(bottomY,c1y,c2y,tipY,t);
+      var ang=Math.atan2(bTan(bottomY,c1y,c2y,tipY,t),bTan(cx,c1x,c2x,cx,t))+side*1.0;
+      var lw=18,lh=6;
+      ctx.save(); ctx.translate(lx,ly); ctx.rotate(ang);
+      ctx.fillStyle='hsl(125,52%,44%)';
+      ctx.beginPath(); ctx.moveTo(0,0);
+      ctx.bezierCurveTo(lw*.1,-lh*.8,lw*.5,-lh*1.3,lw,0);
+      ctx.bezierCurveTo(lw*.5,lh*1.1,lw*.1,lh*.4,0,0);
+      ctx.fill(); ctx.restore();
+    }
+    leaf(0.52,-1); leaf(0.66,1);
+  }
+
+  /* ── Exact p5.js bloom functions ── */
+  function drawDaisy(ctx,cx,cy,R,hue,sat,light){
+    var Rd=R*.8,w=Rd*.55,h=Rd*1.1;
+    for(var i=0;i<16;i++){
+      ctx.save(); ctx.translate(cx,cy); ctx.rotate(i*22.5*Math.PI/180);
+      ctx.fillStyle=hsl(hue,sat*.9,light+8,.9);
+      ctx.beginPath(); ctx.ellipse(0,-Rd*.7,w/2,h/2,0,0,Math.PI*2); ctx.fill(); ctx.restore();
+    }
+    ctx.fillStyle=hsl(48,82,62); ctx.beginPath(); ctx.arc(cx,cy,Rd*.30,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle=hsl(50,80,74); ctx.beginPath(); ctx.arc(cx,cy,Rd*.18,0,Math.PI*2); ctx.fill();
+  }
+
+  function drawSunflower(ctx,cx,cy,R,hue,sat,light){
+    for(var i=0;i<18;i++){
+      ctx.save(); ctx.translate(cx,cy); ctx.rotate(i*20*Math.PI/180);
+      ctx.fillStyle=hsl(hue,sat*.9,light+12,.95);
+      ctx.beginPath(); ctx.ellipse(0,-R*.72,R*.225,R*.625,0,0,Math.PI*2); ctx.fill(); ctx.restore();
+    }
+    ctx.fillStyle=hsl(28,45,42); ctx.beginPath(); ctx.arc(cx,cy,R*.675,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle=hsl(23,40,58); ctx.beginPath(); ctx.arc(cx,cy,Rd=R*.525,0,Math.PI*2); ctx.fill();
+    var Rd;
+  }
+
+  function drawTulip(ctx,cx,cy,R,hue,sat,light){
+    var Rt=R*1.15;
+    ctx.save(); ctx.translate(cx,cy);
+    ctx.fillStyle=hsl(hue,sat,light,.95);
+    ctx.beginPath(); ctx.ellipse(0,Rt*.25,Rt*1.05/2,Rt*1.1/2,0,0,Math.PI*2); ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(-Rt*.52,Rt*.10);
+    ctx.bezierCurveTo(-Rt*.52,-Rt*.10,-Rt*.40,-Rt*.40,-Rt*.22,-Rt*.60);
+    ctx.lineTo(0,-Rt*.40); ctx.lineTo(Rt*.22,-Rt*.60);
+    ctx.bezierCurveTo(Rt*.40,-Rt*.40,Rt*.52,-Rt*.10,Rt*.52,Rt*.10);
+    ctx.fill();
+    ctx.fillStyle=hsl(hue,sat*.8,light+12,.4);
+    ctx.beginPath(); ctx.ellipse(0,Rt*.05,Rt*.7/2,Rt*.9/2,0,0,Math.PI*2); ctx.fill();
+    ctx.restore();
+  }
+
+  function drawRose(ctx,cx,cy,R,hue,sat,light){
+    var sc=R/70; ctx.save(); ctx.translate(cx,cy); ctx.scale(sc,sc);
+    function petal(rot,dist,w,h,sM,lM){
+      ctx.save(); ctx.rotate(rot*Math.PI/180); ctx.translate(0,-dist);
+      ctx.fillStyle=hsl(hue,sat*sM,light+lM,1);
+      ctx.beginPath(); ctx.moveTo(0,12);
+      ctx.bezierCurveTo(-w/3.2,5,-w/1.4,-h/3.5,-w/4.5,-h*.75);
+      ctx.bezierCurveTo(-w/12,-h*.82,w/12,-h*.82,w/4.5,-h*.75);
+      ctx.bezierCurveTo(w/1.4,-h/3.5,w/3.2,5,0,12);
+      ctx.fill(); ctx.restore();
+    }
+    for(var i=0;i<8;i++) petal(i*45,   35,75,44,1.00,-10);
+    for(var i=0;i<8;i++) petal(i*45+22.5,26,65,38,.95,-5);
+    for(var i=0;i<6;i++) petal(i*60+15,18,52,32,.90, 0);
+    for(var i=0;i<5;i++) petal(i*72+20,11,40,26,.85, 5);
+    for(var i=0;i<5;i++) petal(i*72+56, 6,30,22,.80,10);
+    [[24,-10],[19,-5],[14,0],[9,5],[5,10]].forEach(function(p){
+      ctx.fillStyle=hsl(hue,sat,light+p[1]);
+      ctx.beginPath(); ctx.arc(0,0,p[0]/2,0,Math.PI*2); ctx.fill();
+    });
+    ctx.restore();
+  }
+
+  function drawLily(ctx,cx,cy,R,hue,sat,light){
+    var Rl=R*1.08;
+    for(var i=0;i<6;i++){
+      ctx.save(); ctx.translate(cx,cy); ctx.rotate(i*60*Math.PI/180);
+      ctx.fillStyle=hsl(hue,sat*.85,light+8,.9);
+      ctx.beginPath(); ctx.moveTo(0,-Rl);
+      ctx.bezierCurveTo(Rl*.30,-Rl*.72,Rl*.42,-Rl*.30,Rl*.22,Rl*.04);
+      ctx.bezierCurveTo(Rl*.12,Rl*.20,0,Rl*.26,-Rl*.12,Rl*.20);
+      ctx.bezierCurveTo(-Rl*.22,Rl*.04,-Rl*.42,-Rl*.30,-Rl*.30,-Rl*.72);
+      ctx.fill(); ctx.restore();
+    }
+    ctx.fillStyle=hsl(hue,sat*.65,light-5); ctx.beginPath(); ctx.arc(cx,cy,Rl*.36,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle=hsl(hue,sat*.45,light+10); ctx.beginPath(); ctx.arc(cx,cy,Rl*.20,0,Math.PI*2); ctx.fill();
+  }
+
+  function drawSakura(ctx,cx,cy,R,hue,sat,light){
+    var Rb=R*1.7;
+    for(var i=0;i<5;i++){
+      ctx.save(); ctx.translate(cx,cy); ctx.rotate(i*72*Math.PI/180);
+      ctx.fillStyle=hsl(hue,sat*.8,light+15,.85);
+      ctx.beginPath(); ctx.moveTo(0,-Rb*.65);
+      ctx.bezierCurveTo(Rb*.28,-Rb*.52,Rb*.40,-Rb*.20,Rb*.28,0);
+      ctx.bezierCurveTo(Rb*.18,Rb*.12,0,Rb*.18,-Rb*.18,Rb*.12);
+      ctx.bezierCurveTo(-Rb*.28,0,-Rb*.40,-Rb*.20,-Rb*.28,-Rb*.52);
+      ctx.fill(); ctx.restore();
+    }
+    ctx.fillStyle=hsl(hue,sat*.6,light-5); ctx.beginPath(); ctx.arc(cx,cy,Rb*.24,0,Math.PI*2); ctx.fill();
+  }
+
+  function drawLotus(ctx,cx,cy,R,hue,sat,light){
+    [[.9,1,0],[.9,.75,-50],[.9,.75,50],[.9,.9,-30],[.9,.9,30],[.9,1,0]].forEach(function(cfg){
+      ctx.save(); ctx.translate(cx,cy); ctx.rotate(cfg[2]*Math.PI/180); ctx.scale(cfg[0],cfg[1]);
+      ctx.fillStyle=hsl(hue,sat,light,.8);
+      ctx.beginPath(); ctx.moveTo(0,0);
+      ctx.bezierCurveTo(R*.5,-R*.5,R*.5,-R*1.5,0,-R*2);
+      ctx.bezierCurveTo(-R*.5,-R*1.5,-R*.5,-R*.5,0,0);
+      ctx.fill(); ctx.restore();
+    });
+  }
+
+  function drawLavender(ctx,cx,cy,R,hue,sat,light){
+    var s=R/30;
+    var hh=R*1.5, levels=8, sp=(hh/levels)*1.15;
+    ctx.save(); ctx.translate(cx,cy);
+    for(var i=0;i<levels;i++){
+      var t=i/(levels-1), y=-i*sp;
+      var pW=(14-t*7)*s, pH=pW*1.6, xO=(7-t*5)*s, bL=light-10+t*20;
+      ctx.save(); ctx.translate(-xO,y); ctx.rotate(-40*Math.PI/180);
+      ctx.fillStyle=hsl(hue,sat,bL,.88);
+      ctx.beginPath(); ctx.ellipse(0,0,pW/2,pH/2,0,0,Math.PI*2); ctx.fill(); ctx.restore();
+      ctx.save(); ctx.translate(xO,y); ctx.rotate(40*Math.PI/180);
+      ctx.fillStyle=hsl(hue,sat,bL+4,.88);
+      ctx.beginPath(); ctx.ellipse(0,0,pW/2,pH/2,0,0,Math.PI*2); ctx.fill(); ctx.restore();
+    }
+    // Tip drawn AFTER petals — peeks slightly above top petal
+    var topY=-(levels-1)*sp - sp*0.7;
+    ctx.fillStyle=hsl(hue,sat+8,light+22,.96);
+    ctx.beginPath(); ctx.ellipse(0,topY,R*.10,R*.25,0,0,Math.PI*2); ctx.fill();
+    ctx.restore();
+  }
+
+  var bloomFns={rose:drawRose,sunflower:drawSunflower,lotus:drawLotus,lavender:drawLavender,
+                tulip:drawTulip,daisy:drawDaisy,lily:drawLily,sakura:drawSakura};
+  window._bloomFns = bloomFns; // expose for modal
+
+  /* ── Catalogue blooms ── */
+  function renderFlowerCanvas(canvas){
+    var flower=canvas.dataset.flower;
+    var hue=parseInt(canvas.dataset.hue)||340, sat=parseInt(canvas.dataset.sat)||50, light=parseInt(canvas.dataset.light)||65;
+    // Walk up to the .flower-tile which has real layout dimensions
+    var el=canvas; var tile=null;
+    while(el){
+      if(el.classList&&el.classList.contains('flower-tile')){ tile=el; break; }
+      el=el.parentElement;
+    }
+    var W=tile?tile.offsetWidth:220;
+    var H=150; // matches .flower-svg-wrap height: 150px
+    // Set wrap dimensions explicitly so absolute canvas has a real container
+    var wrap=canvas.parentElement;
+    wrap.style.width=W+'px'; wrap.style.height=H+'px';
+    var dpr=window.devicePixelRatio||1;
+    canvas.width=Math.round(W*dpr); canvas.height=Math.round(H*dpr);
+    canvas.style.width=W+'px'; canvas.style.height=H+'px';
+    var ctx=canvas.getContext('2d');
+    ctx.scale(dpr,dpr); ctx.clearRect(0,0,W,H);
+    var cx=W*.5, cy, R;
+    // H=150 — give each bloom type room to breathe
+    // All flowers tuned so visual diameter ≈ 80px in 150px tall tile
+    // Lavender grows upward from cy, so cy must be near bottom
+    // Lotus petals reach cy-R*2, so cy must be well below center
+    // Uniform R matching sunflower — all flowers same apparent size
+    R = Math.min(W*.30, H*.28);
+    switch(flower){
+      case 'lavender':   cy=H*.84; break;  // grows upward from cy
+      case 'tulip':      cy=H*.60; break;  // cup shape rises above cy
+      case 'lotus':      cy=H*.76; break;  // petals reach cy-R*2 upward
+      case 'sunflower':  cy=H*.52; break;
+      case 'sakura':     cy=H*.52; break;
+      case 'rose':       cy=H*.52; break;
+      case 'lily':       cy=H*.52; break;
+      case 'daisy':      cy=H*.52; break;
+      default:           cy=H*.52;
+    }
+    bloomFns[flower](ctx,cx,cy,R,hue,sat,light);
+  }
+
+  function renderAllFlowers(){
+    document.querySelectorAll('canvas.flower-canvas').forEach(renderFlowerCanvas);
+  }
+
+  /* ── FIX 3: Card garden scenes ── */
+  var cardLayouts={
+    cardPrivate:[
+      [50, 36,1.8, 'daisy',    12,340,45,65],
+      [118,48,2.2, 'sunflower',14, 45,60,65],
+      [192,40,1.8, 'tulip',    12,280,50,60],
+      [266,50,2.2, 'lotus',    11,340,50,70],
+      [340,38,1.8, 'rose',     10,340,55,55],
+      [414,44,1.8, 'lavender', 11,270,55,68]
+    ],
+    cardPublic:[
+      [46, 44,2.2, 'sunflower',13, 45,60,65],
+      [116,36,1.8, 'daisy',    11,340,45,65],
+      [188,48,2.2, 'lily',     11,185,40,70],
+      [260,40,1.8, 'tulip',    11,280,50,60],
+      [332,44,2.2, 'sakura',   10,340,40,75],
+      [402,36,1.8, 'rose',      9,310,55,55]
+    ]
+  };
+
+  function renderCardCanvas(id){
+    var canvas=document.getElementById(id);
+    if(!canvas) return;
+    // Walk up to garden-card-inner for dimensions
+    var el=canvas, card=null;
+    while(el){ if(el.className&&el.className.indexOf&&el.className.indexOf('garden-card-inner')>=0){ card=el; break; } el=el.parentElement; }
+    var W=card?card.offsetWidth:0;
+    var H=card?Math.round(card.offsetHeight*0.50):0;
+    if(!W||!H){ setTimeout(function(){renderCardCanvas(id);},300); return; }
+    var dpr=window.devicePixelRatio||1;
+    canvas.width=Math.round(W*dpr); canvas.height=Math.round(H*dpr);
+    canvas.style.width=W+'px'; canvas.style.height=H+'px';
+    var ctx=canvas.getContext('2d'); ctx.scale(dpr,dpr);
+    ctx.clearRect(0,0,W,H);
+    var scaleX=W/480, GY=H*.68;
+    // Ground: transparent upper, solid bottom strip
+    ctx.fillStyle='rgba(126,198,185,0.95)';
+    ctx.beginPath(); ctx.ellipse(W*.5, H, W*.85, H*.48, 0, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle='rgba(110,188,172,1)'; ctx.fillRect(0, H*.72, W, H);
+    // Flowers
+    var floorY = H*.82; // where stems touch ground
+    cardLayouts[id].forEach(function(row){
+      var cx=row[0]*scaleX, sl=row[1]*scaleX*1.8, bloomY=floorY-sl;
+      drawStem(ctx,cx,floorY,bloomY,row[2]);
+      bloomFns[row[3]](ctx,cx,bloomY,row[4]*scaleX,row[5],row[6],row[7]);
+    });
+  }
+
+  function renderAll(){
+    setTimeout(renderAllFlowers, 120);
+    setTimeout(function(){
+      renderCardCanvas('cardPrivate');
+      renderCardCanvas('cardPublic');
+    }, 200);
+  }
+
+  if(document.readyState==='loading'){ document.addEventListener('DOMContentLoaded',renderAll); }
+  else { setTimeout(renderAll,80); }
+  // Also re-render on full page load (fonts/images settled)
+  window.addEventListener('load', function(){ setTimeout(renderAll, 100); });
+  window.addEventListener('resize',function(){ setTimeout(renderAll,120); });
+})();
+</script>
+</body>
+</html>
