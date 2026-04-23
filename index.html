@@ -37,7 +37,17 @@
     <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="10" stroke="#429288" stroke-width="2"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" stroke="#429288" stroke-width="2" stroke-linecap="round"/><line x1="12" y1="17" x2="12.01" y2="17" stroke="#429288" stroke-width="2" stroke-linecap="round"/></svg>
   </a>
   <a href="#flowers" class="side-nav-item" data-section="flowers" data-label="Flowers">
-    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="3" stroke="#429288" stroke-width="2"/><path d="M12 2C12 2 10 5 12 7" stroke="#429288" stroke-width="2" stroke-linecap="round"/><path d="M12 22C12 22 14 19 12 17" stroke="#429288" stroke-width="2" stroke-linecap="round"/><path d="M2 12C2 12 5 10 7 12" stroke="#429288" stroke-width="2" stroke-linecap="round"/><path d="M22 12C22 12 19 14 17 12" stroke="#429288" stroke-width="2" stroke-linecap="round"/><path d="M4.93 4.93C4.93 4.93 6.34 8 9 7" stroke="#429288" stroke-width="2" stroke-linecap="round"/><path d="M19.07 19.07C19.07 19.07 17.66 16 15 17" stroke="#429288" stroke-width="2" stroke-linecap="round"/><path d="M19.07 4.93C19.07 4.93 16 6.34 17 9" stroke="#429288" stroke-width="2" stroke-linecap="round"/><path d="M4.93 19.07C4.93 19.07 8 17.66 7 15" stroke="#429288" stroke-width="2" stroke-linecap="round"/></svg>
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <ellipse cx="12" cy="5.5" rx="2.8" ry="4.5" fill="#429288" opacity="0.85"/>
+      <ellipse cx="12" cy="5.5" rx="2.8" ry="4.5" fill="#429288" opacity="0.85" transform="rotate(45 12 12)"/>
+      <ellipse cx="12" cy="5.5" rx="2.8" ry="4.5" fill="#429288" opacity="0.85" transform="rotate(90 12 12)"/>
+      <ellipse cx="12" cy="5.5" rx="2.8" ry="4.5" fill="#429288" opacity="0.85" transform="rotate(135 12 12)"/>
+      <ellipse cx="12" cy="5.5" rx="2.8" ry="4.5" fill="#429288" opacity="0.85" transform="rotate(180 12 12)"/>
+      <ellipse cx="12" cy="5.5" rx="2.8" ry="4.5" fill="#429288" opacity="0.85" transform="rotate(225 12 12)"/>
+      <ellipse cx="12" cy="5.5" rx="2.8" ry="4.5" fill="#429288" opacity="0.85" transform="rotate(270 12 12)"/>
+      <ellipse cx="12" cy="5.5" rx="2.8" ry="4.5" fill="#429288" opacity="0.85" transform="rotate(315 12 12)"/>
+      <circle cx="12" cy="12" r="3.2" fill="#fbe484"/>
+    </svg>
   </a>
   <a href="#wisdom" class="side-nav-item" data-section="wisdom" data-label="Garden Tips">
     <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M9 21h6M12 3a6 6 0 0 1 6 6c0 2.2-1.2 4.1-3 5.2V17a1 1 0 0 1-1 1h-4a1 1 0 0 1-1-1v-2.8C7.2 13.1 6 11.2 6 9a6 6 0 0 1 6-6z" stroke="#429288" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -107,23 +117,23 @@
     // Solid fill from GY to bottom so no gap at viewport edge
     ctx.fillStyle='#7ec4b4'; ctx.fillRect(-20, GY+30, 1480, logH - GY + 20);
 
-    // Accurate p5 leaf: ellipse shape placed perpendicular to stem tangent
+    // Garden-style leaf: rounded oval with midrib vein
     function leaf(x0,y0,c1x,c1y,c2x,c2y,x3,y3,t,side){
       var bPt=function(p0,p1,p2,p3,t){return Math.pow(1-t,3)*p0+3*Math.pow(1-t,2)*t*p1+3*(1-t)*t*t*p2+t*t*t*p3;};
       var bTan=function(p0,p1,p2,p3,t){return 3*Math.pow(1-t,2)*(p1-p0)+6*(1-t)*t*(p2-p1)+3*t*t*(p3-p2);};
       var px=bPt(x0,c1x,c2x,x3,t), py=bPt(y0,c1y,c2y,y3,t);
       var tx=bTan(x0,c1x,c2x,x3,t), ty=bTan(y0,c1y,c2y,y3,t);
-      // p5: leaf angle = stem tangent + 55deg * side
-      var angle=Math.atan2(ty,tx)+side*(55*Math.PI/180);
-      var lw=32, lh=11;
+      var angle=Math.atan2(ty,tx)+side*(58*Math.PI/180);
+      var lw=28, lh=14;
       ctx.save(); ctx.translate(px,py); ctx.rotate(angle);
-      ctx.fillStyle='hsl(125,52%,48%)';
+      ctx.fillStyle='hsl(128,56%,44%)';
       ctx.beginPath(); ctx.moveTo(0,0);
-      ctx.bezierCurveTo(lw*.12,-lh*.9, lw*.5,-lh*1.4, lw,0);
-      ctx.bezierCurveTo(lw*.5,lh*1.2, lw*.1,lh*.5, 0,0);
+      ctx.bezierCurveTo(lw*.05,-lh*1.1, lw*.45,-lh*1.6, lw*.82,-lh*.5);
+      ctx.bezierCurveTo(lw*.92,0, lw*.88,lh*.4, lw*.5,lh*.6);
+      ctx.bezierCurveTo(lw*.2,lh*.8, lw*.02,lh*.4, 0,0);
       ctx.fill();
-      ctx.strokeStyle='hsl(125,45%,36%)'; ctx.lineWidth=1.2; ctx.lineCap='round';
-      ctx.beginPath(); ctx.moveTo(0,0); ctx.lineTo(lw*.88,0); ctx.stroke();
+      ctx.strokeStyle='hsl(128,48%,32%)'; ctx.lineWidth=1.0; ctx.lineCap='round';
+      ctx.beginPath(); ctx.moveTo(0,0); ctx.bezierCurveTo(lw*.3,lh*.1,lw*.6,-lh*.1,lw*.82,-lh*.5); ctx.stroke();
       ctx.restore();
     }
 
@@ -404,7 +414,7 @@
             <li><span class="perk-dot"></span>Save your garden as a PNG keepsake</li>
           </ul>
         </div>
-        <a style="position:relative;z-index:2;" href="https://editor.p5js.org/kenishagw/full/ce9DKly6F" target="_blank" rel="noopener" onclick="setTimeout(function(){alert('Opened in a new tab!');},100)" class="btn-card-light">Open Private Garden</a>
+        <a style="position:relative;z-index:2;" href="personal-garden/personal-garden-index.html" target="_blank" rel="noopener" onclick="setTimeout(function(){alert('Opened in a new tab!');},100)" class="btn-card-light">Open Private Garden</a>
       </div>
     </div>
 
@@ -418,7 +428,7 @@
           <p class="garden-card-desc">A community space where anyone can post a moment of gratitude and plant a symbolic bloom. Every flower in this meadow represents a real feeling shared by a real person. Come and contribute yours.</p>
           <div class="password-note public-note">
             <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="7" cy="7" r="6" stroke="#1d6466" stroke-width="1.5"/><line x1="7" y1="5" x2="7" y2="8" stroke="#1d6466" stroke-width="1.5" stroke-linecap="round"/><circle cx="7" cy="10" r="0.8" fill="#1d6466"/></svg>
-            Open to everyone &bull; Resets weekly
+            Open to everyone &bull; Resets daily
           </div>
           <ul class="garden-perks">
             <li><span class="perk-dot"></span>Anonymous contributions, no account needed</li>
@@ -426,7 +436,7 @@
             <li><span class="perk-dot"></span>A living artwork that changes weekly</li>
           </ul>
         </div>
-        <a style="position:relative;z-index:2;" href="https://editor.p5js.org/kenishagw/full/NMmNhw0E-" target="_blank" rel="noopener" onclick="setTimeout(function(){alert('Opened in a new tab!');},100)" class="btn-card-dark">Visit Public Garden</a>
+        <a style="position:relative;z-index:2;" href="shared-garden/shared-garden-index.html" target="_blank" rel="noopener" onclick="setTimeout(function(){alert('Opened in a new tab!');},100)" class="btn-card-dark">Visit Public Garden</a>
       </div>
     </div>
   </div>
@@ -653,8 +663,8 @@
     <h2 class="section-title">Plant your first flower <em>today</em></h2>
     <p class="section-desc">Your garden is waiting. It takes two minutes and a little bit of honesty. Let your words grow into something beautiful.</p>
     <div class="cta-buttons">
-      <a href="https://editor.p5js.org/kenishagw/full/ce9DKly6F" target="_blank" rel="noopener" onclick="setTimeout(function(){alert('Opening in a new tab!');},100)" class="btn-primary">Open Private Garden</a>
-      <a href="https://editor.p5js.org/kenishagw/full/NMmNhw0E-" target="_blank" rel="noopener" onclick="setTimeout(function(){alert('Opening in a new tab!');},100)" class="btn-outline">Explore Public Garden</a>
+      <a href="personal-garden/personal-garden-index.html" target="_blank" rel="noopener" onclick="setTimeout(function(){alert('Opening in a new tab!');},100)" class="btn-primary">Open Private Garden</a>
+      <a href="shared-garden/shared-garden-index.html" target="_blank" rel="noopener" onclick="setTimeout(function(){alert('Opening in a new tab!');},100)" class="btn-outline">Explore Public Garden</a>
     </div>
   </div>
 </section>
@@ -675,7 +685,10 @@
     </div>
   </div>
   <div class="footer-bottom">
-    <span>2026 Gratitude Garden &nbsp;&nbsp; Kenisha Gabriella Wijaya</span>
+    <div class="footer-credit">
+      <span class="footer-brand-bottom">Gratitude Garden</span>
+      <span class="footer-name-bottom">Kenisha Gabriella Wijaya</span>
+    </div>
     <a href="https://linktr.ee/kenoijam" target="_blank" rel="noopener" class="footer-logo-link" title="Kenisha's Linktree">
       <img src="LOGO-01.png" alt="Kenisha Gabriella Wijaya" class="footer-logo-img"/>
     </a>
@@ -800,13 +813,17 @@
     function leaf(t,side){
       var lx=bPt(cx,c1x,c2x,cx,t), ly=bPt(bottomY,c1y,c2y,tipY,t);
       var ang=Math.atan2(bTan(bottomY,c1y,c2y,tipY,t),bTan(cx,c1x,c2x,cx,t))+side*1.0;
-      var lw=18,lh=6;
+      var lw=16, lh=8;
       ctx.save(); ctx.translate(lx,ly); ctx.rotate(ang);
-      ctx.fillStyle='hsl(125,52%,44%)';
+      ctx.fillStyle='hsl(128,56%,44%)';
       ctx.beginPath(); ctx.moveTo(0,0);
-      ctx.bezierCurveTo(lw*.1,-lh*.8,lw*.5,-lh*1.3,lw,0);
-      ctx.bezierCurveTo(lw*.5,lh*1.1,lw*.1,lh*.4,0,0);
-      ctx.fill(); ctx.restore();
+      ctx.bezierCurveTo(lw*.05,-lh*1.1, lw*.45,-lh*1.6, lw*.82,-lh*.5);
+      ctx.bezierCurveTo(lw*.92,0, lw*.88,lh*.4, lw*.5,lh*.6);
+      ctx.bezierCurveTo(lw*.2,lh*.8, lw*.02,lh*.4, 0,0);
+      ctx.fill();
+      ctx.strokeStyle='hsl(128,48%,32%)'; ctx.lineWidth=0.8; ctx.lineCap='round';
+      ctx.beginPath(); ctx.moveTo(0,0); ctx.bezierCurveTo(lw*.3,lh*.1,lw*.6,-lh*.1,lw*.82,-lh*.5); ctx.stroke();
+      ctx.restore();
     }
     leaf(0.52,-1); leaf(0.66,1);
   }
