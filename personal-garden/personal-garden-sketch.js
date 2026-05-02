@@ -19,6 +19,7 @@ let groundLevel;
 let isSaving = false;
 let flowerCounter = 0;
 let gardenScale = 1;
+let logoDiv;
 
 let prompt1Wrap, prompt2Wrap, prompt3Wrap, flowerPreviewWrap, gardenWrap;
 let continueBtn1, continueBtn2, continueBtn3;
@@ -29,6 +30,7 @@ let previewGraphics;
 let gardenName = "";
 
 const STORAGE_KEY = "personal_gratitude_garden";
+const LAST_PLANT_KEY = "gratitude_last_planted";
 
 // Preset options
 const dayRatingOptions = ["calm", "happy", "tired", "stressed", "anxious", "grateful", "hopeful", "loved"];
@@ -101,9 +103,10 @@ function loadGarden() {
       flowerCounter = flowers.length;
       // Loaded flowers are already fully grown — force BLOOM stage
       flowers.forEach(f => {
-        f.growthStage = 2; // BLOOM
-        f.growthStartTime = 0; // far in the past
-      });
+  f.growthStage = GROWTH_STAGES.BLOOM;
+  f.growthStartTime = 0;
+  f.isOld = true;
+});
     } catch (e) {
       console.error("Failed to load garden:", e);
       flowers = [];
@@ -112,6 +115,10 @@ function loadGarden() {
     flowers = [];
   }
   gardenName = localStorage.getItem(STORAGE_KEY + "_name") || "";
+  if (flowers.length > 0) {
+  flowers.forEach(f => f.isLatest = false);
+  flowers[flowers.length - 1].isLatest = true;
+}
 }
 
 function saveGarden() {
@@ -205,7 +212,22 @@ function getTodayDate() {
   return `${month}/${day}/${year}`;
 }
 
+function hasPlantedToday() {
+  const today = getTodayDate();
+  const last = localStorage.getItem(LAST_PLANT_KEY);
+  return last === today;
+}
+
+function markPlantedToday() {
+  const today = getTodayDate();
+  localStorage.setItem(LAST_PLANT_KEY, today);
+}
+
 function addFlower(dayRating, dayShaper, journal, species, hue) {
+  if (hasPlantedToday()) {
+  alert("You've already planted today 🌱 Come back tomorrow!");
+  return;
+}
   const flowerCount = flowers.length;
   let size;
   if (flowerCount < 10) {
@@ -289,6 +311,8 @@ function addFlower(dayRating, dayShaper, journal, species, hue) {
 
   const petals = speciesPetalCount(species);
 
+  flowers.forEach(f => f.isLatest = false);
+  
   const newFlower = {
     date: getTodayDate(),
     dayRating,
@@ -314,12 +338,14 @@ function addFlower(dayRating, dayShaper, journal, species, hue) {
     createdIndex: flowerCounter++,
     growthStage: GROWTH_STAGES.BUD,
     growthStartTime: millis(),
+    isLatest: true,
     plantedTime: Date.now()
   };
 
   flowers.push(newFlower);
   saveGarden();
   updateResponsiveFlowerLayout();
+  markPlantedToday();
 }
 
 function speciesShapeCfg(species) {
@@ -959,17 +985,10 @@ function drawLavenderBloomOnGraphics(pg, h, hue, sat, light) {
 }
 
 function drawNewestSparkles() {
-  let newest = null;
-  for (const f of flowers) {
-    if (f.growthStage !== GROWTH_STAGES.BLOOM) continue;
-    if (!newest || (f.createdIndex || 0) > (newest.createdIndex || 0)) newest = f;
-  }
-  if (!newest) return;
+  let newest = flowers.find(f => f.isLatest);
+if (!newest) return;
 
-  const age = (Date.now() - (newest.plantedTime || Date.now())) / 1000;
-  const maxAge = 60;
-  if (age > maxAge) return;
-  const alpha = map(age, maxAge * 0.6, maxAge, 1, 0, true);
+  const alpha = 1;
 
   const t = frameCount * 0.01 + newest.phase * 0.001;
   const swayNoise = swayOn ? map(noise(t), 0, 1, -1, 1) * 4 : 0;
@@ -1249,6 +1268,8 @@ function drawFlowersBloomsOnly(layerName) {
 }
 
 function updateGrowthStage(f) {
+  if (f.isOld) return; // 🔥 stop old flowers from animating
+
   const elapsed = millis() - f.growthStartTime;
   if (elapsed < 2000) f.growthStage = GROWTH_STAGES.BUD;
   else if (elapsed < 5000) f.growthStage = GROWTH_STAGES.STEM;
@@ -1516,7 +1537,7 @@ function updateResponsiveFlowerLayout() {
 
 function buildLogo() {
   const logoImg = loadImage("LOGO-01.png", () => {
-    const logoDiv = createDiv();
+    logoDiv = createDiv();
     logoDiv.id("gg-logo");
     logoDiv.parent(gardenWrap);
     logoDiv.style("display", "none");
@@ -1574,6 +1595,35 @@ function resetPromptSelections() {
     b.style.background = "white";
     b.style.borderColor = "#bde0d6";
   });
+}
+
+function updateScreen() {
+  // ALWAYS show garden background
+  gardenWrap.style("display", "block");
+
+  // hide all overlays
+  prompt1Wrap.style("display", "none");
+  prompt2Wrap.style("display", "none");
+  prompt3Wrap.style("display", "none");
+  flowerPreviewWrap.style("display", "none");
+
+  // 🔥 HIDE garden UI by default
+  if (saveBtn) saveBtn.style("display", "none");
+  if (tipsCard) tipsCard.style("display", "none");
+
+  // decide what to show
+  if (hasPlantedToday()) {
+    step = "garden";
+
+    // ✅ show garden UI again
+    if (saveBtn) saveBtn.style("display", "block");
+    if (tipsCard) tipsCard.style("display", "block");
+    if (logoDiv) logoDiv.style("display", "block");
+
+  } else {
+    step = "prompt1";
+    prompt1Wrap.style("display", "flex");
+  }
 }
 
 function buildUI() {
@@ -1863,66 +1913,72 @@ function buildUI() {
   plantBtn.style("margin-bottom", "8px");
   plantBtn.style("pointer-events", "auto");
   plantBtn.mousePressed(() => {
-    addFlower(dayRating, dayShaper, journalEntry, chosenSpecies, chosenHue);
-    flowers[flowers.length - 1].growthStartTime = millis();
-    showStep("garden");
-    dayRating = "";
-    dayShaper = "";
-    journalEntry = "";
-    if (journalField) journalField.value("");
-  });
+  addFlower(dayRating, dayShaper, journalEntry, chosenSpecies, chosenHue);
+
+  // 🔥 hide preview
+  flowerPreviewWrap.style("display", "none");
+
+  // 🔥 go to correct screen
+  updateScreen();
+
+  // reset inputs
+  dayRating = "";
+  dayShaper = "";
+  journalEntry = "";
+  if (journalField) journalField.value("");
+});
 
   gardenWrap = createDiv().id("garden-wrap").parent(root);
   gardenWrap.style("pointer-events", "none");
 
-  const plantAnotherBtn = createButton("+ Plant Another Flower").id("plant-another-btn").parent(gardenWrap);
-  plantAnotherBtn.style("display", "none");
-  plantAnotherBtn.style("pointer-events", "auto");
-  plantAnotherBtn.style("position", "absolute");
-  plantAnotherBtn.style("top", "28px");
-  plantAnotherBtn.style("left", "50%");
-  plantAnotherBtn.style("transform", "translateX(-50%)");
-  plantAnotherBtn.style("background", "#2c7a7b");
-  plantAnotherBtn.style("color", "white");
-  plantAnotherBtn.style("border", "none");
-  plantAnotherBtn.style("border-radius", "999px");
-  plantAnotherBtn.style("padding", "12px 24px");
-  plantAnotherBtn.style("font-size", "15px");
-  plantAnotherBtn.style("font-weight", "600");
-  plantAnotherBtn.style("cursor", "pointer");
-  plantAnotherBtn.style("z-index", "30");
-  plantAnotherBtn.style("box-shadow", "0 4px 14px rgba(0,0,0,0.18)");
-  plantAnotherBtn.mousePressed(() => {
-    resetPromptSelections();
-    showStep("prompt1");
-  });
+  // const plantAnotherBtn = createButton("+ Plant Another Flower").id("plant-another-btn").parent(gardenWrap);
+  // plantAnotherBtn.style("display", "none");
+  // plantAnotherBtn.style("pointer-events", "auto");
+  // plantAnotherBtn.style("position", "absolute");
+  // plantAnotherBtn.style("top", "28px");
+  // plantAnotherBtn.style("left", "50%");
+  // plantAnotherBtn.style("transform", "translateX(-50%)");
+  // plantAnotherBtn.style("background", "#2c7a7b");
+  // plantAnotherBtn.style("color", "white");
+  // plantAnotherBtn.style("border", "none");
+  // plantAnotherBtn.style("border-radius", "999px");
+  // plantAnotherBtn.style("padding", "12px 24px");
+  // plantAnotherBtn.style("font-size", "15px");
+  // plantAnotherBtn.style("font-weight", "600");
+  // plantAnotherBtn.style("cursor", "pointer");
+  // plantAnotherBtn.style("z-index", "30");
+  // plantAnotherBtn.style("box-shadow", "0 4px 14px rgba(0,0,0,0.18)");
+  // plantAnotherBtn.mousePressed(() => {
+  //   resetPromptSelections();
+  //   showStep("prompt1");
+  // });
 
-  const clearBtn = createButton("Clear Garden").id("clear-garden-btn").parent(gardenWrap);
-  clearBtn.style("display", "none");
-  clearBtn.style("pointer-events", "auto");
-  clearBtn.style("position", "absolute");
-  clearBtn.style("top", "28px");
-  clearBtn.style("right", "16px");
-  clearBtn.style("background", "#e57373");
-  clearBtn.style("color", "white");
-  clearBtn.style("border", "none");
-  clearBtn.style("border-radius", "999px");
-  clearBtn.style("padding", "10px 18px");
-  clearBtn.style("font-size", "13px");
-  clearBtn.style("font-weight", "600");
-  clearBtn.style("cursor", "pointer");
-  clearBtn.style("z-index", "30");
-  clearBtn.style("opacity", "0.85");
-  clearBtn.mousePressed(() => {
-    if (confirm("Clear all flowers and start fresh?")) {
-      flowers = [];
-      flowerCounter = 0;
-      localStorage.removeItem(STORAGE_KEY);
-      hoveredFlower = null;
-      resetPromptSelections();
-      showStep("prompt1");
-    }
-  });
+  // const clearBtn = createButton("Clear Garden").id("clear-garden-btn").parent(gardenWrap);
+  // clearBtn.style("display", "none");
+  // clearBtn.style("pointer-events", "auto");
+  // clearBtn.style("position", "absolute");
+  // clearBtn.style("top", "28px");
+  // clearBtn.style("right", "16px");
+  // clearBtn.style("background", "#e57373");
+  // clearBtn.style("color", "white");
+  // clearBtn.style("border", "none");
+  // clearBtn.style("border-radius", "999px");
+  // clearBtn.style("padding", "10px 18px");
+  // clearBtn.style("font-size", "13px");
+  // clearBtn.style("font-weight", "600");
+  // clearBtn.style("cursor", "pointer");
+  // clearBtn.style("z-index", "30");
+  // clearBtn.style("opacity", "0.85");
+  // clearBtn.mousePressed(() => {
+  //   if (confirm("Clear all flowers and start fresh?")) {
+  //     flowers = [];
+  //     flowerCounter = 0;
+  //     localStorage.removeItem(STORAGE_KEY);
+  //     hoveredFlower = null;
+  //     resetPromptSelections();
+  //     showStep("prompt1");
+  //   }
+  // });
 
   saveBtn = createButton("Save PNG").id("save-btn").parent(gardenWrap);
   saveBtn.style("display", "none");
@@ -1951,7 +2007,7 @@ function buildUI() {
   tipsCard.style("pointer-events", "none");
   createElement("h3", "Garden Tips").parent(tipsCard);
   const ul = createElement("ul").parent(tipsCard);
-  createElement("li", "Each flower reflects your mood today.").parent(ul);
+  createElement("li", "You've planted a flower that reflects your mood today.").parent(ul);
   createElement("li", "Your newest flower will have sparkles around it.").parent(ul);
   createElement("li", "Your garden is saved on this device automatically.").parent(ul);
   createElement("li", "Click the name at the top to personalize your garden.").parent(ul);
@@ -2039,6 +2095,22 @@ function buildUI() {
   });
 
   buildLogo();
+
+  // RESET ALL SCREENS FIRST
+prompt1Wrap.style("display", "none");
+prompt2Wrap.style("display", "none");
+prompt3Wrap.style("display", "none");
+flowerPreviewWrap.style("display", "none");
+gardenWrap.style("display", "none");
+
+// THEN DECIDE WHAT TO SHOW
+if (hasPlantedToday()) {
+  step = "garden";
+  gardenWrap.style("display", "block");
+} else {
+  step = "prompt1";
+  prompt1Wrap.style("display", "flex");
+}
 }
 
 function updateFlowerPreview() {
@@ -2181,6 +2253,7 @@ function setup() {
   } else {
     showStep("garden");
   }
+  updateScreen();
 }
 
 function draw() {

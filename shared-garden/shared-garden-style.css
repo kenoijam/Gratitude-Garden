@@ -142,12 +142,17 @@ input[type="text"]:focus {
 }
 
 #select-wrap .gg-card {
-  overflow: hidden;
-  padding-bottom: 24px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 28px;
+  max-height: calc(100dvh - 40px);
 }
 
 #select-wrap {
   padding: 20px 12px;
+  align-items: flex-start;
+  overflow-y: auto;
 }
 
 #tips-card {
@@ -320,9 +325,11 @@ input[type="text"]:focus {
     font-size: 15px;
   }
 
-  /* card height adjustment to remove scroll */
+  /* card height — scrollable so back button is always reachable */
   #select-wrap .gg-card {
-    max-height: calc(100vh - 40px);
+    max-height: calc(100dvh - 40px);
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
   }
   
 #tips-card {

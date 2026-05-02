@@ -149,12 +149,17 @@ input[type="text"]:focus {
 }
 
 #select-wrap .gg-card {
-  overflow: hidden;
-  padding-bottom: 24px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 28px;
+  max-height: calc(100dvh - 40px);
 }
 
 #select-wrap {
   padding: 20px 12px;
+  align-items: flex-start;
+  overflow-y: auto;
 }
 
 #tips-card {
@@ -201,11 +206,26 @@ input[type="text"]:focus {
   border-radius: 8px;
   cursor: pointer;
   position: absolute;
-  top: 50px;
+  top: 16px;
   right: 12px;
   z-index: 20;
   pointer-events: auto;
   font-size: 14px;
+}
+
+#garden-name {
+  position: absolute;
+  top: 16px;        
+  left: 0;
+  right: 0;
+  text-align: center;
+
+  font-size: 18px;
+  font-weight: 600;
+  color: #2f5d50;
+
+  z-index: 20;
+  pointer-events: none;
 }
 
 .gg-hue-slider {
@@ -320,7 +340,9 @@ input[type="text"]:focus {
   }
 
   #select-wrap .gg-card {
-    max-height: calc(100vh - 40px);
+    max-height: calc(100dvh - 40px);
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
   }
 
   #tips-card {
@@ -334,4 +356,25 @@ input[type="text"]:focus {
   #tips-card li {
     font-size: 12px;
   }
+}
+/* Remove mobile link styling */
+a,
+a:visited,
+a:active {
+  color: inherit !important;
+  text-decoration: none !important;
+}
+
+/* Remove tap highlight (mobile blue flash) */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+.option {
+  text-decoration: none;
+  color: #2c7a7b;
+  font-weight: 500;
+}
+
+.option:active {
+  transform: scale(0.97);
 }
