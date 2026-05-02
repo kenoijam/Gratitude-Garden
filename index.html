@@ -328,18 +328,21 @@
     });
     // 2. Flowers in front of back hills — fewer on smaller screens
     // Space flowers evenly: on small screens use only every Nth flower
-    var minSpacing = W < 480 ? 200 : W < 768 ? 150 : 0; // min pixel gap between flowers
-    var lastDrawnX = -9999;
-    allFlowers.forEach(function(row){
-      var screenX = row[0] * scale; // convert logical x to screen pixels
-      if(row[0] > LOGICAL_W - 60) return;
-      if(minSpacing > 0 && screenX - lastDrawnX < minSpacing) return;
-      lastDrawnX = screenX;
-      var pos=stem(row[0],row[1],row[2]);
-      ctx.save(); ctx.translate(pos[0],pos[1]);
-      row[3](row[4],row[5],row[6],row[7]);
-      ctx.restore();
-    });
+    var minSpacing = W < 480 ? 90 : W < 768 ? 110 : 0;
+var lastDrawnX = -9999;
+// On small screens, boost flower size to compensate for canvas scale-down
+var bloomBoost = (scale < 0.7) ? 1 / scale * 0.65 : (scale < 1) ? 1 / scale * 0.8 : 1;
+allFlowers.forEach(function(row){
+  var screenX = row[0] * scale;
+  if(row[0] > LOGICAL_W - 60) return;
+  if(minSpacing > 0 && screenX - lastDrawnX < minSpacing) return;
+  lastDrawnX = screenX;
+  var pos=stem(row[0],row[1],row[2]);
+  ctx.save(); ctx.translate(pos[0],pos[1]);
+  ctx.scale(bloomBoost, bloomBoost);
+  row[3](row[4],row[5],row[6],row[7]);
+  ctx.restore();
+});
     // 3. Front ground strip over stem bases — flowers appear to grow from ground
     ctx.fillStyle='#8fcfbe'; ctx.fillRect(-20,GY,1480,60);
     ctx.fillStyle='#7ec4b4'; ctx.fillRect(-20,GY+42,1480, logH - GY + 20);
@@ -975,6 +978,11 @@
                 tulip:drawTulip,daisy:drawDaisy,lily:drawLily,sakura:drawSakura};
   window._bloomFns = bloomFns; // expose for modal
 
+  var flowersToShow = allFlowers;
+if (window.innerWidth < 768) {
+  flowersToShow = allFlowers.filter(function(f, i) { return i % 2 === 0; });
+}
+
   /* ── Catalogue blooms ── */
   function renderFlowerCanvas(canvas){
     var flower=canvas.dataset.flower;
@@ -1001,7 +1009,7 @@
     // Lavender grows upward from cy, so cy must be near bottom
     // Lotus petals reach cy-R*2, so cy must be well below center
     // Uniform R matching sunflower — all flowers same apparent size
-    R = Math.min(W*.30, H*.28);
+    R = Math.max(22, Math.min(W*.30, H*.28));
     switch(flower){
       case 'lavender':   cy=H*.84; break;  // grows upward from cy
       case 'tulip':      cy=H*.60; break;  // cup shape rises above cy
