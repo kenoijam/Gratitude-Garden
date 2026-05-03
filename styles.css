@@ -376,8 +376,7 @@ footer { padding: 3rem 2.5rem 2rem; }
 /* ── Mobile (≤768px) ── */
 @media (max-width: 768px) {
 
-/* Section spacing — generous on mobile */
-section { padding: 2.8rem 1.2rem 2.8rem 3.6rem; }
+section { padding: 2.8rem 3.6rem; }
 
 /* Side nav — smaller, no label */
 .side-nav { left: 8px; gap: 5px; }
@@ -387,13 +386,13 @@ section { padding: 2.8rem 1.2rem 2.8rem 3.6rem; }
 
 /* Hero */
 .hero { padding-top: 90px; }
-.hero-text-block { padding: 0 1rem 0 2.2rem; max-width: 100%; }
+.hero-text-block { padding: 0 2.2rem; max-width: 100%; }
 .hero-title { font-size: clamp(2rem, 9vw, 3rem); line-height: 1.08; }
 .hero-subtitle { font-size: 0.97rem; max-width: 100%; }
 .hero-buttons { flex-direction: column; align-items: center; gap: 0.75rem; width: 100%; }
 .hero-buttons .btn-primary,
 .hero-buttons .btn-outline { width: 100%; max-width: 340px; text-align: center; }
-.meadow-scene { margin-left: -1.2rem; margin-right: -1.2rem; }
+.meadow-scene { margin-left: -3.6rem; margin-right: -3.6rem; }
 
 /* About — stack: text then horizontal scroll cards */
 .about { grid-template-columns: 1fr; gap: 1.8rem; }
@@ -469,14 +468,14 @@ section { padding: 2.8rem 1.2rem 2.8rem 3.6rem; }
 }
 
 /* CTA */
-.cta { padding: 2.5rem 1.2rem 2.5rem 3.6rem; }
+.cta { padding: 2.5rem 3.6rem; }
 .cta-inner { padding: 2rem 1.2rem 2.2rem; }
 .cta-buttons { flex-direction: column; align-items: center; gap: 0.75rem; }
 .cta-buttons .btn-primary,
 .cta-buttons .btn-outline { width: 100%; max-width: 320px; text-align: center; }
 
 /* Footer */
-footer { padding: 2.5rem 1.2rem 1.5rem 3.6rem; }
+footer { padding: 2.5rem 3.6rem 1.5rem; }
 .footer-top { flex-direction: column; gap: 1.5rem; }
 .footer-col h4 { text-align: left; }
 .footer-col ul { align-items: flex-start; }
@@ -540,7 +539,7 @@ footer { padding: 2.5rem 1.2rem 1.5rem 3.6rem; }
 
 /* ── Small mobile (≤480px) ── */
 @media (max-width: 480px) {
-section { padding: 2.2rem 1rem 2.2rem 3.4rem; }
+section { padding: 2.2rem 3.4rem; }
 
 .about-right { grid-template-columns: 1fr; }
 .flowers-grid { grid-template-columns: 1fr 1fr; }

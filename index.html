@@ -328,21 +328,18 @@
     });
     // 2. Flowers in front of back hills — fewer on smaller screens
     // Space flowers evenly: on small screens use only every Nth flower
-    var minSpacing = W < 480 ? 90 : W < 768 ? 110 : 0;
-var lastDrawnX = -9999;
-// On small screens, boost flower size to compensate for canvas scale-down
-var bloomBoost = (scale < 0.7) ? 1 / scale * 0.65 : (scale < 1) ? 1 / scale * 0.8 : 1;
-allFlowers.forEach(function(row){
-  var screenX = row[0] * scale;
-  if(row[0] > LOGICAL_W - 60) return;
-  if(minSpacing > 0 && screenX - lastDrawnX < minSpacing) return;
-  lastDrawnX = screenX;
-  var pos=stem(row[0],row[1],row[2]);
-  ctx.save(); ctx.translate(pos[0],pos[1]);
-  ctx.scale(bloomBoost, bloomBoost);
-  row[3](row[4],row[5],row[6],row[7]);
-  ctx.restore();
-});
+    var minSpacing = W < 480 ? 55 : W < 768 ? 75 : 0;
+    var lastDrawnX = -9999;
+    allFlowers.forEach(function(row){
+      var screenX = row[0] * scale; // convert logical x to screen pixels
+      if(row[0] > LOGICAL_W - 60) return;
+      if(minSpacing > 0 && screenX - lastDrawnX < minSpacing) return;
+      lastDrawnX = screenX;
+      var pos=stem(row[0],row[1],row[2]);
+      ctx.save(); ctx.translate(pos[0],pos[1]);
+      row[3](row[4],row[5],row[6],row[7]);
+      ctx.restore();
+    });
     // 3. Front ground strip over stem bases — flowers appear to grow from ground
     ctx.fillStyle='#8fcfbe'; ctx.fillRect(-20,GY,1480,60);
     ctx.fillStyle='#7ec4b4'; ctx.fillRect(-20,GY+42,1480, logH - GY + 20);
@@ -867,8 +864,7 @@ allFlowers.forEach(function(row){
       ctx.beginPath(); ctx.ellipse(0,-R*.72,R*.225,R*.625,0,0,Math.PI*2); ctx.fill(); ctx.restore();
     }
     ctx.fillStyle=hsl(28,45,42); ctx.beginPath(); ctx.arc(cx,cy,R*.675,0,Math.PI*2); ctx.fill();
-    ctx.fillStyle=hsl(23,40,58); ctx.beginPath(); ctx.arc(cx,cy,Rd=R*.525,0,Math.PI*2); ctx.fill();
-    var Rd;
+    ctx.fillStyle=hsl(23,40,58); ctx.beginPath(); ctx.arc(cx,cy,R*.525,0,Math.PI*2); ctx.fill();
   }
 
   function drawTulip(ctx,cx,cy,R,hue,sat,light){
@@ -978,11 +974,6 @@ allFlowers.forEach(function(row){
                 tulip:drawTulip,daisy:drawDaisy,lily:drawLily,sakura:drawSakura};
   window._bloomFns = bloomFns; // expose for modal
 
-  var flowersToShow = allFlowers;
-if (window.innerWidth < 768) {
-  flowersToShow = allFlowers.filter(function(f, i) { return i % 2 === 0; });
-}
-
   /* ── Catalogue blooms ── */
   function renderFlowerCanvas(canvas){
     var flower=canvas.dataset.flower;
@@ -1009,9 +1000,9 @@ if (window.innerWidth < 768) {
     // Lavender grows upward from cy, so cy must be near bottom
     // Lotus petals reach cy-R*2, so cy must be well below center
     // Uniform R matching sunflower — all flowers same apparent size
-    R = Math.max(22, Math.min(W*.30, H*.28));
+    R = Math.min(W*.30, H*.28);
     switch(flower){
-      case 'lavender':   cy=H*.84; break;  // grows upward from cy
+      case 'lavender':   cy=H*.92; break;  // grows upward from cy
       case 'tulip':      cy=H*.60; break;  // cup shape rises above cy
       case 'lotus':      cy=H*.76; break;  // petals reach cy-R*2 upward
       case 'sunflower':  cy=H*.52; break;
@@ -1036,7 +1027,7 @@ if (window.innerWidth < 768) {
       [192,40,1.8, 'tulip',    12,280,50,60],
       [266,50,2.2, 'lotus',    11,340,50,70],
       [340,38,1.8, 'rose',     10,340,55,55],
-      [414,44,1.8, 'lavender', 11,270,55,68]
+      [414,44,1.8, 'lavender', 24,270,55,68]
     ],
     cardPublic:[
       [46, 44,2.2, 'sunflower',13, 45,60,65],

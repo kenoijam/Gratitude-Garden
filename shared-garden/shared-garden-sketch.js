@@ -1490,8 +1490,8 @@ if (speciesId === "lotus") {
 pg.translate(0, R * 0.8);
 drawLotusPreview(pg, R, hue, sat, light);
 } else if (speciesId === "lavender") {
-pg.translate(0, R * 1.0);
-drawLavenderPreview(pg, R * 1.6, hue, sat, light);
+  pg.translate(0, R * 1.2);
+  drawLavenderPreview(pg, R * 1.5, hue, sat, light);
 } else if (speciesId === "tulip") {
 drawTulipPreview(pg, R, hue, sat, light);
 } else if (speciesId === "rose") {
