@@ -224,10 +224,10 @@ function markPlantedToday() {
 }
 
 function addFlower(dayRating, dayShaper, journal, species, hue) {
-  if (hasPlantedToday()) {
-  alert("You've already planted today 🌱 Come back tomorrow!");
-  return;
-}
+//   if (hasPlantedToday()) {
+//   alert("You've already planted today 🌱 Come back tomorrow!");
+//   return;
+// }
   const flowerCount = flowers.length;
   let size;
   if (flowerCount < 10) {
@@ -986,7 +986,8 @@ function drawLavenderBloomOnGraphics(pg, h, hue, sat, light) {
 
 function drawNewestSparkles() {
   let newest = flowers.find(f => f.isLatest);
-if (!newest) return;
+  if (!newest) return;
+  if (newest.growthStage !== GROWTH_STAGES.BLOOM) return;
 
   const alpha = 1;
 
@@ -1647,7 +1648,7 @@ function buildUI() {
 
   const card1 = createDiv().addClass("gg-card").parent(prompt1Wrap);
   card1.style("max-width", "460px");
-  card1.style("width", "460px");
+  card1.style("width", "min(460px, 92vw)");
   card1.style("box-sizing", "border-box");
   card1.style("padding", "24px 28px 20px 28px");
   createElement("h3", "How was your day?").style("text-align", "center").style("color", "#0f5132").style("font-size", "16px").style("font-weight", "700").style("margin", "0 0 16px 0").parent(card1);
@@ -1914,14 +1915,8 @@ function buildUI() {
   plantBtn.style("pointer-events", "auto");
   plantBtn.mousePressed(() => {
   addFlower(dayRating, dayShaper, journalEntry, chosenSpecies, chosenHue);
-
-  // 🔥 hide preview
   flowerPreviewWrap.style("display", "none");
-
-  // 🔥 go to correct screen
-  updateScreen();
-
-  // reset inputs
+  showStep("garden");
   dayRating = "";
   dayShaper = "";
   journalEntry = "";
@@ -1931,27 +1926,27 @@ function buildUI() {
   gardenWrap = createDiv().id("garden-wrap").parent(root);
   gardenWrap.style("pointer-events", "none");
 
-  // const plantAnotherBtn = createButton("+ Plant Another Flower").id("plant-another-btn").parent(gardenWrap);
-  // plantAnotherBtn.style("display", "none");
-  // plantAnotherBtn.style("pointer-events", "auto");
-  // plantAnotherBtn.style("position", "absolute");
-  // plantAnotherBtn.style("top", "28px");
-  // plantAnotherBtn.style("left", "50%");
-  // plantAnotherBtn.style("transform", "translateX(-50%)");
-  // plantAnotherBtn.style("background", "#2c7a7b");
-  // plantAnotherBtn.style("color", "white");
-  // plantAnotherBtn.style("border", "none");
-  // plantAnotherBtn.style("border-radius", "999px");
-  // plantAnotherBtn.style("padding", "12px 24px");
-  // plantAnotherBtn.style("font-size", "15px");
-  // plantAnotherBtn.style("font-weight", "600");
-  // plantAnotherBtn.style("cursor", "pointer");
-  // plantAnotherBtn.style("z-index", "30");
-  // plantAnotherBtn.style("box-shadow", "0 4px 14px rgba(0,0,0,0.18)");
-  // plantAnotherBtn.mousePressed(() => {
-  //   resetPromptSelections();
-  //   showStep("prompt1");
-  // });
+  const plantAnotherBtn = createButton("+ Plant Another Flower").id("plant-another-btn").parent(gardenWrap);
+  plantAnotherBtn.style("display", "none");
+  plantAnotherBtn.style("pointer-events", "auto");
+  plantAnotherBtn.style("position", "absolute");
+  plantAnotherBtn.style("top", "28px");
+  plantAnotherBtn.style("left", "50%");
+  plantAnotherBtn.style("transform", "translateX(-50%)");
+  plantAnotherBtn.style("background", "#2c7a7b");
+  plantAnotherBtn.style("color", "white");
+  plantAnotherBtn.style("border", "none");
+  plantAnotherBtn.style("border-radius", "999px");
+  plantAnotherBtn.style("padding", "12px 24px");
+  plantAnotherBtn.style("font-size", "15px");
+  plantAnotherBtn.style("font-weight", "600");
+  plantAnotherBtn.style("cursor", "pointer");
+  plantAnotherBtn.style("z-index", "30");
+  plantAnotherBtn.style("box-shadow", "0 4px 14px rgba(0,0,0,0.18)");
+  plantAnotherBtn.mousePressed(() => {
+    resetPromptSelections();
+    showStep("prompt1");
+  });
 
   // const clearBtn = createButton("Clear Garden").id("clear-garden-btn").parent(gardenWrap);
   // clearBtn.style("display", "none");
@@ -2208,6 +2203,7 @@ function showStep(s) {
   }
 
   loop();
+  
 }
 
 function windowResized() {

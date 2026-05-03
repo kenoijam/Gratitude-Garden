@@ -2066,7 +2066,7 @@ selectCard.style("max-width", isNarrow ? "540px" : "640px");
 selectCard.style("display", "flex");
 selectCard.style("flex-direction", "column");
 selectCard.style("justify-content", "flex-start");
-selectCard.style("max-height", isNarrow ? "calc(100vh - 40px)" : "calc(100vh - 60px)");
+selectCard.style("max-height", isNarrow ? "calc(100dvh - 40px)" : "calc(100vh - 60px)");
 
 if (isNarrow) {
 selectCard.style("padding", "34px 22px 28px");

@@ -346,16 +346,19 @@ input[type="text"]:focus {
   }
 
   #tips-card {
-    bottom: 20px;
-  }
+  bottom: 10px;
+  left: 8px;
+  width: calc(100% - 16px);
+  max-width: 300px;
+}
 
-  #tips-card h3 {
-    font-size: 14px;
-  }
+#tips-card h3 {
+  font-size: 13px;
+}
 
-  #tips-card li {
-    font-size: 12px;
-  }
+#tips-card li {
+  font-size: 11px;
+}
 }
 /* Remove mobile link styling */
 a,
@@ -377,4 +380,6 @@ a:active {
 
 .option:active {
   transform: scale(0.97);
+
+  
 }
