@@ -455,8 +455,8 @@ footer { padding: 3rem 2.5rem 2rem; }
   }
   .how-steps::before { display: none; }
   .step-row {
-    flex: 0 0 65vw;
-    max-width: 240px;
+    flex: 0 0 58vw;
+    max-width: 200px;
     flex-direction: column;
     align-items: flex-start;
     gap: 0.8rem;
