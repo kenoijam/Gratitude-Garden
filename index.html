@@ -328,7 +328,7 @@
     });
     // 2. Flowers in front of back hills — fewer on smaller screens
     // Space flowers evenly: on small screens use only every Nth flower
-    var minSpacing = W < 480 ? 55 : W < 768 ? 75 : 0;
+    var minSpacing = W < 480 ? 40 : W < 768 ? 60 : 0;
     var lastDrawnX = -9999;
     allFlowers.forEach(function(row){
       var screenX = row[0] * scale; // convert logical x to screen pixels
