@@ -287,6 +287,7 @@ canvas.flower-canvas { position: absolute; top: 0; left: 0; width: 100%; height:
 .chip-daisy { background:#fff4d6; color:#8a6d2a; } .chip-tulip { background:#eef8ee;color:#386040; } 
 .chip-lily { background:#fde8f0;color:#905060; } .chip-sakura { background:#fde8e8;color:#b05070; }
 .catalogue::after { display: none; }
+.flowers-grid::before { display: none; }
 
 /* ── FLOWER MODAL ── */
 .flower-modal-overlay { display: none; position: fixed; inset: 0; z-index: 300; background: rgba(29,100,102,0.45); backdrop-filter: blur(4px); align-items: center; justify-content: center; padding: 2rem; }
@@ -386,7 +387,7 @@ section { padding: 2.8rem 3.6rem; }
 .side-nav-item::after { display: none; }
 
 /* Hero */
-.hero { padding-top: 70px; min-height: 100dvh; }
+.hero { padding-top: 70px; min-height: 100dvh; height: auto; overflow: visible; }
 .hero-text-block { padding: 0 1.5rem; max-width: 100%; }
 .hero-subtitle { font-size: 0.9rem; }
 .hero-buttons { gap: 0.6rem; }
@@ -442,18 +443,18 @@ section { padding: 2.8rem 3.6rem; }
 .step-title { font-size: 1.1rem; }
 .step-desc { font-size: 0.88rem; }
 /* Horizontal slide for steps on mobile */
-.how-steps { flex-direction: row; gap: 0.8rem; overflow-x: auto; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; padding-bottom: 0.8rem; padding-right: 1rem; scrollbar-width: thin; max-width: 100%; }.how-steps::before { display: none; }
-.step-row { flex: 0 0 65vw; max-width: 240px; flex-direction: column; align-items: flex-start; gap: 0.8rem; scroll-snap-align: start; background: rgba(255,255,255,0.7); border-radius: 16px; padding: 1rem; border: 1.5px solid var(--sky); min-width: 0; margin-right: 0; }
-.step-row:last-child { margin-right: 1rem; }
+.step-row { flex: 0 0 65vw; max-width: 240px; flex-direction: column; align-items: flex-start; gap: 0.8rem; scroll-snap-align: start; background: rgba(255,255,255,0.7); border-radius: 16px; padding: 1rem; border: 1.5px solid var(--sky); min-width: 0; }
+.step-row:last-child { margin-right: 1.5rem; }
 .how-col-public .step-row { background: rgba(255,255,255,0.65); border-color: #d4b840; }
 .step-circle { width: 48px; height: 48px; flex-shrink: 0; }
 
 /* Flower catalogue */
-.flowers-grid { grid-template-columns: 1fr 1fr; gap: 0.8rem; }
-.flower-tile { padding: 0.8rem 0.7rem; }
-.flower-svg-wrap { height: 90px; }
-.flower-name { font-size: 0.95rem; }
-.flower-mood { font-size: 0.72rem; }
+.flowers-grid { grid-template-columns: 1fr 1fr; gap: 0.8rem; position: relative; padding-top: 1.8rem; }
+.flowers-grid::before { content: 'Tap a flower to learn more'; position: absolute; top: 0; left: 0; right: 0; text-align: center; font-family: Arial, Helvetica, sans-serif; font-size: 0.72rem; color: var(--darkteal); opacity: 0.5; }
+.flower-tile { padding: 0.7rem 0.5rem; }
+.flower-svg-wrap { height: 80px; }
+.flower-name { font-size: 0.9rem; }
+.flower-mood { display: none; }
 .flower-chip { display: none; }
 .catalogue::after {
   content: 'Tap a flower to see more →';
