@@ -359,7 +359,6 @@ input[type="text"]:focus {
 #tips-card li {
   font-size: 11px;
 }
-}
 
 .gg-title { font-size: 28px; }
 .gg-sub { font-size: 15px; }
@@ -398,4 +397,4 @@ button {
 #prompt2-wrap button,
 #prompt3-wrap button {
   color: #2c7a7b;
-}
+}}

@@ -1665,12 +1665,12 @@ function buildUI() {
   dayRatingOptions.forEach(option => {
     const btn = createButton(option);
     btn.parent(btnGrid1);
-    btn.style("padding", "11px");
+    btn.style("padding", "13px");
     btn.style("border", "2px solid #bde0d6");
     btn.style("border-radius", "10px");
     btn.style("background", "white");
     btn.style("cursor", "pointer");
-    btn.style("font-size", "14px");
+    btn.style("font-size", "15px");
     btn.style("transition", "all 0.15s");
     btn.style("pointer-events", "auto");
     btn.elt.addEventListener("mouseenter", () => {
@@ -1717,7 +1717,7 @@ function buildUI() {
 
   const card2 = createDiv().addClass("gg-card").parent(prompt2Wrap);
   card2.style("max-width", "460px");
-  card2.style("width", "460px");
+  card2.style("width", "min(460px, 92vw)");
   card2.style("box-sizing", "border-box");
   card2.style("padding", "24px 28px 20px 28px");
   createElement("h3", "What shaped your day?").style("text-align", "center").style("color", "#0f5132").style("font-size", "16px").style("font-weight", "700").style("margin", "0 0 16px 0").parent(card2);
@@ -1795,8 +1795,8 @@ function buildUI() {
   prompt3Wrap.style("pointer-events", "auto");
 
   const card3 = createDiv().addClass("gg-card").parent(prompt3Wrap);
-  card3.style("max-width", "460px");
-  card3.style("width", "460px");
+  card3.style("max-width", "460");
+  card3.style("width", "min(460px, 92vw)");
   card3.style("box-sizing", "border-box");
   card3.style("padding", "24px 28px 20px 28px");
   createElement("h3", "Anything else?").style("text-align", "center").style("color", "#0f5132").style("font-size", "16px").style("font-weight", "700").style("margin", "0 0 2px 0").parent(card3);
@@ -1856,7 +1856,7 @@ function buildUI() {
 
   const card4 = createDiv().addClass("gg-card").parent(flowerPreviewWrap);
   card4.style("max-width", "460px");
-  card4.style("width", "460px");
+  card4.style("width", "min(460px, 92vw)");
   card4.style("box-sizing", "border-box");
   card4.style("padding", "24px 28px 20px 28px");
   createElement("h2", "Your Flower").style("text-align", "center").style("color", "#0f5132").style("font-size", "18px").style("font-weight", "700").style("margin", "0 0 4px 0").parent(card4);
