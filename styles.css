@@ -375,7 +375,6 @@ section { padding: 3.5rem 2.5rem; }
 footer { padding: 3rem 2.5rem 2rem; }
 }
 
-/* ── Mobile (≤768px) ── */
 /* ── Mobile (≤768px) — SINGLE CONSOLIDATED BLOCK ── */
 @media (max-width: 768px) {
 
@@ -401,7 +400,7 @@ footer { padding: 3rem 2.5rem 2rem; }
   /* About — horizontal scroll cards */
   .about { grid-template-columns: 1fr; gap: 1.8rem; }
   .about-right {
-    display: flex;
+    display: flex 0 0 55vw;
     flex-direction: row;
     gap: 0.8rem;
     overflow-x: auto;
