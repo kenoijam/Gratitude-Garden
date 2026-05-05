@@ -448,7 +448,7 @@ footer { padding: 3rem 2.5rem 2rem; }
   /* How it works — clipped horizontal scroll */
   .how-cols { grid-template-columns: 1fr; gap: 1.2rem; }
   .how-col { overflow: hidden; max-width: 100%; position: relative; }
-.how-col-private .step-row { background: rgba(7, 105, 84, 0.92); border-color: rgba(255,255,255,0.4); }
+.how-col-private .step-row { background: #1d6466; border-color: rgba(255,255,255,0.4); }
   .step-title { font-size: 1.1rem; }
   .step-desc { font-size: 0.88rem; }
   .how-steps {
