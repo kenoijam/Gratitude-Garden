@@ -370,7 +370,7 @@ a:visited,
 a:active {
   color: inherit !important;
   text-decoration: none !important;
-}
+}}
 
 /* Remove tap highlight (mobile blue flash) */
 * {
@@ -397,4 +397,4 @@ button {
 #prompt2-wrap button,
 #prompt3-wrap button {
   color: #2c7a7b;
-}}
+}

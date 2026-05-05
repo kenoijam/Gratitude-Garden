@@ -478,19 +478,7 @@ footer { padding: 3rem 2.5rem 2rem; }
     position: relative;
     padding-top: 1.8rem;
   }
-  .flowers-grid::before {
-    content: 'Tap a flower to learn more';
-    display: block;
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    text-align: center;
-    font-family: Arial, Helvetica, sans-serif;
-    font-size: 0.72rem;
-    color: var(--darkteal);
-    opacity: 0.5;
-  }
+
   .flower-tile { padding: 0.7rem 0.5rem; }
   .flower-svg-wrap { height: 80px; }
   .flower-name { font-size: 0.9rem; }
