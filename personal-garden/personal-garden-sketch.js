@@ -1537,6 +1537,13 @@ function updateResponsiveFlowerLayout() {
       f.sizeNorm = f.size    / height;
     }
   }
+  // Cap stem height relative to width on narrow screens
+if (width < 720) {
+  const maxStemForWidth = width * 0.45;
+  if (f.stemLen > maxStemForWidth) {
+    f.stemLen = maxStemForWidth;
+  }
+}
 }
 
 function buildLogo() {

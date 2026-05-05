@@ -360,12 +360,12 @@ input[type="text"]:focus {
   font-size: 11px;
 }
 
-  .gg-title { font-size: 28px; }
-  .gg-sub { font-size: 16px; }
-  .gg-btn { font-size: 17px; padding: 16px 18px; min-height: 48px; }
-  .gg-back { font-size: 17px; padding: 14px; min-height: 44px; }
-  .gg-card { padding: 24px 20px; }
-  textarea, input[type="text"] { font-size: 16px; min-height: 44px; }
+  .gg-title { font-size: 32px; }
+  .gg-sub { font-size: 17px; line-height: 1.5; }
+  .gg-btn { font-size: 18px; padding: 16px 20px; min-height: 52px; }
+  .gg-back { font-size: 18px; padding: 16px; min-height: 48px; }
+  .gg-card { padding: 28px 22px; }
+  textarea, input[type="text"] { font-size: 16px; min-height: 48px; }
 /* Remove mobile link styling */
 a,
 a:visited,

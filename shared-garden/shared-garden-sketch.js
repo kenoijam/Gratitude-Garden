@@ -1686,6 +1686,12 @@ baseY = groundY - height * 0.10;
 
 f.baseY = baseY;
 }
+if (width < 720) {
+  const maxStemForWidth = width * 0.45;
+  if (f.stemLen > maxStemForWidth) {
+    f.stemLen = maxStemForWidth;
+  }
+}
 
 rebalanceRowsForNarrowScreens();
 spreadFlowersHorizontallyForNarrowScreens();
