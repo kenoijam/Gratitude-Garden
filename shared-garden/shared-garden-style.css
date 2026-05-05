@@ -360,4 +360,9 @@ input[type="text"]:focus {
   #tips-card li {
   font-size: 12px;
   }
+
+  .gg-title { font-size: 28px; }
+.gg-sub { font-size: 15px; }
+.gg-btn { font-size: 16px; padding: 12px 16px; }
+.gg-back { font-size: 16px; }
 }

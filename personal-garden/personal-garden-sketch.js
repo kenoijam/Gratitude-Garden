@@ -252,24 +252,27 @@ function addFlower(dayRating, dayShaper, journal, species, hue) {
 
   let targetLayer, targetBaseY, minStem, maxStem;
   if (frontFlowers.length < ROW_CAPACITY) {
-    const t = frontFlowers.length / ROW_CAPACITY;
-    targetLayer = "front";
-    targetBaseY = groundLevel;
-    minStem = height * lerp(0.13, 0.19, t);
-    maxStem = height * lerp(0.17, 0.23, t);
+const t = frontFlowers.length / ROW_CAPACITY;
+targetLayer = "front";
+targetBaseY = groundLevel;
+const stemScale = width < 720 ? 0.7 : 1;
+minStem = height * lerp(0.13, 0.19, t) * stemScale;
+maxStem = height * lerp(0.17, 0.23, t) * stemScale;
   } else if (midFlowers.length < ROW_CAPACITY) {
-    const t = midFlowers.length / ROW_CAPACITY;
-    targetLayer = "mid";
-    targetBaseY = groundLevel - height * 0.10;
-    minStem = height * lerp(0.17, 0.23, t);
-    maxStem = height * lerp(0.21, 0.27, t);
-  } else {
-    const t = backFlowers.length / ROW_CAPACITY;
-    targetLayer = "back";
-    targetBaseY = groundLevel - height * 0.17;
-    minStem = height * lerp(0.11, 0.17, t);
-    maxStem = height * lerp(0.15, 0.21, t);
-  }
+const t = midFlowers.length / ROW_CAPACITY;
+targetLayer = "mid";
+targetBaseY = groundLevel - height * 0.10;
+const stemScale = width < 720 ? 0.7 : 1;
+minStem = height * lerp(0.17, 0.23, t) * stemScale;
+maxStem = height * lerp(0.21, 0.27, t) * stemScale;
+} else {
+const t = backFlowers.length / ROW_CAPACITY;
+targetLayer = "back";
+targetBaseY = groundLevel - height * 0.17;
+const stemScale = width < 720 ? 0.7 : 1;
+minStem = height * lerp(0.11, 0.17, t) * stemScale;
+maxStem = height * lerp(0.15, 0.21, t) * stemScale;
+}
 
   const maxAttempts = 80;
   let bestX = random(60, width - 60);

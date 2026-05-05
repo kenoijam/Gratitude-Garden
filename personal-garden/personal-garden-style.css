@@ -360,6 +360,11 @@ input[type="text"]:focus {
   font-size: 11px;
 }
 }
+
+.gg-title { font-size: 28px; }
+.gg-sub { font-size: 15px; }
+.gg-btn { font-size: 16px; padding: 12px 16px; }
+.gg-back { font-size: 16px; }
 /* Remove mobile link styling */
 a,
 a:visited,
@@ -382,4 +387,15 @@ a:active {
   transform: scale(0.97);
 
   
+}
+
+button {
+  color: inherit;
+  appearance: none;
+}
+
+#prompt1-wrap button,
+#prompt2-wrap button,
+#prompt3-wrap button {
+  color: #2c7a7b;
 }

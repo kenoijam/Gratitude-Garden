@@ -115,12 +115,13 @@ while (attempts < maxAttempts && !foundSpot) {
 attempts++;
 
 let candidateStemLen;
+var stemScale = width < 720 ? 0.7 : 1;
 if (row === "front") {
-candidateStemLen = random(height * 0.16, height * 0.24);
+candidateStemLen = random(height * 0.16, height * 0.24) * stemScale;
 } else if (row === "middle") {
-candidateStemLen = random(height * 0.26, height * 0.36);
+candidateStemLen = random(height * 0.26, height * 0.36) * stemScale;
 } else {
-candidateStemLen = random(height * 0.32, height * 0.42);
+candidateStemLen = random(height * 0.32, height * 0.42) * stemScale;
 }
 
 const candidateX = random(50, width - 50);
