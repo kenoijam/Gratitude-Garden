@@ -400,7 +400,7 @@ footer { padding: 3rem 2.5rem 2rem; }
   /* About — horizontal scroll cards */
   .about { grid-template-columns: 1fr; gap: 1.8rem; }
   .about-right {
-    display: flex 0 0 55vw;
+    display: flex;
     flex-direction: row;
     gap: 0.8rem;
     overflow-x: auto;
