@@ -13,6 +13,12 @@
 <script src="shared-garden-sketch.js"></script>
 
 </head>
+<script>
+if(/iPhone|iPad|iPod/.test(navigator.userAgent)){
+  document.querySelector("[name=viewport]")
+    .setAttribute("content","width=device-width, initial-scale=1, maximum-scale=1");
+}
+</script>
 <body>
     <div id="ui-root"></div>
     <a href="../index.html" id="back-to-home" style="position:fixed;top:20px;left:14px;z-index:200;display:inline-flex;align-items:center;gap:6px;background:rgba(255,249,227,0.92);color:#1d6466;border:1.5px solid #b7e4e7;border-radius:50px;padding:7px 16px 7px 12px;font-family:Arial,Helvetica,sans-serif;font-size:13px;font-weight:700;text-decoration:none;box-shadow:0 2px 10px rgba(29,100,102,0.14);transition:background 0.2s,transform 0.15s;" onmouseover="this.style.background='#e1f7f7';this.style.transform='translateY(-1px)'" onmouseout="this.style.background='rgba(255,249,227,0.92)';this.style.transform='none'">

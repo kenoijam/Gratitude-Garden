@@ -1811,7 +1811,7 @@ function buildUI() {
   journalField.style("border-radius", "12px");
   journalField.style("height", "150px");
   journalField.style("padding", "14px 16px");
-  journalField.style("font-size", "14px");
+  journalField.style("font-size", "16px");
   journalField.style("resize", "none");
   journalField.style("pointer-events", "auto");
   journalField.input(() => {
