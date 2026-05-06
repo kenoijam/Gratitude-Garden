@@ -63,11 +63,23 @@ section { padding: 5rem 5rem; }
 .section-title em { font-family: 'MauritiusItalic','Georgia',serif; font-style: italic; color: var(--teal); }
 .section-desc { font-family: Arial,Helvetica,sans-serif; font-size: 1.05rem; line-height: 1.8; color: var(--darkteal); opacity: 0.8; max-width: 560px; }
 
-/* ── ABOUT: left=text, right=2×2 feature cards ── */
-.about { background: var(--cream); display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: start; }
-.about-left { display: flex; flex-direction: column; gap: 1rem; justify-content: flex-start; }
-.about-left .section-desc { max-width: 100%; }
-.about-right { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; align-content: start; padding-top: clamp(10rem, 12vw, 14.5rem); }
+/* ── ABOUT: 2-col grid, title spans left col row1, cards align to body text row2 ── */
+.about {
+  background: var(--cream);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: auto auto;
+  grid-template-areas:
+    "title ."
+    "body  cards";
+  column-gap: 4rem;
+  row-gap: 1rem;
+  align-items: start;
+}
+.about-title { grid-area: title; }
+.about-body  { grid-area: body;  display: flex; flex-direction: column; gap: 1rem; }
+.about-body .section-desc { max-width: 100%; }
+.about-right { grid-area: cards; display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; align-content: start; padding-top: 0; }
 .feature-card { background: var(--white); border-radius: 16px; padding: 1.2rem 1.3rem; border: 1.5px solid var(--sky); display: flex; align-items: flex-start; gap: 0.85rem; }
 .feature-icon { width: 40px; height: 40px; flex-shrink: 0; display: block; margin-top: 2px; }
 .feature-title { font-family: 'MauritiusCondensed','Georgia',serif; font-size: 1rem; color: var(--darkteal); margin-bottom: 0.2rem; }
@@ -357,12 +369,10 @@ footer { background: var(--darkteal); color: rgba(255,249,227,0.65); padding: 3.
 section { padding-left: max(5rem, calc((100vw - 1380px)/2 + 5rem)); padding-right: max(5rem, calc((100vw - 1380px)/2 + 5rem)); }
 footer { padding-left: max(5rem, calc((100vw - 1380px)/2 + 5rem)); padding-right: max(5rem, calc((100vw - 1380px)/2 + 5rem)); }
 .hero-text-block { max-width: 780px; }
-.about-right { padding-top: 14.5rem; }
 }
 @media (min-width: 1920px) {
 section { padding-left: calc((100vw - 1400px)/2); padding-right: calc((100vw - 1400px)/2); }
 footer { padding-left: calc((100vw - 1400px)/2); padding-right: calc((100vw - 1400px)/2); }
-.about-right { padding-top: 15rem; }
 }
 
 /* ── SCROLL REVEAL ── */
@@ -375,7 +385,7 @@ footer { padding-left: calc((100vw - 1400px)/2); padding-right: calc((100vw - 14
 /* ── Tablet (≤1100px) ── */
 @media (max-width: 1100px) {
 section { padding: 3.5rem 2.5rem; }
-.about { grid-template-columns: 1fr; gap: 2.5rem; }
+.about { grid-template-columns: 1fr; grid-template-areas: "title" "body" "cards"; gap: 1.5rem; }
 .about-right { margin-top: 0; padding-top: 0; }
 .how-cols { grid-template-columns: 1fr; }
 .how-steps::before { display: none; }
@@ -409,7 +419,7 @@ footer { padding: 3rem 2.5rem 2rem; }
   .meadow-scene { margin-left: -3.6rem; margin-right: -3.6rem; }
 
   /* About — horizontal scroll cards */
-  .about { grid-template-columns: 1fr; gap: 1.8rem; }
+  .about { grid-template-columns: 1fr; grid-template-areas: "title" "body" "cards"; gap: 1.8rem; }
   .about-right {
     display: flex;
     flex-direction: row;
