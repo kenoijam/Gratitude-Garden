@@ -1979,6 +1979,7 @@ function buildUI() {
   //     flowers = [];
   //     flowerCounter = 0;
   //     localStorage.removeItem(STORAGE_KEY);
+  //     localStorage.removeItem(LAST_PLANT_KEY);
   //     hoveredFlower = null;
   //     resetPromptSelections();
   //     showStep("prompt1");
@@ -2259,7 +2260,6 @@ function setup() {
   } else {
     showStep("garden");
   }
-  updateScreen();
 }
 
 function draw() {

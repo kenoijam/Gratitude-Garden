@@ -780,23 +780,27 @@ textAlign(CENTER, CENTER);
 textSize(labelSize);
 noStroke();
 
+const labelY = (f.species === "lotus")    ? -f.size * 0.6
+             : (f.species === "lavender") ? -(10 + f.size * 0.75)
+             : 0;
+
 const outlineSat   = sat * 0.85;
 const outlineLight = light - 20;
 
 const o = 1 * scaleFactor;
 
 fill(hue, outlineSat, outlineLight, 0.85);
-text(displayWord, -o,  0);
-text(displayWord,  o,  0);
-text(displayWord,  0, -o);
-text(displayWord,  0,  o);
-text(displayWord, -o, -o);
-text(displayWord,  o, -o);
-text(displayWord, -o,  o);
-text(displayWord,  o,  o);
+text(displayWord, -o,  labelY);
+text(displayWord,  o,  labelY);
+text(displayWord,  0,  labelY - o);
+text(displayWord,  0,  labelY + o);
+text(displayWord, -o,  labelY - o);
+text(displayWord,  o,  labelY - o);
+text(displayWord, -o,  labelY + o);
+text(displayWord,  o,  labelY + o);
 
 fill(0, 0, 100);
-text(displayWord, 0, 0);
+text(displayWord, 0, labelY);
 
 colorMode(RGB);
 }
@@ -1830,20 +1834,22 @@ return `${y}-${m}-${day}`;
 }
 
 function initDailyGarden() {
-if (partyIsHost()) {
-if (!shared.flowers) {
-partySetShared(shared, { flowers: [] });
-}
-}
+  if (partyIsHost()) {
+    if (!shared.flowers) {
+      partySetShared(shared, { flowers: [] });
+    }
+  }
 
-const arr = shared.flowers || [];
-flowers = arr.map(f => ({
-...f,
-growthStage: GROWTH_STAGES.BLOOM,
-growthStartTime: 0
-}));
+  if (partyIsHost()) {
+  shared.flowers = shared.flowers.filter(f => f.word !== "");
+  flowers = shared.flowers.map(f => ({ ...f }));
+}
+  
+  const arr = shared.flowers || [];
+  // Make a local copy for this device only
+  flowers = arr.map(f => ({ ...f }));
 
-updateResponsiveFlowerLayout();
+  updateResponsiveFlowerLayout();
 }
 
 function drawUserMessageForPNG(flower) {
@@ -2290,3 +2296,4 @@ logo.style("display", step === "garden" && hasFlower ? "block" : "none");
 
 loop();
 }
+
