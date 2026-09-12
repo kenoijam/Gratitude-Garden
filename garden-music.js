@@ -514,7 +514,30 @@
       '#gg-music[data-on="1"] .wave-out{animation:none;}' +
       '#gg-music-btn,#gg-music-vol{transition:none;}}' +
     '@media (max-width:768px){#gg-music{top:16px;right:12px;}' +
-      '#gg-music-btn{width:34px;height:34px;}#gg-music-btn svg{width:16px;height:16px;}}';
+      '#gg-music-btn{width:34px;height:34px;}#gg-music-btn svg{width:16px;height:16px;}}' +
+
+    /* The hint. It hangs under the button on the same corner the volume panel
+       uses, which is deliberate: it is pointing AT the button, so it has to
+       come from the button. They cannot both be open, and the hint is the one
+       that gives way, since reaching for the control means it has done its
+       job. */
+    '#gg-music-hint{position:absolute;top:100%;right:0;margin-top:9px;width:196px;' +
+      'background:rgba(255,249,227,0.97);border:1.5px solid #b7e4e7;border-radius:14px;' +
+      'box-shadow:0 4px 16px rgba(29,100,102,0.16);padding:10px 12px;' +
+      'color:#1d6466;font-size:12.5px;line-height:1.45;text-align:left;' +
+      'cursor:pointer;opacity:0;transform:translateY(-6px);pointer-events:none;' +
+      'transition:opacity 0.32s ease,transform 0.32s ease;}' +
+    '#gg-music-hint[data-show="1"]{opacity:1;transform:none;pointer-events:auto;}' +
+    '#gg-music-hint b{font-weight:700;}' +
+    /* A notch rather than a line to the button. Two squares rotated 45
+       degrees, the back one carrying the border and the front one the fill,
+       because a single bordered square shows its own lower edges through the
+       panel it is supposed to be part of. */
+    '#gg-music-hint::before,#gg-music-hint::after{content:"";position:absolute;' +
+      'top:-6px;right:13px;width:10px;height:10px;transform:rotate(45deg);}' +
+    '#gg-music-hint::before{background:#b7e4e7;}' +
+    '#gg-music-hint::after{top:-4px;background:rgba(255,249,227,0.97);}' +
+    '@media (prefers-reduced-motion:reduce){#gg-music-hint{transition:none;}}';
 
   var ICON =
     '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" ' +
@@ -559,10 +582,54 @@
     pill.appendChild(slider);
     vol.appendChild(pill);
 
+    hintEl = document.createElement("div");
+    hintEl.id = "gg-music-hint";
+    hintEl.setAttribute("role", "status");
+    hintEl.innerHTML = "<b>Music is playing.</b><br>Use this button to mute it.";
+    hintEl.addEventListener("click", hideHint);
+
     wrapEl.appendChild(btn);
     wrapEl.appendChild(vol);
+    wrapEl.appendChild(hintEl);
+    /* Reaching for the control is the hint being read, so it stands aside
+       rather than opening the volume panel behind itself. */
+    wrapEl.addEventListener("pointerenter", hideHint);
     document.body.appendChild(wrapEl);
     label();
+  }
+
+  /* ------------------------------------------------------------------ *
+     The hint
+
+     It says the music is playing, so it may only appear once the music is
+     actually PLAYING. Audio does not start until the visitor's first gesture,
+     and that gesture may be one the browser refuses to unlock sound on, so
+     announcing it on load would be a claim the page could not keep. It is
+     shown from the one place that knows the context is genuinely running.
+
+     Once a visit, not once ever and not once a page: `sessionStorage` so
+     walking between the four pages does not say it four times, and a later
+     visit is a new visitor as far as this is concerned. Anyone who has
+     already muted is never told, since they plainly know how.
+   * ------------------------------------------------------------------ */
+  var hintEl, hintTimer, HINT_KEY = "gg_music_hint", HINT_MS = 7000;
+
+  function hintSeen() {
+    try { return sessionStorage.getItem(HINT_KEY) === "1"; } catch (e) { return true; }
+  }
+  function markHintSeen() {
+    try { sessionStorage.setItem(HINT_KEY, "1"); } catch (e) {}
+  }
+  function hideHint() {
+    if (!hintEl) return;
+    clearTimeout(hintTimer);
+    hintEl.setAttribute("data-show", "0");
+  }
+  function showHint() {
+    if (!hintEl || !wantOn || hintSeen()) return;
+    markHintSeen();
+    hintEl.setAttribute("data-show", "1");
+    hintTimer = setTimeout(hideHint, HINT_MS);
   }
 
   function label() {
@@ -576,6 +643,8 @@
     wantOn = !wantOn;
     write(KEY_ON, wantOn ? "1" : "0");
     label();
+    hideHint();          /* they have found the button, so stop pointing at it */
+    markHintSeen();
     if (wantOn) start(); else stop();
   }
 
@@ -603,11 +672,11 @@
        gesture that was never allowed to unlock anything. They come off once
        the context is genuinely running and not before. */
     if (!ctx) return;
-    if (ctx.state === "running") unarm();
+    if (ctx.state === "running") { unarm(); showHint(); }
     else if (ctx.resume) {
       var p = ctx.resume();
       if (p && p.then) p.then(function () {
-        if (ctx.state === "running") unarm();
+        if (ctx.state === "running") { unarm(); showHint(); }
       }, function () {});
     }
   }

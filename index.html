@@ -8,6 +8,11 @@
        changes layout on every one of these pages. -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
   <script src="config.js"></script>
+  <!-- The ambient life: butterflies, a skein of birds and a few motes of light.
+       One shared module for the hero and both gardens, drawn on a raw 2D
+       context, which is why it can serve a p5 sketch and a plain canvas at
+       once. It must load BEFORE any sketch draws. -->
+  <script src="garden-life.js"></script>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Gratitude Garden</title>
@@ -418,6 +423,13 @@
       [1226,136,3.5,drawSunflower,21, 62,58,64],  // lemon sunflower
       [1340, 92,3, drawDaisy,    15, 52,52,74]    // butter daisy
     ];
+    /* Birds, before the hills, so the hills cut them off at the horizon the
+       way they cut off anything distant. The hero names its own bands rather
+       than deriving them from a horizon: its flowers grow UPWARD out of a
+       ground line at the bottom of the picture, where a garden's sit around
+       and below its horizon, so the derived bands belong to the gardens. */
+    if (window.GardenLife) GardenLife.sky(ctx, LOGICAL_W, logH, { birds: [16, 100] });
+
     // 1. Back hills (behind flowers)
     ctx.fillStyle='#a9d9cf';
     [[-80,258,500,92],[360,265,540,88],[870,268,580,86],[1400,262,540,88],[1600,258,500,92]].forEach(function(e){
@@ -443,6 +455,14 @@
        and later carried a curve into the section below; both put a second soft
        edge a few pixels under the curved top the hills already give the ground. */
     ctx.fillStyle='#7ec4b4'; ctx.fillRect(-20,GY+42,1480, logH - GY + 20);
+
+    /* Butterflies among the blooms and motes over the near ground, last of
+       all, because they are in the air in FRONT of the meadow. Their band
+       tops out just under the tallest stem, so nothing flies off into the
+       copy above the canvas. */
+    if (window.GardenLife) {
+      GardenLife.meadow(ctx, LOGICAL_W, logH, { fly: [88, 228], motes: [186, Math.min(logH - 6, GY + 46)] });
+    }
 
     ctx.restore();
   }

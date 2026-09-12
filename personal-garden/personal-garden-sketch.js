@@ -2486,6 +2486,11 @@ function draw() {
   drawSky();
   drawSunGradient();
   drawClouds();
+  /* The birds go in with the clouds, so the hills paint over them at the
+     horizon exactly as they paint over a distant cloud. `drawingContext` is
+     p5's own 2D context, already scaled by the pixel density, so garden-life
+     draws in p5 units without knowing it is inside a sketch. */
+  if (window.GardenLife) GardenLife.sky(drawingContext, width, height, { horizon: height * 0.56 });
 
   // Back row: all flowers behind the back hill
   drawFlowersStemsOnly("back");
@@ -2506,6 +2511,12 @@ function draw() {
   drawFlowersBloomsOnly("front");
   drawForegroundHill();
   drawAllDates();
+  /* The butterflies and the motes go on LAST, over the flowers and over the
+     labels, because they are in the air in front of the garden. They stay
+     under drawNewestSparkles so the burst that fires when a flower is planted
+     is still the brightest thing on screen. */
+  if (window.GardenLife) GardenLife.meadow(drawingContext, width, height, { horizon: height * 0.56 });
+
   drawNewestSparkles();
 
   if (isSaving) {
