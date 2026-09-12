@@ -852,38 +852,11 @@ body {
 .bq-receipt-card .msg { font-style: italic; color: rgba(29,66,66,0.88); line-height: 1.6; font-size: 0.88rem; white-space: pre-wrap; word-break: break-word; margin: 0 0 10px; }
 .bq-receipt-card .from { text-align: right; font-weight: 700; color: var(--darkteal); margin: 0; font-size: 0.88rem; }
 
-/* ==========================================================================
-   A GARDEN CURSOR
-   ==========================================================================
-   A leaf at rest and a bloom over anything clickable, both inline SVG data
-   URIs so no image file is added. Every rule keeps its keyword fallback after
-   the comma, which is what renders if a browser refuses the SVG, and text
-   inputs are deliberately left alone: a caret is the one cursor that carries
-   real information about what a control does. */
-body {
-  cursor: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'><path d='M3.2 2.6c9.2.6 15.6 5.6 16.4 14.6C10.4 17 3.8 11.8 3.2 2.6z' fill='%231d6466'/><path d='M4.4 4c5.4 2.6 9.8 6.6 12.6 11.4' stroke='%23fff9e3' stroke-width='1.5' fill='none' stroke-linecap='round'/></svg>") 3 3, auto;
-}
-/* Every clickable thing takes the bloom. The CLASSES are listed as well as the
-   elements, and that is not belt and braces: `.bq-btn-outline` is a class rule
-   carrying `cursor: pointer`, which outranks a bare `button` selector, so the
-   buttons kept the system pointer until they were named here. Anything new that
-   sets its own `cursor: pointer` on a class has to be added to this list. */
-a, button, [role="button"],
-.bq-btn, .bq-btn-outline, .bq-btn-ghost, .bq-step-btn, .bq-wrap-fix, .bq-letter-close,
-.bq-swatch, .bq-flower-tile, .bq-foliage-tile, .bq-card-tag,
-.bq-mode-tile, .bq-template-tile, .bq-city-tile, .bq-shop-tile, .bq-pay-tile,
-.bq-pay-chip, .bq-step-dot {
-
-  cursor: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='26' height='26' viewBox='0 0 26 26'><g transform='translate(9 9)'><ellipse cx='0' cy='-5.4' rx='3.1' ry='4.6' fill='%23fbe484' stroke='%231d6466' stroke-width='1.1'/><ellipse cx='5.1' cy='-1.7' rx='3.1' ry='4.6' fill='%23fbe484' stroke='%231d6466' stroke-width='1.1' transform='rotate(72)'/><ellipse cx='3.2' cy='4.4' rx='3.1' ry='4.6' fill='%23fbe484' stroke='%231d6466' stroke-width='1.1' transform='rotate(144)'/><ellipse cx='-3.2' cy='4.4' rx='3.1' ry='4.6' fill='%23fbe484' stroke='%231d6466' stroke-width='1.1' transform='rotate(216)'/><ellipse cx='-5.1' cy='-1.7' rx='3.1' ry='4.6' fill='%23fbe484' stroke='%231d6466' stroke-width='1.1' transform='rotate(288)'/><circle r='2.6' fill='%23429288'/></g></svg>") 9 9, pointer;
-}
-/* The exceptions, and they are listed last on purpose so they win. A caret and
-   a grab handle both say something true about the control they are on, which a
-   decorative cursor would throw away. */
-input, textarea, select, .bq-field input, .bq-field textarea { cursor: auto; }
-input[type="range"], .gg-hue-slider, .bq-light-slider { cursor: grab; }
-input[type="range"]:active, .gg-hue-slider:active, .bq-light-slider:active { cursor: grabbing; }
-button:disabled, .bq-btn:disabled, .bq-btn-outline:disabled,
-.bq-btn-ghost:disabled, .bq-step-btn:disabled { cursor: not-allowed; }
+/* The garden cursor used to live here. It is now in /garden-cursor.js, which
+   every page loads, because a cursor that only appeared on one of four pages
+   was the odd one out rather than a theme. The class list that file carries
+   still includes every `.bq-` class named below, so anything new here that
+   sets its own `cursor: pointer` has to be added there. */
 
 /* ==========================================================================
    MOTION
@@ -973,3 +946,28 @@ button:disabled, .bq-btn:disabled, .bq-btn-outline:disabled,
 .bq-send-msg { font-size: 0.84rem; line-height: 1.5; margin: 9px 0 0; min-height: 1.4em; }
 .bq-send-msg[data-tone="bad"] { color: #b3261e; }
 .bq-send-msg[data-tone="good"] { color: #2c7a7b; }
+
+
+/* The sixth template tile: build your own.
+
+   It carries the same frame as the five presets rather than looking like a
+   button that wandered into the grid, because it is one of six equal choices
+   and not a fallback. The art slot matches the preset canvas height exactly,
+   or the tile would sit shorter than its neighbours and the row would break. */
+.bq-template-own .bq-own-art {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* 175, not 140. The preset canvases are capped at 140 wide and painted at
+     a fixed 5:4, so they stand 175 tall, and an art slot any shorter lifts
+     this tile's label above the five beside it. */
+  height: 175px;
+  color: var(--darkteal);
+  opacity: 0.42;
+  background:
+    repeating-linear-gradient(135deg,
+      rgba(29,100,102,0.045) 0 7px, rgba(29,100,102,0) 7px 14px);
+  border-radius: 10px;
+}
+.bq-template-own .bq-own-art svg { width: 34px; height: 34px; }
+.bq-template-own:hover .bq-own-art { opacity: 0.62; }

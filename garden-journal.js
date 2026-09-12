@@ -135,13 +135,21 @@
 
   /* ---------------------------------------------------------------- styles */
   var CSS =
-    '#gj-btn{position:fixed;left:14px;bottom:16px;z-index:210;display:inline-flex;' +
-      'align-items:center;gap:7px;padding:7px 15px 7px 12px;border-radius:50px;' +
+    /* Slot 2 of the top right row of round icons: music at right 16, the
+       account at 62, this at 108, Save PNG at 154. It used to be a labelled
+       pill in the BOTTOM LEFT, which is where the Garden Tips card lives, so
+       it sat straight on top of it. */
+    '#gj-btn{position:fixed;top:20px;right:108px;z-index:261;' +
+      'width:38px;height:38px;border-radius:50%;padding:0;' +
+      'display:flex;align-items:center;justify-content:center;' +
       'border:1.5px solid #b7e4e7;background:rgba(255,249,227,0.92);color:#1d6466;' +
-      'font-family:Arial,Helvetica,sans-serif;font-size:13px;font-weight:700;cursor:pointer;' +
-      'box-shadow:0 2px 10px rgba(29,100,102,0.14);transition:background .2s,transform .15s;}' +
+      'cursor:pointer;box-shadow:0 2px 10px rgba(29,100,102,0.14);' +
+      'transition:background .2s,transform .15s;}' +
     '#gj-btn:hover{background:#e1f7f7;transform:translateY(-1px);}' +
-    '#gj-btn svg{width:15px;height:15px;display:block;}' +
+    '#gj-btn:focus-visible{outline:2px solid #1d6466;outline-offset:2px;}' +
+    '#gj-btn svg{width:18px;height:18px;display:block;}' +
+    '@media (max-width:768px){#gj-btn{top:16px;right:96px;width:34px;height:34px;}' +
+      '#gj-btn svg{width:16px;height:16px;}}' +
 
     /* Opens from the LEFT, which is the side its button is on, and which also
        means it can never be confused with the friends panel on the right. */
@@ -245,7 +253,9 @@
     btn = el("button");
     btn.id = "gj-btn";
     btn.type = "button";
-    btn.innerHTML = BOOK + "<span>Journal</span>";
+    btn.innerHTML = BOOK;
+    btn.title = "Journal";
+    btn.setAttribute("aria-label", "Journal");
     btn.addEventListener("click", function () {
       if (panel.getAttribute("data-open") === "1") close(); else open();
     });

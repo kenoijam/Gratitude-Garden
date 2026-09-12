@@ -997,10 +997,118 @@ section { padding: 2.2rem 3.4rem; }
 /* The page wide motes. z-index 6 puts them over every section and every card,
    whose own z-indexes top out at 5, and under the flower modal at 300, the
    music button at 260 and the side nav at 9000. They never take a pointer. */
-#page-dust { position: fixed; inset: 0; pointer-events: none; z-index: 6; }
+/* The sparkles, one canvas per section.
+
+   z-index -1 is the whole point and the only value that works. It paints
+   ABOVE the section's own background colour and BELOW everything in it, which
+   is the gap a fixed canvas cannot reach: in front of the section it would
+   cover the cards, behind it the section's background would hide it.
+
+   It is `sticky`, not `absolute`, so the backing store is one viewport rather
+   than one whole section. On a 7500px page that is the difference between a
+   few megabytes and tens of them, and the negative margin is what keeps it
+   out of the flow while sticky still works.
+
+   The section must NOT create a stacking context of its own, or z-index -1
+   is trapped inside it and painted behind the background after all.
+   `position: relative` with no z-index is exactly right. Adding a transform,
+   a filter or an opacity to any of these sections would break it. */
+.section-dust {
+  position: sticky;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh;
+  display: block;
+  margin-bottom: -100vh;
+  pointer-events: none;
+  z-index: -1;
+}
+.about, .gardens, .catalogue, .wisdom, .cta, footer { position: relative; }
 
 /* The hero's birds. Same layer as the clouds and the sun, so they read as
    part of the sky, and under .hero-text-block at 5 so they never cross the
    headline. The meadow canvas cannot hold them: it starts where the meadow
    does, which is far below the clouds. */
 #hero-sky { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 3; }
+
+
+/* ===========================================================================
+   THE FLOWER GUIDE'S DISPLAY HEADING AND ITS NUMBERS BAND
+   ===========================================================================
+   Two faces inside one sentence, which is the whole character of it: an
+   italic serif drop capital and serif first line, then the second line in the
+   sans at the same size. Neither face is doing the work alone, and the join
+   between them is what the eye reads as deliberate rather than as a font that
+   failed to load.
+
+   `.display-title` sits on top of `.section-title`, so it inherits that
+   rule's size and margins and only changes the faces. */
+.display-title { line-height: 1.04; }
+.display-title .dcap {
+  font-family: 'Fraunces', 'Georgia', serif;
+  font-style: italic;
+  font-weight: 600;
+  font-variation-settings: 'SOFT' 50, 'WONK' 1;   /* WONK on, for one letter only */
+  color: var(--teal);
+  /* Set about a third larger than the line it opens, and pulled tight against
+     the next letter so it reads as one word rather than a letter beside a
+     word. */
+  font-size: 1.34em;
+  line-height: 0.8;
+  margin-right: -0.04em;
+}
+.display-title .ser {
+  font-family: 'Fraunces', 'Georgia', serif;
+  font-weight: 700;
+  font-variation-settings: 'SOFT' 50, 'WONK' 0;
+}
+.display-title .san {
+  display: block;
+  font-family: Arial, Helvetica, sans-serif;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  color: var(--darkteal);
+}
+
+/* The band. Four figures, and every one of them is a fact about the project
+   rather than a usage statistic: there is no traffic to report and inventing
+   some would be the one dishonest thing on the page.
+
+   It wraps rather than scrolling, and each figure keeps its own rule above the
+   label so the row still reads as four things at any width. */
+.flower-stats {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.6rem;
+  margin-top: 3.6rem;
+  padding-top: 2.2rem;
+  border-top: 1.5px solid rgba(29,100,102,0.16);
+}
+.flower-stats .stat { display: flex; flex-direction: column; gap: 0.45rem; }
+.flower-stats .stat-n {
+  font-family: 'Fraunces', 'Georgia', serif;
+  font-weight: 600;
+  font-variation-settings: 'SOFT' 50, 'WONK' 0;
+  font-size: clamp(2.8rem, 5.2vw, 4.2rem);
+  line-height: 0.92;
+  color: var(--teal);
+}
+.flower-stats .stat-k {
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 0.92rem;
+  line-height: 1.45;
+  /* #2f6260 is the body copy floor on this page, measured against the darkest
+     ground any of it sits on. Nothing here goes lighter. */
+  color: #2f6260;
+  max-width: 15em;
+}
+@media (max-width: 900px) {
+  .flower-stats { grid-template-columns: repeat(2, 1fr); gap: 1.4rem 1.2rem; }
+}
+@media (max-width: 480px) {
+  .flower-stats { grid-template-columns: 1fr 1fr; }
+  .flower-stats .stat-k { font-size: 0.86rem; }
+}

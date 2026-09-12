@@ -14,6 +14,10 @@
        once. It must load BEFORE any sketch draws. -->
   <script src="garden-life.js"></script>
 
+  <!-- One cursor for the whole project: a leaf at rest, a bloom over
+       anything clickable. -->
+  <script src="garden-cursor.js"></script>
+
   <!-- The account chip and the friends panel. Top right here, beside the
        music button, since the landing page keeps its controls in the top
        corners and has nothing in the bottom one. -->
@@ -667,11 +671,16 @@
   <div class="catalogue-header reveal">
     <div>
       <span class="section-label">The flower guide</span>
-      <h2 class="section-title">Every mood has a <em>symbolic bloom</em></h2>
-          <p class="section-desc">Tap on a flower to learn more</p>
-
+      <!-- The display heading. A drop capital in the italic serif, the rest
+           of the line in the same serif at a heavy weight, then a second line
+           in the sans. Mixing the two faces inside one sentence is the whole
+           character of it: neither face is doing the work alone. -->
+      <h2 class="section-title display-title">
+        <span class="dcap">E</span><span class="ser">very mood has a</span>
+        <span class="san">symbolic bloom</span>
+      </h2>
+      <p class="section-desc">Tap on a flower to learn more</p>
     </div>
-    <!-- FIX 4: removed "Plant yours" button -->
   </div>
   <div class="flowers-grid">
 
@@ -755,6 +764,27 @@
       <span class="flower-chip chip-sakura">grateful, memory, notice</span>
     </div>
 
+  </div>
+  <!-- The numbers band. Every figure here is a fact about the project
+       itself, not a usage statistic: there is no traffic to report and
+       inventing some would be the one dishonest thing on the page. -->
+  <div class="flower-stats reveal">
+    <div class="stat">
+      <span class="stat-n">8</span>
+      <span class="stat-k">flowers, each with a meaning</span>
+    </div>
+    <div class="stat">
+      <span class="stat-n">3</span>
+      <span class="stat-k">ways in: reflect, share, give</span>
+    </div>
+    <div class="stat">
+      <span class="stat-n">1</span>
+      <span class="stat-k">a day, in either garden</span>
+    </div>
+    <div class="stat">
+      <span class="stat-n">0</span>
+      <span class="stat-k">of it shared without you</span>
+    </div>
   </div>
 </section>
 
@@ -1835,97 +1865,99 @@
   <!-- Background music. Soft whimsy: F Lydian, bells over an airy pad.
        One shared engine, synthesised live, no audio files. The mood is the
        only thing that differs per page. -->
-  <!-- Motes of light across the WHOLE page, not just the meadow. One fixed
-       canvas over everything at pointer-events:none, so the page scrolls
-       past behind them the way dust sits in front of a lens. -->
-  <canvas id="page-dust" aria-hidden="true"></canvas>
+  <!-- Motes of light, ONE CANVAS PER SECTION rather than one fixed canvas
+       over the page. A sparkle has to sit under the cards and the copy and
+       over the section's background colour, and there is exactly one place
+       that gap exists: inside the section, as an absolutely positioned child
+       at z-index -1. A fixed canvas cannot be in two places at once. The hero
+       is deliberately left out; it has its own life already. -->
   <script>
   (function () {
-    var c = document.getElementById('page-dust');
-    var sky = document.getElementById('hero-sky');
-    var hero = document.querySelector('.hero');
-    if (!c || !window.GardenLife) return;
-    var ctx = c.getContext('2d');
-    var skyCtx = sky ? sky.getContext('2d') : null;
+    if (!window.GardenLife) return;
 
-    /* Every section, in PAGE coordinates, with whether its ground is dark.
-       The motes belong to the sections rather than to the window: held in
-       viewport coordinates, which is what this was first, the same dozen
-       motes hang in the same places however far you scroll and the whole
-       thing reads as dirt on the screen rather than as air in a room.
-
-       The dark flag is what picks the palette. White is right on the teal
-       and invisible on cream, so the pale sections take a warm gold and a
-       soft teal instead, and only the page can say which is which. */
+    /* The hero is NOT in this list. It already carries birds, butterflies and
+       its own motes on the meadow canvas, and a second layer on top of that
+       was the part that read as clutter. */
     var SECTIONS = [
-      ['.hero', false], ['.about', false], ['.gardens', false],
-      ['.catalogue', false], ['.wisdom', true], ['.cta', false], ['footer', true]
+      ['.about', false], ['.gardens', false], ['.catalogue', false],
+      ['.wisdom', true], ['.cta', false], ['footer', true]
     ];
+
+    var live = [];        /* { el, canvas, ctx, dark, index } */
     var bands = [];
     var lastMeasure = 0;
 
     function dpr() { return Math.min(window.devicePixelRatio || 1, 2); }
 
-    function fit(canvas, context, w, h) {
-      var d = dpr();
-      if (canvas.width !== Math.round(w * d) || canvas.height !== Math.round(h * d)) {
-        canvas.width = Math.round(w * d);
-        canvas.height = Math.round(h * d);
-        canvas.style.width = w + 'px';
-        canvas.style.height = h + 'px';
-      }
-      context.setTransform(d, 0, 0, d, 0, 0);
+    SECTIONS.forEach(function (row, i) {
+      var host = document.querySelector(row[0]);
+      if (!host) return;
+      /* The section has to contain the canvas and must not create a stacking
+         context of its own, or z-index -1 would be trapped behind its
+         background instead of sitting on top of it. `position: relative` with
+         no z-index is exactly right, and every one of these already has it or
+         gets it from the stylesheet rule below. */
+      var cv = document.createElement('canvas');
+      cv.className = 'section-dust';
+      cv.setAttribute('aria-hidden', 'true');
+      host.appendChild(cv);
+      live.push({ el: host, canvas: cv, ctx: cv.getContext('2d'), index: i, on: false });
+    });
+    if (!live.length) return;
+
+    /* Only the sections near the viewport get a backing store. A canvas for
+       every section at once would be the whole page's area in memory, which
+       on a 7500px page is tens of megabytes for a few specks of light. */
+    if ('IntersectionObserver' in window) {
+      var io = new IntersectionObserver(function (entries) {
+        entries.forEach(function (e) {
+          var rec = live.filter(function (r) { return r.el === e.target; })[0];
+          if (rec) rec.on = e.isIntersecting;
+          if (rec && !e.isIntersecting) { rec.canvas.width = 0; rec.canvas.height = 0; }
+        });
+      }, { rootMargin: '40% 0px' });
+      live.forEach(function (r) { io.observe(r.el); });
+    } else {
+      live.forEach(function (r) { r.on = true; });
     }
 
     function measure() {
-      var w = window.innerWidth, h = window.innerHeight;
-      if (w <= 0 || h <= 0) return;
-      fit(c, ctx, w, h);
       bands = [];
       SECTIONS.forEach(function (row) {
         var elm = document.querySelector(row[0]);
-        if (!elm) return;
+        if (!elm) { bands.push({ top: 0, bottom: 0, dark: row[1] }); return; }
         var r = elm.getBoundingClientRect();
-        if (r.height <= 0) return;
         bands.push({ top: r.top + window.scrollY, bottom: r.bottom + window.scrollY, dark: row[1] });
       });
-      if (sky && skyCtx && hero) {
-        var hr = hero.getBoundingClientRect();
-        fit(sky, skyCtx, hr.width, hr.height);
-      }
       lastMeasure = Date.now();
     }
 
     function paint() {
-      var w = window.innerWidth, h = window.innerHeight;
-      if (w <= 0 || h <= 0) return;
-      /* Self healing rather than trusting the first measurement. A canvas
-         sized while the window reports zero, which happens in a hidden tab
-         and in some embedded views, stays zero for good otherwise: no resize
-         event ever fires to correct it, and the page then carries an empty
-         canvas with nothing on it and no error. */
+      var vw = window.innerWidth, vh = window.innerHeight;
+      if (vw <= 0 || vh <= 0) return;
+      if (!bands.length) measure();
       var d = dpr();
-      if (c.width !== Math.round(w * d) || c.height !== Math.round(h * d) || !bands.length) measure();
-      ctx.clearRect(0, 0, w, h);
-      GardenLife.drift(ctx, w, h, { bands: bands, scrollY: window.scrollY });
-
-      /* The hero's birds. Painted only while the hero is anywhere on screen,
-         since there is nothing to see once it has scrolled away. */
-      if (sky && skyCtx && hero) {
-        var hr = hero.getBoundingClientRect();
-        if (hr.bottom > 0 && hr.top < h) {
-          skyCtx.clearRect(0, 0, hr.width, hr.height);
-          /* Up among the clouds. The three of them sit between 12 and 19
-             percent of the hero's height and stand about 90px tall, and the
-             flock takes a lane between 0.30 and 0.70 of whatever band it is
-             given, so 5 to 26 percent puts every lane on the cloud line and
-             none of them down near the flowers. */
-          GardenLife.sky(skyCtx, hr.width, hr.height, {
-            birds: [hr.height * 0.05, hr.height * 0.26],
-            cross: 26, gap: 8, scale: 1.25, ink: 'rgba(47,98,96,0.62)'
-          });
+      live.forEach(function (rec) {
+        if (!rec.on) return;
+        var r = rec.canvas.getBoundingClientRect();
+        var w = Math.round(r.width), h = Math.round(r.height);
+        if (w <= 0 || h <= 0) return;
+        if (rec.canvas.width !== Math.round(w * d) || rec.canvas.height !== Math.round(h * d)) {
+          rec.canvas.width = Math.round(w * d);
+          rec.canvas.height = Math.round(h * d);
+          rec.ctx.setTransform(d, 0, 0, d, 0, 0);
         }
-      }
+        rec.ctx.clearRect(0, 0, w, h);
+        /* The canvas is stuck to the top of the viewport while its section is
+           passing, so its own top is the offset the module needs. Everything
+           else stays in page coordinates, which is what keeps the sparkles
+           travelling with the copy rather than with the window. */
+        GardenLife.drift(rec.ctx, w, h, {
+          bands: bands,
+          scrollY: window.scrollY + r.top,
+          only: rec.index
+        });
+      });
     }
 
     measure();
@@ -1933,26 +1965,19 @@
     window.addEventListener('resize', function () { measure(); paint(); });
 
     /* Thirty frames rather than sixty. These drift a few pixels a second and
-       nothing about them needs more. Nothing at all while the tab is hidden,
-       and one still frame for anyone who has asked for reduced motion. */
+       nothing about them needs more. Nothing while the tab is hidden, and one
+       still frame for anyone who has asked for reduced motion. */
     var last = 0;
     function tick(now) {
       requestAnimationFrame(tick);
       if (document.hidden) return;
       if (now - last < 33) return;
       last = now;
-      /* The cards fold and the reveal animations run, so section heights can
-         move after load. Cheap enough to check back now and then. */
       if (Date.now() - lastMeasure > 1500) measure();
       paint();
     }
-    if (GardenLife.reduced) {
-      /* Still, but it must still follow the page, or every mote is stranded
-         wherever the reader happened to be when it was painted. */
-      window.addEventListener('scroll', paint, { passive: true });
-    } else {
-      requestAnimationFrame(tick);
-    }
+    if (GardenLife.reduced) window.addEventListener('scroll', paint, { passive: true });
+    else requestAnimationFrame(tick);
   })();
   </script>
 

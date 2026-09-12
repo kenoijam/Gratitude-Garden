@@ -30,12 +30,7 @@
   var CFG = (typeof window.readSupabaseConfig === "function")
     ? window.readSupabaseConfig() : null;
 
-  /* Which corner the chip lives in, named on the script tag itself, the way
-     garden-music.js names its mood. The gardens keep their own bottom right
-     corner; the landing page has nothing there and everything else it carries
-     is in the top corners, so it asks for `top`. */
-  var TAG = document.currentScript;
-  var CORNER = (TAG && TAG.getAttribute("data-chip")) || "bottom";
+
 
   var sb = null;
   var live = false;
@@ -82,24 +77,31 @@
     '.ga-msg[data-tone="good"]{color:#2c7a7b;}' +
     '.ga-msg[data-tone="idle"]{color:#8aa9a7;}' +
 
-    /* ---- the friends button ---- */
-    '#ga-friends-btn{position:fixed;right:14px;bottom:16px;z-index:210;' +
-      'max-width:46vw;overflow:hidden;' +
-      'display:inline-flex;align-items:center;gap:7px;padding:7px 15px 7px 12px;' +
-      'border-radius:50px;border:1.5px solid #b7e4e7;background:rgba(255,249,227,0.92);' +
-      'color:#1d6466;font-family:Arial,Helvetica,sans-serif;font-size:13px;font-weight:700;' +
+    /* ---- the account icon ----
+       Every page's controls now sit in ONE row of round icons in the top
+       right corner, 38px each with an 8px gap, so the slots are right 16, 62,
+       108 and 154. Music takes 16 and is built by garden-music.js; this takes
+       62; the journal takes 108 and Save takes 154, both built by the gardens
+       themselves. The journal used to be a labelled pill in the bottom left,
+       which is where the Garden Tips card lives, so it sat on top of it. */
+    '#ga-friends-btn{position:fixed;top:20px;right:62px;z-index:261;' +
+      'width:38px;height:38px;border-radius:50%;padding:0;' +
+      'display:flex;align-items:center;justify-content:center;' +
+      'border:1.5px solid #b7e4e7;background:rgba(255,249,227,0.92);color:#1d6466;' +
       'cursor:pointer;box-shadow:0 2px 10px rgba(29,100,102,0.14);' +
       'transition:background .2s,transform .15s;}' +
     '#ga-friends-btn:hover{background:#e1f7f7;transform:translateY(-1px);}' +
-    '#ga-friends-btn svg{width:15px;height:15px;display:block;}' +
-    '#ga-friends-btn .ga-pip{display:none;min-width:17px;height:17px;border-radius:9px;' +
-      'background:#e2557e;color:snow;font-size:11px;line-height:17px;text-align:center;padding:0 4px;}' +
-    '#ga-friends-btn[data-pending="1"] .ga-pip{display:inline-block;}' +
-    '#ga-friends-btn .ga-label{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}' +
-    /* The landing page's corner. The music button is 38px at right:16, so it
-       occupies 16 to 54, and 62 leaves an 8px gap beside it. */
-    '#ga-friends-btn[data-corner="top"]{top:20px;bottom:auto;right:62px;}' +
-    '@media (max-width:768px){#ga-friends-btn[data-corner="top"]{top:16px;right:54px;}}' +
+    '#ga-friends-btn:focus-visible{outline:2px solid #1d6466;outline-offset:2px;}' +
+    '#ga-friends-btn svg{width:18px;height:18px;display:block;}' +
+    /* The count rides on the corner of the icon rather than sitting beside a
+       label, since there is no label any more. */
+    '#ga-friends-btn .ga-pip{display:none;position:absolute;top:-4px;right:-4px;' +
+      'min-width:17px;height:17px;border-radius:9px;background:#e2557e;color:snow;' +
+      'font-family:Arial,Helvetica,sans-serif;font-size:11px;line-height:17px;' +
+      'text-align:center;padding:0 4px;}' +
+    '#ga-friends-btn[data-pending="1"] .ga-pip{display:block;}' +
+    '@media (max-width:768px){#ga-friends-btn{top:16px;right:54px;width:34px;height:34px;}' +
+      '#ga-friends-btn svg{width:16px;height:16px;}}' +
 
     /* ---- the friends panel ---- */
     '#ga-panel{position:fixed;top:0;right:0;bottom:0;width:360px;max-width:100%;z-index:560;' +
@@ -493,7 +495,7 @@
     btn = el("button");
     btn.id = "ga-friends-btn";
     btn.type = "button";
-    btn.innerHTML = FRIEND_ICON + "<span class=\"ga-label\">Sign in</span><span class=\"ga-pip\"></span>";
+    btn.innerHTML = FRIEND_ICON + "<span class=\"ga-pip\"></span>";
     /* Two states, one button. Signed out it is the way in; signed in it is
        the way to your friends. A page that showed neither until you were
        already signed in had no way of GETTING signed in, which is exactly the
@@ -530,8 +532,6 @@
       if (e.key === "Escape" && panel.getAttribute("data-open") === "1") closePanel();
     });
 
-    placeButton();
-    setTimeout(placeButton, 1200);
   }
 
   /* The personal garden already puts its signed in chip in the bottom right
@@ -539,15 +539,7 @@
      shared garden has nothing there. Checked again after a moment because the
      chip is built by another module whose session check may still be in
      flight. */
-  function placeButton() {
-    if (!btn) return;
-    if (CORNER === "top") { btn.setAttribute("data-corner", "top"); return; }
-    /* The personal garden already puts its signed in chip in the bottom right
-       corner, so on that page this sits above it rather than on top of it.
-       Checked again after a moment because that chip is built by another
-       module whose session check may still be in flight. */
-    btn.style.bottom = document.getElementById("gg-account") ? "60px" : "16px";
-  }
+
 
   function openPanel() {
     if (!panel) return;
@@ -789,6 +781,23 @@
 
       renderBouquets();
 
+      panelBody.appendChild(el("div", "ga-h", "Account"));
+      var who = el("p", "ga-none", (me && me.email) ? me.email : "Signed in");
+      panelBody.appendChild(who);
+      var out = el("button", "ga-mini", "Sign out");
+      out.type = "button";
+      out.setAttribute("data-kind", "quiet");
+      out.style.marginTop = "8px";
+      out.addEventListener("click", function () {
+        out.disabled = true;
+        /* Reloaded rather than repainted: the personal garden decided what to
+           show long before this button existed, and half a signed out page is
+           worse than a moment of white. */
+        sb.auth.signOut().then(function () { location.reload(); })
+          .catch(function () { location.reload(); });
+      });
+      panelBody.appendChild(out);
+
       if (data.outgoing.length) {
         panelBody.appendChild(el("div", "ga-h", "Waiting on a reply"));
         data.outgoing.forEach(function (i) {
@@ -874,17 +883,15 @@
 
   function showChrome() {
     if (!btn) return;
-    var label = btn.querySelector(".ga-label");
-    if (me) {
-      label.textContent = (profile && profile.username) ? profile.username : "Friends";
-      placeButton();
-      refreshPanel();
-    } else {
-      label.textContent = "Sign in";
-      btn.setAttribute("data-pending", "0");
-      closePanel();
-      placeButton();
-    }
+    /* No label any more, so the state has to be in the title and the aria
+       label or the icon says nothing at all to anyone who cannot guess it. */
+    var what = me
+      ? ((profile && profile.username) ? "Friends, signed in as " + profile.username : "Friends")
+      : "Sign in";
+    btn.title = what;
+    btn.setAttribute("aria-label", what);
+    if (me) refreshPanel();
+    else { btn.setAttribute("data-pending", "0"); closePanel(); }
   }
 
   /* -------------------------------------------------------------------- boot */

@@ -381,6 +381,11 @@
 
   function buildChip() {
     if (document.getElementById("gg-account")) return;
+    /* Skipped when garden-account.js is running, because that module's panel
+       already shows the email and carries Sign out. Two places to sign out is
+       one too many, and this one sat in the bottom right corner where the
+       logo would reappear the moment the LOGO-01.png 404 is ever fixed. */
+    if (window.GardenAccount && window.GardenAccount.isLive()) return;
     var el = document.createElement("div");
     el.id = "gg-account";
     el.innerHTML =

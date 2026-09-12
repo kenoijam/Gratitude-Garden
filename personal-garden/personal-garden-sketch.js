@@ -398,6 +398,14 @@ maxStem = height * lerp(0.15, 0.21, t) * stemScale;
 
   flowers.push(newFlower);
   saveGarden();
+  if (typeof tintCursor === "function") tintCursor();
+  if (window.GardenJournal) {
+    GardenJournal.record("personal", {
+      day: GardenJournal.fromUS(newFlower.date), species: newFlower.species,
+      hue: Math.round(newFlower.hue), sat: Math.round(newFlower.sat),
+      light: Math.round(newFlower.light), word: "", note: newFlower.journal || ""
+    });
+  }
   updateResponsiveFlowerLayout();
   markPlantedToday();
 }
@@ -1898,7 +1906,7 @@ function updateScreen() {
     step = "garden";
 
     // show garden UI again
-    if (saveBtn) saveBtn.style("display", "block");
+    if (saveBtn) saveBtn.style("display", "flex");
     if (tipsCard) tipsCard.style("display", "block");
     if (logoDiv) logoDiv.style("display", "block");
 
@@ -2235,22 +2243,34 @@ function buildUI() {
   //   }
   // });
 
-  saveBtn = createButton("Save PNG").id("save-btn").parent(gardenWrap);
+    saveBtn = createButton("").id("save-btn").parent(gardenWrap);
+  /* A camera, in slot 3 of the top right row of round icons: music at
+     right 16, the account at 62, the journal at 108, this at 154. It was
+     a labelled "Save PNG" pill, which made it the one control up there
+     that was not an icon. */
+  saveBtn.html('<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" ' +
+    'stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+    '<path d="M3 8.5h3.2l1.4-2h7.8l1.4 2H21v10.5H3z"/><circle cx="12" cy="13.5" r="3.4"/></svg>');
+  saveBtn.attribute("title", "Save a picture of your garden");
+  saveBtn.attribute("aria-label", "Save a picture of your garden");
   saveBtn.style("display", "none");
   saveBtn.style("pointer-events", "auto");
-  saveBtn.style("position", "absolute");
-  saveBtn.style("top", "20px");   /* level with the Home link opposite it */
-  saveBtn.style("right", "66px");   /* clears the 38px music button at right 16 */
-  saveBtn.style("background", "#e8f6f3");
-  saveBtn.style("border", "1px solid #cfe5e1");
-  saveBtn.style("color", "#0f5132");
-  saveBtn.style("padding", "8px 14px");
-  saveBtn.style("border-radius", "8px");
-  saveBtn.style("font-size", "13px");
-  saveBtn.style("font-weight", "500");
+  saveBtn.style("position", "fixed");
+  saveBtn.style("top", "20px");
+  saveBtn.style("right", "154px");
+  saveBtn.style("width", "38px");
+  saveBtn.style("height", "38px");
+  saveBtn.style("padding", "0");
+  saveBtn.style("border-radius", "50%");
+  saveBtn.style("align-items", "center");
+  saveBtn.style("justify-content", "center");
+  saveBtn.style("background", "rgba(255,249,227,0.92)");
+  saveBtn.style("border", "1.5px solid #b7e4e7");
+  saveBtn.style("color", "#1d6466");
+  saveBtn.style("box-shadow", "0 2px 10px rgba(29,100,102,0.14)");
   saveBtn.style("cursor", "pointer");
-  saveBtn.style("z-index", "30");
-  saveBtn.mousePressed(() => {
+  saveBtn.style("z-index", "261");
+saveBtn.mousePressed(() => {
     isSaving = true;
     setTimeout(() => {
       saveCanvas("my_gratitude_garden", "png");
@@ -2478,7 +2498,7 @@ function showStep(s) {
   const hasFlower = flowers && flowers.length > 0;
 
   if (saveBtn) {
-    saveBtn.style("display", s === "garden" && hasFlower ? "block" : "none");
+    saveBtn.style("display", s === "garden" && hasFlower ? "flex" : "none");
   }
   if (tipsCard) {
     tipsCard.style("display", s === "garden" && hasFlower ? "block" : "none");
@@ -2557,6 +2577,7 @@ function setup() {
   showStep(hasPlantedToday() ? "garden" : "prompt1");
 
   mountJournal();
+  tintCursor();
 }
 
 function draw() {
@@ -2664,4 +2685,17 @@ function mountJournal() {
     },
     paint: paintJournalBloom
   });
+}
+
+
+/* The cursor's bloom takes the hue of the flower planted most recently, so
+   the thing following the pointer is the last thing that grew here rather
+   than a fixed decoration. Called on load and again after planting. */
+function tintCursor() {
+  if (!window.GardenCursor || !flowers.length) return;
+  var newest = flowers[flowers.length - 1];
+  for (var i = 0; i < flowers.length; i++) {
+    if (flowers[i].isLatest) { newest = flowers[i]; break; }
+  }
+  if (newest && typeof newest.hue === "number") GardenCursor.tint(newest.hue);
 }

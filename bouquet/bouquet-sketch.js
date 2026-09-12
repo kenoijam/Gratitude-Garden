@@ -2149,13 +2149,13 @@ function renderProgress() {
    florist's own courier rates; these exist so the flow can be walked end
    to end and so the total on the payment step is a real sum of two real
    figures rather than a made up one. */
+/* TWO cities. It was six, which made the first screen of the physical track a
+   grid of places no florist had been arranged with, and a placeholder that
+   looks like a real offer is worse than an obviously short one. Jakarta and
+   Bandung are the two this is actually being built for. */
 const CITIES = [
-  { id: "jakarta",    name: "Jakarta",    area: "DKI Jakarta",    ongkir: 25000, when: "Same day if ordered before 15:00" },
-  { id: "bandung",    name: "Bandung",    area: "Jawa Barat",     ongkir: 30000, when: "Same day if ordered before 14:00" },
-  { id: "yogyakarta", name: "Yogyakarta", area: "DI Yogyakarta",  ongkir: 30000, when: "Same day if ordered before 14:00" },
-  { id: "surabaya",   name: "Surabaya",   area: "Jawa Timur",     ongkir: 35000, when: "Next day delivery" },
-  { id: "denpasar",   name: "Denpasar",   area: "Bali",           ongkir: 40000, when: "Next day delivery" },
-  { id: "medan",      name: "Medan",      area: "Sumatera Utara", ongkir: 45000, when: "Next day delivery" }
+  { id: "jakarta", name: "Jakarta", area: "DKI Jakarta", ongkir: 25000, when: "Same day if ordered before 15:00" },
+  { id: "bandung", name: "Bandung", area: "Jawa Barat",  ongkir: 30000, when: "Same day if ordered before 14:00" }
 ];
 const CITIES_MAP = Object.fromEntries(CITIES.map(c => [c.id, c]));
 
@@ -2163,12 +2163,8 @@ const CITIES_MAP = Object.fromEntries(CITIES.map(c => [c.id, c]));
    attributed round robin to whichever city is chosen, so the catalogue
    always reads as local without needing nine entries per city. */
 const FLORISTS = {
-  jakarta:    ["Kembang Senayan", "Toko Bunga Menteng", "Flora Kemang"],
-  bandung:    ["Rumah Bunga Dago", "Kembang Braga", "Flora Cihampelas"],
-  yogyakarta: ["Toko Bunga Malioboro", "Kembang Prawirotaman", "Flora Kaliurang"],
-  surabaya:   ["Toko Bunga Darmo", "Kembang Gubeng", "Flora Tunjungan"],
-  denpasar:   ["Bunga Sanur", "Flora Ubud", "Kembang Seminyak"],
-  medan:      ["Toko Bunga Polonia", "Kembang Setiabudi", "Flora Merdeka"]
+  jakarta: ["Kembang Senayan", "Toko Bunga Menteng", "Flora Kemang"],
+  bandung: ["Rumah Bunga Dago", "Kembang Braga", "Flora Cihampelas"]
 };
 
 /* Nine bouquets. `img` is null on every one, which is the placeholder
@@ -2176,16 +2172,21 @@ const FLORISTS = {
    renders a real photograph the moment a path is put there. That is the
    whole change needed when the florist sends their pictures, and it is
    why the frame is photo shaped rather than a drawn bouquet. */
+/* SIX bouquets. `img` is null on every one, which is the placeholder switch:
+   the tile draws a labelled photo frame while it is null, and renders a real
+   photograph the moment a path is put there. That is the whole change needed
+   when the florist sends their pictures, and it is why the frame is photo
+   shaped rather than a drawn bouquet.
+
+   It was nine. Six is what a florist can reasonably photograph, and it fills
+   the grid at both three and two columns with no orphan tile. */
 const CATALOGUE = [
   { id: "b1", name: "Pagi Cerah",   blurb: "Sunflowers, wheat and eucalyptus",  price: 285000, tone: "#f0cf82", img: null },
   { id: "b2", name: "Kasih",        blurb: "Red roses with baby's breath",      price: 465000, tone: "#d79aa8", img: null },
   { id: "b3", name: "Selamat",      blurb: "Bright mixed tulips",               price: 395000, tone: "#e5a49b", img: null },
   { id: "b4", name: "Tenang",       blurb: "White lilies and eucalyptus",       price: 375000, tone: "#b7d2c8", img: null },
   { id: "b5", name: "Terima Kasih", blurb: "Daisies, sage and fern",            price: 245000, tone: "#d4dba9", img: null },
-  { id: "b6", name: "Semangat",     blurb: "Sunflowers with red berries",       price: 325000, tone: "#ebc07e", img: null },
-  { id: "b7", name: "Lembut",       blurb: "Pastel roses and gypsophila",       price: 410000, tone: "#e2bfcb", img: null },
-  { id: "b8", name: "Damai",        blurb: "White lilies, fern and linen wrap", price: 360000, tone: "#c3cfd9", img: null },
-  { id: "b9", name: "Ceria",        blurb: "Seasonal mixed blooms",             price: 275000, tone: "#ddc5d4", img: null }
+  { id: "b6", name: "Semangat",     blurb: "Sunflowers with red berries",       price: 325000, tone: "#ebc07e", img: null }
 ];
 const CATALOGUE_MAP = Object.fromEntries(CATALOGUE.map(b => [b.id, b]));
 
@@ -2576,19 +2577,7 @@ const TEMPLATES = [
          wrapH: 40, wrapS: 10, wrapL: 97, wrapP: "plain", ribbonH: 140, card: "mint", bg: "sky" } },
   { id: "t5", name: "Get Well Soon", blurb: "For someone who needs a calm week",
     s: { flowers: ["daisy", "daisy", "lily", "daisy", "lily", "sunflower"], foliages: ["eucalyptus"],
-         wrapH: 210, wrapS: 4, wrapL: 88, wrapP: "news", ribbonH: 350, card: "snow", bg: "linen" } },
-  { id: "t6", name: "Congratulations", blurb: "For something they worked hard for",
-    s: { flowers: ["sunflower", "tulip", "rose", "sunflower", "tulip", "rose", "daisy"], foliages: ["berries"],
-         wrapH: 47, wrapS: 92, wrapL: 76, wrapP: "plain", ribbonH: 12, card: "sand", bg: "sunlit" } },
-  { id: "t7", name: "Thinking of You", blurb: "For a moment you both want to keep",
-    s: { flowers: ["sakura", "sakura", "lavender", "sakura", "lavender", "daisy"], foliages: ["beargrass"],
-         wrapH: 350, wrapS: 38, wrapL: 88, wrapP: "plain", ribbonH: 150, card: "lilac", bg: "dusk" } },
-  { id: "t8", name: "With Sympathy", blurb: "For when there is nothing to say",
-    s: { flowers: ["lily", "lily", "lotus", "lily", "lotus", "sakura"], foliages: ["eucalyptus"],
-         wrapH: 222, wrapS: 45, wrapL: 28, wrapP: "grid", ribbonH: 34, card: "snow", bg: "cream" } },
-  { id: "t9", name: "Just Because", blurb: "For no reason at all",
-    s: { flowers: ["rose", "tulip", "daisy", "sunflower", "lavender", "lily"], foliages: ["leaves"],
-         wrapH: 150, wrapS: 38, wrapL: 26, wrapP: "linen", ribbonH: 40, card: "shell", bg: "blush" } }
+         wrapH: 210, wrapS: 4, wrapL: 88, wrapP: "news", ribbonH: 350, card: "snow", bg: "linen" } }
 ];
 
 /* Rebuilds every control in the digital track from whatever `state` now
@@ -2674,6 +2663,32 @@ function initTemplateStep() {
     renderBouquetCanvas(cv, t.s.flowers,
       buildWrap(t.s.wrapH, t.s.wrapS, t.s.wrapL, t.s.wrapP, t.s.ribbonH));
   });
+
+  /* The SIXTH tile is "build your own", and it belongs IN the grid rather
+     than as a button underneath it. Five presets and one blank fill three by
+     two at every width with no orphan tile, and more to the point it makes
+     building from nothing one of the six choices rather than the thing you
+     fall back to when none of the five fit. */
+  const own = document.createElement("div");
+  own.className = "bq-template-tile bq-template-own";
+  own.setAttribute("role", "button");
+  own.setAttribute("tabindex", "0");
+  own.innerHTML =
+    '<div class="bq-own-art" aria-hidden="true">' +
+      '<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.2" ' +
+        'stroke-linecap="round" stroke-linejoin="round">' +
+      '<path d="M24 13v22M13 24h22"/></svg>' +
+    '</div>' +
+    '<div class="bq-template-body">' +
+      '<span class="bq-template-name">Build your own</span>' +
+      '<span class="bq-template-blurb">Every stem, wrap and colour, chosen by you</span>' +
+    '</div>';
+  const ownPick = () => { state.legacyWrap = null; goToStep("flowers"); };
+  own.addEventListener("click", ownPick);
+  own.addEventListener("keydown", e => {
+    if (e.key === "Enter" || e.key === " ") { e.preventDefault(); ownPick(); }
+  });
+  grid.appendChild(own);
 }
 
 function initModeStep() {
@@ -3434,7 +3449,6 @@ function onClick(id, fn) {
 function initNav() {
   /* the fork, and the way back to it */
   onClick("backToModeFromTemplate", () => goToStep("mode"));
-  onClick("scratchBtn", () => { setTrack("digital"); goToStep("flowers"); });
   onClick("backToTemplate", () => goToStep("template"));
 
   /* physical track */

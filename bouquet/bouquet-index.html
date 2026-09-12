@@ -9,6 +9,10 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
   <script src="../config.js"></script>
 
+  <!-- One cursor for the whole project: a leaf at rest, a bloom over
+       anything clickable. -->
+  <script src="../garden-cursor.js"></script>
+
   <!-- The account, so a finished bouquet can be sent to a friend rather than
        only copied as a link. With no project configured this does nothing and
        the builder is exactly as it was. -->
@@ -75,12 +79,11 @@
       <div class="bq-card">
         <div class="bq-narrow">
           <h1 class="bq-title">Start from a bouquet, or from nothing</h1>
-          <p class="bq-sub">Nine already put together for the things people usually need to say. Pick one and write your note, or build every stem yourself.</p>
+          <p class="bq-sub">Five already put together for the things people usually need to say, and one blank. Pick one and write your note, or build every stem yourself.</p>
         </div>
         <div class="bq-template-grid" id="templateGrid"></div>
         <div class="bq-nav">
           <button class="bq-btn-ghost" id="backToModeFromTemplate">Back</button>
-          <button class="bq-btn-outline" id="scratchBtn">Build my own from scratch</button>
         </div>
       </div>
     </section>

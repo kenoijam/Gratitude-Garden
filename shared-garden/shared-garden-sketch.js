@@ -2018,9 +2018,28 @@ noiseSeed(9999);
 resizeGardenCanvas();
 
 initDailyGarden();
-showStep("landing");
+/* Already planted today: straight into the garden. Asking somebody what they
+   are grateful for, letting them type it, and only then telling them they
+   have already answered is the wrong order to find that out in. The check
+   here is the BROWSER marker, since `username` is still empty at boot and the
+   name check has nothing to match against yet. */
+showStep(sharedPlantedToday("") ? "garden" : "landing");
 
 mountJournal();
+
+/* The other way in: signed in on a second device, so there is no marker here
+   but their name is in today's room. Only ever jumps while the landing step
+   is still untouched, so nobody is pulled out of a sentence they are
+   part way through writing. */
+if (window.GardenAccount) {
+GardenAccount.onChange(function () {
+const u = GardenAccount.username && GardenAccount.username();
+if (!u) return;
+if (step === "landing" && !gratitudeText.trim() && sharedPlantedToday(u)) {
+showStep("garden");
+}
+});
+}
 }
 
 function draw() {
@@ -2626,9 +2645,33 @@ confirmBack.mousePressed(() => showStep("select"));
 gardenWrap = createDiv().id("garden-wrap").parent(root);
 gardenWrap.style("pointer-events", "none");
 
-saveBtn = createButton("Save PNG").id("save-btn").parent(gardenWrap);
+saveBtn = createButton("").id("save-btn").parent(gardenWrap);
+/* A camera, in slot 3 of the top right row of round icons: music at
+   right 16, the account at 62, the journal at 108, this at 154. It was
+   a labelled "Save PNG" pill, which made it the one control up there
+   that was not an icon. */
+saveBtn.html('<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" ' +
+  'stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+  '<path d="M3 8.5h3.2l1.4-2h7.8l1.4 2H21v10.5H3z"/><circle cx="12" cy="13.5" r="3.4"/></svg>');
+saveBtn.attribute("title", "Save a picture of your garden");
+saveBtn.attribute("aria-label", "Save a picture of your garden");
 saveBtn.style("display", "none");
 saveBtn.style("pointer-events", "auto");
+saveBtn.style("position", "fixed");
+saveBtn.style("top", "20px");
+saveBtn.style("right", "154px");
+saveBtn.style("width", "38px");
+saveBtn.style("height", "38px");
+saveBtn.style("padding", "0");
+saveBtn.style("border-radius", "50%");
+saveBtn.style("align-items", "center");
+saveBtn.style("justify-content", "center");
+saveBtn.style("background", "rgba(255,249,227,0.92)");
+saveBtn.style("border", "1.5px solid #b7e4e7");
+saveBtn.style("color", "#1d6466");
+saveBtn.style("box-shadow", "0 2px 10px rgba(29,100,102,0.14)");
+saveBtn.style("cursor", "pointer");
+saveBtn.style("z-index", "261");
 saveBtn.mousePressed(() => {
 const prevSway = swayOn;
 
@@ -2734,7 +2777,7 @@ canvas.elt.style.pointerEvents = (s === "garden") ? "auto" : "none";
 const hasFlower = flowers && flowers.length > 0;
 
 if (saveBtn) {
-saveBtn.style("display", step === "garden" && hasFlower ? "block" : "none");
+saveBtn.style("display", step === "garden" && hasFlower ? "flex" : "none");
 }
 if (tipsCard) {
 tipsCard.style("display", step === "garden" && hasFlower ? "block" : "none");

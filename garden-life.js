@@ -423,12 +423,20 @@
       if (bh < 260) continue;                 /* too short to fly in */
       var sd = (b + 3) * 613;
       var homeYf = 0.18 + rnd(sd * 7.7) * 0.64;
+      /* Out at the MARGINS, alternating sides, and with a swing tied to the
+         page's width rather than a pixel count. A butterfly hovering over a
+         paragraph is something the reader has to look past; one out at the
+         edge is something they notice and then keep reading. The copy on the
+         landing page sits in a centred block, so the outer sixth on each side
+         is dependably empty. */
+      var side = (b % 2 === 0) ? 1 : -1;
       out.push({
         band: b,
         tint: TINTS[b % TINTS.length],
-        homeXf: 0.15 + rnd(sd * 3.1) * 0.7,
+        homeXf: side > 0 ? (0.05 + rnd(sd * 3.1) * 0.05)
+                         : (0.90 + rnd(sd * 3.1) * 0.05),
         homeYf: homeYf,
-        ax: 110 + rnd(sd * 2.3) * 150,
+        axf: 0.035 + rnd(sd * 2.3) * 0.035,
         /* The same headroom rule the gardens use: home plus the full swing of
            both sines still lands inside the band, so a butterfly can never
            wander out of the section it belongs to. */
@@ -472,10 +480,22 @@
     return out;
   }
 
+  /* `opts.only` draws a single band and skips the rest.
+
+     The landing page needs that because its sparkles have to sit UNDER the
+     cards and the copy and OVER each section's background colour, and one
+     fixed canvas cannot do that: a section paints its own background, so
+     anything behind it is hidden and anything in front of it covers the
+     content too. The only place that gap exists is inside the section, as an
+     absolutely positioned child at z-index -1, which means one canvas per
+     section and each one drawing only its own. Everything is still built from
+     the FULL band list, so the population signature does not change from one
+     canvas to the next and nothing is re-seeded per section. */
   function drift(ctx, w, h, opts) {
     if (!ctx || w <= 0 || h <= 0) return;
     var bands = (opts && opts.bands) || [];
     if (!bands.length) return;
+    var only = (opts && typeof opts.only === "number") ? opts.only : -1;
     var scroll = (opts && opts.scrollY) || 0;
     var t = clock();
     var u = unitFor(w, opts);
@@ -495,6 +515,7 @@
     ctx.save();
     for (var i = 0; i < dust.length; i++) {
       var d = dust[i];
+      if (only >= 0 && d.band !== only) continue;
       var band = bands[d.band];
       if (!band) continue;
       var bh = Math.max(60, band.bottom - band.top);
@@ -512,11 +533,13 @@
        canvas is never behind the specks of light. */
     for (var j = 0; j < pageFlies.length; j++) {
       var f = pageFlies[j];
+      if (only >= 0 && f.band !== only) continue;
       var fb = bands[f.band];
       if (!fb) continue;
       var fh = Math.max(120, fb.bottom - fb.top);
       var home = [f.homeXf * w, fb.top + f.homeYf * fh - scroll];
       var ay = f.ayf * fh;
+      f.ax = f.axf * w;
       var now = flyAt(f, t, home, ay);
       if (now[1] < -80 || now[1] > h + 80) continue;
       var soon = flyAt(f, t + 0.18, home, ay);

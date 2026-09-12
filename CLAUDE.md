@@ -287,7 +287,7 @@ The first screen is a fork, not a step. `TRACKS` holds two step lists and `STEPS
 
 #### Physical: a mock Indonesian checkout
 
-- **`CITIES`, `FLORISTS` and `CATALOGUE` are placeholder data**, six cities with their own ongkir, three florists each, and nine bouquets attributed round robin so the catalogue always reads as local without needing nine entries per city.
+- **`CITIES`, `FLORISTS` and `CATALOGUE` are placeholder data**: **two** cities with their own ongkir, three florists each, and **six** bouquets attributed round robin so the catalogue always reads as local without needing six entries per city. It was six cities and nine bouquets. A placeholder that looks like a real offer is worse than an obviously short one, and six bouquets fill the grid at both three and two columns with no orphan tile.
 - **Every catalogue entry carries `img: null`, and that is the placeholder switch.** While it is null the tile paints a labelled photo frame at 4:3; the moment a path is put there it renders a real photograph instead. That is the whole change needed when a florist sends their pictures, and it is why the frame is photo shaped rather than a drawn bouquet: a physical product is sold with a photograph.
 - **The three payment methods are QRIS, virtual account and e-wallet, and all three are MOCKS.** They were chosen partly because none of them asks for a card number, which is how Indonesian checkout actually works and also means this flow never has a card field to get wrong. Nothing is transmitted anywhere and no money moves.
 - **The QR decodes to nothing on purpose.** `drawMockQR` paints the three finder squares so it reads as a QRIS at a glance and random modules everywhere else, so a phone pointed at it simply fails to find a code rather than being sent somewhere. It is seeded off the order so it does not reshuffle on every repaint.
@@ -297,6 +297,7 @@ The first screen is a fork, not a step. `TRACKS` holds two step lists and `STEPS
 
 #### Digital: nine templates
 
+- **FIVE presets and a sixth tile that is blank.** "Build your own" is IN the grid rather than a button underneath it, which fills three by two at every width and makes building from nothing one of the six choices rather than the thing you fall back to when none of the five fit. Its art slot is 175px to match the preset canvases, which are capped at 140 wide and painted at a fixed 5:4.
 - **A template is nothing but a preset of `state`**, which is why it costs so little: every one renders through the same arrangement code as a hand built bouquet, so a template tile cannot promise something the builder would not produce.
 - **Picking one lands on the LETTER step, not the reveal.** The words are the one thing a template cannot supply. Every other step is already answered and still reachable by walking back, so it is a shortcut rather than a lock.
 - **`syncBuilderToState()` rebuilds every control after a template is applied**, and it deliberately does NOT call `initWrapStep`. That one binds the three sliders, which live outside the grid it clears, so calling it twice binds them twice; `refreshWrapStep` is the safe half. `initFlowerGrid`, `initFoliageGrid` and `initSwatchGrid` all clear their own container first, so re-running those is safe.
@@ -464,6 +465,42 @@ Note that `html` sets `scroll-behavior: smooth`, so anything that scrolls the pa
 
 ~1100 lines with three separate inline `<script>` blocks, opening at lines 103, 724 and 825: the hero meadow canvas (flower family #6 in the sync table), side-nav scroll-spy + flower catalogue modal (`flowerData` at ~line 753), and the card-scene + catalogue canvases (family #7). Both flower families live in this one file and must be edited separately. `styles.css` holds the design tokens (`--cream`, `--sky`, `--teal`, `--darkteal`, `--yellow`, `--lightsky`) that the bouquet page redeclares and the garden pages ignore.
 
+## The controls all live in one corner
+
+**Every page's controls are one row of round icons in the top right**, 38px each with an 8px gap, so the slots are `right: 16, 62, 108, 154`.
+
+| slot | control | built by |
+|---|---|---|
+| 16 | music | `garden-music.js` |
+| 62 | account and friends | `garden-account.js` |
+| 108 | journal | `garden-journal.js` |
+| 154 | save a picture | each garden's own sketch |
+
+- **The journal was a labelled pill in the BOTTOM LEFT and sat straight on top of the Garden Tips card.** That corner is the tips card's, on both gardens.
+- **Save PNG was the only labelled control up there**, so it is a camera now. `#save-btn` is set inline by the sketch AND in the stylesheet; both carry the same numbers so the dead rule cannot resurface with the old pill look. It shows as `flex`, not `block`, or the icon does not centre.
+- **The personal garden's bottom right `#gg-account` chip is gone** when `garden-account.js` is live, because that module's panel already shows the email and carries Sign out. Two places to sign out is one too many, and it also sat exactly where `#gg-logo` would reappear if the `LOGO-01.png` 404 were ever fixed.
+- **The account icon has no label, so its state is in `title` and `aria-label`**: Sign in, or Friends with the username. The pending count rides the icon's corner.
+
+## The cursor (`garden-cursor.js`)
+
+**A leaf at rest, a bloom over anything clickable, on ALL FOUR pages.** It used to live in `bouquet-style.css` and appear on one page of four, which made that page the odd one out rather than a theme.
+
+- **It is injected from JS rather than written in a stylesheet** so the bloom can be RECOLOURED at runtime. In the personal garden it takes the hue of the flower planted most recently, so the thing following the pointer is the last thing that grew. Everywhere else it is the palette's butter yellow.
+- **The class list is the load bearing part.** A class rule carrying `cursor: pointer` outranks a bare `button` selector, so every clickable class in the project is named explicitly. Anything new that sets its own `cursor: pointer` has to be added there.
+- **Inputs, sliders and disabled controls are declared LAST so they win.** A caret and a grab handle each say something true about a control that a decorative cursor would throw away.
+- **`@media (hover: none)` turns the whole thing off**, since a touch screen has no cursor to draw.
+
+## The landing page sparkles are per SECTION, not per page
+
+**One canvas inside each section at `z-index: -1`, and that value is the only one that works.** It paints above the section's own background colour and below everything in it. A single fixed canvas cannot reach that gap: in front of the sections it covers the cards, behind them the backgrounds hide it. This is what "the sparkles look weird above the containers" was.
+
+- **The hero is deliberately excluded.** It already carries birds, butterflies and its own motes on the meadow canvas.
+- **`position: sticky` with `margin-bottom: -100vh`**, so the backing store is one viewport rather than one whole section. On a 7500px page that is the difference between a few megabytes and tens of them.
+- **An IntersectionObserver frees the canvas of any section that is not near the viewport**, so two or three are allocated at a time rather than six.
+- **None of these sections may gain a `transform`, `filter` or `opacity`.** Any of those makes the section a stacking context, which traps `z-index: -1` inside it and paints the canvas behind the background after all. The same rule already protects the flower modal.
+- **`GardenLife.drift` takes `opts.only`** to draw a single band. The FULL band list is still passed every time, so the population signature does not change from one canvas to the next and nothing is re-seeded per section.
+- **Butterflies keep to the MARGINS**, alternating sides, with a swing tied to the page's width rather than a pixel count. The copy sits in a centred block, so the outer sixth on each side is dependably empty. One hovering over a paragraph is something a reader has to look past.
+
 ## The journal (`garden-journal.js`)
 
 **A week strip, seven days across, with the flower planted that day drawn under each one.** One file at the repo root, loaded by both gardens, and the two need very different things from it. That difference is the whole design.
@@ -491,6 +528,7 @@ Note that `html` sets `scroll-behavior: smooth`, so anything that scrolls the pa
 - **Neither is airtight, and that is the accepted cost of a garden anyone can plant in without an account.** Somebody determined can clear their storage and type a new name. Requiring an account to plant was considered and turned down, because being able to try the page in ten seconds is the point of it.
 - **Checked at the username step AND again at the plant button.** The first is so nobody picks a flower for nothing; the second is because somebody can sit on the picker while another tab plants.
 - **When it is blocked, Continue becomes "See today's garden"** rather than a dead button.
+- **Already planted today goes STRAIGHT to the garden at boot.** Asking somebody what they are grateful for, letting them type it, and only then telling them they have already answered is the wrong order to find that out in. The boot check is the BROWSER marker, since `username` is empty at that point; the account's name is checked when it resolves, and only while the landing step is still untouched so nobody is pulled out of a sentence they are part way through.
 
 ## Sound
 
