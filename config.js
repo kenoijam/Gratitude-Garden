@@ -19,5 +19,18 @@
    here were silently thrown away and accounts never switched on. That
    file is gone. See SUPABASE-SETUP.md. */
 
+/* Replace BOTH of the two lines below with the values from your own
+   project. Do not keep the example text: the page checks, and will tell you
+   in the browser console if what is here is not a real project.
+
+   The variable is still called ANON_KEY because that is the name the auth
+   code reads, but paste whichever key YOUR dashboard shows. Supabase renamed
+   them partway through:
+     - PUBLISHABLE key, starting `sb_publishable_`, is the current name
+     - anon public, one long `eyJ...` string, is the older name for the same
+       thing and still works
+   Either is correct here. The one beside it, the SECRET key, previously
+   called `service_role`, must never go in this file. The page refuses it. */
+
 window.SUPABASE_URL = "YOUR_PROJECT_URL";
-window.SUPABASE_ANON_KEY = "YOUR_ANON_KEY";
+window.SUPABASE_ANON_KEY = "YOUR_PUBLISHABLE_OR_ANON_KEY";

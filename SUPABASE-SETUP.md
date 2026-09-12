@@ -94,7 +94,15 @@ for a command that creates something rather than fetching something.
 1. In the sidebar, click the gear icon (**Project Settings**), then **API**.
 2. You need two values from that page:
    - **Project URL**, which looks like `https://abcdefgh.supabase.co`
-   - **anon public** key, a very long string of letters and numbers
+   - the key that is **safe to publish**. Supabase renamed these, so your
+     dashboard shows one of two things:
+     - **Publishable key**, starting `sb_publishable_`, the current name, or
+     - **anon public**, one long string starting `eyJ`, the older name for
+       exactly the same thing
+
+   Either works. Take whichever you are shown, and copy the **whole** string.
+   The key beside it, called **Secret key** or **`service_role`**, is the
+   opposite of safe and the page will refuse it.
 3. Open **`config.js`** at the top level of the project and replace the two
    placeholders:
 
@@ -114,8 +122,8 @@ coming from this project". It does not say who you are. What decides what you ma
 read or write is the row level security from step 2, which the database checks on
 every single request against the account you are actually signed in as.
 
-On the same settings page there is a **`service_role`** key. That one ignores row
-level security completely. **Never put it in this file, never put it in anything
+On the same settings page there is a **Secret key**, previously called
+**`service_role`**. That one ignores row level security completely. **Never put it in this file, never put it in anything
 that runs in a browser, and never send it to anyone**, including me.
 
 ---
@@ -160,8 +168,11 @@ and it breaks at the last step, after the email has already been sent.
 By default Supabase emails a confirmation link before a new account can sign in.
 For a piece of coursework you are demonstrating, that is usually a nuisance.
 
-- To skip it: **Authentication**, **Providers**, **Email**, turn off
-  **Confirm email**.
+- To skip it: **Authentication** in the left sidebar, then **Providers**
+  (newer dashboards call this **Sign In / Providers**), then click the
+  **Email** row to open it, and turn off **Confirm email**. If you cannot
+  find it, this link opens that page on whichever project you have selected:
+  `https://supabase.com/dashboard/project/_/auth/providers`
 - To keep it: leave it on, and expect to click a link in your inbox after
   creating an account. The garden already handles this and tells you to go and
   check your email.
@@ -189,8 +200,11 @@ Serve the site and open the personal garden.
 ## If something goes wrong
 
 - **"Could not reach the garden."** The Project URL is wrong, or you are offline.
-- **The sign in screen never appears.** The placeholders are still in
-  `config.js`, or there is a typo in one of the two values.
+- **The sign in screen never appears.** Open the browser console (right
+  click, Inspect, Console). If accounts are off, the page says so there and
+  names the reason: placeholders still in place, the example values from this
+  guide pasted instead of your own, a URL that is not a Supabase address, a
+  key that was copied only partly, or a secret key it refused to use.
 - **You sign in and it says it cannot reach your garden, check the table exists.**
   Step 2 did not run. Go back to the SQL Editor and run it again.
 - **You created an account and nothing happened.** Confirmation emails are on.
