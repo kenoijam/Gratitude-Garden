@@ -852,6 +852,35 @@ function drawLavenderBloom(h, hue, sat, light) {
   pop();
 }
 
+/* A soft drop shadow under a bloom, and it is legibility rather than style.
+   The garden's ground runs #a9d9cf, #8fcfbe and #7ec4b4, all pale teals, and
+   the sender picks the flower's hue freely: a pale teal or a pale blue bloom
+   sat on that ground at almost no contrast and simply disappeared into the
+   grass. A shadow works whatever hue is chosen, where an outline or a floor
+   on lightness would fight the choice the person just made.
+
+   It is set on `drawingContext`, p5's own 2D context, because p5 has no
+   shadow API of its own. Every petal casts it, which sounds wrong and is in
+   fact what makes it read as ONE shadow: petals are drawn front to back over
+   each other, so each petal paints over the shadow of the one before it and
+   only the outer silhouette survives.
+
+   The blur and the drop are scaled from the bloom's own radius, or a small
+   flower wears a shadow built for a large one. */
+function bloomShadow(R) {
+  drawingContext.shadowColor = "rgba(20,64,58,0.32)";
+  drawingContext.shadowBlur = Math.max(6, R * 0.30);
+  drawingContext.shadowOffsetX = Math.max(1, R * 0.04);
+  drawingContext.shadowOffsetY = Math.max(2.5, R * 0.11);
+}
+
+function clearBloomShadow() {
+  drawingContext.shadowColor = "rgba(0,0,0,0)";
+  drawingContext.shadowBlur = 0;
+  drawingContext.shadowOffsetX = 0;
+  drawingContext.shadowOffsetY = 0;
+}
+
 function drawBloom(f) {
   colorMode(HSL, 360, 100, 100, 1);
   noStroke();
@@ -860,6 +889,8 @@ function drawBloom(f) {
   const hue   = f.hue;
   const sat   = f.sat;
   const light = f.light;
+
+  bloomShadow(f.species === "lavender" ? R * 0.9 : R);
 
   if (f.species === "tulip") {
     drawTulipBloom(R, hue, sat, light);
@@ -883,6 +914,7 @@ function drawBloom(f) {
     drawDaisyBloom(R, hue, sat, light);
   }
 
+  clearBloomShadow();
   colorMode(RGB);
 }
 

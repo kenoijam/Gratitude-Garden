@@ -305,6 +305,24 @@ hoveredFlower = null;
 } else {
 hoveredFlower = tapped;
 }
+
+/* Tapping a bloom opens its likes and comments. The hover tooltip is left
+   exactly as it was, since it answers a different question: the tooltip is
+   what the flower SAYS, at a glance, and the panel is what other people have
+   said back. Tapping empty ground closes the panel, which is the gesture
+   anyone would try first.
+
+   `roomKey` and `speciesList` are handed over here because the sketch
+   declares them with `let` and `const`, so neither is on `window` for the
+   social module to find. */
+if (window.GardenSocial) {
+if (tapped) {
+const sp = speciesList.find(x => x.id === tapped.species);
+GardenSocial.open(tapped, { day: roomKey, meaning: sp ? sp.meaning : "" });
+} else {
+GardenSocial.close();
+}
+}
 }
 
 function checkHover(px = mouseX, py = mouseY) {
@@ -825,6 +843,35 @@ ellipse(0, y - 10, 6, 11);
 pop();
 }
 
+/* A soft drop shadow under a bloom, and it is legibility rather than style.
+ The garden's ground runs #a9d9cf, #8fcfbe and #7ec4b4, all pale teals, and
+ the sender picks the flower's hue freely: a pale teal or a pale blue bloom
+ sat on that ground at almost no contrast and simply disappeared into the
+ grass. A shadow works whatever hue is chosen, where an outline or a floor
+ on lightness would fight the choice the person just made.
+
+ It is set on `drawingContext`, p5's own 2D context, because p5 has no
+ shadow API of its own. Every petal casts it, which sounds wrong and is in
+ fact what makes it read as ONE shadow: petals are drawn front to back over
+ each other, so each petal paints over the shadow of the one before it and
+ only the outer silhouette survives.
+
+ The blur and the drop are scaled from the bloom's own radius, or a small
+ flower wears a shadow built for a large one. */
+function bloomShadow(R) {
+drawingContext.shadowColor = "rgba(20,64,58,0.32)";
+drawingContext.shadowBlur = Math.max(6, R * 0.30);
+drawingContext.shadowOffsetX = Math.max(1, R * 0.04);
+drawingContext.shadowOffsetY = Math.max(2.5, R * 0.11);
+}
+
+function clearBloomShadow() {
+drawingContext.shadowColor = "rgba(0,0,0,0)";
+drawingContext.shadowBlur = 0;
+drawingContext.shadowOffsetX = 0;
+drawingContext.shadowOffsetY = 0;
+}
+
 function drawBloom(f) {
 colorMode(HSL, 360, 100, 100, 1);
 noStroke();
@@ -833,6 +880,8 @@ const R     = f.size;
 const hue   = f.hue;
 const sat   = f.sat;
 const light = f.light;
+
+bloomShadow(f.species === "lavender" ? R * 0.9 : R);
 
 if (f.species === "tulip") {
 drawTulipBloom(R, hue, sat, light);
@@ -855,6 +904,10 @@ drawLavenderBloom(R * 1.5, hue, sat, light);
 } else {
 drawDaisyBloom(R, hue, sat, light);
 }
+
+/* Cleared before the label, which is drawn in this same function: a shadow
+   under white text on a coloured halo turns it to mud. */
+clearBloomShadow();
 
 const scaleFactor = (width < 720 ? gardenScale : 1);
 const labelSize = max(11, 16 * scaleFactor);

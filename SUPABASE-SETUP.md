@@ -179,6 +179,111 @@ For a piece of coursework you are demonstrating, that is usually a nuisance.
 
 ---
 
+## Step 6: Turn on likes and comments in the shared garden
+
+This one is optional. Skip it and everything else still works; the shared
+garden simply has no like button and no comments on it.
+
+Go back to the **SQL Editor**, click **New query**, paste all of this in and
+press **Run**. It is safe to run more than once: every line either creates
+something that is missing or leaves what is already there alone.
+
+```sql
+-- ---------------------------------------------------------------------
+-- The shared garden's flowers, and the likes and comments on them.
+--
+-- A flower is planted with nothing but a typed name, exactly as before, and
+-- planting still writes NOTHING here. A row appears the first time somebody
+-- signed in opens that flower to react to it. That is what keeps the garden
+-- open to anyone while still making a like or a comment belong to a person.
+-- ---------------------------------------------------------------------
+
+-- posts already exists and holds id, user_id, caption and created_at.
+-- These columns describe which bloom a post is anchored to.
+alter table public.posts alter column user_id drop not null;
+
+alter table public.posts
+  add column if not exists kind          text not null default 'shared_flower',
+  add column if not exists day           text not null default '',
+  add column if not exists created_index integer,
+  add column if not exists planter       text not null default '',
+  add column if not exists species       text not null default 'daisy',
+  add column if not exists hue           integer not null default 0,
+  add column if not exists sat           integer not null default 60,
+  add column if not exists light         integer not null default 65,
+  add column if not exists anchored_by   uuid references auth.users on delete set null;
+
+-- One post per bloom per day. Two people opening the same flower at the same
+-- moment would otherwise each create one, and the comments would split in two.
+create unique index if not exists posts_shared_flower_key
+  on public.posts (day, created_index) where kind = 'shared_flower';
+
+create index if not exists comments_post_idx on public.comments (post_id);
+create index if not exists likes_post_idx    on public.likes (post_id);
+
+-- Nobody may like the same flower twice. Doing this in the database rather
+-- than in the page is the point: the page can be edited by anyone reading it.
+create unique index if not exists likes_one_per_person
+  on public.likes (post_id, user_id);
+
+alter table public.posts    enable row level security;
+alter table public.comments enable row level security;
+alter table public.likes    enable row level security;
+alter table public.profiles enable row level security;
+
+-- A shared flower is public, so anyone may read it and read what was said
+-- about it, signed in or not.
+drop policy if exists "read shared flowers" on public.posts;
+create policy "read shared flowers" on public.posts
+  for select using (kind = 'shared_flower');
+
+-- Only somebody signed in may create the row, and only in their own name.
+drop policy if exists "anchor a shared flower" on public.posts;
+create policy "anchor a shared flower" on public.posts
+  for insert with check (
+    auth.uid() is not null
+    and kind = 'shared_flower'
+    and anchored_by = auth.uid()
+  );
+
+drop policy if exists "read comments"      on public.comments;
+drop policy if exists "write own comment"  on public.comments;
+drop policy if exists "delete own comment" on public.comments;
+create policy "read comments"      on public.comments for select using (true);
+create policy "write own comment"  on public.comments for insert with check (auth.uid() = user_id);
+create policy "delete own comment" on public.comments for delete using (auth.uid() = user_id);
+
+drop policy if exists "read likes"    on public.likes;
+drop policy if exists "like as me"    on public.likes;
+drop policy if exists "unlike my own" on public.likes;
+create policy "read likes"    on public.likes for select using (true);
+create policy "like as me"    on public.likes for insert with check (auth.uid() = user_id);
+create policy "unlike my own" on public.likes for delete using (auth.uid() = user_id);
+
+-- A comment has to show a name, so profiles stay readable. The only columns
+-- on there are a username, a display name and a favourite flower.
+drop policy if exists "create own profile" on public.profiles;
+drop policy if exists "update own profile" on public.profiles;
+create policy "create own profile" on public.profiles for insert with check (auth.uid() = id);
+create policy "update own profile" on public.profiles for update using (auth.uid() = id);
+```
+
+You should see **Success. No rows returned**. That is what success looks like
+for a query that only changes the shape of things.
+
+### What this does and does not protect
+
+- **A like cannot be cast twice**, and a comment cannot be posted under
+  somebody else's name. Both are enforced by the database, not by the page,
+  which matters because anyone can edit the page in their own browser.
+- **Anyone signed in can create the anchor row for a flower.** That is the one
+  loose thread. It costs an account and it only ever creates a row that points
+  at a bloom that already exists in the garden, so the worst case is clutter
+  rather than anything reaching another person.
+- **Every profile is readable by anyone**, which is what puts a name under a
+  comment. If you would rather it were not, that is a policy change on
+  `profiles` and it will take the names off the comments with it.
+
 ## Check that it worked
 
 Serve the site and open the personal garden.

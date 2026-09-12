@@ -993,3 +993,8 @@ section { padding: 2.2rem 3.4rem; }
 }
 
 
+
+/* The page wide motes. z-index 6 puts them over every section and every card,
+   whose own z-indexes top out at 5, and under the flower modal at 300, the
+   music button at 260 and the side nav at 9000. They never take a pointer. */
+#page-dust { position: fixed; inset: 0; pointer-events: none; z-index: 6; }

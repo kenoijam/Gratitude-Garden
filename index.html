@@ -428,7 +428,15 @@
        than deriving them from a horizon: its flowers grow UPWARD out of a
        ground line at the bottom of the picture, where a garden's sit around
        and below its horizon, so the derived bands belong to the gardens. */
-    if (window.GardenLife) GardenLife.sky(ctx, LOGICAL_W, logH, { birds: [16, 100] });
+    if (window.GardenLife) {
+      /* The hero's sky is a thin strip between the copy and the flowers, and
+         a visitor reads the top of a page for a few seconds and then scrolls.
+         On the gardens' default rhythm the flock is away for twenty two of
+         every fifty two seconds, which most people would simply never see, so
+         here the gap is eight and the birds carry a little more weight. */
+      GardenLife.sky(ctx, LOGICAL_W, logH,
+        { birds: [16, 104], cross: 26, gap: 8, scale: 1.2, ink: "rgba(47,98,96,0.58)" });
+    }
 
     // 1. Back hills (behind flowers)
     ctx.fillStyle='#a9d9cf';
@@ -1820,6 +1828,90 @@
   <!-- Background music. Soft whimsy: F Lydian, bells over an airy pad.
        One shared engine, synthesised live, no audio files. The mood is the
        only thing that differs per page. -->
+  <!-- Motes of light across the WHOLE page, not just the meadow. One fixed
+       canvas over everything at pointer-events:none, so the page scrolls
+       past behind them the way dust sits in front of a lens. -->
+  <canvas id="page-dust" aria-hidden="true"></canvas>
+  <script>
+  (function () {
+    var c = document.getElementById('page-dust');
+    if (!c || !window.GardenLife) return;
+    var ctx = c.getContext('2d');
+
+    /* Which stretches of the page are DARK. A mote has to go white on the
+       dark teal and gold on the cream, or it is invisible on one of them, and
+       reading pixels back off the page every frame to find out is not an
+       option. These two are measured once in page space and only re-measured
+       when something could have moved. */
+    var darkBands = [];
+    var lastMeasure = 0;
+
+    function measure() {
+      var dpr = Math.min(window.devicePixelRatio || 1, 2);
+      var w = window.innerWidth, h = window.innerHeight;
+      if (c.width !== Math.round(w * dpr) || c.height !== Math.round(h * dpr)) {
+        c.width = Math.round(w * dpr);
+        c.height = Math.round(h * dpr);
+        c.style.width = w + 'px';
+        c.style.height = h + 'px';
+      }
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      darkBands = [];
+      ['#wisdom', 'footer'].forEach(function (sel) {
+        var el = document.querySelector(sel);
+        if (!el) return;
+        var r = el.getBoundingClientRect();
+        darkBands.push([r.top + window.scrollY, r.bottom + window.scrollY]);
+      });
+      lastMeasure = Date.now();
+    }
+
+    /* The canvas is fixed, so a mote's y is a VIEWPORT y and the scroll
+       position is what turns it into a page one. */
+    function onDark(y) {
+      var py = y + window.scrollY;
+      for (var i = 0; i < darkBands.length; i++) {
+        if (py >= darkBands[i][0] && py <= darkBands[i][1]) return true;
+      }
+      return false;
+    }
+
+    function paint() {
+      var w = window.innerWidth, h = window.innerHeight;
+      if (w <= 0 || h <= 0) return;
+      /* Self healing rather than trusting the first measurement. A canvas
+         sized while the window reports zero, which happens in a hidden tab
+         and in some embedded views, stays zero for good otherwise: no resize
+         event ever fires to correct it, and the page then carries an empty
+         canvas with nothing on it and no error. */
+      var dpr = Math.min(window.devicePixelRatio || 1, 2);
+      if (c.width !== Math.round(w * dpr) || c.height !== Math.round(h * dpr)) measure();
+      ctx.clearRect(0, 0, w, h);
+      GardenLife.drift(ctx, w, h, { toneAt: onDark });
+    }
+
+    measure();
+    paint();
+    window.addEventListener('resize', function () { measure(); paint(); });
+
+    /* Thirty frames rather than sixty. These drift a few pixels a second and
+       nothing about them needs more. Nothing at all while the tab is hidden,
+       and one still frame for anyone who has asked for reduced motion. */
+    var last = 0;
+    function tick(now) {
+      requestAnimationFrame(tick);
+      if (document.hidden) return;
+      if (now - last < 33) return;
+      last = now;
+      /* The cards fold and the reveal animations run, so the dark sections
+         can move after load. Cheap enough to check back now and then. */
+      if (Date.now() - lastMeasure > 1500) measure();
+      paint();
+    }
+    if (!GardenLife.reduced) requestAnimationFrame(tick);
+  })();
+  </script>
+
   <script src="garden-music.js" data-mood="whimsy"></script>
 </body>
 </html>

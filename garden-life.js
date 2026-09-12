@@ -18,10 +18,13 @@
    radians, and every entry point brackets itself in save/restore so a sketch
    cannot inherit a stray transform or alpha.
 
-   Two entry points, because the life belongs at two different depths:
+   Three entry points, because the life belongs at different depths:
 
      GardenLife.sky(ctx, w, h, opts)     birds. After the clouds, under the hills.
      GardenLife.meadow(ctx, w, h, opts)  butterflies and motes. Over everything.
+     GardenLife.drift(ctx, w, h, opts)   motes alone, for a whole PAGE rather
+                                         than a scene. The landing page runs it
+                                         on a fixed canvas over everything.
 
    Everything is placed in BANDS, [top, bottom] in the caller's own units.
    The default bands are derived from opts.horizon, which is all a garden has
@@ -164,7 +167,25 @@
       });
     }
 
-    return { w: w, h: h, flies: flies, birds: birds, motes: motes };
+    /* A second, larger set for `drift`. It is not the same list at a
+       different density: these have to carry a tone, since a page runs pale
+       sections and dark ones past them and one colour cannot sit on both. */
+    var nDust = Math.round(clamp(w / 58, 12, 34));
+    var dust = [];
+    for (var u2 = 0; u2 < nDust; u2++) {
+      dust.push({
+        x: rnd(u2 * 97.1) * 1,          /* 0..1 across the page */
+        y: rnd(u2 * 101.3) * 1,         /* 0..1 down it */
+        r: 1.0 + rnd(u2 * 103.9) * 1.9,
+        drift: 3 + rnd(u2 * 107.7) * 11,
+        rise: 3 + rnd(u2 * 109.3) * 10,
+        tw: 0.35 + rnd(u2 * 113.1) * 0.6,
+        phase: rnd(u2 * 127.3) * 6.28,
+        warm: rnd(u2 * 131.9) > 0.5
+      });
+    }
+
+    return { w: w, h: h, flies: flies, birds: birds, motes: motes, dust: dust };
   }
 
   /* Rebuilt only on a real size change. Rebuilding on every pixel of a window
@@ -215,8 +236,13 @@
     var u = unitFor(w, opts);
     var band = bandBird(h, horizon, opts);
 
-    var CROSS = 30;      /* seconds in the air */
-    var GAP = 22;        /* seconds of empty sky after it */
+    /* A page may set its own rhythm. The gardens take the default, where the
+       sky is empty more often than not; the hero shortens the gap, because a
+       visitor reads the top of a page for a few seconds and then scrolls, so
+       a flock that is away for twenty two of every fifty two seconds is one
+       most people never see at all. */
+    var CROSS = (opts && opts.cross) || 30;   /* seconds in the air */
+    var GAP = (opts && typeof opts.gap === "number") ? opts.gap : 22;
     var CYCLE = CROSS + GAP;
     var at = t % CYCLE;
     if (at > CROSS) return;              /* the sky is empty on purpose */
@@ -243,8 +269,10 @@
       var flap = Math.sin(t * b.flap + b.phase);
       var lift = (b.size * u) * (0.34 + 0.5 * (flap * 0.5 + 0.5));
       /* Faint, because they are far away. Anything darker reads as a bird
-         painted on the sky rather than a bird in it. */
-      drawBird(ctx, x, y, b.size * u, lift, "rgba(47,98,96,0.42)");
+         painted on the sky rather than a bird in it. The hero asks for a
+         little more, since its sky is a thin strip between the copy and the
+         flowers and a bird there has far less room to be noticed in. */
+      drawBird(ctx, x, y, b.size * u, lift, (opts && opts.ink) || "rgba(47,98,96,0.42)");
     }
     ctx.restore();
   }
@@ -316,6 +344,67 @@
     ctx.restore();
   }
 
+  /* ---------------------------------------------------------------- motes */
+  /* A mote is two circles, a wide faint one and a tight bright one, rather
+     than a radial gradient. A gradient per mote per frame is real work for a
+     glow two pixels across, and the pair reads the same.
+
+     There are two palettes and it is not decoration. On a dark ground a mote
+     is white and reads as light. On CREAM, which is most of the landing page,
+     white is invisible: it has to go the other way and sit DARKER than the
+     ground to be seen at all, so the pale tones become a warm gold and a soft
+     teal, at a little more alpha to make up for the smaller contrast. */
+  var MOTE = {
+    light: { warm: ["rgb(250,222,150)", "rgb(240,192,84)"],
+             cool: ["rgb(176,222,210)", "rgb(122,190,176)"], gain: 1.35 },
+    dark:  { warm: ["rgb(255,236,170)", "rgb(255,249,222)"],
+             cool: ["rgb(233,255,248)", "rgb(255,255,255)"], gain: 1.00 }
+  };
+
+  function paintMote(ctx, x, y, r, a, warm, onDark) {
+    var set = onDark ? MOTE.dark : MOTE.light;
+    var pair = warm ? set.warm : set.cool;
+    var al = clamp(a * set.gain, 0, 1);
+    ctx.globalAlpha = al * 0.4;
+    ctx.fillStyle = pair[0];
+    ctx.beginPath(); ctx.arc(x, y, r * 2.6, 0, 6.283); ctx.fill();
+    ctx.globalAlpha = al;
+    ctx.fillStyle = pair[1];
+    ctx.beginPath(); ctx.arc(x, y, r, 0, 6.283); ctx.fill();
+    ctx.globalAlpha = 1;
+  }
+
+  /* Motes alone, across a whole PAGE rather than inside a scene. The landing
+     page runs this on one fixed canvas over everything, so the motes stay
+     where they are while the page scrolls past behind them, which is how dust
+     in front of a lens behaves and is also free: nothing has to be re-laid
+     out or re-measured on scroll.
+
+     `opts.toneAt(y)` answers one question, is the ground behind this point
+     dark, and the caller is the only thing that can answer it. Anything else
+     would mean reading pixels back off the page every frame. */
+  function drift(ctx, w, h, opts) {
+    if (!ctx || w <= 0 || h <= 0) return;
+    var P = ensure(w, h);
+    var t = clock();
+    var u = unitFor(w, opts);
+    var toneAt = (opts && opts.toneAt) || null;
+    var wrapW = w + 60, wrapH = h + 40;
+
+    ctx.save();
+    for (var i = 0; i < P.dust.length; i++) {
+      var d = P.dust[i];
+      var x = (d.x * wrapW + t * d.drift) % wrapW - 30;
+      /* Rising, and wrapped past both edges rather than at them, so a mote
+         fades in off screen instead of appearing out of nothing. */
+      var y = h + 20 - ((d.y * wrapH + t * d.rise) % wrapH);
+      var tw = 0.5 + 0.5 * Math.sin(t * d.tw + d.phase);
+      paintMote(ctx, x, y, d.r * u * (0.8 + tw * 0.45),
+                0.10 + tw * 0.30, d.warm, toneAt ? !!toneAt(y) : false);
+    }
+    ctx.restore();
+  }
+
   /* Two sines of unrelated periods on each axis. One sine is an oval track
      and reads as a machine; two that do not divide into each other never
      quite repeat, which is the whole trick. */
@@ -348,17 +437,11 @@
          mote never appears out of the sky above the flowers. */
       var my = top + band - (((mo.y * band) + t * mo.rise) % band);
       var tw = 0.5 + 0.5 * Math.sin(t * mo.tw + mo.phase);
-      var a = 0.10 + tw * 0.30;
-      var r = mo.r * u * (0.8 + tw * 0.45);
-      var warm = mo.warm;
-      ctx.globalAlpha = a * 0.4;
-      ctx.fillStyle = warm ? "rgb(255,236,170)" : "rgb(233,255,248)";
-      ctx.beginPath(); ctx.arc(mx, my, r * 2.6, 0, 6.283); ctx.fill();
-      ctx.globalAlpha = a;
-      ctx.fillStyle = warm ? "rgb(255,249,222)" : "rgb(255,255,255)";
-      ctx.beginPath(); ctx.arc(mx, my, r, 0, 6.283); ctx.fill();
+      /* A garden's ground is dark enough for the white palette, which is what
+         these have always used. */
+      paintMote(ctx, mx, my, mo.r * u * (0.8 + tw * 0.45),
+                0.10 + tw * 0.30, mo.warm, true);
     }
-    ctx.globalAlpha = 1;
 
     /* ------------------------------------------------------ butterflies */
     var fb = bandFly(h, horizon, opts);
@@ -383,5 +466,5 @@
     ctx.restore();
   }
 
-  window.GardenLife = { sky: sky, meadow: meadow, reduced: reduced };
+  window.GardenLife = { sky: sky, meadow: meadow, drift: drift, reduced: reduced };
 })();
