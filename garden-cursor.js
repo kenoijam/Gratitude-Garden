@@ -12,19 +12,19 @@
    belonged to, and the music button carried a `title` as well, so hovering it
    produced the custom label and then the operating system's own on top.
 
-   A SPARKLE at rest and the FAVICON'S OWN BLOOM over anything you can press.
-   Both are the favicon's blue, hue 206, so the mark in the tab and the mark
+   The FAVICON'S OWN ROSE at rest, shrinking to a SPARKLE over anything you
+   can press. Both in the favicon's blue, so the mark in the tab and the mark
    under the pointer are the same thing.
 
-   It has been a leaf, a bloom, a bud that opened and an arrow. The three
-   decorations all failed the same way: they covered what you were aiming at
-   and gave you no point to aim with. A four pointed star does not, because
-   it is mostly empty and its points meet at a definite centre, which is
-   where the hotspot sits.
+   That way round is deliberate and it is the reverse of where this started.
+   A solid bloom over a control sits on top of the very thing being aimed at,
+   at the moment its label is opening and wanting to be read. At rest there is
+   nothing underneath to hide, so the rose can be large enough to read as a
+   rose, and the sparkle that replaces it is small and mostly empty.
 
-   The personal garden still retints the CLICKABLE bloom with the hue of the
-   flower planted most recently; only its hue moves, the rings and the
-   scallops are the favicon's whatever colour it is wearing.
+   The personal garden retints BOTH with the hue of the flower planted most
+   recently. The rings, the scallops and the points are the favicon's whatever
+   colour they are wearing.
 
    It is an inline SVG data URI, so no image file is added and the bloom can be
    RECOLOURED at runtime without touching a stylesheet.
@@ -68,76 +68,86 @@
       "</svg>\") " + hx + " " + hy + ", ";
   }
 
-  /* THE FAVICON'S OWN BLOOM, and its colour.
+  /* THE FAVICON'S OWN ROSE, and its colour.
 
-     The tab icon is a scalloped bloom of concentric rings in a single blue.
+     The tab icon is a rose of concentric scalloped rings in a single blue.
      Sampled off `apple-touch-icon.png`, that blue is hue 206 at about 58
      percent saturation, running from 47 percent lightness on the outer ring
-     up through 56 and 62 to a near white middle, with a dark eye. So the
-     cursor is not "a blue flower", it is THAT flower: the thing in the tab
-     and the thing under the pointer are one mark.
+     inward to a near white middle with a dark eye. So the cursor is not "a
+     blue flower", it is THAT flower: the thing in the tab and the thing under
+     the pointer are one mark.
 
      206 also does something no other hue in the project can. Every colour on
      these pages is a teal, a cream or a pastel bloom, so a saturated blue is
-     the one thing that is never mistaken for the page it is sitting on. */
+     the one thing that is never mistaken for the page it is sitting on. The
+     saturation is pushed to 66 and the outer ring darkened to 42 against the
+     icon's own 58 and 47, because an icon sits in a browser chrome of its own
+     while this has to hold against six different section colours. */
   var FAV_H = 206;
-  var FAV_S = 58;
+  var FAV_S = 66;
 
-  /* Six rings, scalloped rather than round, lightening inward. `wob` is how
-     far the scallop swings; drawn as a plain circle this reads as a target
-     rather than as a flower. */
-  function ringBloom(hue, R) {
-    var out = "";
-    var steps = [
-      { r: 1.00, l: 47 }, { r: 0.81, l: 53 }, { r: 0.63, l: 60 },
-      { r: 0.46, l: 88 }, { r: 0.30, l: 62 }, { r: 0.15, l: 34 }
+  /* EIGHT rings rather than six, alternating deep and pale so the petals read
+     as layers of a rose rather than as a target. `lobes` falls as the rings
+     get smaller, which is what a real rose does: the outer petals are many
+     and shallow, the inner ones few and tight. */
+  function roseArt(hue, R) {
+    var rings = [
+      { r: 1.00, l: 42, lobes: 13 }, { r: 0.86, l: 56, lobes: 12 },
+      { r: 0.73, l: 46, lobes: 11 }, { r: 0.60, l: 62, lobes: 9 },
+      { r: 0.48, l: 50, lobes: 8 },  { r: 0.36, l: 72, lobes: 7 },
+      { r: 0.25, l: 54, lobes: 6 },  { r: 0.14, l: 30, lobes: 5 }
     ];
-    for (var s = 0; s < steps.length; s++) {
-      var rr = R * steps[s].r;
-      var lobes = 11, wob = rr * 0.085, d = "";
-      for (var k = 0; k <= 48; k++) {
-        var a = k / 48 * 6.28318;
-        var rad = rr + Math.sin(a * lobes) * wob;
-        var x = (Math.cos(a) * rad).toFixed(2);
-        var y = (Math.sin(a) * rad).toFixed(2);
-        d += (k ? "L" : "M") + x + " " + y;
+    var out = "";
+    for (var s = 0; s < rings.length; s++) {
+      var rr = R * rings[s].r, wob = rr * 0.11, d = "";
+      for (var k = 0; k <= 56; k++) {
+        var a = k / 56 * 6.28318;
+        var rad = rr + Math.sin(a * rings[s].lobes + s * 0.7) * wob;
+        d += (k ? "L" : "M") + (Math.cos(a) * rad).toFixed(2) + " " +
+             (Math.sin(a) * rad).toFixed(2);
       }
-      out += "<path d='" + d + "Z' fill='" + hsl(hue, FAV_S, steps[s].l) + "'/>";
+      /* Only the outermost ring is outlined. An outline on every ring turns
+         eight soft layers into eight hard circles. */
+      out += "<path d='" + d + "Z' fill='" + hsl(hue, FAV_S, rings[s].l) + "'" +
+             (s === 0 ? " stroke='" + hsl(hue, 58, 24) + "' stroke-width='1.1'" : "") + "/>";
     }
     return out;
   }
 
-  /* THE SPARKLE, at rest. The gardens' own four pointed star, the one thrown
-     around a flower the moment it is planted, in the favicon's blue.
-
-     It replaced an arrow, which replaced a bud, a bloom and a leaf. What makes
-     this one work where the earlier decorations did not is that a four pointed
-     star has a definite CENTRE where its points meet, so there is still
-     somewhere exact to aim, and it is mostly empty, so it does not cover the
-     thing being aimed at. */
-  function sparkleArt(hue) {
-    var R = 7.6, inner = R * 0.3;
-    var d = "";
+  /* The gardens' own four pointed sparkle, the one thrown around a flower the
+     moment it is planted. */
+  function sparkleArt(hue, R) {
+    var inner = R * 0.30, d = "";
     for (var i = 0; i < 8; i++) {
       var a = i * 0.7854;
       var rad = (i % 2 === 0) ? R : inner;
       d += (i ? "L" : "M") + (Math.cos(a) * rad).toFixed(2) + " " + (Math.sin(a) * rad).toFixed(2);
     }
-    return "<g transform='translate(10 10)'><circle r='4.2' fill='" + hsl(hue, FAV_S, 62) +
+    return "<circle r='" + (R * 0.55).toFixed(2) + "' fill='" + hsl(hue, FAV_S, 62) +
       "' opacity='0.30'/><path d='" + d + "Z' fill='" + hsl(hue, FAV_S, 52) +
-      "' stroke='" + hsl(hue, FAV_S, 34) + "' stroke-width='0.7' stroke-linejoin='round'/></g>";
+      "' stroke='" + hsl(hue, 58, 28) + "' stroke-width='0.8' stroke-linejoin='round'/>";
   }
 
-  /* IT IS 32 PIXELS AND MUST NOT GROW. Windows refuses a custom cursor larger
-     than 32 by 32 outright, and a refused cursor falls back to the plain
-     system arrow, so anything bigger would silently lose it on every Windows
+  /* THE ROSE IS AT REST AND THE SPARKLE IS ON A CONTROL, and that is the
+     reverse of where it started.
+
+     The bloom used to appear over anything clickable, which is the moment you
+     least want a solid object under the pointer: it sat on top of the icon or
+     the word being aimed at, exactly when its label was opening and wanting to
+     be read. At rest there is nothing underneath to hide, so the rose can be
+     the size it needs to be to read as a rose, and the sparkle over a control
+     is small, mostly empty, and gets out of the way.
+
+     The rose is 30 across; NOTHING HERE MAY EXCEED 32. Windows refuses a
+     custom cursor larger than 32 by 32 outright and falls back to the plain
+     system arrow, which would lose the mark entirely on every Windows
      machine. */
-  function openArt(hue) {
-    return "<g transform='translate(16 16)'>" + ringBloom(hue, 15) + "</g>";
+  function calm(hue) {
+    return svg(30, "<g transform='translate(15 15)'>" + roseArt(hue, 13.6) + "</g>", 15, 15) + "auto";
   }
-
-  function calm() { return svg(20, sparkleArt(FAV_H), 10, 10) + "auto"; }
-  function keen(hue) { return svg(32, openArt(hue), 16, 16) + "pointer"; }
+  function keen(hue) {
+    return svg(20, "<g transform='translate(10 10)'>" + sparkleArt(hue, 8.4) + "</g>", 10, 10) + "pointer";
+  }
 
   /* Every clickable thing takes the bloom, and the CLASSES are listed as well
      as the elements. That is not belt and braces: `.bq-btn-outline` is a class
@@ -205,7 +215,7 @@
   var IMP = " !important; }\n";
 
   function css(hue) {
-    return "body { cursor: " + calm() + IMP +
+    return "body { cursor: " + calm(hue) + IMP +
       CLICKABLE + " { cursor: " + keen(hue) + IMP +
       /* Declared LAST so they win. A caret and a grab handle each say
          something true about the control, and a decorative cursor would throw
@@ -251,9 +261,11 @@
     "@media (prefers-reduced-motion:reduce){[data-tip]::after{transition:opacity .01s;}}";
 
   var tag = null;
-  /* `apply` only ever moves the CLICKABLE bloom's hue. The resting sparkle
-     stays the favicon's blue on every page, because it is the mark rather
-     than the state: retinting it too would leave no fixed point at all. */
+  /* Both states take the hue now. The rose is the one you actually look at,
+     so in the personal garden it is the rose that should carry the colour of
+     the flower planted most recently; leaving it fixed and tinting only the
+     little sparkle would have put the personal touch on the half nobody
+     studies. */
   function apply(hue) {
     if (!tag) {
       tag = document.getElementById(STYLE_ID);

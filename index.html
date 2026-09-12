@@ -17,6 +17,10 @@
   <!-- One cursor for the whole project: a leaf at rest, a bloom over
        anything clickable. -->
   <script src="garden-cursor.js"></script>
+  <!-- One flower opening while the page gets ready. Loaded on all four, not
+       just the slow one: a loader that appears on a single page reads as that
+       page being broken. It caps itself, so it can never outlive its page. -->
+  <script src="garden-loader.js"></script>
 
   <!-- The account chip and the friends panel. Top right here, beside the
        music button, since the landing page keeps its controls in the top
@@ -532,15 +536,15 @@
 
   <div class="about-body reveal">
     <p class="section-desc">
-      Gratitude Garden is one practice, three ways, grown from the same eight flowers.
+      One practice, three ways, grown from the same eight flowers.
     </p>
     <p class="section-desc">
-      The Personal Garden is a private journal where your words choose your flower. The Shared Garden is a public meadow anyone can plant in, refreshed daily. The Bouquet Builder lets you gather, wrap, and send a bouquet with a note only they can open.
+      The Personal Garden is a private journal where your words choose your flower. The Shared Garden is a public meadow anyone can plant in, refreshed daily. The Bouquet Builder wraps a few stems and a note for one person.
       <p class="section-desc">
-      Two of these you keep and return to. One you give away. Reflect, share, give: the same eight flowers, three different ways to mean something.
+      Two you keep and return to. One you give away. Reflect, share, give.
     </p>
     <p class="section-desc">
-      One account joins them up. It claims the username you plant under, carries your personal garden between devices, keeps the day by day history of everything you have grown, and holds the friends you can send a bouquet to. You can also skip it entirely and use any of the three in this browser alone.
+      One account joins them up: the username you plant under, your garden on any device, the history of every day, and the friends you send bouquets to. Skip it and all three still work in this browser.
     </p>
   </div>
 
@@ -1407,10 +1411,12 @@
      The grid this sits beside is the same eight flowers and is kept for narrow
      and touch screens, where a ring has nowhere to put a label. */
   var RING = [
-    /* Clockwise from just right of the top, in an unbroken run up the colour
-       wheel: the two deep pinks, then the sakura, the apricot daisy, the
-       yellow sunflower, the teal lily, the blue violet tulip and the lavender,
-       which meets the rose again at the start. Neighbours that read as the
+    /* The two deep pinks STRADDLE THE TOP, at -112.5 and -67.5, and the rest
+       run clockwise from there in an unbroken climb up the colour wheel: the
+       sakura, the apricot daisy, the yellow sunflower, the teal lily, the blue
+       violet tulip and the lavender, which comes back round to meet the rose.
+       None of the eight sits on a compass point, which is what gives every
+       one of them a side to put its label on. Neighbours that read as the
        same colour twice are what this order exists to avoid.
 
        TWO of these hues were moved for the same reason. The tulip was 280,
@@ -1418,14 +1424,14 @@
        three degrees off the sunflower's 45; it is 22. The tile canvases below
        carry the same numbers and must move with these, since the popup reads
        its colour off the tile. */
-    { id:'rose',      a:-67.5,  hue:340, sat:55, light:55 },
-    { id:'lotus',     a:-22.5,  hue:340, sat:50, light:70 },
-    { id:'sakura',    a: 22.5,  hue:340, sat:40, light:75 },
-    { id:'daisy',     a: 67.5,  hue:22,  sat:52, light:68 },
-    { id:'sunflower', a:112.5,  hue:45,  sat:60, light:65 },
-    { id:'lily',      a:157.5,  hue:185, sat:40, light:70 },
-    { id:'tulip',     a:-157.5, hue:232, sat:52, light:62 },
-    { id:'lavender',  a:-112.5, hue:270, sat:55, light:68 }
+    { id:'rose',      a:-112.5, hue:340, sat:55, light:55 },
+    { id:'lotus',     a:-67.5,  hue:340, sat:50, light:70 },
+    { id:'sakura',    a:-22.5,  hue:340, sat:40, light:75 },
+    { id:'daisy',     a: 22.5,  hue:22,  sat:52, light:68 },
+    { id:'sunflower', a: 67.5,  hue:45,  sat:60, light:65 },
+    { id:'lily',      a:112.5,  hue:185, sat:40, light:70 },
+    { id:'tulip',     a:157.5,  hue:232, sat:52, light:62 },
+    { id:'lavender',  a:-157.5, hue:270, sat:55, light:68 }
   ];
 
   /* The lead and the tick are not decoration, they are the ring's budget:
@@ -1434,8 +1440,8 @@
      the blooms stuck on their 104 floor and the whole section noticeably
      shorter than the ones around it. At 26 and 12 the line still reads as a
      leader rather than as a label touching a flower. */
-  var LEAD = 26;        /* the radial run of the leader line */
-  var TICK = 12;        /* the horizontal turn at its far end */
+  var LEAD = 20;        /* the radial run of the leader line */
+  var TICK = 10;        /* the horizontal turn at its far end */
   var ringBuilt = false;
 
   function buildRing(){
@@ -1510,11 +1516,13 @@
        and the size sets the radius the ring is actually drawn at. */
     var size = 128;
     var Rr = free - size*0.42;
-    /* 0.85 of the radius, floored at 118. The chord between two neighbours is
-       0.765 of the radius, and a bloom only paints about four fifths of its
-       square, so at this factor there is still air between them: measured at
-       radius 140 the chord is 107 and the painted blooms are 95. */
-    size = Math.max(118, Math.min(176, Rr*0.85));
+    /* 0.90 of the radius, and that is close to the HARD CEILING rather than a
+       preference. Eight blooms round a circle sit a chord of 0.765 of the
+       radius apart, and the widest species paints about 0.84 of its square,
+       so two neighbours touch at a factor of about 0.91 whatever the radius
+       is. Past that the only way to a bigger bloom is a bigger ring, and the
+       ring's radius is whatever the labels leave over. */
+    size = Math.max(118, Math.min(184, Rr*0.90));
     Rr = Math.max(120, free - size*0.42);
 
     var cxs = W/2, maxY = 0;

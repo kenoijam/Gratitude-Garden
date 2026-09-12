@@ -235,7 +235,13 @@
     if (at > CROSS) return;              /* the sky is empty on purpose */
 
     var pass = Math.floor(t / CYCLE);
-    var dir = (pass % 2 === 0) ? 1 : -1;
+    /* The direction alternates by default, so the flock does not always come
+       from the same side. A page may pin it: the shared garden asks for left
+       to right every time, since its sky is read alongside a meadow that
+       fills from the left as the day goes on. */
+    var dir = (opts && typeof opts.dir === "number")
+      ? (opts.dir < 0 ? -1 : 1)
+      : ((pass % 2 === 0) ? 1 : -1);
     /* A new lane every crossing, inside the band, so the flock does not wear
        a groove in the sky. Pulled in at both ends to leave room for the rise
        and for the birds spread either side of the leader. */
@@ -462,11 +468,12 @@
       var bh = Math.max(60, bands[b].bottom - bands[b].top);
       /* Per section rather than per page, so a short section is not skipped
          and a tall one is not left with a single mote rattling around it. */
-      /* One per 95px of section, which works out at about nine on screen at
+      /* One per 72px of section, which works out at about twelve on screen at
          a time whatever the section's height, since the canvas is one
-         viewport tall. It was one per 62, roughly fourteen, and the brief
-         after they came back was fewer than before rather than more. */
-      var n = Math.round(clamp(bh / 95, 3, 16));
+         viewport tall. It has been one per 62 (too many), then one per 95
+         (too few once they were actually being drawn in the right place);
+         this sits between the two. */
+      var n = Math.round(clamp(bh / 72, 4, 20));
       for (var i = 0; i < n; i++) {
         var sd = (b + 1) * 977 + i * 31;
         out.push({

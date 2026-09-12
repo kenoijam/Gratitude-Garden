@@ -25,6 +25,13 @@ let usernameField, usernameContinueBtn, usernameNote;
 let colorPickerSelect, speciesButtons = {};
 let saveBtn, tipsCard, dailyNote;
 
+/* This page cannot draw anything until a websocket on somebody else's server
+   has answered and a room has loaded, which is the one genuinely slow wait in
+   the project. `hold` tells the loader not to leave on the window's load
+   event, because that fires long before any of that is done. It is released
+   in draw(), from the first frame that has a room behind it. */
+if (window.GardenLoader) window.GardenLoader.hold();
+
 const GARDEN_KEY = "community_garden_daily";
 
 /* The meanings are the personal garden's, word for word, since the two gardens
@@ -2043,6 +2050,12 @@ showStep("garden");
 }
 
 function draw() {
+/* The room has answered and there is a frame on the canvas, so the loader
+   has something real to hand over to. `showing()` keeps this to one call
+   rather than one a frame. */
+if (window.GardenLoader && GardenLoader.showing() && shared && frameCount > 1) {
+GardenLoader.done();
+}
 if (shared && shared.flowers && flowers.length !== shared.flowers.length) {
 const oldMyFlower = (myLocalFlowerIndex >= 0 && myLocalFlowerIndex < flowers.length)
 ? flowers[myLocalFlowerIndex] : null;
@@ -2081,7 +2094,7 @@ drawClouds();
    horizon exactly as they paint over a distant cloud. `drawingContext` is
    p5's own 2D context, already scaled by the pixel density, so garden-life
    draws in p5 units without knowing it is inside a sketch. */
-if (window.GardenLife) GardenLife.sky(drawingContext, width, height, { horizon: height * 0.56 });
+if (window.GardenLife) GardenLife.sky(drawingContext, width, height, { horizon: height * 0.56, dir: 1 });
 
 // Back row: stems + growing BEFORE hill, blooms AFTER hill
 drawFlowersStemsOnly("back");

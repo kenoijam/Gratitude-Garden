@@ -183,6 +183,7 @@
   function boot() {
     if (booted) return;
     booted = true;
+    loaded();
     window.__gardenBoot = current;
     var tag = document.createElement("script");
     tag.src = "personal-garden-sketch.js";
@@ -223,9 +224,20 @@
     document.addEventListener("DOMContentLoaded", fn, { once: true });
   }
 
+  /* This page decides what to show only after a session check has come back
+     from the network, which is often after the window's load event, so the
+     loader is asked to wait. It is released by whichever of the two arrives:
+     the sign in gate, or the garden itself.
+
+     The tag for this file sits AFTER garden-loader.js in the head, which is
+     what makes the hold on the next line safe. Move it above and the hold
+     silently does nothing. */
+  if (window.GardenLoader) window.GardenLoader.hold();
+  function loaded() { if (window.GardenLoader) window.GardenLoader.done(); }
+
   /* ---------------------------------------------------------------- gate */
 
-  function gate() { onReady(buildGate); }
+  function gate() { onReady(function () { buildGate(); loaded(); }); }
 
   function buildGate() {
     clearOverlays();

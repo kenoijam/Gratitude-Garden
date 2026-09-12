@@ -17,6 +17,10 @@
   <!-- One cursor for the whole project: a leaf at rest, a bloom over
        anything clickable. -->
   <script src="../garden-cursor.js"></script>
+  <!-- One flower opening while the page gets ready. Loaded on all four, not
+       just the slow one: a loader that appears on a single page reads as that
+       page being broken. It caps itself, so it can never outlive its page. -->
+  <script src="../garden-loader.js"></script>
 
   <!-- One account across the whole project: the client, the session, the
        username and the friends list. Must load BEFORE the page modules,
