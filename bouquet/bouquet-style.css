@@ -439,7 +439,20 @@ body {
 .bq-charcount { text-align: right; font-size: 0.72rem; color: rgba(29,100,102,0.55); margin-top: 4px; }
 
 /* ── Nav buttons ── */
-.bq-nav { display: flex; gap: 10px; margin-top: 24px; }
+/* The step's buttons.
+
+   `margin-top: auto` inside the card is what keeps Continue in the same place
+   on every step; the padding is a MINIMUM gap that the auto margin cannot
+   give, and it is what the tall steps needed. On the catalogue and the
+   template gallery the grid ran right up to the Back button, so the last row
+   of pictures and the navigation read as one block. */
+.bq-nav {
+  display: flex;
+  gap: 10px;
+  margin-top: 24px;
+  padding-top: 30px;
+}
+@media (max-width: 640px) { .bq-nav { padding-top: 22px; } }
 .bq-btn, .bq-btn-outline, .bq-btn-ghost {
   font-family: Arial, Helvetica, sans-serif; font-size: 0.95rem; font-weight: 700;
   border-radius: 50px; padding: 13px 22px; cursor: pointer; border: none;
@@ -963,10 +976,7 @@ body {
      this tile's label above the five beside it. */
   height: 175px;
   color: var(--darkteal);
-  opacity: 0.42;
-  background:
-    repeating-linear-gradient(135deg,
-      rgba(29,100,102,0.045) 0 7px, rgba(29,100,102,0) 7px 14px);
+  opacity: 0.34;
   border-radius: 10px;
 }
 .bq-template-own .bq-own-art svg { width: 34px; height: 34px; }

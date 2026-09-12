@@ -2563,20 +2563,43 @@ function renderReceipt() {
    can actually make. Picking one drops the sender at the letter step,
    since the words are the one thing a template cannot supply. */
 const TEMPLATES = [
+  /* TEN stems and TWO foliages each. Six stems and one kind of greenery left
+     every template looking like a hand of flowers rather than a bouquet
+     somebody would send: the wrap read as mostly paper, and one foliage at
+     the density tuned for nine stems cannot fill the gaps between them.
+
+     `MAX_FLOWERS` is 12 and `MAX_FOLIAGE` is 2, so this is near the top of
+     what the builder itself allows, which is the point. A template must never
+     promise something a sender could not make by hand.
+
+     The two foliages are picked to be UNLIKE each other, since the mixer
+     drops each to 0.62 of its usual density and nudges them apart: two
+     leafy kinds together read as one denser leafy kind, where a leaf and a
+     filler read as two things. */
   { id: "t1", name: "Sunlit Thanks", blurb: "For someone who kept you going",
-    s: { flowers: ["sunflower", "sunflower", "daisy", "tulip", "sunflower", "daisy"], foliages: ["wheat"],
+    s: { flowers: ["sunflower", "daisy", "sunflower", "tulip", "daisy", "sunflower",
+                   "tulip", "daisy", "sunflower", "daisy"],
+         foliages: ["wheat", "eucalyptus"],
          wrapH: 28, wrapS: 38, wrapL: 76, wrapP: "kraft", ribbonH: 200, card: "cream", bg: "sunlit" } },
   { id: "t2", name: "Quiet Comfort", blurb: "For a week that has been heavy",
-    s: { flowers: ["lily", "lily", "lavender", "lavender", "daisy", "lily"], foliages: ["eucalyptus"],
+    s: { flowers: ["lily", "lavender", "lily", "daisy", "lavender", "lily",
+                   "daisy", "lavender", "lily", "daisy"],
+         foliages: ["eucalyptus", "gyp"],
          wrapH: 120, wrapS: 18, wrapL: 82, wrapP: "linen", ribbonH: 20, card: "mist", bg: "meadow" } },
   { id: "t3", name: "Love Letter", blurb: "For a love you want to say out loud",
-    s: { flowers: ["rose", "rose", "rose", "rose", "lotus", "rose"], foliages: ["gyp"],
+    s: { flowers: ["rose", "rose", "lotus", "rose", "rose", "sakura",
+                   "rose", "lotus", "rose", "sakura"],
+         foliages: ["gyp", "leaves"],
          wrapH: 350, wrapS: 45, wrapL: 28, wrapP: "plain", ribbonH: 38, card: "rose", bg: "dawn" } },
   { id: "t4", name: "New Beginnings", blurb: "For a fresh start worth marking",
-    s: { flowers: ["tulip", "tulip", "daisy", "tulip", "daisy", "tulip"], foliages: ["fern"],
+    s: { flowers: ["tulip", "daisy", "tulip", "sakura", "tulip", "daisy",
+                   "sakura", "tulip", "daisy", "tulip"],
+         foliages: ["fern", "beargrass"],
          wrapH: 40, wrapS: 10, wrapL: 97, wrapP: "plain", ribbonH: 140, card: "mint", bg: "sky" } },
   { id: "t5", name: "Get Well Soon", blurb: "For someone who needs a calm week",
-    s: { flowers: ["daisy", "daisy", "lily", "daisy", "lily", "sunflower"], foliages: ["eucalyptus"],
+    s: { flowers: ["daisy", "lily", "daisy", "sunflower", "lily", "daisy",
+                   "sunflower", "lily", "daisy", "lily"],
+         foliages: ["eucalyptus", "berries"],
          wrapH: 210, wrapS: 4, wrapL: 88, wrapP: "news", ribbonH: 350, card: "snow", bg: "linen" } }
 ];
 

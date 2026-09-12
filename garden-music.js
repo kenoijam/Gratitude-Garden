@@ -633,9 +633,14 @@
   }
 
   function label() {
+    var what = wantOn ? "Turn music off" : "Turn music on";
     btn.setAttribute("aria-pressed", wantOn ? "true" : "false");
-    btn.setAttribute("aria-label", wantOn ? "Turn music off" : "Turn music on");
-    btn.title = wantOn ? "Turn music off" : "Turn music on";
+    btn.setAttribute("aria-label", what);
+    btn.title = what;
+    /* The hover label, from garden-cursor.js. To the LEFT, because the volume
+       panel drops into the space directly below this button. */
+    btn.setAttribute("data-tip", what);
+    btn.setAttribute("data-tip-side", "left");
     wrapEl.setAttribute("data-on", wantOn ? "1" : "0");
   }
 

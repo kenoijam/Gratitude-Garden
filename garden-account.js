@@ -532,6 +532,15 @@
       if (e.key === "Escape" && panel.getAttribute("data-open") === "1") closePanel();
     });
 
+    /* A tap anywhere else shuts it. `pointerdown` rather than `click`, so it
+       closes as the finger lands rather than when it lifts, and the button
+       itself is excluded or opening it would immediately close it again. */
+    document.addEventListener("pointerdown", function (e) {
+      if (panel.getAttribute("data-open") !== "1") return;
+      if (panel.contains(e.target) || btn.contains(e.target)) return;
+      closePanel();
+    });
+
   }
 
   /* The personal garden already puts its signed in chip in the bottom right
@@ -890,6 +899,7 @@
       : "Sign in";
     btn.title = what;
     btn.setAttribute("aria-label", what);
+    btn.setAttribute("data-tip", me ? "Friends" : "Sign in");
     if (me) refreshPanel();
     else { btn.setAttribute("data-pending", "0"); closePanel(); }
   }

@@ -2253,6 +2253,7 @@ function buildUI() {
     '<path d="M3 8.5h3.2l1.4-2h7.8l1.4 2H21v10.5H3z"/><circle cx="12" cy="13.5" r="3.4"/></svg>');
   saveBtn.attribute("title", "Save a picture of your garden");
   saveBtn.attribute("aria-label", "Save a picture of your garden");
+  saveBtn.attribute("data-tip", "Save a picture");
   saveBtn.style("display", "none");
   saveBtn.style("pointer-events", "auto");
   saveBtn.style("position", "fixed");

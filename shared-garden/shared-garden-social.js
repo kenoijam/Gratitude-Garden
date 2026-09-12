@@ -192,6 +192,20 @@
     document.addEventListener("keydown", function (e) {
       if (e.key === "Escape" && panel.getAttribute("data-open") === "1") closePanel();
     });
+
+    /* A tap anywhere else shuts it. `pointerdown` rather than `click`, so it
+       closes as the finger lands rather than when it lifts, and the button
+       itself is excluded or opening it would immediately close it again. */
+    document.addEventListener("pointerdown", function (e) {
+      if (panel.getAttribute("data-open") !== "1") return;
+      if (panel.contains(e.target)) return;
+      /* ONE exception: the garden canvas is this panel's own toggle, and
+         the sketch already decides there, opening it on a bloom and
+         closing it on empty ground. Closing here too would shut the panel
+         a fraction before the sketch opened it for the bloom just tapped. */
+      if (e.target && e.target.tagName === "CANVAS") return;
+      closePanel();
+    });
   }
 
   /* --------------------------------------------------------------- helpers */

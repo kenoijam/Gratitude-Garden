@@ -1,5 +1,11 @@
 /* =========================================================================
-   garden-cursor.js  -  one cursor for the whole project
+   garden-cursor.js  -  the chrome every page shares and no page owns
+
+   Two things live here, and they are together because both are needed on all
+   four pages and neither belongs to any one of them: the cursor, and the
+   little label that appears under an icon when you hover it. Putting either
+   in a page's own stylesheet is how the cursor ended up on one page of four
+   in the first place.
 
    A leaf at rest, a bloom over anything clickable. Both are inline SVG data
    URIs, so no image file is added and the bloom can be RECOLOURED at runtime
@@ -85,6 +91,36 @@
       "@media (hover: none) { body, " + CLICKABLE + " { cursor: auto; } }\n";
   }
 
+  /* ------------------------------------------------------------- tooltips */
+  /* A short label under any control carrying `data-tip`. The browser's own
+     `title` already does this, but only after a long pause and in the
+     operating system's styling, and the top right of every page is now a row
+     of four unlabelled icons, which is exactly where a fast, legible answer
+     to "what is this" is worth having.
+
+     It is pure CSS off an attribute, so a module adds a tooltip by setting
+     one attribute and nothing has to be built. */
+  var TIP =
+    "[data-tip]{position:relative;}" +
+    "[data-tip]::after{content:attr(data-tip);position:absolute;top:calc(100% + 9px);" +
+      "right:0;background:rgba(29,100,102,0.95);color:#fff9e3;" +
+      "font-family:Arial,Helvetica,sans-serif;font-size:11.5px;font-weight:700;" +
+      "line-height:1;letter-spacing:0.01em;padding:7px 10px;border-radius:7px;" +
+      "white-space:nowrap;pointer-events:none;opacity:0;transform:translateY(-3px);" +
+      "z-index:400;box-shadow:0 3px 12px rgba(29,100,102,0.22);" +
+      "transition:opacity .16s ease .22s,transform .16s ease .22s;}" +
+    "[data-tip]:hover::after,[data-tip]:focus-visible::after{opacity:1;transform:none;}" +
+    /* The music button drops its volume panel into exactly the space below
+       itself, so its label goes to the LEFT instead of colliding with it. */
+    "[data-tip][data-tip-side=\"left\"]::after{top:50%;right:calc(100% + 9px);" +
+      "transform:translateY(-50%) translateX(3px);}" +
+    "[data-tip][data-tip-side=\"left\"]:hover::after," +
+      "[data-tip][data-tip-side=\"left\"]:focus-visible::after{transform:translateY(-50%);}" +
+    /* Nothing to hover on a touch screen, and a label stuck open after a tap
+       is worse than none. */
+    "@media (hover:none){[data-tip]::after{display:none;}}" +
+    "@media (prefers-reduced-motion:reduce){[data-tip]::after{transition:opacity .01s;}}";
+
   var tag = null;
   function apply(hue) {
     if (!tag) {
@@ -95,7 +131,7 @@
         (document.head || document.documentElement).appendChild(tag);
       }
     }
-    tag.textContent = css(hue);
+    tag.textContent = css(hue) + TIP;
   }
 
   apply(DEFAULT_HUE);
