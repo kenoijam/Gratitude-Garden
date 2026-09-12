@@ -263,15 +263,37 @@
   /* Supabase answers a query against a column that does not exist with a 400
      and an error OBJECT, not a thrown exception, so a plain `res.data` read
      turns "you have not run the SQL yet" into "this flower has no comments".
-     That is the single most likely thing to go wrong when somebody sets this
-     up, so it is named once in the console and shown honestly in the panel
-     rather than quietly looking empty. */
+     That is worth naming, but the first version of this NAMED IT FOR
+     EVERYTHING, and the result was a panel telling somebody to run SQL they
+     had already run:
+
+       - the test was `/column|schema cache|does not exist|relation/`, and
+         "relation" and "column" appear in Postgres errors that have nothing
+         to do with a missing table. A permission error names the relation.
+       - the flag was STICKY for the whole page. One bad moment, at any point,
+         and every flower opened for the rest of the visit carried the same
+         wrong explanation, with no way back except a reload.
+       - the panel never showed what Supabase actually said, so the wrong
+         guess was the only thing anybody could read.
+
+     So: the test is now the two things that genuinely mean the schema is not
+     there, the flag is cleared every time a flower is opened, and whatever
+     Supabase said is kept and shown. A message that blames the setup has to
+     be right, because somebody will go and run the SQL again on the strength
+     of it. */
   var schemaMissing = false;
+  var lastError = "";
+
+  function clearErrors() { schemaMissing = false; lastError = ""; }
 
   function noteError(err) {
     if (!err) return false;
     var m = String(err.message || "");
-    if (/column|schema cache|does not exist|relation/i.test(m)) {
+    lastError = m;
+    /* "Could not find the table 'public.posts' in the schema cache" is what a
+       table that was never created says. "...does not exist" is what a column
+       that was never added says. Nothing else here is a setup problem. */
+    if (/schema cache/i.test(m) || /does not exist/i.test(m)) {
       if (!schemaMissing) {
         schemaMissing = true;
         console.warn("[Gratitude Garden] Likes and comments are not set up yet. " +
@@ -279,6 +301,7 @@
       }
       return true;
     }
+    console.warn("[Gratitude Garden] Supabase refused a request on this flower: " + m);
     return false;
   }
 
@@ -520,7 +543,8 @@
     elList.innerHTML = "";
     elList.appendChild(el("p", "gs-empty", schemaMissing
       ? "Likes and comments are not switched on for this project yet. Step 6 of SUPABASE-SETUP.md has the one query that turns them on."
-      : "Could not load the comments on this flower just now."));
+      : ("Could not load the comments on this flower just now." +
+         (lastError ? " " + lastError : ""))));
   }
 
   function toggleLike() {
@@ -570,6 +594,10 @@
     ctxMeaning = (ctx && ctx.meaning) || "";
     openFlower = flower;
     openPost = null;
+    /* Cleared per flower. Whatever went wrong on the last one is not evidence
+       about this one, and a sticky flag is how a single hiccup used to blame
+       the database setup for the rest of the visit. */
+    clearErrors();
     renderHead(flower);
     elLikeCount.textContent = "";
     elLike.setAttribute("data-mine", "0");

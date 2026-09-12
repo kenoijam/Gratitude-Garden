@@ -12,12 +12,12 @@
    belonged to, and the music button carried a `title` as well, so hovering it
    produced the custom label and then the operating system's own on top.
 
-   A BUD at rest, and over anything you can press it OPENS: nearly twice the
-   size, five petals standing apart round a clear eye, at the full colour.
-   It was a leaf and a bloom once, and the leaf was the odd thing in a project
-   made of flowers. It was then the same flower at two sizes, and that was too
-   quiet to notice on a page of pale cream. A bud and an open flower are one
-   plant at two moments, which is a change you see without looking for it.
+   An ARROW at rest, in the project's own colours, and a FLOWER over anything
+   you can press. It has been a leaf, then a bloom, then a bud that opened,
+   and each of those had the same problem: a decorative shape at rest covers
+   what you are aiming at and gives you no point to aim with. The arrow keeps
+   the precision and it also earns the flower, which now means "this does
+   something" rather than following the pointer everywhere regardless.
 
    It is an inline SVG data URI, so no image file is added and the bloom can be
    RECOLOURED at runtime without touching a stylesheet.
@@ -47,40 +47,36 @@
      differ by state: `auto` at rest, `pointer` over a clickable, or a machine
      that will not draw a custom cursor loses the only signal it had. */
   function hsl(h, sa, l) { return encodeURIComponent("hsl(" + h + "," + sa + "%," + l + "%)"); }
-  function svg(box, body) {
-    var mid = box / 2;
+
+  /* `hx`/`hy` is the hotspot, in the drawing's own coordinates, because the
+     two states point with different parts of themselves: an arrow points with
+     its tip, a flower has no tip and points with its middle. */
+  function svg(box, body, hx, hy) {
     return "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='" +
-      box + "' height='" + box + "' viewBox='0 0 " + box + " " + box + "'><g transform='translate(" +
-      mid + " " + mid + ")'>" + body + "</g></svg>\") " + mid + " " + mid + ", ";
+      box + "' height='" + box + "' viewBox='0 0 " + box + " " + box + "'>" + body +
+      "</svg>\") " + hx + " " + hy + ", ";
   }
 
-  /* THE BUD, at rest. A closed teardrop with two sepals at its foot, not a
-     small version of the open flower.
+  /* THE ARROW, at rest. The project's dark teal with a cream edge, so it holds
+     against the pale cream of most of the landing page AND against the dark
+     teal bands, which no single flat colour does.
 
-     Five narrow petals tucked in was the first attempt and it failed: at this
-     size overlapping ellipses read as a spindly star rather than as anything
-     closed, and next to the open flower the only difference left was scale.
-     A bud has one silhouette, so it is drawn as one shape.
+     It was a flower, and before that a leaf, and both were wrong for the same
+     reason: a decorative shape at rest covers what you are trying to aim at
+     and has no point to aim WITH. An arrow keeps the precision, and it makes
+     the flower mean something, because the flower now appears only over
+     things you can actually press rather than following you everywhere.
 
-     The path is a teardrop from a rounded foot to a point at the top, with a
-     single seam curved down it so it reads as wrapped rather than as a
-     leaf. The sepals are the project's own stem green and are the thing that
-     says which way is up. */
-  function budArt(hue) {
-    var skin = hsl(hue, 76, 78);
-    var seam = hsl(hue, 62, 62);
-    var leaf = hsl(142, 44, 38);
-    return "<path d='M0-9.4C4.6-5.6 5.6-1.2 4.5 2.6 3.8 5.2 2 6.8 0 6.8s-3.8-1.6-4.5-4.2" +
-      "C-5.6-1.2-4.6-5.6 0-9.4z' fill='" + skin + "' stroke='" + INK + "' stroke-width='1.1' " +
-      "stroke-linejoin='round'/>" +
-      "<path d='M0-7.6C1.9-4 2.3-0.6 1.4 2.9' fill='none' stroke='" + seam + "' " +
-      "stroke-width='1' stroke-linecap='round'/>" +
-      "<path d='M0 6.2C-1.4 8.4-3.6 9.4-6 9.2-5.2 6.6-2.9 5.2 0 5.6z' fill='" + leaf + "'/>" +
-      "<path d='M0 6.2C1.4 8.4 3.6 9.4 6 9.2 5.2 6.6 2.9 5.2 0 5.6z' fill='" + leaf + "'/>";
+     The hotspot is the tip at 1,1. The 1.4 stroke puts the painted tip about
+     0.3 outside that, which is under a pixel and below what anyone can aim
+     to anyway. */
+  function arrowArt() {
+    return "<path d='M1 1 L1 17.6 L5.3 13.8 L8 19.6 L10.7 18.4 L8.1 12.7 L13.7 12.6 Z' fill='" +
+      INK + "' stroke='%23fff9e3' stroke-width='1.4' stroke-linejoin='round'/>";
   }
 
-  /* THE OPEN FLOWER, over anything clickable. Five broad petals standing well
-     apart round a clear eye, at the full colour.
+  /* THE OPEN FLOWER, over anything clickable. Five broad petals standing apart
+     round a clear eye, at the full colour, and it points with its centre.
 
      IT IS 32 PIXELS AND MUST NOT GROW. Windows refuses a custom cursor larger
      than 32 by 32 outright, and a refused cursor falls back to the plain
@@ -94,17 +90,12 @@
       out += "<ellipse cx='0' cy='-7.3' rx='5.2' ry='6.1' fill='" + skin + "' stroke='" + INK +
              "' stroke-width='1.3' transform='rotate(" + (i * 72) + ")'/>";
     }
-    return out + "<circle r='3.5' fill='" + core + "'/>";
+    return "<g transform='translate(16 16)'>" + out + "<circle r='3.5' fill='" + core +
+      "'/></g>";
   }
 
-  /* A bud 20 pixels across against an open flower 32 across, and the shape
-     changes with the size rather than only the scale. That is what "not
-     significant enough" needed: the pair before this was one flower at 19 and
-     32, a soft tint against a full one, and on a page of pale cream the
-     colour barely moved while a size step alone reads as the pointer
-     wobbling rather than as an answer. */
-  function calm(hue) { return svg(20, budArt(hue)) + "auto"; }
-  function keen(hue) { return svg(32, openArt(hue)) + "pointer"; }
+  function calm() { return svg(22, arrowArt(), 1, 1) + "auto"; }
+  function keen(hue) { return svg(32, openArt(hue), 16, 16) + "pointer"; }
 
   /* Every clickable thing takes the bloom, and the CLASSES are listed as well
      as the elements. That is not belt and braces: `.bq-btn-outline` is a class
@@ -151,7 +142,7 @@
   var IMP = " !important; }\n";
 
   function css(hue) {
-    return "body { cursor: " + calm(hue) + IMP +
+    return "body { cursor: " + calm() + IMP +
       CLICKABLE + " { cursor: " + keen(hue) + IMP +
       /* Declared LAST so they win. A caret and a grab handle each say
          something true about the control, and a decorative cursor would throw

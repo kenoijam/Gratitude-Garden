@@ -2404,7 +2404,10 @@ saveBtn.mousePressed(() => {
   dailyNote.style("font-family", "Arial, Helvetica, sans-serif");
   dailyNote.style("font-size", NOTE_PX + "px");
   dailyNote.style("color", "#2c7a7b");
-  dailyNote.style("text-shadow", "1px 1px 0 rgba(255,255,255,0.6)");
+  /* No text shadow. A white shadow under dark green text on a pale sky is a
+     halo rather than a lift: it fattens every letter by a pixel and reads as
+     print that has not quite registered. The sky behind this is already pale
+     enough that the text has its contrast without help. */
 
   const nameSuffix = createSpan("'s Gratitude Garden").parent(nameWrap);
   nameSuffixEl = nameSuffix.elt;
@@ -2414,7 +2417,6 @@ saveBtn.mousePressed(() => {
   nameSuffix.style("font-variation-settings", "'SOFT' 50, 'WONK' 0");
   nameSuffix.style("color", "#0f5132");
   nameSuffix.style("pointer-events", "none");
-  nameSuffix.style("text-shadow", "1px 1px 0 rgba(255,255,255,0.6)");
 
   if (gardenName) nameField.value(gardenName);
   fitTitle();

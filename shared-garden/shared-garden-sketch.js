@@ -2695,21 +2695,34 @@ isSaving = false;
 dailyNote = createDiv("").id("daily-note").parent(gardenWrap);
 dailyNote.style("display", "none");
 dailyNote.style("position", "absolute");
-/* 68, not 24. The four round icons are 38px tall at top 20, so they end at
-   58, and a centred line wide enough to say this in one or two goes runs
-   under them at any window width. Below them it can never collide, whatever
-   the width, and the sky up there is empty either way. */
-dailyNote.style("top", "68px");
+/* On the SAME ROW as the four round icons, not under them. They are 38px tall
+   at top 20, so the box is given that exact height and centres its line inside
+   it: one line lands level with the icons rather than floating in the sky
+   below them.
+
+   `min-height` rather than `height`, so a line that wraps grows DOWNWARD into
+   empty sky instead of upward into the top edge of the window.
+
+   The width cap is what keeps it off the icons without a media query. They
+   occupy the right 192px and the Home link the left 120, so 200 either side is
+   the clear middle; the 260 floor stops the box collapsing to nothing on a
+   phone, where those controls are smaller anyway. */
+dailyNote.style("top", "20px");
 dailyNote.style("left", "50%");
 dailyNote.style("transform", "translateX(-50%)");
+dailyNote.style("min-height", "38px");
+dailyNote.style("align-items", "center");
+dailyNote.style("justify-content", "center");
 dailyNote.style("text-align", "center");
-dailyNote.style("max-width", "min(88vw, 620px)");
+dailyNote.style("max-width", "max(260px, min(620px, calc(100vw - 400px)))");
 dailyNote.style("z-index", "30");
 dailyNote.style("pointer-events", "none");
 dailyNote.style("font-family", "Arial, Helvetica, sans-serif");
 dailyNote.style("font-size", "15px");
 dailyNote.style("color", "#2c7a7b");
-dailyNote.style("text-shadow", "1px 1px 0 rgba(255,255,255,0.6)");
+/* No text shadow. A white shadow under this teal on a pale sky is a halo
+   rather than a lift: it fattens every letter by a pixel and reads as print
+   that has not quite registered. */
 
 tipsCard = createDiv().id("tips-card").parent(gardenWrap);
 tipsCard.style("pointer-events", "none");
@@ -2825,7 +2838,9 @@ const mine = !!sharedPlantedToday(username);
 dailyNote.html(step === "garden" && mine
 ? "Your flower is planted. Enjoy today's garden, and come back tomorrow for another."
 : "");
-dailyNote.style("display", step === "garden" && mine ? "block" : "none");
+/* `flex`, not `block`: the box is a fixed 38px tall so that its line sits
+   level with the icons, and flex is what centres the line inside it. */
+dailyNote.style("display", step === "garden" && mine ? "flex" : "none");
 }
 
 const logo = select("#gg-logo");

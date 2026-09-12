@@ -1121,11 +1121,12 @@ section { padding: 2.2rem 3.4rem; }
   position: absolute;
   z-index: 3;
   /* The label's width is the ring's whole budget: `layoutRing` subtracts it
-     from the half width and builds the ring out of what is left. 9.6em is
-     what lets the two column layout start at a real desktop width instead of
-     a very wide one, and it still holds "Reflection & presence" on two
-     lines. */
-  width: 9.6em;
+     from the half width, twice, and builds the ring out of what is left. So
+     this number and the ring's size move against each other, and it is set as
+     tight as the longest meaning allows rather than as loose as it looks
+     nice. Every name sits on one line at this width; the meanings under them
+     take one or two. */
+  width: 7.6em;
   opacity: 0;
   pointer-events: none;
   transition: opacity .2s ease;
@@ -1165,15 +1166,15 @@ section { padding: 2.2rem 3.4rem; }
 
    `layoutRing` builds the ring from what is left after a label, and it will
    not go under a radius of 120: below that it would be a ring of blooms with
-   no ring left. Working backwards, that floor needs about 785px of column.
-   Add the 260 the heading column needs to read as a column, the 48 gap and
-   the section's own 85 of padding either side, and the answer is 1263. 1280
-   is the first ordinary desktop width above it.
+   no ring left. Working backwards, that floor needs about 700px of column
+   now the labels and leader lines are tighter. Add the 260 the heading column
+   needs to read as a column, the 44 gap and the section's own 85 of padding
+   either side, and the answer is 1259, so 1180 carries it with room.
 
    Below that they stack, heading above ring, which is what the block above
    does. Get this wrong and the ring does not shrink, it OVERFLOWS: the radius
    floor holds and the labels run outside the column. */
-@media (min-width: 1280px) {
+@media (min-width: 1180px) {
   .catalogue-split {
     display: grid;
     /* The heading column is kept deliberately narrow. Every pixel it gives up

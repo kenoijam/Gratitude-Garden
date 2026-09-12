@@ -1371,8 +1371,14 @@
     { id:'lotus',     a:-157.5, hue:340, sat:50, light:70 },
     { id:'sakura',    a:-112.5, hue:340, sat:40, light:75 }
   ];
-  var LEAD = 38;        /* the radial run of the leader line */
-  var TICK = 18;        /* the horizontal turn at its far end */
+  /* The lead and the tick are not decoration, they are the ring's budget:
+     every pixel spent on the run out to a label is a pixel the radius does
+     not get, twice over. They were 38 and 18, which with a wider label left
+     the blooms stuck on their 104 floor and the whole section noticeably
+     shorter than the ones around it. At 26 and 12 the line still reads as a
+     leader rather than as a label touching a flower. */
+  var LEAD = 26;        /* the radial run of the leader line */
+  var TICK = 12;        /* the horizontal turn at its far end */
   var ringBuilt = false;
 
   function buildRing(){
@@ -1447,7 +1453,7 @@
        and the size sets the radius the ring is actually drawn at. */
     var size = 128;
     var Rr = free - size*0.42;
-    size = Math.max(104, Math.min(168, Rr*0.70));
+    size = Math.max(104, Math.min(168, Rr*0.72));
     Rr = Math.max(120, free - size*0.42);
 
     var cxs = W/2, maxY = 0;
