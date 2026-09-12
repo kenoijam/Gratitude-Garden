@@ -102,6 +102,14 @@
     '#ga-head h2{font-family:Fraunces,Georgia,serif;font-size:22px;font-weight:600;' +
       "font-variation-settings:'SOFT' 50,'WONK' 0;color:#0f5132;margin:0 0 4px;}" +
     '#ga-whoami{font-size:13px;color:#2c7a7b;margin:0;}' +
+    '.ga-rename-link{background:none;border:none;padding:0 0 0 6px;color:#2c7a7b;' +
+      'font-family:inherit;font-size:13px;text-decoration:underline;cursor:pointer;}' +
+    '#ga-rename{margin-top:12px;}' +
+    '#ga-rename input{width:100%;box-sizing:border-box;padding:10px 12px;' +
+      'border:1.5px solid #d9ece9;border-radius:12px;font-family:inherit;font-size:14px;' +
+      'color:#1d6466;background:#fdfefe;}' +
+    '#ga-rename input:focus{outline:none;border-color:#7fcdcd;}' +
+    '#ga-rename .ga-act{margin-top:9px;justify-content:flex-end;}' +
     '#ga-close{position:absolute;top:12px;right:12px;width:30px;height:30px;border-radius:50%;' +
       'border:1.5px solid #b7e4e7;background:rgba(255,249,227,0.92);color:#1d6466;' +
       'cursor:pointer;padding:0;display:flex;align-items:center;justify-content:center;}' +
@@ -436,10 +444,112 @@
     return row;
   }
 
+  /* Renaming has to go through the same uniqueness check as claiming, and it
+     carries the display name along with it ONLY when that was never set to
+     anything of its own. Somebody who has deliberately called themselves
+     something else keeps it. */
+  function openRename() {
+    if (!profile || document.getElementById("ga-rename")) return;
+    var box = el("div"); box.id = "ga-rename";
+    var input = el("input");
+    input.type = "text";
+    input.maxLength = 20;
+    input.autocomplete = "off";
+    input.spellcheck = false;
+    input.value = profile.username || "";
+    var msg = el("p", "ga-msg");
+    msg.setAttribute("data-tone", "idle");
+    var act = el("div", "ga-act");
+    var save = el("button", "ga-mini", "Save");
+    save.type = "button";
+    save.setAttribute("data-kind", "go");
+    save.disabled = true;
+    var cancel = el("button", "ga-mini", "Cancel");
+    cancel.type = "button";
+    cancel.setAttribute("data-kind", "quiet");
+    cancel.addEventListener("click", function () { box.remove(); });
+
+    var timer = null, asked = "";
+    input.addEventListener("input", function () {
+      var v = input.value.trim();
+      save.disabled = true;
+      if (v === (profile.username || "")) { msg.setAttribute("data-tone", "idle"); msg.textContent = ""; return; }
+      if (!NAME_RE.test(v)) {
+        msg.setAttribute("data-tone", "bad");
+        msg.textContent = "Three to twenty characters, letters, numbers and underscores only.";
+        return;
+      }
+      msg.setAttribute("data-tone", "idle");
+      msg.textContent = "Checking";
+      clearTimeout(timer);
+      timer = setTimeout(function () {
+        asked = v;
+        nameFree(v).then(function (free) {
+          if (input.value.trim() !== asked) return;
+          if (free === null) { msg.textContent = ""; save.disabled = false; return; }
+          if (free) { msg.setAttribute("data-tone", "good"); msg.textContent = v + " is free."; save.disabled = false; }
+          else { msg.setAttribute("data-tone", "bad"); msg.textContent = v + " is taken. Try another."; }
+        });
+      }, 380);
+    });
+
+    save.addEventListener("click", function () {
+      var v = input.value.trim();
+      if (!NAME_RE.test(v)) return;
+      save.disabled = true;
+      save.textContent = "Saving";
+      var patch = { username: v };
+      if (!profile.display_name || profile.display_name === profile.username) {
+        patch.display_name = v;
+      }
+      sb.from("profiles").update(patch).eq("id", me.id).select().maybeSingle()
+        .then(function (res) {
+          save.textContent = "Save";
+          if (res.error) {
+            save.disabled = false;
+            msg.setAttribute("data-tone", "bad");
+            msg.textContent = /duplicate|unique/i.test(res.error.message || "")
+              ? "Somebody just took that one. Try another."
+              : res.error.message;
+            return;
+          }
+          profile = res.data || profile;
+          box.remove();
+          fire();
+          refreshPanel();
+        })
+        .catch(function () {
+          save.disabled = false;
+          save.textContent = "Save";
+          msg.setAttribute("data-tone", "bad");
+          msg.textContent = "Could not reach the garden.";
+        });
+    });
+
+    input.addEventListener("keydown", function (e) {
+      if (e.key === "Enter" && !save.disabled) save.click();
+      if (e.key === "Escape") box.remove();
+    });
+
+    act.appendChild(cancel); act.appendChild(save);
+    box.appendChild(input); box.appendChild(msg); box.appendChild(act);
+    document.getElementById("ga-head").appendChild(box);
+    input.focus();
+    input.select();
+  }
+
   function refreshPanel() {
     if (!panel) return;
-    panelWho.textContent = profile
-      ? "You are " + (profile.username || "") : "";
+    var old = document.getElementById("ga-rename");
+    if (old) old.remove();
+    panelWho.innerHTML = "";
+    if (profile) {
+      panelWho.appendChild(document.createTextNode("You are " + (profile.username || "")));
+      var ch = el("button", "ga-rename-link", "Change");
+      ch.type = "button";
+      ch.addEventListener("click", openRename);
+      panelWho.appendChild(ch);
+    }
 
     if (!me) {
       panelBody.innerHTML = "";

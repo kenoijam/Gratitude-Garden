@@ -887,7 +887,7 @@ var BLOOM_BOX = {
 
 /* A little smaller than the bloom, so the flower overhangs its own shadow
    rather than sitting inside a dark halo the same size as itself. */
-var SHADOW_FIT = 0.86;
+var SHADOW_FIT = 0.90;
 
 function bloomShadow(f, R) {
   var box = BLOOM_BOX[f.species] || BLOOM_BOX.daisy;
@@ -899,14 +899,18 @@ function bloomShadow(f, R) {
      lands in the wrong place and comes out half as soft as asked for. */
   var dpr = (typeof pixelDensity === "function") ? pixelDensity() : 1;
   var FAR = 6000;                       /* far outside any canvas */
-  var dx = Math.max(1, R * 0.05);
-  var dy = Math.max(2.5, R * 0.13);
 
+  /* CENTRED on the bloom, not dropped below it, and light. A shadow cast down
+     and to the side says the light is low and hard, which is the wrong
+     weather for a pastel garden: it read as a heavy smudge under every
+     flower. Centred and soft it is a halo that separates the bloom from the
+     grass and says nothing about the sun at all, which is what this needed to
+     do in the first place. */
   ctx.save();
-  ctx.shadowColor = "rgba(18,62,56,0.30)";
-  ctx.shadowBlur = Math.max(5, R * 0.26) * dpr;
-  ctx.shadowOffsetX = (dx - FAR) * dpr;
-  ctx.shadowOffsetY = dy * dpr;
+  ctx.shadowColor = "rgba(18,62,56,0.18)";
+  ctx.shadowBlur = Math.max(6, R * 0.32) * dpr;
+  ctx.shadowOffsetX = -FAR * dpr;
+  ctx.shadowOffsetY = 0;
   ctx.fillStyle = "#000";
   ctx.beginPath();
   ctx.ellipse(FAR, box[0] * R, box[1] * R * SHADOW_FIT, box[2] * R * SHADOW_FIT,

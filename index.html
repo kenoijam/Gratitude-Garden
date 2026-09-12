@@ -1910,11 +1910,13 @@
         var hr = hero.getBoundingClientRect();
         if (hr.bottom > 0 && hr.top < h) {
           skyCtx.clearRect(0, 0, hr.width, hr.height);
-          /* Up among the clouds. They sit between 12 and 19 percent of the
-             hero's height and stand about 90px tall, so this band holds the
-             birds beside them and never down among the flowers. */
+          /* Up among the clouds. The three of them sit between 12 and 19
+             percent of the hero's height and stand about 90px tall, and the
+             flock takes a lane between 0.30 and 0.70 of whatever band it is
+             given, so 5 to 26 percent puts every lane on the cloud line and
+             none of them down near the flowers. */
           GardenLife.sky(skyCtx, hr.width, hr.height, {
-            birds: [hr.height * 0.08, hr.height * 0.30],
+            birds: [hr.height * 0.05, hr.height * 0.26],
             cross: 26, gap: 8, scale: 1.25, ink: 'rgba(47,98,96,0.62)'
           });
         }

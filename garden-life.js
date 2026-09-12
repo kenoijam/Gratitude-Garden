@@ -327,16 +327,26 @@
     ctx.restore();
   }
 
-  /* ---------------------------------------------------------------- motes */
-  /* A mote is two circles, a wide faint one and a tight bright one, rather
-     than a radial gradient. A gradient per mote per frame is real work for a
-     glow two pixels across, and the pair reads the same.
+  /* -------------------------------------------------------------- sparkles */
+  /* These are SPARKLES, the same four pointed star the gardens throw around a
+     newly planted flower, not soft dots. Two stacked circles was the first
+     version and it read as jitter rather than as light: a dot two pixels
+     across, moving a third of a pixel per frame and pulsing its radius, is
+     just antialiasing changing its mind. A star has a shape to recognise, so
+     the eye reads it as one thing turning rather than as noise.
 
-     There are two palettes and it is not decoration. On a dark ground a mote
-     is white and reads as light. On CREAM, which is most of the landing page,
+     The geometry is `drawNewestSparkles` exactly: four outer points with the
+     inner corners at 0.35 of the radius, turning slowly. What differs is the
+     SPEED. The garden's sparkle runs off frameCount at a rate that suits a
+     burst lasting a few seconds; these hang around for as long as the page is
+     open, so everything is slowed right down and driven by the clock instead,
+     which also makes them frame rate independent.
+
+     Two palettes, and that is not decoration. On a dark ground a sparkle is
+     white and reads as light. On CREAM, which is most of the landing page,
      white is invisible: it has to go the other way and sit DARKER than the
-     ground to be seen at all, so the pale tones become a warm gold and a soft
-     teal, at a little more alpha to make up for the smaller contrast. */
+     ground, so the pale tones become a warm gold and a soft teal, at a little
+     more alpha to make up for the smaller contrast. */
   var MOTE = {
     light: { warm: ["rgb(250,222,150)", "rgb(240,192,84)"],
              cool: ["rgb(176,222,210)", "rgb(122,190,176)"], gain: 1.35 },
@@ -344,17 +354,40 @@
              cool: ["rgb(233,255,248)", "rgb(255,255,255)"], gain: 1.00 }
   };
 
-  function paintMote(ctx, x, y, r, a, warm, onDark) {
+  function star(ctx, r) {
+    ctx.beginPath();
+    for (var i = 0; i < 4; i++) {
+      var out = i * Math.PI / 2;
+      var inn = out + Math.PI / 4;
+      if (i === 0) ctx.moveTo(Math.cos(out) * r, Math.sin(out) * r);
+      else ctx.lineTo(Math.cos(out) * r, Math.sin(out) * r);
+      ctx.lineTo(Math.cos(inn) * r * 0.35, Math.sin(inn) * r * 0.35);
+    }
+    ctx.closePath();
+  }
+
+  function paintMote(ctx, x, y, r, a, warm, onDark, spin) {
     var set = onDark ? MOTE.dark : MOTE.light;
     var pair = warm ? set.warm : set.cool;
     var al = clamp(a * set.gain, 0, 1);
-    ctx.globalAlpha = al * 0.4;
+
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate(spin || 0);
+
+    /* A soft halo under the star, which is what stops a hard little polygon
+       looking pasted onto the page. */
+    ctx.globalAlpha = al * 0.28;
     ctx.fillStyle = pair[0];
-    ctx.beginPath(); ctx.arc(x, y, r * 2.6, 0, 6.283); ctx.fill();
+    ctx.beginPath();
+    ctx.arc(0, 0, r * 1.5, 0, 6.283);
+    ctx.fill();
+
     ctx.globalAlpha = al;
     ctx.fillStyle = pair[1];
-    ctx.beginPath(); ctx.arc(x, y, r, 0, 6.283); ctx.fill();
-    ctx.globalAlpha = 1;
+    star(ctx, r);
+    ctx.fill();
+    ctx.restore();
   }
 
   /* The dust belongs to the SECTIONS, not to the window. Each band gets its
@@ -382,9 +415,12 @@
           fx: rnd(sd * 1.7),
           fy: rnd(sd * 2.3),
           r: 1.0 + rnd(sd * 3.1) * 1.9,
-          drift: 3 + rnd(sd * 5.9) * 11,
-          rise: 3 + rnd(sd * 7.3) * 10,
-          tw: 0.35 + rnd(sd * 11.9) * 0.6,
+          /* Slow, but not so slow that a sparkle sits on one pixel pair for
+             a second at a time, which is the other half of what looked like
+             jitter: sub pixel movement under antialiasing. */
+          drift: 7 + rnd(sd * 5.9) * 13,
+          rise: 6 + rnd(sd * 7.3) * 11,
+          tw: 0.5 + rnd(sd * 11.9) * 0.7,
           phase: rnd(sd * 13.7) * 6.28,
           warm: rnd(sd * 17.3) > 0.5
         });
@@ -421,8 +457,8 @@
       if (y < -40 || y > h + 40) continue;     /* off screen, nothing to pay for */
       var x = (d.fx * wrapW + t * d.drift) % wrapW - 30;
       var tw = 0.5 + 0.5 * Math.sin(t * d.tw + d.phase);
-      paintMote(ctx, x, y, d.r * u * (0.8 + tw * 0.45),
-                0.10 + tw * 0.30, d.warm, !!band.dark);
+      paintMote(ctx, x, y, (2.0 + d.r * 0.9) * u * (0.92 + tw * 0.16),
+                0.10 + tw * 0.30, d.warm, !!band.dark, t * 0.45 + d.phase);
     }
     ctx.restore();
   }
@@ -460,9 +496,10 @@
       var my = top + band - (((mo.y * band) + t * mo.rise) % band);
       var tw = 0.5 + 0.5 * Math.sin(t * mo.tw + mo.phase);
       /* A garden's ground is dark enough for the white palette, which is what
-         these have always used. */
-      paintMote(ctx, mx, my, mo.r * u * (0.8 + tw * 0.45),
-                0.10 + tw * 0.30, mo.warm, true);
+         these have always used. The size barely moves and the brightness does
+         the twinkling: a radius that swings hard is what read as jitter. */
+      paintMote(ctx, mx, my, (2.0 + mo.r * 0.9) * u * (0.92 + tw * 0.16),
+                0.10 + tw * 0.30, mo.warm, true, t * 0.5 + mo.phase);
     }
 
     /* ------------------------------------------------------ butterflies */
