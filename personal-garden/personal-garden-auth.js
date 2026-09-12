@@ -200,6 +200,26 @@
     window.__gardenBoot = current;
     var tag = document.createElement("script");
     tag.src = "personal-garden-sketch.js";
+
+    /* p5 in global mode starts itself from the window LOAD event, and only if
+       `window.setup` already exists at that moment. This sketch is injected
+       later than that on every path that matters: after the Supabase session
+       check, which is a network round trip, or after someone clicks "use this
+       browser only". By then load has long fired, p5 has looked for a setup,
+       found none and done nothing, so the sketch defines setup and draw and
+       nobody ever calls them. The page comes up blank.
+
+       It only ever worked before because an unconfigured project made the
+       session check synchronous, so boot ran during parse and beat the load
+       event. Configuring Supabase is what exposed it.
+
+       `frameCount` is the tell: p5 defines it the moment it instantiates, so
+       undefined means it never started and starting it here is safe. */
+    tag.onload = function () {
+      if (typeof window.setup === "function" && typeof window.frameCount === "undefined") {
+        new p5();
+      }
+    };
     document.head.appendChild(tag);
   }
 

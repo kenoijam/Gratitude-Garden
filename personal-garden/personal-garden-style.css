@@ -464,10 +464,26 @@ button {
 /* every full screen step the accounts flow puts up: the sign in gate, the offer
    to carry a browser garden across, and the set a new password form. Only one
    is ever meant to be on screen, and each removes the one before it. */
+/* The sign in screen stands in the garden, not on a flat wash.
+   Every colour and every height here is the sketch's own: sky #cfeef0 to
+   #f9ffff, back hills #a9d9cf at 56%, front hills #8fcfbe at 64%, foreground
+   #7ec4b4 at 75%, and the sun where drawSunGradient puts it at 85% across and
+   18% down. It is CSS rather than the real canvas because the sketch is not
+   loaded yet at this point: the auth module injects it only once there is a
+   garden to draw, which is the whole reason the gate can appear first.
+   `preserveAspectRatio: none` lets the hills stretch to any window, which is
+   what the noise based originals effectively do anyway. */
 .gg-overlay {
   position: fixed; inset: 0; z-index: 400;
   display: flex; align-items: center; justify-content: center; padding: 24px;
-  background: linear-gradient(170deg, #cfeef0 0%, #eaf7f2 60%, #fff9e3 100%);
+  background:
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='none'><path d='M0,58 C15,52 32,60 50,56 C68,52 86,60 100,55 L100,100 L0,100 Z' fill='%23a9d9cf'/><path d='M0,66 C20,62 36,68 55,64 C74,60 88,67 100,64 L100,100 L0,100 Z' fill='%238fcfbe'/><path d='M0,76 C25,73 45,78 65,75 C80,73 92,77 100,75 L100,100 L0,100 Z' fill='%237ec4b4'/></svg>")
+      center / 100% 100% no-repeat,
+    /* sized in pixels, not a percentage: a percentage radius grows with the
+       window and turned the sun into a wash over most of the sky. The
+       sketch's own sun is a soft disc of about this radius. */
+    radial-gradient(circle 190px at 85% 18%, rgba(251,228,132,0.9) 0%, rgba(251,228,132,0.42) 34%, rgba(251,228,132,0) 100%),
+    linear-gradient(180deg, #cfeef0 0%, #f9ffff 100%);
 }
 .gg-auth-card {
   width: 100%; max-width: 380px; background: snow;
