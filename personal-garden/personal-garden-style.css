@@ -485,16 +485,28 @@ button {
     radial-gradient(circle 190px at 85% 18%, rgba(251,228,132,0.9) 0%, rgba(251,228,132,0.42) 34%, rgba(251,228,132,0) 100%),
     linear-gradient(180deg, #cfeef0 0%, #f9ffff 100%);
 }
+/* The same card the rest of the garden uses: snow, 1px #e6efed, radius 16 and
+   the project's own shadow, rather than a heavier one of its own. */
 .gg-auth-card {
   width: 100%; max-width: 380px; background: snow;
-  border: 1px solid #e6efed; border-radius: 18px; padding: 28px 26px 24px;
-  box-shadow: 0 14px 40px rgba(29,100,102,0.16);
+  border: 1px solid #e6efed; border-radius: 16px; padding: 26px 24px 22px;
+  box-shadow: 0 8px 28px rgba(0,0,0,0.06);
   font-family: Arial, Helvetica, sans-serif;
 }
+/* 26px over 15px is the project's heading ratio for a heading INSIDE a card,
+   the same pairing the bouquet steps use. `.gg-title`'s 42px belongs to a
+   title standing on its own above a card, which this is not. Fraunces at 600
+   with SOFT 50, like every other heading in the project. */
 .gg-auth-card h1 {
-  font-size: 1.4rem; color: #0f5132; margin: 0 0 6px; font-weight: 700;
+  font-family: 'Fraunces', 'Georgia', serif;
+  font-size: 26px; font-weight: 600;
+  font-variation-settings: 'SOFT' 50, 'WONK' 0;
+  color: #0f5132; margin: 0 0 6px; text-align: center;
 }
-.gg-auth-sub { font-size: 0.86rem; color: #4a7c72; line-height: 1.5; margin: 0 0 18px; }
+.gg-auth-sub {
+  font-size: 15px; color: #2c7a7b; line-height: 1.5; margin: 0 0 18px;
+  text-align: center;
+}
 .gg-auth-card label {
   display: block; font-size: 0.74rem; font-weight: 700; color: #2c7a7b;
   text-transform: uppercase; letter-spacing: 0.03em; margin: 12px 0 5px;
@@ -511,16 +523,21 @@ button {
 .gg-auth-card button { box-sizing: border-box; }
 .gg-auth-card input {
   width: 100%; padding: 11px 12px; font-size: 0.95rem; font-family: inherit;
-  border: 1px solid #cfe5e1; border-radius: 10px; background: #fbfefd; color: #0f5132;
+  border: 1px solid #cfe5e1; border-radius: 12px; background: #fbfefd; color: #0f5132;
 }
 .gg-auth-card input:focus { outline: none; border-color: powderblue; box-shadow: 0 0 0 2px powderblue; }
 .gg-auth-msg { font-size: 0.82rem; color: #4a7c72; min-height: 1.2em; margin: 12px 0 0; line-height: 1.4; }
 .gg-auth-msg.bad { color: #c0553f; }
+/* Identical to `.gg-btn`, which is the garden's primary action everywhere
+   else: mediumturquoise, snow, radius 12, 18px at weight 700, and the same
+   grow on hover. It was a 999px teal pill, which was the only button in the
+   project shaped like that. */
 .gg-auth-btn {
-  width: 100%; margin-top: 14px; padding: 12px; border: none; border-radius: 999px;
-  background: #2c7a7b; color: #fff; font-size: 0.95rem; font-weight: 700;
-  font-family: inherit; cursor: pointer;
+  width: 100%; margin-top: 16px; padding: 14px 18px; border: none; border-radius: 12px;
+  background: mediumturquoise; color: snow; font-size: 18px; font-weight: 700;
+  font-family: inherit; cursor: pointer; transition: transform .15s, background .15s;
 }
+.gg-auth-btn:hover:not(:disabled) { transform: scale(1.03); background: turquoise; }
 .gg-auth-btn:disabled { opacity: 0.55; cursor: default; }
 .gg-auth-alt {
   width: 100%; margin-top: 10px; padding: 8px; border: none; background: none;
@@ -546,8 +563,14 @@ button {
 
 /* Who is signed in, and the way out. Bottom left: Home is top left, Save PNG is
    top right, and the logo is bottom right. */
+/* Bottom RIGHT. Home is top left and Save PNG is top right, and the corner
+   this now sits in is genuinely free: `buildLogo` builds #gg-logo inside
+   `loadImage`'s success callback, and LOGO-01.png only exists at the repo
+   root, so from this folder it 404s and the callback never runs. If that 404
+   is ever fixed the logo reappears at bottom 16 right 16 and lands underneath
+   this chip, so move the logo to the left when you fix it. */
 #gg-account {
-  position: fixed; left: 14px; bottom: 16px; z-index: 200;
+  position: fixed; right: 14px; bottom: 16px; z-index: 200;
   display: inline-flex; align-items: center; gap: 8px;
   background: rgba(255,249,227,0.92); border: 1.5px solid #b7e4e7; border-radius: 50px;
   padding: 6px 8px 6px 14px; box-shadow: 0 2px 10px rgba(29,100,102,0.14);
