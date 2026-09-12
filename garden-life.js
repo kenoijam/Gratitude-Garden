@@ -133,7 +133,11 @@
        permanently in it stops being a sky with birds in it. The cycle is a
        long crossing and a longer absence, and `dir` flips each time so they
        do not always come from the same side. */
-    var nBird = w < 620 ? 2 : 3;
+    /* Five, not three. A skein of three reads as three dots; five reads as a
+       flock, and the hero is where anybody actually looks at them. Still a
+       skein rather than a flock of twenty: the whole brief here is lively
+       without being crowded. */
+    var nBird = w < 620 ? 3 : 5;
     var birds = [];
     for (var b = 0; b < nBird; b++) {
       birds.push({

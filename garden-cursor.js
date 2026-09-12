@@ -12,12 +12,19 @@
    belonged to, and the music button carried a `title` as well, so hovering it
    produced the custom label and then the operating system's own on top.
 
-   An ARROW at rest, in the project's own colours, and a FLOWER over anything
-   you can press. It has been a leaf, then a bloom, then a bud that opened,
-   and each of those had the same problem: a decorative shape at rest covers
-   what you are aiming at and gives you no point to aim with. The arrow keeps
-   the precision and it also earns the flower, which now means "this does
-   something" rather than following the pointer everywhere regardless.
+   A SPARKLE at rest and the FAVICON'S OWN BLOOM over anything you can press.
+   Both are the favicon's blue, hue 206, so the mark in the tab and the mark
+   under the pointer are the same thing.
+
+   It has been a leaf, a bloom, a bud that opened and an arrow. The three
+   decorations all failed the same way: they covered what you were aiming at
+   and gave you no point to aim with. A four pointed star does not, because
+   it is mostly empty and its points meet at a definite centre, which is
+   where the hotspot sits.
+
+   The personal garden still retints the CLICKABLE bloom with the hue of the
+   flower planted most recently; only its hue moves, the rings and the
+   scallops are the favicon's whatever colour it is wearing.
 
    It is an inline SVG data URI, so no image file is added and the bloom can be
    RECOLOURED at runtime without touching a stylesheet.
@@ -35,7 +42,11 @@
 
   var STYLE_ID = "gg-cursor-style";
   var INK = "%231d6466";        /* the outline, dark teal, url encoded */
-  var DEFAULT_HUE = 47;         /* butter, the same yellow the palette uses */
+  /* The favicon's own blue. It was 47, the palette's butter yellow, which is
+     what the clickable bloom wore before this; with the resting sparkle now
+     sampled off the tab icon, a yellow bloom beside it read as two unrelated
+     marks. The personal garden still moves this, and only this. */
+  var DEFAULT_HUE = 206;
 
   /* Five petals round a centre. Everything is a fraction of `reach`, which is
      how far the bloom paints from its own middle, so one function draws both
@@ -57,44 +68,75 @@
       "</svg>\") " + hx + " " + hy + ", ";
   }
 
-  /* THE ARROW, at rest. The project's dark teal with a cream edge, so it holds
-     against the pale cream of most of the landing page AND against the dark
-     teal bands, which no single flat colour does.
+  /* THE FAVICON'S OWN BLOOM, and its colour.
 
-     It was a flower, and before that a leaf, and both were wrong for the same
-     reason: a decorative shape at rest covers what you are trying to aim at
-     and has no point to aim WITH. An arrow keeps the precision, and it makes
-     the flower mean something, because the flower now appears only over
-     things you can actually press rather than following you everywhere.
+     The tab icon is a scalloped bloom of concentric rings in a single blue.
+     Sampled off `apple-touch-icon.png`, that blue is hue 206 at about 58
+     percent saturation, running from 47 percent lightness on the outer ring
+     up through 56 and 62 to a near white middle, with a dark eye. So the
+     cursor is not "a blue flower", it is THAT flower: the thing in the tab
+     and the thing under the pointer are one mark.
 
-     The hotspot is the tip at 1,1. The 1.4 stroke puts the painted tip about
-     0.3 outside that, which is under a pixel and below what anyone can aim
-     to anyway. */
-  function arrowArt() {
-    return "<path d='M1 1 L1 17.6 L5.3 13.8 L8 19.6 L10.7 18.4 L8.1 12.7 L13.7 12.6 Z' fill='" +
-      INK + "' stroke='%23fff9e3' stroke-width='1.4' stroke-linejoin='round'/>";
-  }
+     206 also does something no other hue in the project can. Every colour on
+     these pages is a teal, a cream or a pastel bloom, so a saturated blue is
+     the one thing that is never mistaken for the page it is sitting on. */
+  var FAV_H = 206;
+  var FAV_S = 58;
 
-  /* THE OPEN FLOWER, over anything clickable. Five broad petals standing apart
-     round a clear eye, at the full colour, and it points with its centre.
-
-     IT IS 32 PIXELS AND MUST NOT GROW. Windows refuses a custom cursor larger
-     than 32 by 32 outright, and a refused cursor falls back to the plain
-     system arrow, so anything bigger would silently lose the flower on every
-     Windows machine. */
-  function openArt(hue) {
-    var skin = hsl(hue, 96, 72);
-    var core = hsl((hue + 150) % 360, 40, 38);
+  /* Six rings, scalloped rather than round, lightening inward. `wob` is how
+     far the scallop swings; drawn as a plain circle this reads as a target
+     rather than as a flower. */
+  function ringBloom(hue, R) {
     var out = "";
-    for (var i = 0; i < 5; i++) {
-      out += "<ellipse cx='0' cy='-7.3' rx='5.2' ry='6.1' fill='" + skin + "' stroke='" + INK +
-             "' stroke-width='1.3' transform='rotate(" + (i * 72) + ")'/>";
+    var steps = [
+      { r: 1.00, l: 47 }, { r: 0.81, l: 53 }, { r: 0.63, l: 60 },
+      { r: 0.46, l: 88 }, { r: 0.30, l: 62 }, { r: 0.15, l: 34 }
+    ];
+    for (var s = 0; s < steps.length; s++) {
+      var rr = R * steps[s].r;
+      var lobes = 11, wob = rr * 0.085, d = "";
+      for (var k = 0; k <= 48; k++) {
+        var a = k / 48 * 6.28318;
+        var rad = rr + Math.sin(a * lobes) * wob;
+        var x = (Math.cos(a) * rad).toFixed(2);
+        var y = (Math.sin(a) * rad).toFixed(2);
+        d += (k ? "L" : "M") + x + " " + y;
+      }
+      out += "<path d='" + d + "Z' fill='" + hsl(hue, FAV_S, steps[s].l) + "'/>";
     }
-    return "<g transform='translate(16 16)'>" + out + "<circle r='3.5' fill='" + core +
-      "'/></g>";
+    return out;
   }
 
-  function calm() { return svg(22, arrowArt(), 1, 1) + "auto"; }
+  /* THE SPARKLE, at rest. The gardens' own four pointed star, the one thrown
+     around a flower the moment it is planted, in the favicon's blue.
+
+     It replaced an arrow, which replaced a bud, a bloom and a leaf. What makes
+     this one work where the earlier decorations did not is that a four pointed
+     star has a definite CENTRE where its points meet, so there is still
+     somewhere exact to aim, and it is mostly empty, so it does not cover the
+     thing being aimed at. */
+  function sparkleArt(hue) {
+    var R = 7.6, inner = R * 0.3;
+    var d = "";
+    for (var i = 0; i < 8; i++) {
+      var a = i * 0.7854;
+      var rad = (i % 2 === 0) ? R : inner;
+      d += (i ? "L" : "M") + (Math.cos(a) * rad).toFixed(2) + " " + (Math.sin(a) * rad).toFixed(2);
+    }
+    return "<g transform='translate(10 10)'><circle r='4.2' fill='" + hsl(hue, FAV_S, 62) +
+      "' opacity='0.30'/><path d='" + d + "Z' fill='" + hsl(hue, FAV_S, 52) +
+      "' stroke='" + hsl(hue, FAV_S, 34) + "' stroke-width='0.7' stroke-linejoin='round'/></g>";
+  }
+
+  /* IT IS 32 PIXELS AND MUST NOT GROW. Windows refuses a custom cursor larger
+     than 32 by 32 outright, and a refused cursor falls back to the plain
+     system arrow, so anything bigger would silently lose it on every Windows
+     machine. */
+  function openArt(hue) {
+    return "<g transform='translate(16 16)'>" + ringBloom(hue, 15) + "</g>";
+  }
+
+  function calm() { return svg(20, sparkleArt(FAV_H), 10, 10) + "auto"; }
   function keen(hue) { return svg(32, openArt(hue), 16, 16) + "pointer"; }
 
   /* Every clickable thing takes the bloom, and the CLASSES are listed as well
@@ -115,9 +157,11 @@
        label[for]          a form label, which is clickable in the technical
                            sense and in no other.
 
-     All three still work exactly as before; they just show the arrow while
-     you read them. The rule is that the flower marks a CONTROL, and a big
-     box you happen to be able to click is not one. */
+     All three still work exactly as before; they just show the sparkle while
+     you read them. The rule is that the bloom marks a thing that ANSWERS the
+     pointer, and a big box you happen to be able to click is not one. `.wig`
+     is in the list for the same rule read the other way: those words are not
+     links, but they do answer. */
   var CLICKABLE = [
     "a", "button", "[role=\"button\"]", "summary",
     /* the bouquet builder */
@@ -130,6 +174,10 @@
     /* the landing page */
     ".btn-primary", ".btn-outline", ".btn-on-dark", ".btn-card-light",
     ".side-nav-item", ".card-fold-toggle",
+    /* The wiggling words in the headings. They are not links, but they do
+       answer when the pointer crosses them, and the bloom is what says so
+       before you find out by accident. */
+    ".wig",
     /* the panels this project adds */
     ".ga-mini", ".ga-btn", ".ga-link", ".ga-rename-link", ".gj-day", ".gj-arrow",
     ".gs-btn", ".gs-link"
@@ -203,6 +251,9 @@
     "@media (prefers-reduced-motion:reduce){[data-tip]::after{transition:opacity .01s;}}";
 
   var tag = null;
+  /* `apply` only ever moves the CLICKABLE bloom's hue. The resting sparkle
+     stays the favicon's blue on every page, because it is the mark rather
+     than the state: retinting it too would leave no fixed point at all. */
   function apply(hue) {
     if (!tag) {
       tag = document.getElementById(STYLE_ID);

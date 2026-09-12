@@ -74,12 +74,32 @@ body { padding-left: 0 !important; }
 .cloud { position: absolute; pointer-events: none; }
 .cloud .body { position: absolute; background: rgba(255,255,255,0.9); border-radius: 50px; }
 .cloud .bump1, .cloud .bump2 { position: absolute; background: rgba(255,255,255,0.9); border-radius: 50%; }
-.cloud-1 { animation: cloudDrift1 22s linear infinite; top: 13%; } @keyframes cloudDrift1 { 0% { transform: translateX(-220px); } 100% { transform: translateX(calc(100vw + 220px)); } }
+/* FIVE clouds in TWO speed groups, and the numbers were searched rather than
+   picked. A cloud "arrives" when it crosses the left edge, and with the old
+   three, at 22, 30 and 25 seconds, the longest stretch with no arrival at all
+   was 22 SECONDS: the sky emptied on the left and the next cloud only turned
+   up once the others had gone.
+
+   Even spacing needs a shared period, since arrivals from clouds of unrelated
+   periods drift in and out of phase; but one shared period means one speed,
+   and clouds that never overtake each other read as printed on a sheet. Two
+   groups is the compromise. Three at 24s spread a third of a cycle apart give
+   an arrival every 8s on their own, and two at 33s cross more slowly over the
+   top of them. Worst stretch with no arrival: 8 seconds.
+
+   A NEGATIVE animation-delay starts the cloud part way through its cycle, so
+   the sky is already populated on the first frame rather than filling up over
+   the first half minute. */
+.cloud-1 { animation: cloudDrift1 24s linear infinite; top: 13%; } @keyframes cloudDrift1 { 0% { transform: translateX(-220px); } 100% { transform: translateX(calc(100vw + 220px)); } }
 .cloud-1 .body { width: 160px; height: 44px; top: 30px; left: 0; } .cloud-1 .bump1 { width: 72px; height: 72px; top: 0; left: 22px; } .cloud-1 .bump2 { width: 52px; height: 52px; top: 8px; left: 72px; }
-.cloud-2 { animation: cloudDrift2 30s linear infinite; top: 19%; animation-delay: -10s; } @keyframes cloudDrift2 { 0% { transform: translateX(-280px); } 100% { transform: translateX(calc(100vw + 280px)); } }
+.cloud-2 { animation: cloudDrift2 33s linear infinite; top: 19%; animation-delay: -16s; } @keyframes cloudDrift2 { 0% { transform: translateX(-280px); } 100% { transform: translateX(calc(100vw + 280px)); } }
 .cloud-2 .body { width: 220px; height: 56px; top: 40px; left: 0; } .cloud-2 .bump1 { width: 92px; height: 92px; top: 0; left: 34px; } .cloud-2 .bump2 { width: 68px; height: 68px; top: 10px; left: 104px; }
-.cloud-3 { animation: cloudDrift3 25s linear infinite; top: 12%; animation-delay: -16s; } @keyframes cloudDrift3 { 0% { transform: translateX(-200px); } 100% { transform: translateX(calc(100vw + 200px)); } }
+.cloud-3 { animation: cloudDrift3 24s linear infinite; top: 10%; animation-delay: -8s; } @keyframes cloudDrift3 { 0% { transform: translateX(-200px); } 100% { transform: translateX(calc(100vw + 200px)); } }
 .cloud-3 .body { width: 130px; height: 36px; top: 26px; left: 0; } .cloud-3 .bump1 { width: 56px; height: 56px; top: 0; left: 16px; } .cloud-3 .bump2 { width: 40px; height: 40px; top: 8px; left: 58px; }
+.cloud-4 { animation: cloudDrift3 24s linear infinite; top: 22%; animation-delay: -16s; }
+.cloud-4 .body { width: 146px; height: 40px; top: 28px; left: 0; } .cloud-4 .bump1 { width: 64px; height: 64px; top: 0; left: 18px; } .cloud-4 .bump2 { width: 46px; height: 46px; top: 8px; left: 66px; }
+.cloud-5 { animation: cloudDrift2 33s linear infinite; top: 7%; }
+.cloud-5 .body { width: 188px; height: 50px; top: 34px; left: 0; } .cloud-5 .bump1 { width: 80px; height: 80px; top: 0; left: 28px; } .cloud-5 .bump2 { width: 58px; height: 58px; top: 9px; left: 88px; }
 /* Centred in the sky, by auto margins rather than a padding.
    .meadow-scene already carries `margin-top: auto`, so with a second auto
    margin here the free space is split evenly between the two and the block
@@ -1254,8 +1274,15 @@ section { padding: 2.2rem 3.4rem; }
 /* INLINE, not inline-block. The animated elements are the individual letter
    spans; the word itself only needs to hold them. As an inline-block a
    two word emphasis like "symbolic bloom" became one unbreakable box and
-   overflowed a phone. */
+   overflowed a phone.
+
+   `.ww` is one word, and it is what stops a line breaking BETWEEN LETTERS.
+   Every letter is its own inline-block box, so without a nowrap word around
+   them the browser is free to break anywhere: "symbolic bloom" came out as
+   "symbolic bloo" with the "m" on the next line, and so did "waiting" and
+   "places". Breaks now happen only at real spaces. */
 .wig { display: inline; }
+.wig .ww { display: inline-block; white-space: nowrap; }
 .wig .wl {
   display: inline-block;
   /* Each letter leaves 38ms after the one before it, which is what makes it a
