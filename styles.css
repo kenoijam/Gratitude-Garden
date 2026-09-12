@@ -1052,6 +1052,7 @@ section { padding: 2.2rem 3.4rem; }
    Everything is POSITIONED FROM JS against a measured stage, not from
    percentages: a label's own width decides how far it may sit from the ring,
    and CSS cannot read that. The stylesheet only holds the look. */
+.catalogue-split { position: relative; z-index: 1; }
 .flower-ring {
   position: relative;
   z-index: 1;
@@ -1119,7 +1120,12 @@ section { padding: 2.2rem 3.4rem; }
 .fr-label {
   position: absolute;
   z-index: 3;
-  width: 10.5em;
+  /* The label's width is the ring's whole budget: `layoutRing` subtracts it
+     from the half width and builds the ring out of what is left. 9.6em is
+     what lets the two column layout start at a real desktop width instead of
+     a very wide one, and it still holds "Reflection & presence" on two
+     lines. */
+  width: 9.6em;
   opacity: 0;
   pointer-events: none;
   transition: opacity .2s ease;
@@ -1149,6 +1155,42 @@ section { padding: 2.2rem 3.4rem; }
 @media (min-width: 880px) {
   .flower-ring { display: block; }
   .catalogue .flowers-grid { display: none; }
+  /* The heading stops being a banner across the top and becomes the column
+     beside the ring. Its own bottom margin goes, since it is no longer
+     sitting above anything. */
+  .catalogue-header { margin-bottom: 1.6rem; }
+}
+
+/* Two columns, and 1280 is arithmetic rather than a round number.
+
+   `layoutRing` builds the ring from what is left after a label, and it will
+   not go under a radius of 120: below that it would be a ring of blooms with
+   no ring left. Working backwards, that floor needs about 785px of column.
+   Add the 260 the heading column needs to read as a column, the 48 gap and
+   the section's own 85 of padding either side, and the answer is 1263. 1280
+   is the first ordinary desktop width above it.
+
+   Below that they stack, heading above ring, which is what the block above
+   does. Get this wrong and the ring does not shrink, it OVERFLOWS: the radius
+   floor holds and the labels run outside the column. */
+@media (min-width: 1280px) {
+  .catalogue-split {
+    display: grid;
+    /* The heading column is kept deliberately narrow. Every pixel it gives up
+       goes into the ring's radius, and the ring is the thing being looked at;
+       a display heading is happy on four short lines. */
+    grid-template-columns: minmax(260px, 300px) 1fr;
+    gap: 44px;
+    /* Centred in the section as a pair. Left to the section's own width the
+       ring drifted off centre as the heading column took its share. */
+    max-width: 1340px;
+    margin: 0 auto;
+    align-items: center;
+  }
+  .catalogue-header { margin-bottom: 0; }
+  /* The ring takes its column whole. Its own max-width is what caps it on a
+     single column page and would otherwise leave a gap on the right here. */
+  .flower-ring { max-width: none; }
 }
 /* A ring has no hover, so on a touch screen the grid is the one that works.
    This sits after the rule above so it wins at any width. */

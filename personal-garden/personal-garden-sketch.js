@@ -2283,20 +2283,23 @@ saveBtn.mousePressed(() => {
   tipsCard = createDiv().id("tips-card").parent(gardenWrap);
   tipsCard.style("pointer-events", "none");
   createElement("h3", "Garden Tips").parent(tipsCard);
-  /* Rewritten for what the page actually carries now. Nothing here said that
-     a flower can be hovered for its meaning, or that every day you have
-     planted is still there to look back at, and both are things a visitor
-     would otherwise never find. A tip is only worth its line if it names
-     something that is not already on the screen. */
+  /* Five fragments, about five words each, and the brevity is the point: this
+     card sits in the corner of a garden somebody is looking at, so it has to
+     be read at a glance rather than studied. They were full sentences and ran
+     to twelve words, which is a paragraph in that corner.
+
+     What they SAY was rewritten too. Nothing here said a flower can be
+     hovered for its meaning, or that every day already planted is still there
+     to look back at. */
   const ul = createElement("ul").parent(tipsCard);
-  createElement("li", "Today's flower came from how you answered. Hover it to read what it means.").parent(ul);
-  createElement("li", "The newest flower is the one with sparkles around it.").parent(ul);
+  createElement("li", "Hover a flower for its meaning").parent(ul);
+  createElement("li", "Sparkles mark your newest bloom").parent(ul);
   const savedWhere = (window.GardenStore && window.GardenStore.signedIn)
-    ? "Your garden is saved to your account, on any device."
-    : "Your garden is saved in this browser automatically.";
+    ? "Saved to your account, any device"
+    : "Saved in this browser";
   createElement("li", savedWhere).parent(ul);
-  createElement("li", "Click the name at the top to rename your garden.").parent(ul);
-  createElement("li", "Top right: the music, your friends, the history by day, and a camera.").parent(ul);
+  createElement("li", "Click the name to rename it").parent(ul);
+  createElement("li", "Top right: music, friends, history, camera").parent(ul);
   tipsCard.style("display", "none");
 
   const nameWrap = createDiv().id("name-wrap").parent(gardenWrap);

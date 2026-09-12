@@ -310,7 +310,7 @@ The first screen is a fork, not a step. `TRACKS` holds two step lists and `STEPS
 
 #### The garden cursor
 
-One flower in two sizes, small and soft at rest and larger and fully saturated over anything clickable. It is an inline SVG data URI so no image file is added. The full account is under "`garden-cursor.js` owns the chrome every page shares" below; the thing to know here is that every rule it writes carries `!important`, so a `cursor: pointer` added anywhere in this page's stylesheet will simply not take.
+A closed bud at rest and an open flower over anything clickable. It is an inline SVG data URI so no image file is added. The full account is under "`garden-cursor.js` owns the chrome every page shares" below; the thing to know here is that every rule it writes carries `!important`, so a `cursor: pointer` added anywhere in this page's stylesheet will simply not take.
 
 ### Do not put anything above `<!DOCTYPE html>`
 
@@ -461,6 +461,10 @@ The meadows were once full-bleed backdrops behind the copy under a gradient, and
 - **Only the flowers are drawn,** one small canvas each, which is what makes hit testing unnecessary. They are sized from the slot at paint time: three fixed 74px blooms plus their gaps came to 270 in the 219 wide slot a phone gives, and the outer two hung over both edges of the card.
 - **The bouquet slide holds one example, not a rotation.** The slide already comes and goes on the loop; a bouquet that also swapped between four while it showed would be two slideshows running at once in one small card.
 
+**Every card and the About copy name the ACCOUNT, and that was a gap rather than a polish.** All of it was written before there were accounts, usernames, friends, likes or a history, so the page described three separate places with nothing joining them. The personal card said only that you see it; it now says it follows you between devices and keeps what you have planted. The shared card now says signing in lets you like a flower or write back, and its small print carries the one a day limit. The bouquet card says it can go straight to a friend as well as by link. About gained a fourth paragraph naming what one account actually does, and saying you can skip it entirely.
+
+**The fourth feature card in About is "A username and friends", and it replaced "8 Symbolic Species".** That one was the whole flower guide section further down said again in a line, which made it the only card on the page repeating something; the account was the thing nothing on the page mentioned at all. The grid is two by two, so the count must stay at four.
+
 **Reflect, share, give.** The three cards are badged with those verbs and each paragraph opens on one, so the theme reads straight down the row. The privacy facts moved to the small print line under each paragraph rather than being lost.
 
 Note that `html` sets `scroll-behavior: smooth`, so anything that scrolls the page programmatically and then reads `scrollY`, or screenshots, has to wait for the animation or set `scrollBehavior = 'auto'` first. Checking the scroll spy without doing that reports the old section.
@@ -499,10 +503,13 @@ Two things live in this one file, and they are together because both are needed 
 
 ### The cursor
 
-**ONE flower in two sizes, on ALL FOUR pages.** It used to live in `bouquet-style.css` and appear on one page of four, which made that page the odd one out rather than a theme.
+**A BUD at rest and an OPEN FLOWER over anything clickable, on ALL FOUR pages.** It used to live in `bouquet-style.css` and appear on one page of four, which made that page the odd one out rather than a theme.
 
-- **It was a LEAF at rest and a bloom on a clickable, and the leaf was wrong.** In a project made of flowers it was the one thing that was not one, and two different objects chasing the pointer around read as a glitch rather than as a state. The same bloom growing and deepening reads as one thing answering.
-- **The two states differ in SIZE and DEPTH at once, and both are needed.** `calm()` is reach 9 in a 20px box at saturation 72 and lightness 84; `keen()` is reach 13 in a 28px box at 95 and 74. Size alone is easy to miss on a busy background and colour alone on a pale one. Everything in `bloom()` is a fraction of `reach`, so one function draws both and the shape cannot drift between them.
+- **It was a LEAF at rest and a bloom on a clickable, and the leaf was wrong.** In a project made of flowers it was the one thing that was not one, and two different objects chasing the pointer around read as a glitch rather than as a state.
+- **It was then the SAME flower at two sizes, and that was too quiet.** Reach 9 against reach 13, a soft tint against a full one. On a page of pale cream the colour barely moved, and a size step that small reads as the pointer wobbling rather than as an answer.
+- **So the two states are a BUD and an OPEN FLOWER**, `budArt()` and `openArt()`, and they are drawn separately on purpose. The bud is one closed teardrop with a seam down it and two sepals in the stem green, in a 20px box. The open one is five broad petals standing apart round a clear eye at the full colour, in a 32px box. They are one plant at two moments, which is a change you see without looking for it.
+- **Five narrow petals tucked in was tried for the bud and it FAILED.** At this size overlapping ellipses read as a spindly star rather than as anything closed, and beside the open flower the only difference left was scale again. A bud has one silhouette, so it is one path.
+- **The open flower is 32 PIXELS AND MUST NOT GROW.** Windows refuses a custom cursor larger than 32 by 32 outright, and a refused cursor falls back to the plain system arrow, so anything bigger silently loses the flower on every Windows machine.
 - **The hotspot is dead centre**, `box / 2` in both. A flower has no tip to point with.
 - **The FALLBACK keyword differs by state**, `auto` at rest and `pointer` on a clickable. It is what a machine that refuses to draw a custom cursor gets, and giving both the same one would leave such a machine with no signal at all.
 - **It is injected from JS rather than written in a stylesheet** so the bloom can be RECOLOURED at runtime. In the personal garden it takes the hue of the flower planted most recently, so the thing following the pointer is the last thing that grew. Everywhere else it is the palette's butter yellow.
@@ -519,6 +526,10 @@ Two things live in this one file, and they are together because both are needed 
 - **The ring is ROTATED by half a step**, so the eight sit at 22.5, 67.5, 112.5 and 157.5 degrees either side rather than on the compass points. That is not decoration: a bloom at the very top has no side to put a label on, and one at the far left has no room above or below it. Off the axes every one of the eight has an unambiguous side and a clear run out to it.
 - **Nothing in the geometry is a percentage.** A label's own measured width is the budget the ring lives inside, so `layoutRing` reads `offsetWidth` back and sizes the ring to what is left. The bloom's size and the radius each depend on the other, so it is solved in two passes rather than guessed.
 - **The stage's height is measured, not set.** It comes out of the extreme label and bloom positions, so a long meaning can never run out of the section it annotates.
+- **On a wide screen the heading and the ring are two COLUMNS**, heading left and ring right, wrapped together in `.catalogue-split`. The grid stays outside that wrapper, because it is the narrow and touch fallback and has always run full width.
+- **The two column breakpoint is 1280 and it is arithmetic.** `layoutRing` will not go under a radius of 120, below which there is no ring left between the blooms, and that floor needs about 785px of column. Add the 260 the heading column needs to read as a column, the 44 gap and the section's own 85 of padding either side, and the answer is 1263; 1280 is the first ordinary desktop width above it. **Get this wrong and the ring does not shrink, it OVERFLOWS**: the radius floor holds and the labels run outside their column. That is exactly what happened at 1180, measured at 4px past each edge.
+- **The heading column is deliberately narrow, 260 to 300.** Every pixel it gives up goes into the ring's radius, and a display heading is happy on four short lines.
+- **`.fr-label` is 9.6em, and that width is the ring's whole budget.** `layoutRing` subtracts it from the half width and builds the ring out of what is left, so widening the label narrows the ring and pushes the two column breakpoint up.
 - **The `.flowers-grid` above it is the same eight flowers and must NOT be deleted.** Exactly one of the two is on screen: the ring above 880px, the grid below it, and the grid at ANY width on a touch screen, since a ring whose whole point is hovering is useless without a pointer. That last rule is declared after the width one so it wins. Both open the same entry.
 - **The centre line has to clear the inside of the ring.** The nearest bloom's edge runs about 95px from the middle and `.fr-centre` corners at about 80, which is why it is 9.2em wide and one short sentence.
 
@@ -579,7 +590,9 @@ Two things live in this one file, and they are together because both are needed 
 
 ## The Garden Tips card, on both gardens
 
-**A tip is only worth its line if it names something the visitor would not otherwise find**, and both lists were rewritten against that. Two of the shared garden's four had gone stale outright: Save PNG is a camera in the row of icons now, and nothing anywhere said that a flower can be liked, commented on, or looked back at by the day. The personal garden's said nothing about hovering a flower for its meaning, or about the history.
+**Every tip is a FRAGMENT of about five words, not a sentence.** This card sits in the corner of a garden somebody is looking at, so it has to be read at a glance rather than studied. They were full sentences running to eleven and twelve words, which is a paragraph in that corner.
+
+**A tip is also only worth its line if it names something the visitor would not otherwise find**, and both lists were rewritten against that. Two of the shared garden's four had gone stale outright: Save PNG is a camera in the row of icons now, and nothing anywhere said that a flower can be liked, replied to, or looked back at by the day. The personal garden's said nothing about hovering a flower for its meaning, or about the history.
 
 Both now end on the same line naming the four icons in the corner, since that row is where everything added this year lives and an unlabelled icon is exactly what a tips card is for. The personal garden's third line is still conditional on being signed in, and says where the garden is saved.
 

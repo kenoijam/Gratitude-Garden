@@ -2714,16 +2714,19 @@ dailyNote.style("text-shadow", "1px 1px 0 rgba(255,255,255,0.6)");
 tipsCard = createDiv().id("tips-card").parent(gardenWrap);
 tipsCard.style("pointer-events", "none");
 createElement("h3", "Garden Tips").style("margin-bottom", "8px").parent(tipsCard);
-/* Rewritten for what the page actually carries now. Two of the four it
-   replaced had gone stale: Save PNG is a camera in the row of icons, and
-   nothing anywhere said that a flower can be liked, commented on, or looked
-   back at by the day. A tip is only worth its line if it names something the
-   visitor would not otherwise find. */
+/* Four fragments, about five words each, and the brevity is the point: this
+   card sits in the corner of a garden somebody is looking at, so it has to be
+   read at a glance rather than studied. They were full sentences and ran to
+   eleven words, which is a paragraph in that corner.
+
+   What they SAY was rewritten too. Two of the originals had gone stale, since
+   Save PNG is a camera in the row of icons now, and nothing anywhere said a
+   flower can be liked, replied to, or looked back at by the day. */
 const ul = createElement("ul").parent(tipsCard);
-createElement("li", "Hover or tap a flower to read what somebody was grateful for.").parent(ul);
-createElement("li", "Sign in to like a flower, or leave a comment on it.").parent(ul);
-createElement("li", "One flower each a day. The whole garden begins again tomorrow.").parent(ul);
-createElement("li", "Top right: the music, your friends, the history by day, and a camera.").parent(ul);
+createElement("li", "Hover a flower for its message").parent(ul);
+createElement("li", "Sign in to like or reply").parent(ul);
+createElement("li", "One flower a day, resets nightly").parent(ul);
+createElement("li", "Top right: music, friends, history, camera").parent(ul);
 tipsCard.style("display", "none");
 
 buildLogo();

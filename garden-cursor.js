@@ -12,13 +12,12 @@
    belonged to, and the music button carried a `title` as well, so hovering it
    produced the custom label and then the operating system's own on top.
 
-   ONE flower, in two sizes. Small and soft at rest, larger and fully saturated
-   over anything you can press. It was a leaf at rest and a bloom on a
-   clickable, and the leaf was the odd thing in a project made of flowers: two
-   different objects chasing the pointer around read as a glitch rather than
-   as a state. The same bloom growing and deepening reads as one thing
-   answering, and it gives two signals at once, size and colour, so it still
-   carries on a pale ground where a colour shift alone would not.
+   A BUD at rest, and over anything you can press it OPENS: nearly twice the
+   size, five petals standing apart round a clear eye, at the full colour.
+   It was a leaf and a bloom once, and the leaf was the odd thing in a project
+   made of flowers. It was then the same flower at two sizes, and that was too
+   quiet to notice on a page of pale cream. A bud and an open flower are one
+   plant at two moments, which is a change you see without looking for it.
 
    It is an inline SVG data URI, so no image file is added and the bloom can be
    RECOLOURED at runtime without touching a stylesheet.
@@ -47,32 +46,65 @@
      `fallback` is what the browser uses if it refuses the image, and it has to
      differ by state: `auto` at rest, `pointer` over a clickable, or a machine
      that will not draw a custom cursor loses the only signal it had. */
-  function bloom(hue, reach, sat, light, stroke, fallback) {
-    var petal = "hsl(" + hue + "," + sat + "%," + light + "%)";
-    var core = "hsl(" + ((hue + 150) % 360) + ",38%," + (light - 34) + "%)";
-    var p = encodeURIComponent(petal);
-    var c = encodeURIComponent(core);
-    var box = Math.round(reach * 2 + 2);
+  function hsl(h, sa, l) { return encodeURIComponent("hsl(" + h + "," + sa + "%," + l + "%)"); }
+  function svg(box, body) {
     var mid = box / 2;
-    var out = "";
-    for (var i = 0; i < 5; i++) {
-      out += "<ellipse cx='0' cy='" + (-reach * 0.54).toFixed(2) + "' rx='" +
-             (reach * 0.31).toFixed(2) + "' ry='" + (reach * 0.46).toFixed(2) +
-             "' fill='" + p + "' stroke='" + INK + "' stroke-width='" + stroke +
-             "' transform='rotate(" + (i * 72) + ")'/>";
-    }
     return "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='" +
       box + "' height='" + box + "' viewBox='0 0 " + box + " " + box + "'><g transform='translate(" +
-      mid + " " + mid + ")'>" + out + "<circle r='" + (reach * 0.26).toFixed(2) +
-      "' fill='" + c + "'/></g></svg>\") " + mid + " " + mid + ", " + fallback;
+      mid + " " + mid + ")'>" + body + "</g></svg>\") " + mid + " " + mid + ", ";
   }
 
-  /* At rest and over a clickable. The two differ in SIZE and in DEPTH at once:
-     a 44 percent jump in reach, and a saturation and lightness that take the
-     same hue from a tint to the full colour. Either alone is easy to miss,
-     the size on a busy background and the colour on a pale one. */
-  function calm(hue) { return bloom(hue, 9, 72, 84, 1.0, "auto"); }
-  function keen(hue) { return bloom(hue, 13, 95, 74, 1.25, "pointer"); }
+  /* THE BUD, at rest. A closed teardrop with two sepals at its foot, not a
+     small version of the open flower.
+
+     Five narrow petals tucked in was the first attempt and it failed: at this
+     size overlapping ellipses read as a spindly star rather than as anything
+     closed, and next to the open flower the only difference left was scale.
+     A bud has one silhouette, so it is drawn as one shape.
+
+     The path is a teardrop from a rounded foot to a point at the top, with a
+     single seam curved down it so it reads as wrapped rather than as a
+     leaf. The sepals are the project's own stem green and are the thing that
+     says which way is up. */
+  function budArt(hue) {
+    var skin = hsl(hue, 76, 78);
+    var seam = hsl(hue, 62, 62);
+    var leaf = hsl(142, 44, 38);
+    return "<path d='M0-9.4C4.6-5.6 5.6-1.2 4.5 2.6 3.8 5.2 2 6.8 0 6.8s-3.8-1.6-4.5-4.2" +
+      "C-5.6-1.2-4.6-5.6 0-9.4z' fill='" + skin + "' stroke='" + INK + "' stroke-width='1.1' " +
+      "stroke-linejoin='round'/>" +
+      "<path d='M0-7.6C1.9-4 2.3-0.6 1.4 2.9' fill='none' stroke='" + seam + "' " +
+      "stroke-width='1' stroke-linecap='round'/>" +
+      "<path d='M0 6.2C-1.4 8.4-3.6 9.4-6 9.2-5.2 6.6-2.9 5.2 0 5.6z' fill='" + leaf + "'/>" +
+      "<path d='M0 6.2C1.4 8.4 3.6 9.4 6 9.2 5.2 6.6 2.9 5.2 0 5.6z' fill='" + leaf + "'/>";
+  }
+
+  /* THE OPEN FLOWER, over anything clickable. Five broad petals standing well
+     apart round a clear eye, at the full colour.
+
+     IT IS 32 PIXELS AND MUST NOT GROW. Windows refuses a custom cursor larger
+     than 32 by 32 outright, and a refused cursor falls back to the plain
+     system arrow, so anything bigger would silently lose the flower on every
+     Windows machine. */
+  function openArt(hue) {
+    var skin = hsl(hue, 96, 72);
+    var core = hsl((hue + 150) % 360, 40, 38);
+    var out = "";
+    for (var i = 0; i < 5; i++) {
+      out += "<ellipse cx='0' cy='-7.3' rx='5.2' ry='6.1' fill='" + skin + "' stroke='" + INK +
+             "' stroke-width='1.3' transform='rotate(" + (i * 72) + ")'/>";
+    }
+    return out + "<circle r='3.5' fill='" + core + "'/>";
+  }
+
+  /* A bud 20 pixels across against an open flower 32 across, and the shape
+     changes with the size rather than only the scale. That is what "not
+     significant enough" needed: the pair before this was one flower at 19 and
+     32, a soft tint against a full one, and on a page of pale cream the
+     colour barely moved while a size step alone reads as the pointer
+     wobbling rather than as an answer. */
+  function calm(hue) { return svg(20, budArt(hue)) + "auto"; }
+  function keen(hue) { return svg(32, openArt(hue)) + "pointer"; }
 
   /* Every clickable thing takes the bloom, and the CLASSES are listed as well
      as the elements. That is not belt and braces: `.bq-btn-outline` is a class
