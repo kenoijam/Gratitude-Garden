@@ -366,7 +366,12 @@ section { padding: 5rem 5rem; }
      330px against the other two at 302 and the row of pictures stopped
      lining up. The copy is cut to four lines on all three, and the
      reservation is what keeps them level if one ever runs short. */
-  margin-bottom: 0;
+  /* A small, POSITIVE gap. It was -0.5rem, which pulled the small print 9px
+     up into the paragraph's last line on all three cards; then 0, which left
+     the chip sitting directly on the text with only the line's own leading
+     between them. 0.55rem is the gap, and because all three paragraphs are
+     held to the same four lines below, it moves all three chips together. */
+  margin-bottom: 0.55rem;
   max-width: 420px;
   min-height: calc(4 * 0.95rem * 1.75);
 }
@@ -1109,7 +1114,10 @@ section { padding: 2.2rem 3.4rem; }
   display: none;                     /* the media query below turns it on */
   margin: 0 auto;
   width: 100%;
-  max-width: 980px;
+  /* 1020, up from 980. The ring is the whole section now rather than one of
+     two columns, and the radius is what the blooms grow out of. Wider than
+     this and the section runs past a screen and a quarter. */
+  max-width: 1020px;
 }
 .flower-ring .fr-lines {
   position: absolute;
@@ -1216,61 +1224,71 @@ section { padding: 2.2rem 3.4rem; }
 @media (min-width: 880px) {
   .flower-ring { display: block; }
   .catalogue .flowers-grid { display: none; }
-  /* The heading stops being a banner across the top and becomes the column
-     beside the ring. Its own bottom margin goes, since it is no longer
-     sitting above anything. */
-  .catalogue-header { margin-bottom: 1.6rem; }
+  /* One column at every width now. The heading and the ring were two columns
+     for a while, and the problem was a gutter: the ring's box reserves room
+     for a label on BOTH sides and the left one is empty until something is
+     hovered, so a heading beside it sat across a permanent strip of nothing.
+     Centred above, or better still inside, that strip has page either side of
+     it and stops reading as a gap. */
+  .catalogue-header { margin: 0 auto 1.4rem; text-align: center; max-width: 620px; }
 }
 
-/* Two columns, and 1280 is arithmetic rather than a round number.
+/* THE HEADING GOES IN THE MIDDLE OF THE RING.
 
-   `layoutRing` builds the ring from what is left after a label, and it will
-   not go under a radius of 120: below that it would be a ring of blooms with
-   no ring left. Working backwards, that floor needs about 700px of column
-   now the labels and leader lines are tighter. Add the 260 the heading column
-   needs to read as a column, the 44 gap and the section's own 85 of padding
-   either side, and the answer is 1259, so 1180 carries it with room.
+   The inside of the ring is empty by construction: the leader lines run
+   outward, so nothing is ever drawn there. Putting the title in it turns the
+   dead space into the composition's centre and makes the whole thing one
+   object rather than a heading with a diagram beside it.
 
-   Below that they stack, heading above ring, which is what the block above
-   does. Get this wrong and the ring does not shrink, it OVERFLOWS: the radius
-   floor holds and the labels run outside the column. */
+   The geometry is a real constraint. `layoutRing` leaves the nearest bloom's
+   inner edge at `Rr - size*0.42` from the middle, and the heading block has
+   to fit inside a circle of that radius: at 1440 that is 216, and a 360 by
+   150 block corners at 195. **Check that clearance after changing the ring's
+   size, the label width or the leader lines**, because all three move the
+   radius and the heading does not know about any of them.
+
+   Below this width the ring is too small to hold it and the heading goes back
+   above, which is what the block above does. */
 @media (min-width: 1180px) {
-  .catalogue-split {
-    display: grid;
-    /* Nearer a half than a third. The heading column was 260 to 300 against a
-       ring taking everything else, which set the title on four short lines in
-       a strip down the side; at this ratio it reads as one of two halves and
-       the line under it has room to be a sentence. The ring loses about 80px
-       of column for it, which at its current radius it can afford. */
-    /* Nearer a half than the third it was. The heading column was 260 to 300
-       against a ring taking everything else, which set the title on four
-       short lines in a strip down the side.
+  .catalogue-split { position: relative; }
+  /* Centred by FLEX, never by a transform. `.catalogue-header` carries the
+     `reveal` class, and `.reveal.visible` sets `transform: none` to undo its
+     entrance animation, which silently wiped a `translate(-50%, -50%)` and
+     left the heading a half width to the right, sitting on the daisy. An
+     overlay that centres its child needs no transform of its own.
 
-       It cannot actually BE half. The ring needs about 700px of column to
-       hold its labels at its minimum radius, and at a true 50/50 split of
-       1190 it gets 570 and collapses onto that minimum, at which point the
-       blooms stop growing and the centre line runs into them. 0.62fr against
-       1fr is the most the heading can take while the ring still works. */
-    grid-template-columns: minmax(300px, 0.62fr) 1fr;
-    gap: 52px;
-    /* Centred in the section as a pair. Left to the section's own width the
-       ring drifted off centre as the heading column took its share. */
-    max-width: 1340px;
-    margin: 0 auto;
+     `pointer-events` is off on the overlay and back on for the block inside
+     it, so the empty half of the ring never swallows a hover meant for a
+     bloom, while the wiggling word in the title still answers the pointer. */
+  .catalogue-header {
+    position: absolute;
+    inset: 0;
+    max-width: none;
+    margin: 0;
+    display: flex;
     align-items: center;
-    /* The row is shorter than the ring alone used to be, because the heading
-       column took width off the ring's radius and the ring's height follows
-       its radius. Without this the section fell to 0.73 of a screen, under
-       the three quarter floor the rest of the page is tuned to. Both columns
-       are already centred in the row, so the extra height goes evenly above
-       and below rather than hanging off one end. */
-    min-height: 560px;
+    justify-content: center;
+    pointer-events: none;
+    /* Above the leader lines at 1 and below the labels at 3, so a label that
+       reaches in never goes behind it. */
+    z-index: 2;
   }
-  .catalogue-header { margin-bottom: 0; }
-  /* The ring takes its column whole. Its own max-width is what caps it on a
-     single column page and would otherwise leave a gap on the right here. */
-  .flower-ring { max-width: none; }
+  .catalogue-header > div {
+    /* 360, not 380. At the 1180 breakpoint the block cornered at 204 against
+       an inner clearance of 210, which is six pixels of margin for a layout
+       that has to hold at every width above it. At 360 it corners at 193. */
+    width: 360px;
+    text-align: center;
+    pointer-events: auto;
+  }
+  /* A heading inside a diagram is a caption, not a banner. The section size
+     would fill the ring on its own. */
+  .catalogue-header .section-title { font-size: 2.05rem; line-height: 1.14; }
+  .catalogue-header .section-desc { font-size: 0.92rem; margin-top: 0.5rem; }
+  /* The title IS the middle now. */
+  .fr-centre { display: none; }
 }
+
 /* A ring has no hover, so on a touch screen the grid is the one that works.
    This sits after the rule above so it wins at any width. */
 @media (hover: none) {

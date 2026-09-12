@@ -86,36 +86,96 @@
   var FAV_H = 206;
   var FAV_S = 66;
 
-  /* EIGHT rings rather than six, alternating deep and pale so the petals read
-     as layers of a rose rather than as a target. `lobes` falls as the rings
-     get smaller, which is what a real rose does: the outer petals are many
-     and shallow, the inner ones few and tight. */
-  function roseArt(hue, R) {
-    var rings = [
-      { r: 1.00, l: 42, lobes: 13 }, { r: 0.86, l: 56, lobes: 12 },
-      { r: 0.73, l: 46, lobes: 11 }, { r: 0.60, l: 62, lobes: 9 },
-      { r: 0.48, l: 50, lobes: 8 },  { r: 0.36, l: 72, lobes: 7 },
-      { r: 0.25, l: 54, lobes: 6 },  { r: 0.14, l: 30, lobes: 5 }
-    ];
-    var out = "";
-    for (var s = 0; s < rings.length; s++) {
-      var rr = R * rings[s].r, wob = rr * 0.11, d = "";
-      for (var k = 0; k <= 56; k++) {
-        var a = k / 56 * 6.28318;
-        var rad = rr + Math.sin(a * rings[s].lobes + s * 0.7) * wob;
-        d += (k ? "L" : "M") + (Math.cos(a) * rad).toFixed(2) + " " +
-             (Math.sin(a) * rad).toFixed(2);
-      }
-      /* Only the outermost ring is outlined. An outline on every ring turns
-         eight soft layers into eight hard circles. */
-      out += "<path d='" + d + "Z' fill='" + hsl(hue, FAV_S, rings[s].l) + "'" +
-             (s === 0 ? " stroke='" + hsl(hue, 58, 24) + "' stroke-width='1.1'" : "") + "/>";
+  /* A ROSE FROM ABOVE: a spiral at the middle, then three rounds of cupped
+     petals opening outward, each round offset from the one inside it so the
+     petals interleave rather than stack.
+
+     The first attempt was concentric scalloped RINGS, which is what the
+     favicon looks like at 16px but not what it is. Rings read as a dahlia or
+     as a target; what makes a rose a rose is the spiral centre with petals
+     wrapping out of it, and at 30 pixels that has to be drawn deliberately
+     rather than suggested.
+
+     Petal counts go UP as the rounds go out, 5 then 6 then 7, and each round
+     is turned by half a petal. That is how a real rose opens: the tight inner
+     whorl has few petals and the outer ones have more, and no petal sits
+     directly on the one behind it. */
+  var LAYERS = [
+    { n: 5, ri: 0.26, ro: 0.56, l: 62, turn: 0.0 },
+    { n: 6, ri: 0.46, ro: 0.80, l: 52, turn: 0.5 },
+    { n: 7, ri: 0.68, ro: 1.00, l: 44, turn: 0.25 }
+  ];
+
+  function petal(a, ri, ro, w) {
+    function pt(ang, r) {
+      return (Math.cos(ang) * r).toFixed(2) + " " + (Math.sin(ang) * r).toFixed(2);
     }
+    /* Out to a rounded tip and back, so it is a cupped petal rather than a
+       pie slice. The control points sit a little past the tip radius, which
+       is what rounds it. */
+    return "M" + pt(a - w, ri) +
+      "Q" + pt(a - w * 0.48, ro * 1.10) + " " + pt(a, ro) +
+      "Q" + pt(a + w * 0.48, ro * 1.10) + " " + pt(a + w, ri) + "Z";
+  }
+
+  /* The double outline is what makes this work on ANY ground, and it is not
+     belt and braces. Measured against the six colours these pages are made
+     of, no single outline can do it: dark teal scores 1.00 against the dark
+     teal band and 1.35 against the dark green card, and cream scores 1.00
+     against cream and 1.06 against the pale blue. A near black line inside a
+     cream halo always has one of the two separating: 13.2 on cream, 6.5 on
+     dark teal. */
+  var HALO = "%23fff9e3";
+  var LINE = "%23102e34";
+
+  function roseArt(hue, R) {
+    var out = "", i, k, a;
+
+    /* The halo goes down FIRST, as the outer round stroked wide in cream, so
+       every later fill covers its inside and only the rim survives. */
+    for (k = 0; k < LAYERS[2].n; k++) {
+      a = (k + LAYERS[2].turn) / LAYERS[2].n * 6.28318 - 1.5708;
+      out += "<path d='" + petal(a, R * LAYERS[2].ri, R * LAYERS[2].ro, 3.14159 / LAYERS[2].n * 1.5) +
+        "' fill='none' stroke='" + HALO + "' stroke-width='3' stroke-linejoin='round'/>";
+    }
+
+    for (i = LAYERS.length - 1; i >= 0; i--) {
+      /* HALF AGAIN as wide as its share of the circle, so neighbouring petals
+         OVERLAP. At exactly its share each petal is a separate fan and the
+         whole thing reads as an aster or a pinwheel; overlapped, the round
+         becomes one soft mass with petal edges crossing it, which is what a
+         rose looks like from above. */
+      var L = LAYERS[i], w = 3.14159 / L.n * 1.5;
+      for (k = 0; k < L.n; k++) {
+        a = (k + L.turn) / L.n * 6.28318 - 1.5708;
+        /* Alternating lightness inside a round as well as between them, so
+           neighbouring petals have an edge even where they overlap. */
+        var l = L.l + (k % 2 ? 7 : 0);
+        out += "<path d='" + petal(a, R * L.ri, R * L.ro, w) + "' fill='" + hsl(hue, FAV_S, l) +
+          "' stroke='" + LINE + "' stroke-width='" + (i === LAYERS.length - 1 ? 1 : 0.7) +
+          "' stroke-linejoin='round' stroke-opacity='" + (i === LAYERS.length - 1 ? 1 : 0.5) + "'/>";
+      }
+    }
+
+    /* The spiral centre, two and a bit turns of a stroked line tapering in.
+       This is the single thing that says rose rather than daisy. */
+    var d = "", steps = 40;
+    for (i = 0; i <= steps; i++) {
+      var t = i / steps;
+      var ang = t * 12.6, rad = R * (0.29 - 0.25 * t);
+      d += (i ? "L" : "M") + (Math.cos(ang) * rad).toFixed(2) + " " +
+           (Math.sin(ang) * rad).toFixed(2);
+    }
+    out += "<circle r='" + (R * 0.30).toFixed(2) + "' fill='" + hsl(hue, FAV_S, 74) + "'/>";
+    out += "<path d='" + d + "' fill='none' stroke='" + hsl(hue, 62, 28) +
+      "' stroke-width='1.7' stroke-linecap='round'/>";
     return out;
   }
 
   /* The gardens' own four pointed sparkle, the one thrown around a flower the
      moment it is planted. */
+  /* Same double outline as the rose, for the same reason: this one has to
+     hold on the dark teal band and the dark green card as well as on cream. */
   function sparkleArt(hue, R) {
     var inner = R * 0.30, d = "";
     for (var i = 0; i < 8; i++) {
@@ -123,9 +183,10 @@
       var rad = (i % 2 === 0) ? R : inner;
       d += (i ? "L" : "M") + (Math.cos(a) * rad).toFixed(2) + " " + (Math.sin(a) * rad).toFixed(2);
     }
-    return "<circle r='" + (R * 0.55).toFixed(2) + "' fill='" + hsl(hue, FAV_S, 62) +
-      "' opacity='0.30'/><path d='" + d + "Z' fill='" + hsl(hue, FAV_S, 52) +
-      "' stroke='" + hsl(hue, 58, 28) + "' stroke-width='0.8' stroke-linejoin='round'/>";
+    return "<path d='" + d + "Z' fill='none' stroke='" + HALO +
+      "' stroke-width='3.4' stroke-linejoin='round'/>" +
+      "<path d='" + d + "Z' fill='" + hsl(hue, FAV_S, 54) +
+      "' stroke='" + LINE + "' stroke-width='1' stroke-linejoin='round'/>";
   }
 
   /* THE ROSE IS AT REST AND THE SPARKLE IS ON A CONTROL, and that is the
@@ -143,7 +204,7 @@
      system arrow, which would lose the mark entirely on every Windows
      machine. */
   function calm(hue) {
-    return svg(30, "<g transform='translate(15 15)'>" + roseArt(hue, 13.6) + "</g>", 15, 15) + "auto";
+    return svg(30, "<g transform='translate(15 15)'>" + roseArt(hue, 12.8) + "</g>", 15, 15) + "auto";
   }
   function keen(hue) {
     return svg(20, "<g transform='translate(10 10)'>" + sparkleArt(hue, 8.4) + "</g>", 10, 10) + "pointer";

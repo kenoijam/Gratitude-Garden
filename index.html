@@ -1512,18 +1512,26 @@
     var labW = RING[0].lab.offsetWidth || 179;
     var free = W/2 - labW - TICK - LEAD - 10;
     /* The bloom's size and the ring's radius each depend on the other, so it
-       is solved once rather than left as a guess: a first radius sets a size,
-       and the size sets the radius the ring is actually drawn at. */
-    var size = 128;
-    var Rr = free - size*0.42;
-    /* 0.90 of the radius, and that is close to the HARD CEILING rather than a
-       preference. Eight blooms round a circle sit a chord of 0.765 of the
-       radius apart, and the widest species paints about 0.84 of its square,
-       so two neighbours touch at a factor of about 0.91 whatever the radius
-       is. Past that the only way to a bigger bloom is a bigger ring, and the
-       ring's radius is whatever the labels leave over. */
-    size = Math.max(118, Math.min(184, Rr*0.90));
-    Rr = Math.max(120, free - size*0.42);
+       is SOLVED rather than iterated. Two passes of "guess a size, derive a
+       radius, derive a size" does not converge: at 1000px wide it settled on
+       a bloom of 184 against a radius of 198, when the rule says a bloom may
+       be at most 0.90 of the radius, and the ring then overflowed its own box
+       with the labels hanging outside the column.
+
+       size = K * Rr and Rr = free - F * size, so Rr = free / (1 + K*F). The
+       cap and the floor are applied afterwards, each with its own radius
+       derived from the size that was actually used.
+
+       0.90 is close to a HARD CEILING rather than a preference. Eight blooms
+       round a circle sit a chord of 0.765 of the radius apart, and the widest
+       species paints about 0.84 of its square, so two neighbours touch at
+       about 0.91 whatever the radius is. */
+    var K = 0.90, F = 0.42;
+    var Rr = free / (1 + K * F);
+    var size = K * Rr;
+    if (size > 184) { size = 184; Rr = free - size * F; }
+    else if (size < 118) { size = 118; Rr = free - size * F; }
+    Rr = Math.max(120, Rr);
 
     var cxs = W/2, maxY = 0;
     var pts = RING.map(function(item){
