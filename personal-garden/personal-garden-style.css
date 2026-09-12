@@ -483,6 +483,16 @@ button {
   display: block; font-size: 0.74rem; font-weight: 700; color: #2c7a7b;
   text-transform: uppercase; letter-spacing: 0.03em; margin: 12px 0 5px;
 }
+/* `box-sizing` is the whole reason these used to hang over both edges of the
+   card. This stylesheet sets it nowhere, so the default applies, and the
+   default is not the same for every control: a text input is `content-box`,
+   so `width: 100%` means 100% PLUS its 24px of padding and 2px of border,
+   which is 26px wider than the space it was given. A button is `border-box`,
+   which is why the button underneath fitted perfectly and the fields did not.
+   Scoped to this card rather than set globally, because the rest of this page
+   is laid out by inline styles in buildUI() that were measured without it. */
+.gg-auth-card input,
+.gg-auth-card button { box-sizing: border-box; }
 .gg-auth-card input {
   width: 100%; padding: 11px 12px; font-size: 0.95rem; font-family: inherit;
   border: 1px solid #cfe5e1; border-radius: 10px; background: #fbfefd; color: #0f5132;
