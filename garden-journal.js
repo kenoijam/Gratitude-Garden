@@ -1,5 +1,11 @@
 /* =========================================================================
-   garden-journal.js  -  the day by day log, for both gardens
+   garden-journal.js  -  the day by day HISTORY, for both gardens
+
+   The panel is called History on screen. It was Journal, and that word was
+   already taken: the personal garden asks for a journal ENTRY on the day it
+   plants, so one word named both the thing you write and the record of every
+   day you wrote one. The file keeps its name, since every page loads it by
+   that name and renaming it would break four script tags for a word.
 
    A week strip: seven days across, with the flower planted that day drawn
    under each one. Tapping a day opens what was planted.
@@ -254,9 +260,13 @@
     btn.id = "gj-btn";
     btn.type = "button";
     btn.innerHTML = BOOK;
-    btn.title = "Journal";
-    btn.setAttribute("aria-label", "Journal");
-    btn.setAttribute("data-tip", "Journal");
+    /* "History", not "Journal". The personal garden already asks for a journal
+       ENTRY on the day it plants, so one word was doing two jobs: the thing
+       you write, and the record of every day you wrote one. There is
+       deliberately no `title`, since the browser's own tooltip would arrive on
+       top of the project's own hover label. */
+    btn.setAttribute("aria-label", "History");
+    btn.setAttribute("data-tip", "History");
     btn.addEventListener("click", function () {
       if (panel.getAttribute("data-open") === "1") close(); else open();
     });
@@ -272,7 +282,7 @@
     x.innerHTML = X_ICON;
     x.addEventListener("click", close);
     head.appendChild(x);
-    head.appendChild(el("h2", null, "Journal"));
+    head.appendChild(el("h2", null, "History"));
 
     var nav = el("div", "gj-nav");
     prevBtn = el("button", "gj-arrow"); prevBtn.type = "button";

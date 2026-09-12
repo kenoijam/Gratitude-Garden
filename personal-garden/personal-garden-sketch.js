@@ -2251,7 +2251,8 @@ function buildUI() {
   saveBtn.html('<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" ' +
     'stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
     '<path d="M3 8.5h3.2l1.4-2h7.8l1.4 2H21v10.5H3z"/><circle cx="12" cy="13.5" r="3.4"/></svg>');
-  saveBtn.attribute("title", "Save a picture of your garden");
+  /* No `title`: it would open the operating system's own tooltip on top of
+     the project's hover label. `aria-label` is what a screen reader reads. */
   saveBtn.attribute("aria-label", "Save a picture of your garden");
   saveBtn.attribute("data-tip", "Save a picture");
   saveBtn.style("display", "none");
@@ -2282,14 +2283,20 @@ saveBtn.mousePressed(() => {
   tipsCard = createDiv().id("tips-card").parent(gardenWrap);
   tipsCard.style("pointer-events", "none");
   createElement("h3", "Garden Tips").parent(tipsCard);
+  /* Rewritten for what the page actually carries now. Nothing here said that
+     a flower can be hovered for its meaning, or that every day you have
+     planted is still there to look back at, and both are things a visitor
+     would otherwise never find. A tip is only worth its line if it names
+     something that is not already on the screen. */
   const ul = createElement("ul").parent(tipsCard);
-  createElement("li", "You've planted a flower that reflects your mood today.").parent(ul);
-  createElement("li", "Your newest flower will have sparkles around it.").parent(ul);
+  createElement("li", "Today's flower came from how you answered. Hover it to read what it means.").parent(ul);
+  createElement("li", "The newest flower is the one with sparkles around it.").parent(ul);
   const savedWhere = (window.GardenStore && window.GardenStore.signedIn)
     ? "Your garden is saved to your account, on any device."
     : "Your garden is saved in this browser automatically.";
   createElement("li", savedWhere).parent(ul);
-  createElement("li", "Click the name at the top to personalize your garden.").parent(ul);
+  createElement("li", "Click the name at the top to rename your garden.").parent(ul);
+  createElement("li", "Top right: the music, your friends, the history by day, and a camera.").parent(ul);
   tipsCard.style("display", "none");
 
   const nameWrap = createDiv().id("name-wrap").parent(gardenWrap);

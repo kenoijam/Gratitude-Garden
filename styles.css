@@ -1033,82 +1033,169 @@ section { padding: 2.2rem 3.4rem; }
 #hero-sky { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 3; }
 
 
+
+
 /* ===========================================================================
-   THE FLOWER GUIDE'S DISPLAY HEADING AND ITS NUMBERS BAND
+   THE FLOWER RING
    ===========================================================================
-   Two faces inside one sentence, which is the whole character of it: an
-   italic serif drop capital and serif first line, then the second line in the
-   sans at the same size. Neither face is doing the work alone, and the join
-   between them is what the eye reads as deliberate rather than as a font that
-   failed to load.
+   The eight blooms drawn close up and set round a circle, with a hairline
+   running out of whichever one is under the pointer to its own meaning. It is
+   a botanical plate: the specimen in the middle of the page and the naming
+   off to the side on a leader line, rather than a caption sitting under a
+   picture in a box.
 
-   `.display-title` sits on top of `.section-title`, so it inherits that
-   rule's size and margins and only changes the faces. */
-.display-title { line-height: 1.04; }
-.display-title .dcap {
-  font-family: 'Fraunces', 'Georgia', serif;
-  font-style: italic;
-  font-weight: 600;
-  font-variation-settings: 'SOFT' 50, 'WONK' 1;   /* WONK on, for one letter only */
-  color: var(--teal);
-  /* Set about a third larger than the line it opens, and pulled tight against
-     the next letter so it reads as one word rather than a letter beside a
-     word. */
-  font-size: 1.34em;
-  line-height: 0.8;
-  margin-right: -0.04em;
-}
-.display-title .ser {
-  font-family: 'Fraunces', 'Georgia', serif;
-  font-weight: 700;
-  font-variation-settings: 'SOFT' 50, 'WONK' 0;
-}
-.display-title .san {
-  display: block;
-  font-family: Arial, Helvetica, sans-serif;
-  font-weight: 700;
-  letter-spacing: -0.015em;
-  color: var(--darkteal);
-}
+   The grid above it is the same eight flowers and is kept, because a ring of
+   eight has nowhere to put a label on a narrow screen. Exactly one of the two
+   is on screen at any width, and both open the same entry, so nothing is
+   lost either way.
 
-/* The band. Four figures, and every one of them is a fact about the project
-   rather than a usage statistic: there is no traffic to report and inventing
-   some would be the one dishonest thing on the page.
-
-   It wraps rather than scrolling, and each figure keeps its own rule above the
-   label so the row still reads as four things at any width. */
-.flower-stats {
+   Everything is POSITIONED FROM JS against a measured stage, not from
+   percentages: a label's own width decides how far it may sit from the ring,
+   and CSS cannot read that. The stylesheet only holds the look. */
+.flower-ring {
   position: relative;
   z-index: 1;
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 1.6rem;
-  margin-top: 3.6rem;
-  padding-top: 2.2rem;
-  border-top: 1.5px solid rgba(29,100,102,0.16);
+  display: none;                     /* the media query below turns it on */
+  margin: 0 auto;
+  width: 100%;
+  max-width: 980px;
 }
-.flower-stats .stat { display: flex; flex-direction: column; gap: 0.45rem; }
-.flower-stats .stat-n {
+.flower-ring .fr-lines {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;              /* the line is drawn ON the blooms, never over them */
+  z-index: 1;
+}
+.fr-centre {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  margin: 0;
+  /* Narrow enough to clear the inside of the ring. The nearest bloom's edge
+     runs about 95px from the centre, and a box this size corners at 80. */
+  width: 9.2em;
+  text-align: center;
+  font-family: 'Fraunces', 'Georgia', serif;
+  font-style: italic;
+  font-weight: 400;
+  font-variation-settings: 'SOFT' 50, 'WONK' 0;
+  font-size: 1.06rem;
+  line-height: 1.5;
+  /* The body copy floor on this page, measured against the darkest ground any
+     of it sits on. Nothing here goes lighter. */
+  color: #2f6260;
+  pointer-events: none;
+  transition: opacity .22s ease;
+}
+.flower-ring[data-hot="1"] .fr-centre { opacity: 0; }
+
+/* One bloom. A button, because it opens the entry, and the canvas inside it is
+   the only painted thing: the ring's own circle is drawn by the svg. */
+.fr-bloom {
+  position: absolute;
+  padding: 0;
+  border: none;
+  background: none;
+  line-height: 0;
+  z-index: 2;
+  transform: translate(-50%, -50%) scale(1);
+  transition: transform .24s cubic-bezier(.34,1.4,.5,1);
+}
+.fr-bloom canvas { display: block; }
+.fr-bloom:hover, .fr-bloom:focus-visible { transform: translate(-50%, -50%) scale(1.13); }
+.fr-bloom:focus-visible { outline: none; }
+.fr-bloom:focus-visible canvas {
+  outline: 2px solid var(--teal);
+  outline-offset: 4px;
+  border-radius: 12px;
+}
+
+/* The label at the far end of the leader line. It is in the page's own type
+   rather than the canvas's, so it is real selectable text at any zoom. */
+.fr-label {
+  position: absolute;
+  z-index: 3;
+  width: 10.5em;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .2s ease;
+}
+.fr-label[data-on="1"] { opacity: 1; }
+.fr-label .fr-name {
+  display: block;
   font-family: 'Fraunces', 'Georgia', serif;
   font-weight: 600;
   font-variation-settings: 'SOFT' 50, 'WONK' 0;
-  font-size: clamp(2.8rem, 5.2vw, 4.2rem);
-  line-height: 0.92;
-  color: var(--teal);
+  font-size: 1.16rem;
+  line-height: 1.2;
+  color: var(--darkteal);
 }
-.flower-stats .stat-k {
+.fr-label .fr-mean {
+  display: block;
+  margin-top: 0.18rem;
   font-family: Arial, Helvetica, sans-serif;
-  font-size: 0.92rem;
+  font-size: 0.83rem;
   line-height: 1.45;
-  /* #2f6260 is the body copy floor on this page, measured against the darkest
-     ground any of it sits on. Nothing here goes lighter. */
   color: #2f6260;
-  max-width: 15em;
 }
-@media (max-width: 900px) {
-  .flower-stats { grid-template-columns: repeat(2, 1fr); gap: 1.4rem 1.2rem; }
+.fr-label[data-side="l"] { text-align: right; }
+.fr-label[data-side="r"] { text-align: left; }
+.fr-label[data-side="c"] { text-align: center; }
+
+@media (min-width: 880px) {
+  .flower-ring { display: block; }
+  .catalogue .flowers-grid { display: none; }
 }
-@media (max-width: 480px) {
-  .flower-stats { grid-template-columns: 1fr 1fr; }
-  .flower-stats .stat-k { font-size: 0.86rem; }
+/* A ring has no hover, so on a touch screen the grid is the one that works.
+   This sits after the rule above so it wins at any width. */
+@media (hover: none) {
+  .flower-ring { display: none !important; }
+  .catalogue .flowers-grid { display: grid !important; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .fr-bloom, .fr-label, .fr-centre { transition: none; }
+  .fr-bloom:hover, .fr-bloom:focus-visible { transform: translate(-50%, -50%) scale(1); }
+}
+
+
+/* ===========================================================================
+   THE WIGGLING WORDS
+   ===========================================================================
+   Two words in the hero spring letter by letter, once on arrival and again
+   when the pointer crosses them. The script splits each into one span per
+   letter; everything below is the movement.
+
+   It is deliberately NOT a loop. A headline that never stops moving is a
+   headline nobody reads, and on a page whose whole subject is slowing down it
+   would be the one thing on screen refusing to. */
+.wig { display: inline-block; }
+.wig .wl {
+  display: inline-block;
+  /* Each letter leaves 38ms after the one before it, which is what makes it a
+     run along the word rather than the whole word jumping. */
+  animation-delay: calc(var(--i) * 38ms);
+}
+.wig:hover .wl,
+.wig.wig-run .wl {
+  animation-name: wiggle-letter;
+  animation-duration: 0.62s;
+  animation-timing-function: cubic-bezier(.34, 1.5, .5, 1);
+  animation-fill-mode: both;
+}
+@keyframes wiggle-letter {
+  0%   { transform: translateY(0) rotate(0deg); }
+  /* Up and back on the way out, then two smaller settles. One overshoot alone
+     reads as a bounce off a floor; two read as something springy coming to
+     rest. */
+  28%  { transform: translateY(-0.22em) rotate(-5deg); }
+  55%  { transform: translateY(0.06em) rotate(3deg); }
+  78%  { transform: translateY(-0.02em) rotate(-1.2deg); }
+  100% { transform: translateY(0) rotate(0deg); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .wig:hover .wl, .wig.wig-run .wl { animation: none; }
 }

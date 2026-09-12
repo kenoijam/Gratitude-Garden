@@ -892,12 +892,14 @@
 
   function showChrome() {
     if (!btn) return;
-    /* No label any more, so the state has to be in the title and the aria
-       label or the icon says nothing at all to anyone who cannot guess it. */
+    /* No written label on the icon, so the state has to be in the aria label
+       and the hover tip or it says nothing at all to anyone who cannot guess
+       it. There is deliberately NO `title`: the browser's own tooltip would
+       arrive on top of the project's, which is what hovering the music button
+       used to do. */
     var what = me
       ? ((profile && profile.username) ? "Friends, signed in as " + profile.username : "Friends")
       : "Sign in";
-    btn.title = what;
     btn.setAttribute("aria-label", what);
     btn.setAttribute("data-tip", me ? "Friends" : "Sign in");
     if (me) refreshPanel();

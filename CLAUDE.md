@@ -310,7 +310,7 @@ The first screen is a fork, not a step. `TRACKS` holds two step lists and `STEPS
 
 #### The garden cursor
 
-A leaf at rest and a bloom over anything clickable, both inline SVG data URIs so no image file is added. **The clickable rule lists CLASSES as well as elements, and that is not belt and braces:** `.bq-btn-outline` is a class rule carrying `cursor: pointer`, which outranks a bare `button` selector, so the buttons kept the system pointer until they were named explicitly. Anything new that sets `cursor: pointer` on a class has to be added to that list. The exceptions are declared last so they win: inputs keep the caret and sliders keep grab, because both say something true about the control that a decorative cursor would throw away.
+One flower in two sizes, small and soft at rest and larger and fully saturated over anything clickable. It is an inline SVG data URI so no image file is added. The full account is under "`garden-cursor.js` owns the chrome every page shares" below; the thing to know here is that every rule it writes carries `!important`, so a `cursor: pointer` added anywhere in this page's stylesheet will simply not take.
 
 ### Do not put anything above `<!DOCTYPE html>`
 
@@ -475,13 +475,14 @@ Note that `html` sets `scroll-behavior: smooth`, so anything that scrolls the pa
 |---|---|---|
 | 16 | music | `garden-music.js` |
 | 62 | account and friends | `garden-account.js` |
-| 108 | journal | `garden-journal.js` |
+| 108 | history | `garden-journal.js` |
 | 154 | save a picture | each garden's own sketch |
 
-- **The journal was a labelled pill in the BOTTOM LEFT and sat straight on top of the Garden Tips card.** That corner is the tips card's, on both gardens.
+- **The history was a labelled pill in the BOTTOM LEFT and sat straight on top of the Garden Tips card.** That corner is the tips card's, on both gardens.
 - **Save PNG was the only labelled control up there**, so it is a camera now. `#save-btn` is set inline by the sketch AND in the stylesheet; both carry the same numbers so the dead rule cannot resurface with the old pill look. It shows as `flex`, not `block`, or the icon does not centre.
 - **The personal garden's bottom right `#gg-account` chip is gone** when `garden-account.js` is live, because that module's panel already shows the email and carries Sign out. Two places to sign out is one too many, and it also sat exactly where `#gg-logo` would reappear if the `LOGO-01.png` 404 were ever fixed.
-- **The account icon has no label, so its state is in `title` and `aria-label`**: Sign in, or Friends with the username. The pending count rides the icon's corner.
+- **The account icon has no written label, so its state is in `aria-label` and its hover tip**: Sign in, or Friends with the username. The pending count rides the icon's corner.
+- **NONE of the four carries a `title`.** A `title` beside a `data-tip` means hovering produces the project's own label and then the operating system's on top of it. See "The hover labels" below.
 
 ## `garden-cursor.js` owns the chrome every page shares
 
@@ -491,17 +492,45 @@ Two things live in this one file, and they are together because both are needed 
 
 **Any control carrying `data-tip` gets a short label under it.** The browser's own `title` already does this, but only after a long pause and in the operating system's styling, and the top right of every page is now a row of four unlabelled icons, which is exactly where a fast legible answer to "what is this" is worth having. It is pure CSS off an attribute, so a module adds one by setting a single attribute and nothing has to be built.
 
-- **The music button's label goes to the LEFT**, via `data-tip-side="left"`. Its volume panel drops into exactly the space below the button, so a label there would land on top of it.
+- **It is CENTRED on its button**, `left: 50%` with a `translateX(-50%)`. Anchored to a corner it pointed at the gap between two icons rather than at the one it belonged to, since these are round icons in a row eight pixels apart.
+- **The music button has NO label, and that is the one exception.** Its volume panel drops into exactly the space a centred label would take, and pushed to the left instead it ran across the three icons beside it. It is also the one button in the row that explains itself, since hovering it slides out a volume slider. `data-tip-side="left"` is gone with it; nothing uses it.
+- **None of these buttons carries a `title` any more.** `title` and `data-tip` together meant hovering produced the project's own label and then the operating system's on top of it, which is what "don't have it doubled" was. `aria-label` is what a screen reader reads and it is enough. **Do not add a `title` to anything that has a `data-tip`.**
 - **`@media (hover: none)` removes it.** A label stuck open after a tap is worse than none.
 
 ### The cursor
 
-**A leaf at rest, a bloom over anything clickable, on ALL FOUR pages.** It used to live in `bouquet-style.css` and appear on one page of four, which made that page the odd one out rather than a theme.
+**ONE flower in two sizes, on ALL FOUR pages.** It used to live in `bouquet-style.css` and appear on one page of four, which made that page the odd one out rather than a theme.
 
+- **It was a LEAF at rest and a bloom on a clickable, and the leaf was wrong.** In a project made of flowers it was the one thing that was not one, and two different objects chasing the pointer around read as a glitch rather than as a state. The same bloom growing and deepening reads as one thing answering.
+- **The two states differ in SIZE and DEPTH at once, and both are needed.** `calm()` is reach 9 in a 20px box at saturation 72 and lightness 84; `keen()` is reach 13 in a 28px box at 95 and 74. Size alone is easy to miss on a busy background and colour alone on a pale one. Everything in `bloom()` is a fraction of `reach`, so one function draws both and the shape cannot drift between them.
+- **The hotspot is dead centre**, `box / 2` in both. A flower has no tip to point with.
+- **The FALLBACK keyword differs by state**, `auto` at rest and `pointer` on a clickable. It is what a machine that refuses to draw a custom cursor gets, and giving both the same one would leave such a machine with no signal at all.
 - **It is injected from JS rather than written in a stylesheet** so the bloom can be RECOLOURED at runtime. In the personal garden it takes the hue of the flower planted most recently, so the thing following the pointer is the last thing that grew. Everywhere else it is the palette's butter yellow.
-- **The class list is the load bearing part.** A class rule carrying `cursor: pointer` outranks a bare `button` selector, so every clickable class in the project is named explicitly. Anything new that sets its own `cursor: pointer` has to be added there.
-- **Inputs, sliders and disabled controls are declared LAST so they win.** A caret and a grab handle each say something true about a control that a decorative cursor would throw away.
+- **EVERY rule carries `!important`, and that is a fix rather than a shortcut.** This file is loaded from the head, so its style tag is the FIRST in the document, and every module that builds a control appends its own tag after it. Four of them set `cursor: pointer` on an ID (`#gj-btn`, `#gg-music-btn`, `#ga-friends-btn`, `#gj-close`), which beats an element selector outright, and both gardens set `#save-btn`'s cursor INLINE, which nothing but `!important` reaches. So the four round icons in the corner of every page kept the system arrow while everything around them drew a flower. **Adding those ids to the list would NOT have worked**: each selector in a list carries its own specificity, so `#gj-btn` there would only tie, and the module's tag comes later.
+- **The class list is still load bearing.** A class rule carrying `cursor: pointer` outranks a bare `button` selector, so every clickable class in the project is named explicitly. Anything new that sets its own `cursor: pointer` has to be added there.
+- **Inputs, sliders and disabled controls are declared LAST so they win**, and they carry `!important` too, so they still win by order and by specificity. A caret and a grab handle each say something true about a control that a decorative cursor would throw away.
 - **`@media (hover: none)` turns the whole thing off**, since a touch screen has no cursor to draw.
+
+## The flower guide is a RING, and the grid beside it is the fallback
+
+**The eight blooms drawn close up and set round a circle, with a hairline running out of whichever one is under the pointer to its own name and meaning.** It is a botanical plate: the specimen in the middle and the naming off to the side on a leader line, rather than a caption sitting under a picture in a box.
+
+- **There was briefly a display heading and a numbers band here and both are GONE.** The heading mixed an italic serif drop capital with a sans second line, and the band carried four figures about the project. They came from a reference photograph and read as another site's furniture dropped onto this one. The heading is back to `Every mood has a <em>symbolic bloom</em>` and the band and all of its CSS are deleted. **Do not bring either back**; the thing that was wanted from that reference was the annotation lines, which is what the ring is.
+- **The ring is ROTATED by half a step**, so the eight sit at 22.5, 67.5, 112.5 and 157.5 degrees either side rather than on the compass points. That is not decoration: a bloom at the very top has no side to put a label on, and one at the far left has no room above or below it. Off the axes every one of the eight has an unambiguous side and a clear run out to it.
+- **Nothing in the geometry is a percentage.** A label's own measured width is the budget the ring lives inside, so `layoutRing` reads `offsetWidth` back and sizes the ring to what is left. The bloom's size and the radius each depend on the other, so it is solved in two passes rather than guessed.
+- **The stage's height is measured, not set.** It comes out of the extreme label and bloom positions, so a long meaning can never run out of the section it annotates.
+- **The `.flowers-grid` above it is the same eight flowers and must NOT be deleted.** Exactly one of the two is on screen: the ring above 880px, the grid below it, and the grid at ANY width on a touch screen, since a ring whose whole point is hovering is useless without a pointer. That last rule is declared after the width one so it wins. Both open the same entry.
+- **The centre line has to clear the inside of the ring.** The nearest bloom's edge runs about 95px from the middle and `.fr-centre` corners at about 80, which is why it is 9.2em wide and one short sentence.
+
+## The wiggling words
+
+**Two words in the hero spring letter by letter, once on arrival and again when the pointer crosses them.** A word carrying `data-wiggle` is split by script into one span per letter, because a whole word animating tips over as a block, which reads as a wobble; letters going in sequence read as something alive.
+
+- **It is NOT a loop.** A headline that never stops moving is a headline nobody reads, and on a page whose subject is slowing down it would be the one thing on screen refusing to.
+- **Punctuation is left out of the sequence.** A comma flying up on its own detaches from the word it belongs to. It keeps its own span so the spacing does not shift.
+- **Only the LAST letter's `animationend` clears the class.** Every letter fires its own, so clearing on the first killed the other eight part way through and the word collapsed instead of finishing.
+- **Re-running needs a forced reflow** between removing the class and adding it back, or the browser coalesces the two and nothing replays.
+- The stagger is 38ms a letter and the keyframes peak at `-0.22em` and -5 degrees at 28 percent, then settle through two smaller overshoots. One overshoot alone reads as a bounce off a floor.
 
 ## The landing page sparkles are per SECTION, not per page
 
@@ -514,9 +543,11 @@ Two things live in this one file, and they are together because both are needed 
 - **`GardenLife.drift` takes `opts.only`** to draw a single band. The FULL band list is still passed every time, so the population signature does not change from one canvas to the next and nothing is re-seeded per section.
 - **Butterflies keep to the MARGINS**, alternating sides, with a swing tied to the page's width rather than a pixel count. The copy sits in a centred block, so the outer sixth on each side is dependably empty. One hovering over a paragraph is something a reader has to look past.
 
-## The journal (`garden-journal.js`)
+## The history (`garden-journal.js`)
 
 **A week strip, seven days across, with the flower planted that day drawn under each one.** One file at the repo root, loaded by both gardens, and the two need very different things from it. That difference is the whole design.
+
+**It is called HISTORY on screen, and the file keeps its old name.** It was Journal, and that word was already taken: the personal garden asks for a journal ENTRY on the day it plants, so one word named both the thing you write and the record of every day you wrote one. The button, its `aria-label`, its hover tip and the panel heading all say History. The file is still `garden-journal.js` and the global is still `GardenJournal`, because every page loads it by that name and renaming it would break four script tags for a word.
 
 | | where a past day comes from |
 |---|---|
@@ -528,11 +559,36 @@ Two things live in this one file, and they are together because both are needed 
 - **A day with no snapshot says so.** The garden is only remembered from the day somebody signed in was standing in it, and the panel tells you that rather than showing an empty meadow as if nothing had been planted.
 - **Neither garden needs an account for the strip to work.** Without one both fall back to this browser's storage, and only the whole-meadow replay is missing.
 - **Three sources are merged on read, in order of how much they can be trusted**: the garden's own data first, then the account, then this browser.
+- **The shared garden hands over the ROOM as its first source, and that is what makes today's icon right.** It had no `entries()` at all, so the strip could only show what this browser happened to have written down when the flower was planted. Plant on a phone and open the history on a laptop, or plant at all before any of this was written, and today's slot was empty or holding something stale. `entries()` now reads today's flower straight out of `shared.flowers`, matched on the name it was planted under, and because it is the most trusted of the three it outranks both the note and the account row. The flower standing in the meadow under your name is the one that was planted, whatever anything else says.
+- **`myPlantedName()` is the typed name if this visit planted it, otherwise the account's username**, since a signed in person always plants as their username and cannot edit it.
 - **The icon is drawn by each garden's OWN preview family**, through a `p5.Graphics` whose canvas is blitted into the small DOM canvas the strip holds. An eighth copy of the flower maths would drift from the seven that already exist. The two call it differently and that matters: `drawPreviewFlower` centres itself, `drawPreviewBloom` draws around the ORIGIN and leaves centring to its caller. Missing that gave a strip of quarter flowers tucked into the top left corner of every slot.
-- **The buffer is SQUARE**, because the slot is square and a tall buffer squashed into it stretches every bloom sideways. The shared garden's is 96 rather than 132, measured: at 132 a bloom filled under half the slot and read as a speck, and at 96 all eight species fill 49 to 67 percent with none of them clipping.
+- **The buffer is SQUARE**, because the slot is square and a tall buffer squashed into it stretches every bloom sideways. The shared garden's is **76**, and every step down to it was measured by painting all eight species and reading back the bounding box. This garden's preview draws at a fixed `baseR` of 30, so the buffer's size is the only thing that decides how much of the slot a bloom fills:
+
+  | buffer | tallest | shortest | clipped |
+  |---|---|---|---|
+  | 96 | 69% | 51% | none |
+  | 84 | 79% | 58% | none |
+  | 76 | 87% | 64% | none |
+  | 70 | 94% | 70% | none |
+  | 64 | 100% | 77% | sunflower, sakura, lavender |
+
+  76 is the last size where the widest species still has air around it. Below it the sunflower touches two edges and the lavender runs off the top, and an icon cut off at the edge of its slot reads as broken rather than as large.
 - **Everything works in YYYY-MM-DD** so days sort as strings. The personal garden stores MM/DD/YYYY on every flower, which is what its labels print, so `fromUS` is the one conversion.
 - **A day in the future is disabled, not empty.** It has not happened; it is not a blank page.
 - The panel opens from the LEFT, which is the side its button is on, and which also means it can never be confused with the friends panel on the right.
+
+## The Garden Tips card, on both gardens
+
+**A tip is only worth its line if it names something the visitor would not otherwise find**, and both lists were rewritten against that. Two of the shared garden's four had gone stale outright: Save PNG is a camera in the row of icons now, and nothing anywhere said that a flower can be liked, commented on, or looked back at by the day. The personal garden's said nothing about hovering a flower for its meaning, or about the history.
+
+Both now end on the same line naming the four icons in the corner, since that row is where everything added this year lives and an unlabelled icon is exactly what a tips card is for. The personal garden's third line is still conditional on being signed in, and says where the garden is saved.
+
+## The shared garden's daily note
+
+**`#daily-note`, the line that says the day is done, and it is the personal garden's line brought across.** Arriving straight in the garden with the planting steps gone says nothing about WHY they are gone, and the only reading left is that something failed.
+
+- **It sits at `top: 68px`, not 24.** The four round icons are 38px tall at top 20, so they end at 58, and a centred line wide enough to say this runs under them at any window width. Below them it can never collide.
+- **It shows only for somebody who has actually planted today**, tested with `sharedPlantedToday(username)`. A visitor looking at the garden without having planted is being invited in, not told they are finished.
 
 ### One flower a day in the shared garden
 

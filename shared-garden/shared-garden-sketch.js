@@ -23,7 +23,7 @@ let landingWrap, usernameWrap, selectWrap, gardenWrap;
 let gratitudeField, charCount, continueBtn;
 let usernameField, usernameContinueBtn, usernameNote;
 let colorPickerSelect, speciesButtons = {};
-let saveBtn, tipsCard;
+let saveBtn, tipsCard, dailyNote;
 
 const GARDEN_KEY = "community_garden_daily";
 
@@ -2653,7 +2653,8 @@ saveBtn = createButton("").id("save-btn").parent(gardenWrap);
 saveBtn.html('<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" ' +
   'stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
   '<path d="M3 8.5h3.2l1.4-2h7.8l1.4 2H21v10.5H3z"/><circle cx="12" cy="13.5" r="3.4"/></svg>');
-saveBtn.attribute("title", "Save a picture of your garden");
+/* No `title`: it would open the operating system's own tooltip on top of the
+   project's hover label. `aria-label` is what a screen reader reads. */
 saveBtn.attribute("aria-label", "Save a picture of your garden");
 saveBtn.attribute("data-tip", "Save a picture");
 saveBtn.style("display", "none");
@@ -2685,14 +2686,44 @@ swayOn = prevSway;
 isSaving = false;
 }, 80);
 });
+/* The line that says the day is done, the same one the personal garden has
+   carried all along. Without it, arriving straight in the garden with the
+   planting steps gone says nothing about WHY they are gone, and the only
+   reading left is that something failed. It is centred at the top, which on
+   this page is empty: Home is top left and the four round icons are top
+   right. */
+dailyNote = createDiv("").id("daily-note").parent(gardenWrap);
+dailyNote.style("display", "none");
+dailyNote.style("position", "absolute");
+/* 68, not 24. The four round icons are 38px tall at top 20, so they end at
+   58, and a centred line wide enough to say this in one or two goes runs
+   under them at any window width. Below them it can never collide, whatever
+   the width, and the sky up there is empty either way. */
+dailyNote.style("top", "68px");
+dailyNote.style("left", "50%");
+dailyNote.style("transform", "translateX(-50%)");
+dailyNote.style("text-align", "center");
+dailyNote.style("max-width", "min(88vw, 620px)");
+dailyNote.style("z-index", "30");
+dailyNote.style("pointer-events", "none");
+dailyNote.style("font-family", "Arial, Helvetica, sans-serif");
+dailyNote.style("font-size", "15px");
+dailyNote.style("color", "#2c7a7b");
+dailyNote.style("text-shadow", "1px 1px 0 rgba(255,255,255,0.6)");
+
 tipsCard = createDiv().id("tips-card").parent(gardenWrap);
 tipsCard.style("pointer-events", "none");
 createElement("h3", "Garden Tips").style("margin-bottom", "8px").parent(tipsCard);
+/* Rewritten for what the page actually carries now. Two of the four it
+   replaced had gone stale: Save PNG is a camera in the row of icons, and
+   nothing anywhere said that a flower can be liked, commented on, or looked
+   back at by the day. A tip is only worth its line if it names something the
+   visitor would not otherwise find. */
 const ul = createElement("ul").parent(tipsCard);
-createElement("li", "Hover over / tap flowers to see gratitude messages").parent(ul);
-createElement("li", "The garden resets everyday").parent(ul);
-createElement("li", "Save PNG to download your garden").parent(ul);
-createElement("li", "Come back tomorrow to plant a new flower").parent(ul);
+createElement("li", "Hover or tap a flower to read what somebody was grateful for.").parent(ul);
+createElement("li", "Sign in to like a flower, or leave a comment on it.").parent(ul);
+createElement("li", "One flower each a day. The whole garden begins again tomorrow.").parent(ul);
+createElement("li", "Top right: the music, your friends, the history by day, and a camera.").parent(ul);
 tipsCard.style("display", "none");
 
 buildLogo();
@@ -2783,6 +2814,16 @@ saveBtn.style("display", step === "garden" && hasFlower ? "flex" : "none");
 if (tipsCard) {
 tipsCard.style("display", step === "garden" && hasFlower ? "block" : "none");
 }
+if (dailyNote) {
+/* Only for somebody who has actually planted today. A visitor looking at the
+   garden without having planted is being invited in, not told they are
+   finished. */
+const mine = !!sharedPlantedToday(username);
+dailyNote.html(step === "garden" && mine
+? "Your flower is planted. Enjoy today's garden, and come back tomorrow for another."
+: "");
+dailyNote.style("display", step === "garden" && mine ? "block" : "none");
+}
 
 const logo = select("#gg-logo");
 if (logo) {
@@ -2821,11 +2862,24 @@ if (!el || !el.width) return;
 /* SQUARE, because the strip's slot is square and squashing a tall buffer
    into it would stretch every bloom sideways. */
 if (!journalBuf) {
-/* 96 rather than 132 is measured, not chosen: this garden's preview draws
-   at baseR 30, so in a 132 box a bloom filled under half the slot and read
-   as a speck. At 96 it fills about two thirds and the widest species, the
-   sunflower, still clears the edge. */
-journalBuf = createGraphics(96, 96);
+/* 76, and every step down to it was measured rather than chosen. This
+   garden's preview draws at a fixed baseR of 30, so the buffer's size is
+   the only thing deciding how much of the slot a bloom fills. Painted and
+   read back, the bounding box of all eight species runs:
+
+     buffer   tallest   shortest   clipped
+       132     well under half                  a speck in a square
+        96     69%       51%       none
+        84     79%       58%       none
+        76     87%       64%       none
+        70     94%       70%       none
+        64    100%       77%       sunflower, sakura and lavender
+
+   76 is the last size where the widest species still has air around it.
+   Below it the sunflower touches two edges and the lavender runs off the
+   top, and an icon cut off at the edge of its slot reads as broken rather
+   than as large. */
+journalBuf = createGraphics(76, 76);
 journalBuf.angleMode(DEGREES);
 journalBuf.pixelDensity(2);
 }
@@ -2843,10 +2897,48 @@ c.clearRect(0, 0, el.width, el.height);
 c.drawImage(journalBuf.canvas, 0, 0, el.width, el.height);
 }
 
+/* The name today's flower was planted under. The typed one if this visit
+   planted it, otherwise the account's username, which is what a signed in
+   person always plants as. */
+function myPlantedName() {
+const typed = String(username || "").trim();
+if (typed) return typed.toLowerCase();
+const a = window.GardenAccount;
+const n = a && a.username && a.username();
+return n ? String(n).trim().toLowerCase() : "";
+}
+
 function mountJournal() {
 if (!window.GardenJournal) return;
 GardenJournal.mount({
 garden: "shared",
+/* The ROOM is the authority on what you planted today, and it is handed over
+   here so that it OUTRANKS both this browser's note and the account's row:
+   entries() is the most trusted of the three sources the strip merges.
+
+   Without it the strip could only show what this browser happened to have
+   written down, so planting on a phone and opening the history on a laptop,
+   or planting at all before any of this was written, left today's slot empty
+   or holding something stale. The flower standing in the meadow under your
+   name is the one that was planted, whatever any note says. */
+entries: function () {
+const out = {};
+const me = myPlantedName();
+if (!me || !shared || !Array.isArray(shared.flowers)) return out;
+const day = todayStr();
+/* Backwards, so that if a name somehow appears twice the strip shows the
+   most recent one rather than the first. */
+for (let i = shared.flowers.length - 1; i >= 0; i--) {
+const f = shared.flowers[i];
+if (String(f.word || "").trim().toLowerCase() !== me) continue;
+out[day] = {
+day: day, species: f.species, hue: f.hue, sat: f.sat, light: f.light,
+word: f.word, note: f.gratitude || ""
+};
+break;
+}
+return out;
+},
 meaning: function (sp) {
 const found = speciesList.find(x => x.id === sp);
 return found ? found.meaning : "";

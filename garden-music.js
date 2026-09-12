@@ -636,11 +636,16 @@
     var what = wantOn ? "Turn music off" : "Turn music on";
     btn.setAttribute("aria-pressed", wantOn ? "true" : "false");
     btn.setAttribute("aria-label", what);
-    btn.title = what;
-    /* The hover label, from garden-cursor.js. To the LEFT, because the volume
-       panel drops into the space directly below this button. */
-    btn.setAttribute("data-tip", what);
-    btn.setAttribute("data-tip-side", "left");
+    /* NO hover label on this one, and no `title` either.
+
+       Every other icon in the row carries a `data-tip` that opens centred
+       underneath it. This button cannot: its volume panel drops into exactly
+       that space, so the label and the panel arrived on top of each other, and
+       pushed to the left it ran across the three icons beside it. It is also
+       the one button in the row that explains itself, since hovering it slides
+       out a volume slider. The `title` went with it; hovering used to produce
+       the project's own label and then the operating system's on top of that.
+       `aria-label` above is what a screen reader reads, and it is enough. */
     wrapEl.setAttribute("data-on", wantOn ? "1" : "0");
   }
 

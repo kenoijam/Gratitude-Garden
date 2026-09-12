@@ -126,8 +126,12 @@
 
   <div class="hero-text-block">
     <span class="hero-eyebrow">YOUR DAILY GRATITUDE PRACTICE</span>
+    <!-- Two words carry data-wiggle. The script near the bottom of this file
+         splits each into one span per letter so they can bounce one after the
+         other; without it the whole word tips over as a block, which reads as
+         a wobble rather than as letters springing. -->
     <h1 class="hero-title">
-      Grow your <em>Gratitude,</em> one bloom at a time.
+      Grow your <em class="wig" data-wiggle>Gratitude,</em> one <span class="wig" data-wiggle>bloom</span> at a time.
     </h1>
     <p class="hero-subtitle">
       A gentle digital space for your thoughts. Reflect by yourself, share them with the community, or gather a few into a bouquet to give to someone else.
@@ -671,14 +675,7 @@
   <div class="catalogue-header reveal">
     <div>
       <span class="section-label">The flower guide</span>
-      <!-- The display heading. A drop capital in the italic serif, the rest
-           of the line in the same serif at a heavy weight, then a second line
-           in the sans. Mixing the two faces inside one sentence is the whole
-           character of it: neither face is doing the work alone. -->
-      <h2 class="section-title display-title">
-        <span class="dcap">E</span><span class="ser">very mood has a</span>
-        <span class="san">symbolic bloom</span>
-      </h2>
+      <h2 class="section-title">Every mood has a <em>symbolic bloom</em></h2>
       <p class="section-desc">Tap on a flower to learn more</p>
     </div>
   </div>
@@ -765,26 +762,16 @@
     </div>
 
   </div>
-  <!-- The numbers band. Every figure here is a fact about the project
-       itself, not a usage statistic: there is no traffic to report and
-       inventing some would be the one dishonest thing on the page. -->
-  <div class="flower-stats reveal">
-    <div class="stat">
-      <span class="stat-n">8</span>
-      <span class="stat-k">flowers, each with a meaning</span>
-    </div>
-    <div class="stat">
-      <span class="stat-n">3</span>
-      <span class="stat-k">ways in: reflect, share, give</span>
-    </div>
-    <div class="stat">
-      <span class="stat-n">1</span>
-      <span class="stat-k">a day, in either garden</span>
-    </div>
-    <div class="stat">
-      <span class="stat-n">0</span>
-      <span class="stat-k">of it shared without you</span>
-    </div>
+
+  <!-- The ring. The eight blooms drawn close up and set round a circle, with a
+       hairline running out of whichever one is under the pointer to its own
+       meaning, the way a botanical plate annotates a specimen. The grid above
+       is the same eight and stays for narrow screens, where a ring of eight
+       has no room to put a label beside anything. Only one of the two is ever
+       on screen. -->
+  <div class="flower-ring reveal" id="flowerRing">
+    <svg class="fr-lines" id="frLines" aria-hidden="true"></svg>
+    <p class="fr-centre" id="frCentre">Hover a bloom to read what it means.</p>
   </div>
 </section>
 
@@ -1017,6 +1004,70 @@
     document.body.style.overflow = '';
   });
   document.addEventListener('keydown', function(e){ if(e.key==='Escape') { document.getElementById('flowerModal').classList.remove('open'); document.body.style.overflow=''; } });
+
+  /* ── The wiggling words ───────────────────────────────────────────────────
+     Every word carrying `data-wiggle` is split into one span per letter, so
+     the letters can spring one after another rather than the word tipping
+     over as a block. A whole word rotating reads as a wobble; letters going
+     in sequence read as something alive.
+
+     It runs ONCE on arrival and then on hover, and nothing else. A headline
+     that never stops moving is a headline nobody can read, and it would be
+     the only permanently animating text on a page whose whole subject is
+     slowing down.
+
+     Punctuation is left out of the sequence: a comma flying up on its own
+     detaches from the word it belongs to. It keeps its own span so the
+     spacing does not shift. */
+  (function () {
+    var words = document.querySelectorAll('[data-wiggle]');
+    if (!words.length) return;
+    var still = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    [].forEach.call(words, function (w) {
+      var text = w.textContent;
+      w.textContent = '';
+      var n = 0;
+      for (var i = 0; i < text.length; i++) {
+        var ch = text.charAt(i);
+        var sp = document.createElement('span');
+        sp.textContent = ch;
+        /* A letter animates; a comma or a space holds its place and does not. */
+        if (/[A-Za-z\u00C0-\u024F]/.test(ch)) {
+          sp.className = 'wl';
+          sp.style.setProperty('--i', n++);
+        }
+        w.appendChild(sp);
+      }
+    });
+
+    if (still) return;
+
+    function run(w) {
+      w.classList.remove('wig-run');
+      /* Reading offsetWidth forces the class removal to take effect before it
+         is added back, or the browser coalesces the two and nothing replays. */
+      void w.offsetWidth;
+      w.classList.add('wig-run');
+    }
+    [].forEach.call(words, function (w) {
+      var letters = w.querySelectorAll('.wl');
+      var last = letters[letters.length - 1];
+      w.addEventListener('pointerenter', function () { run(w); });
+      /* Only the LAST letter's end counts. Every letter fires its own
+         animationend, so clearing the class on the first one killed the other
+         eight part way through and the word collapsed instead of finishing
+         its run. */
+      w.addEventListener('animationend', function (e) {
+        if (e.target === last) w.classList.remove('wig-run');
+      });
+    });
+    /* Once on arrival, staggered between the two words so they do not fire in
+       chorus, and late enough that the page has settled. */
+    [].forEach.call(words, function (w, i) {
+      setTimeout(function () { run(w); }, 900 + i * 420);
+    });
+  })();
 </script>
 
 <script>
@@ -1275,6 +1326,173 @@
   function renderAllFlowers(){
     document.querySelectorAll('canvas.flower-canvas').forEach(renderFlowerCanvas);
   }
+
+  /* ── The flower ring ──────────────────────────────────────────────────────
+     The eight blooms close up and set round a circle. Hovering one runs a
+     hairline out of it to its own name and meaning, the way a botanical plate
+     annotates a specimen, rather than parking a caption under a picture.
+
+     The ring is ROTATED by half a step, so the eight sit at 22.5, 67.5, 112.5
+     and 157.5 degrees either side rather than at the compass points. That is
+     not decoration: a bloom at the very top or the very bottom has no side to
+     put its label on, and one at the far left or right has no room above or
+     below it. Off the axes, every one of the eight has an unambiguous side
+     and a clear run out to it.
+
+     Nothing here is a percentage. A label's own width is what decides how far
+     out it can sit and how much ring is left over, and only the browser knows
+     that, so the geometry is measured and the ring is sized to what is left.
+
+     The grid this sits beside is the same eight flowers and is kept for narrow
+     and touch screens, where a ring has nowhere to put a label. */
+  var RING = [
+    /* Clockwise from just right of the top, in hue order: the yellows, then
+       the teal, the purples and the pinks, so the ring reads as a wheel
+       rather than as eight flowers in the order they were written. */
+    { id:'sunflower', a:-67.5,  hue:45,  sat:60, light:65 },
+    { id:'daisy',     a:-22.5,  hue:55,  sat:45, light:65 },
+    { id:'lily',      a: 22.5,  hue:185, sat:40, light:70 },
+    { id:'lavender',  a: 67.5,  hue:270, sat:55, light:68 },
+    { id:'tulip',     a:112.5,  hue:280, sat:50, light:60 },
+    { id:'rose',      a:157.5,  hue:340, sat:55, light:55 },
+    { id:'lotus',     a:-157.5, hue:340, sat:50, light:70 },
+    { id:'sakura',    a:-112.5, hue:340, sat:40, light:75 }
+  ];
+  var LEAD = 38;        /* the radial run of the leader line */
+  var TICK = 18;        /* the horizontal turn at its far end */
+  var ringBuilt = false;
+
+  function buildRing(){
+    var host = document.getElementById('flowerRing');
+    if(!host || ringBuilt) return;
+    ringBuilt = true;
+    var svg = document.getElementById('frLines');
+    RING.forEach(function(item){
+      var d = flowerData[item.id];
+
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'fr-bloom';
+      btn.setAttribute('data-flower', item.id);
+      /* The name is on the button rather than only on the label, because the
+         label is a hover state and a screen reader never sees one. */
+      btn.setAttribute('aria-label', d.name + ', ' + d.meaning);
+      var cv = document.createElement('canvas');
+      btn.appendChild(cv);
+      btn.addEventListener('click', function(){ openFlowerModal(item.id); });
+
+      var lab = document.createElement('div');
+      lab.className = 'fr-label';
+      lab.setAttribute('data-on','0');
+      lab.setAttribute('aria-hidden','true');
+      var n = document.createElement('span'); n.className='fr-name'; n.textContent = d.name;
+      var m = document.createElement('span'); m.className='fr-mean'; m.textContent = d.meaning;
+      lab.appendChild(n); lab.appendChild(m);
+
+      /* The line is drawn only while its own bloom is hot, so at rest the ring
+         is eight flowers and nothing else. */
+      var line = document.createElementNS('http://www.w3.org/2000/svg','path');
+      line.setAttribute('fill','none');
+      line.setAttribute('stroke','rgba(29,100,102,0.45)');
+      line.setAttribute('stroke-width','1');
+      line.setAttribute('stroke-linecap','round');
+      line.setAttribute('opacity','0');
+      var dot = document.createElementNS('http://www.w3.org/2000/svg','circle');
+      dot.setAttribute('r','2.4');
+      dot.setAttribute('fill','rgba(29,100,102,0.55)');
+      dot.setAttribute('opacity','0');
+      svg.appendChild(line); svg.appendChild(dot);
+
+      function on(v){
+        lab.setAttribute('data-on', v ? '1' : '0');
+        line.setAttribute('opacity', v ? '1' : '0');
+        dot.setAttribute('opacity', v ? '1' : '0');
+        host.setAttribute('data-hot', v ? '1' : '0');
+      }
+      btn.addEventListener('pointerenter', function(){ on(true); });
+      btn.addEventListener('pointerleave', function(){ on(false); });
+      btn.addEventListener('focus', function(){ on(true); });
+      btn.addEventListener('blur', function(){ on(false); });
+
+      item.btn = btn; item.cv = cv; item.lab = lab; item.line = line; item.dot = dot;
+      host.appendChild(btn); host.appendChild(lab);
+    });
+  }
+
+  function layoutRing(){
+    var host = document.getElementById('flowerRing');
+    if(!host || !ringBuilt) return;
+    var W = host.clientWidth;
+    if(!W) return;                       /* hidden: nothing to measure against */
+
+    /* A label's measured width is the budget the ring has to live inside, so
+       it is read back rather than assumed. */
+    var labW = RING[0].lab.offsetWidth || 179;
+    var free = W/2 - labW - TICK - LEAD - 10;
+    /* The bloom's size and the ring's radius each depend on the other, so it
+       is solved once rather than left as a guess: a first radius sets a size,
+       and the size sets the radius the ring is actually drawn at. */
+    var size = 128;
+    var Rr = free - size*0.42;
+    size = Math.max(104, Math.min(168, Rr*0.70));
+    Rr = Math.max(120, free - size*0.42);
+
+    var cxs = W/2, maxY = 0;
+    var pts = RING.map(function(item){
+      var a = item.a * Math.PI/180, ux = Math.cos(a), uy = Math.sin(a);
+      var x = cxs + ux*Rr, y = uy*Rr;                       /* y is still centred on 0 */
+      var sx = cxs + ux*(Rr + size*0.42), sy = uy*(Rr + size*0.42);
+      var ex = cxs + ux*(Rr + size*0.42 + LEAD), ey = uy*(Rr + size*0.42 + LEAD);
+      var side = ux > 0 ? 1 : -1;
+      var tx = ex + side*TICK;
+      var lh = item.lab.offsetHeight || 52;
+      maxY = Math.max(maxY, Math.abs(y) + size/2, Math.abs(ey) + lh/2);
+      return { item:item, x:x, y:y, sx:sx, sy:sy, ex:ex, ey:ey, tx:tx, side:side, lh:lh };
+    });
+
+    /* The stage is exactly as tall as the thing it holds, measured, so a long
+       label never runs out of the section it is annotating. */
+    var H = Math.round(maxY*2 + 18);
+    host.style.height = H + 'px';
+    var svg = document.getElementById('frLines');
+    svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
+
+    var dpr = window.devicePixelRatio || 1;
+    pts.forEach(function(p){
+      var it = p.item, y = p.y + H/2;
+      it.btn.style.left = p.x + 'px';
+      it.btn.style.top  = y + 'px';
+
+      var cv = it.cv;
+      cv.width = Math.round(size*dpr); cv.height = Math.round(size*dpr);
+      cv.style.width = size + 'px'; cv.style.height = size + 'px';
+      var ctx = cv.getContext('2d');
+      ctx.setTransform(dpr,0,0,dpr,0,0);
+      ctx.clearRect(0,0,size,size);
+      /* The same fractions the catalogue tiles use, so a bloom is the shape it
+         is everywhere else on the page. Lavender and lotus grow UPWARD out of
+         an origin the drawing pushes down, which is why their centres are not
+         the middle of the square. */
+      var cy = size*0.52;
+      if(it.id === 'lavender') cy = size*0.92;
+      else if(it.id === 'lotus') cy = size*0.76;
+      else if(it.id === 'tulip') cy = size*0.60;
+      if(bloomFns[it.id]) bloomFns[it.id](ctx, size*0.5, cy, size*0.30, it.hue, it.sat, it.light);
+
+      var ey = p.ey + H/2, sy = p.sy + H/2;
+      it.line.setAttribute('d', 'M' + p.sx.toFixed(1) + ' ' + sy.toFixed(1) +
+        'L' + p.ex.toFixed(1) + ' ' + ey.toFixed(1) +
+        'L' + p.tx.toFixed(1) + ' ' + ey.toFixed(1));
+      it.dot.setAttribute('cx', p.sx.toFixed(1));
+      it.dot.setAttribute('cy', sy.toFixed(1));
+
+      it.lab.setAttribute('data-side', p.side > 0 ? 'r' : 'l');
+      it.lab.style.top = (ey - p.lh/2) + 'px';
+      it.lab.style.left = (p.side > 0 ? p.tx + 8 : p.tx - 8 - labW) + 'px';
+    });
+  }
+
+  function renderRing(){ buildRing(); layoutRing(); }
 
   /* ── The three cards' previews ──
      Every card runs the same three slide loop: two steps from its own flow on
@@ -1652,6 +1870,7 @@
 
   function renderAll(){
     setTimeout(renderAllFlowers, 120);
+    setTimeout(renderRing, 140);
     setTimeout(function(){ renderCardShows(); initFolding(); }, 200);
   }
 
