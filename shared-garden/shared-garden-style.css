@@ -1,3 +1,43 @@
+/* ── Fraunces, a real variable font, finally present ──
+   These pages spent their whole life falling back to Georgia, because the two
+   Mauritius files the old @font-face rules named were never in the repo. This
+   one is here. It is ONE family with a variable weight axis from 100 to 900,
+   so a semibold genuinely exists and `font-weight: 600` is no longer just bold.
+   The italic is a second face on the same family, so `font-style: italic` picks
+   it up on its own.
+   SOFT 50 rounds the terminals, which is the friendliness the font was chosen
+   for; WONK stays 0, since its slanted alternates are charming in a wordmark
+   and distracting in a paragraph. Both are set on the heading rules, so body
+   text in Arial is untouched. */
+@font-face {
+  font-family: 'Fraunces';
+  src: url('../Fraunces.ttf') format('truetype');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Fraunces';
+  src: url('../Fraunces-Italic.ttf') format('truetype');
+  font-weight: 100 900;
+  font-style: italic;
+  font-display: swap;
+}
+/* ── Serif headings, at NORMAL weight ──
+   These pages went to Arial for a turn and came back. The serif is the landing
+   page's, `'Fraunces', 'Georgia', serif`, so all four pages match
+   again. What is different is the weight: every heading here is normal, not
+   700, because at 700 Georgia comes out thick and the wordmark's lighter
+   setting was the one that read as simple. **The landing page keeps 700**, so
+   its 61px hero does not go thin against a full sky. Buttons stay 700
+   everywhere; that is a separate rule.
+   Fraunces is in the repo, so this is what actually renders now. */
+/* ── Shared type, one system across all four pages ──
+   Headings in the site's condensed serif, body in Arial. The two font files
+   are not in the repo, so every page falls back to Georgia today; the point of
+   declaring them here is that if they are ever added, the gardens and the
+   bouquet change with the landing page instead of drifting away from it. */
+
 html, body {
   margin: 0;
   padding: 0;
@@ -5,7 +45,7 @@ html, body {
 }
 
 body {
-  font-family: "Inter", sans-serif;
+  font-family: Arial, Helvetica, sans-serif;
   background: #cfeef0;
 }
 
@@ -14,14 +54,17 @@ body {
   background: snow;
   border: 1px solid #e6efed;
   border-radius: 16px;
-  padding: 20px 24px;
+  /* 34 at the top, not 20. A 40px title needs room above it or it reads as
+     sitting on the card's edge. The flower grid and the colour step set their
+     own padding inline and keep it. */
+  padding: 34px 28px 26px;
   box-shadow: 0 8px 28px rgba(0,0,0,0.06);
 }
 
 /* Input fields styling */
 textarea,
 input[type="text"] {
-  font-family: inter;
+  font-family: Arial, Helvetica, sans-serif;
   outline: none;
 }
 
@@ -62,16 +105,37 @@ input[type="text"]:focus {
 }
 
 
+/* The gap under the title and the gap under the line below it were both the
+   browser's own h2 and p margins, which put 33px between the title and the
+   line and only 18px between the line and the field under it. That reads as
+   the line belonging to nothing: it should sit close under its title and leave
+   room before the thing it introduces. Screens that set their own margins
+   inline, the select card among them, are unaffected. */
 .gg-title {
-  font-size: 40px;
-  font-weight: 700;
+/* Title to subtext ratio. Georgia has exactly TWO weights: measured, 300/400/500
+   all render identically and 600/700/800 all render identically, so a semibold
+   is not available and asking for 600 just gives bold again. A title gains its
+   presence from the RATIO instead. The hero runs about 3.4; these were 1.73 and
+   2.22, which is why they read flat. */
+  font-family: 'Fraunces', 'Georgia', serif;
+  font-size: 42px;
+  /* 600, a real semibold. This was the weight originally wanted and it was
+     not available while Georgia was the fallback, since Georgia renders
+     600 identically to 700. Fraunces has a variable axis, so it is now a
+     genuine weight between normal and the landing page's 700. */
+  font-weight: 600;
+  font-variation-settings: 'SOFT' 50, 'WONK' 0;
+  line-height: 1.15;
   text-align: center;
   color: #0f5132;
+  margin: 0 0 10px;
 }
 .gg-sub {
-  font-size: 18px;
+  font-size: 16px;
+  line-height: 1.5;
   text-align: center;
   color: #2c7a7b;
+  margin: 0 0 26px;
 }
 /* Buttons */
 .gg-btn {
@@ -80,6 +144,10 @@ input[type="text"]:focus {
   padding: 14px 18px;
   border-radius: 12px;
   font-size: 18px;
+  /* 700, matching every other button on the site. The landing page's buttons
+     are bold and these were weight 400, which made the gardens' primary action
+     read as the softest button anywhere in the project. */
+  font-weight: 700;
   border: none;
   cursor: pointer;
   width: 100%;
@@ -175,8 +243,10 @@ input[type="text"]:focus {
 
 #tips-card h3 {
   margin: 0 0 6px 0;
-  font-size: 18px;
-  font-weight: 700;
+  font-family: 'Fraunces', 'Georgia', serif;
+  font-size: 21px;
+  font-weight: 600;
+  font-variation-settings: 'SOFT' 50, 'WONK' 0;
   color: #0f5132;
 }
 
@@ -201,8 +271,8 @@ input[type="text"]:focus {
   border-radius: 8px;
   cursor: pointer;
   position: absolute;
-  top: 50px;
-  right: 12px;
+  top: 20px;   /* level with the Home link opposite it */
+  right: 66px;   /* clears the music button, which owns right 16 on every page */
   z-index: 20;
   pointer-events: auto;
   font-size: 14px;       /* new */
@@ -362,9 +432,14 @@ input[type="text"]:focus {
   }
 
 .gg-title { font-size: 32px; }
-  .gg-sub { font-size: 17px; line-height: 1.5; }
+  .gg-sub { font-size: 15px; line-height: 1.5; }
   .gg-btn { font-size: 18px; padding: 16px 20px; min-height: 52px; }
   .gg-back { font-size: 18px; padding: 16px; min-height: 48px; }
   .gg-card { padding: 28px 22px; }
   textarea, input[type="text"] { font-size: 16px; min-height: 48px; }
 }
+/* Card headings match the landing page's, so a garden does not read as a
+   different website from the page that introduces it. The sketches build these
+   with p5.dom and set no font-family, so they inherit from here. */
+.gg-card h1, .gg-card h2, .gg-card h3,
+.gg-auth-card h1, .gg-auth-card h2 { font-family: 'Fraunces', 'Georgia', serif; font-weight: 600; font-variation-settings: 'SOFT' 50, 'WONK' 0; letter-spacing: 0.01em; }

@@ -1,3 +1,52 @@
+/* ── Fraunces, a real variable font, finally present ──
+   These pages spent their whole life falling back to Georgia, because the two
+   Mauritius files the old @font-face rules named were never in the repo. This
+   one is here. It is ONE family with a variable weight axis from 100 to 900,
+   so a semibold genuinely exists and `font-weight: 600` is no longer just bold.
+   The italic is a second face on the same family, so `font-style: italic` picks
+   it up on its own.
+   SOFT 50 rounds the terminals, which is the friendliness the font was chosen
+   for; WONK stays 0, since its slanted alternates are charming in a wordmark
+   and distracting in a paragraph. Both are set on the heading rules, so body
+   text in Arial is untouched. */
+@font-face {
+  font-family: 'Fraunces';
+  src: url('../Fraunces.ttf') format('truetype');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Fraunces';
+  src: url('../Fraunces-Italic.ttf') format('truetype');
+  font-weight: 100 900;
+  font-style: italic;
+  font-display: swap;
+}
+/* ── Serif headings, at NORMAL weight ──
+   These pages went to Arial for a turn and came back. The serif is the landing
+   page's, `'Fraunces', 'Georgia', serif`, so all four pages match
+   again. What is different is the weight: every heading here is normal, not
+   700, because at 700 Georgia comes out thick and the wordmark's lighter
+   setting was the one that read as simple. **The landing page keeps 700**, so
+   its 61px hero does not go thin against a full sky. Buttons stay 700
+   everywhere; that is a separate rule.
+   Fraunces is in the repo, so this is what actually renders now. */
+/* ── Shared type, one system across all four pages ──
+   Headings in the site's condensed serif, body in Arial. The two font files
+   are not in the repo, so every page falls back to Georgia today; the point of
+   declaring them here is that if they are ever added, the gardens and the
+   bouquet change with the landing page instead of drifting away from it. */
+
+/* Gratitude Garden, Build a Bouquet
+   Colour for the wraps, cards and backdrops is NOT defined here. Those live
+   as HSL numbers in bouquet-sketch.js and are applied inline, so there is one
+   source of truth for each palette rather than three copies. */
+
+/* 17px, the same root the landing page sets. Every size on this page is in
+   rem, so on the browser default of 16px they all came out about 6 percent
+   smaller than the same text on the landing page. */
+html { font-size: 17px; }
 html, body { margin: 0; padding: 0; min-height: 100%; }
 
 :root {
@@ -8,15 +57,6 @@ html, body { margin: 0; padding: 0; min-height: 100%; }
   --yellow: #fbe484;
   --darkteal: #1d6466;
   --white:  #ffffff;
-
-  --blossom: #f4c6c6;
-  --golden:  #fbe484;
-  --skyhue:  #b7e4e7;
-  --lilac:   #c8c0e0;
-  --sage:    #a8d5ba;
-  --kraft:   #d9c3a3;
-  --rose:    #e8b4bc;
-  --snow:    #fff9e3;
 
   --shadow: 0 8px 28px rgba(29,100,102,0.12);
   --shadowlg: 0 16px 44px rgba(29,100,102,0.20);
@@ -51,12 +91,15 @@ body {
 
 /* ── Wordmark ── */
 .bq-wordmark {
-  text-align: center; padding: 68px 16px 6px;
-  font-family: Georgia, 'Times New Roman', serif;
+  display: flex; align-items: center; justify-content: center;
+  padding: 68px 16px 6px;
+  font-family: 'Fraunces', 'Georgia', serif;
+  font-weight: 600;
+  font-variation-settings: 'SOFT' 50, 'WONK' 0;
   font-size: 1.3rem; color: var(--darkteal); letter-spacing: 0.01em;
 }
-.bq-wordmark .dot { display:inline-block; width:8px; height:8px; background:var(--yellow); border:2px solid var(--teal); border-radius:50%; margin-right:8px; vertical-align:middle; }
-.bq-wordmark em { font-style: italic; color: var(--teal); }
+.bq-wordmark .dot { display:inline-block; width:8px; height:8px; background:var(--yellow); border:2px solid var(--teal); border-radius:50%; margin-right:8px; }
+.bq-wordmark em { font-style: italic; color: var(--teal); margin-left: 0.35em; }
 
 /* ── Progress bar ── */
 #bqProgress {
@@ -73,8 +116,7 @@ body {
   width: 26px; height: 26px; border-radius: 50%;
   background: var(--white); border: 2px solid rgba(29,100,102,0.22);
   display: flex; align-items: center; justify-content: center;
-  font-family: Arial, Helvetica, sans-serif; font-size: 12px; font-weight: 700;
-  color: rgba(29,100,102,0.4);
+  font-size: 12px; font-weight: 700; color: rgba(29,100,102,0.4);
   transition: all 0.25s;
 }
 .bq-step-dot.done .circ { background: var(--teal); border-color: var(--teal); color: var(--white); }
@@ -85,45 +127,254 @@ body {
 
 /* ── Step wrapper ── */
 #bqBuilder { padding: 22px 16px 70px; display: flex; justify-content: center; }
-.bq-step { display: none; width: 100%; max-width: 640px; animation: bqFadeUp 0.4s ease both; }
+/* ── One card, every step ──
+   The card used to be 640 on four steps, 900 on flowers and 1040 on wrap, so it
+   physically resized as you moved through the wizard and the Continue button
+   landed somewhere different each time. Measured: 722, 800, 843, 532, 539 and
+   532 tall.
+
+   **980 is not arbitrary.** It is the widest the card can be while the flower
+   grid still holds four columns: five columns need 646px of content and 980
+   leaves 620 after the padding, the 280px preview and the gap. Go wider and the
+   eight species fall 5 and 3, which is the thing CLAUDE.md warns about. */
+.bq-step { display: none; width: 100%; max-width: 980px; animation: bqFadeUp 0.4s ease both; }
 .bq-step.active { display: block; }
 @keyframes bqFadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
 .bq-card {
   background: var(--white); border: 1px solid #e6efed; border-radius: 22px;
   padding: 30px 28px 26px; box-shadow: var(--shadow);
+  /* Holds the card steady so the nav buttons stay put through the flow. The
+     two tallest steps, flowers and wrap, come out at 705; at a 560 floor the
+     other four sat at 560 and the Continue button jumped 145px between them.
+     At 700 every step lands within a few pixels and the slack falls between
+     the content and the buttons, which is where a wizard wants it. */
+  min-height: 700px;
+  display: flex; flex-direction: column;
 }
-.bq-title { font-family: Georgia, serif; font-size: 1.7rem; color: var(--darkteal); margin: 0 0 6px; text-align: center; }
-.bq-sub { font-size: 0.95rem; color: var(--teal); text-align: center; margin: 0 0 22px; line-height: 1.5; }
+/* the nav sits on the bottom edge of the card whatever the content above it */
+.bq-card > .bq-nav { margin-top: auto; }
+/* The three steps that are only a choice and a text field keep their content
+   narrow and centred rather than stretched across the full card, so a wider
+   card does not turn a letter into a banner. */
+.bq-step[data-step="card"] .bq-card > *:not(.bq-nav),
+.bq-step[data-step="letter"] .bq-card > *:not(.bq-nav),
+.bq-step[data-step="bg"] .bq-card > *:not(.bq-nav) { max-width: 620px; width: 100%; margin-left: auto; margin-right: auto; }
+/* The gardens' own sizes, but the right one. 40px is `.gg-title`, which the
+   gardens use only for a title standing on its own above everything, and it
+   was far too loud for a heading sitting at the top of a card. A heading
+   INSIDE a garden card is 26px (the personal garden's Your Flower h2) or 23px
+   (its prompt h3s), and that is what a bouquet step heading is. The line under
+   it is 15px: the personal garden runs a 13px line under a 23px heading, and
+   scaled to a 26px title that is 15. At `.gg-sub`'s own 18px it was almost as
+   large as the title above it. */
+/* Title to subtext ratio. Georgia has exactly TWO weights: measured, 300/400/500
+   all render identically and 600/700/800 all render identically, so a semibold
+   is not available and asking for 600 just gives bold again. A title gains its
+   presence from the RATIO instead. The hero runs about 3.4; these were 1.73 and
+   2.22, which is why they read flat. */
+.bq-title { font-family: 'Fraunces', 'Georgia', serif; font-size: 28px; font-weight: 600; font-variation-settings: 'SOFT' 50, 'WONK' 0; line-height: 1.2; color: var(--darkteal); margin: 0 0 6px; text-align: center; letter-spacing: 0.01em; }
+.bq-sub { font-size: 13px; color: var(--teal); text-align: center; margin: 0 0 22px; line-height: 1.5; }
+@media (max-width: 768px) { .bq-title { font-size: 24px; } .bq-sub { font-size: 12px; } }
+
+/* ── Step 1 layout: grid of flowers beside a live preview ── */
+.bq-pick-layout { display: grid; grid-template-columns: minmax(0, 1fr) 280px; gap: 24px; align-items: start; }
+/* The wrap step is the one whose left column is itself two columns. Left on the
+   shared width its sub columns came out at 140px, which rendered the paper
+   swatches at 35 square and the sliders at 106 wide. The card widens and the
+   preview narrows on this step only. */
+/* the wrap step is the one whose left side is itself two columns; it takes
+   the same 980 card and the same 280 preview as everything else */
+@media (max-width: 780px) {
+  .bq-pick-layout { grid-template-columns: 1fr; }
+  .bq-preview-col { order: -1; }
+  .bq-card { min-height: 0; }
+}
+
+/* A column, not a bare box. The preview used to be the one thing on the step
+   with no label above it, so with `align-items: start` its frame began level
+   with the picker's LABEL rather than with the picker's first tile and rode
+   about 20px high. Giving it the same label lines the two boxes up and says
+   what it is. */
+.bq-preview-col { position: sticky; top: 16px; display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.bq-preview-holder {
+  background: var(--cream); border: 1px solid #e6efed; border-radius: 18px;
+  padding: 10px; display: flex; align-items: center; justify-content: center;
+  min-height: 200px;
+  /* the drag hint is pinned inside this box now, so it needs a containing block */
+  position: relative;
+}
+.bq-preview-holder canvas { width: 100%; max-width: 300px; margin: 0 auto; display: block; }
+.bq-preview-empty { font-size: 0.82rem; color: rgba(29,100,102,0.6); text-align: center; line-height: 1.5; margin: 0; padding: 30px 14px; }
+
+/* ── The wrapping paper controls ──
+   Colour first, then pattern, because the colour is what decides whether the
+   flowers read against the paper and the pattern is a finish on top of it. The
+   check line is the point of the whole rebuild: nine fixed papers all collided
+   with several flowers and the sender could not see it, so now the sender sets
+   the colour and is told when it clashes. */
+/* Colour on the left, pattern on the right. Stacked, the step ran well past a
+   screen: nine swatches, three sliders and six pattern tiles in one column. */
+/* 1.25 rather than 1.6, because the sliders moved to the right and the two
+   columns have to come out roughly level: the paper box is a label, three rows
+   of swatches and the check line, the pattern box a label, two rows of tiles
+   and three sliders. Measured at 1.25 they are 383 and 360 against 391 and 558
+   at 1.6, and the material tiles go from 69px to 81. */
+/* `stretch`, not `start`. The left box's height follows how many lines the
+   check message wraps to, so at `start` the two columns lined up only by
+   coincidence: on a paper that passes the message is one line, the box ended
+   at 660 and the ribbon slider hung 21px below it. Stretching means the cream
+   box always ends level with the last slider whichever column is taller. */
+.bq-wrap-controls { display: grid; grid-template-columns: minmax(0,1.25fr) minmax(0,1fr); gap: 18px; align-items: stretch; }
+/* every picker on every step gets the same small label above it, so the six
+   steps read as one form rather than six screens */
+.bq-pattern-col, .bq-pick-col { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+/* Three by two, not two by three. The sliders sit under this grid now, so a
+   third row of tiles pushed the whole column to 558px against the paper box's
+   391 and took the card past its 700 min-height, which is the one thing every
+   step was unified to hold. */
+.bq-wrap-grid { grid-template-columns: repeat(3, 1fr) !important; gap: 10px; }
+@media (max-width: 720px) {
+  /* one column on a phone, where two would leave every swatch too small to read */
+  .bq-wrap-controls { grid-template-columns: 1fr; }
+  /* already three by two above, and it stays that way here */
+  .bq-wrap-grid { grid-template-columns: repeat(3, 1fr) !important; }
+}
+/* Nine again, three columns, exactly as the papers always were, but every one
+   measured rather than picked by eye. A swatch only sets the sliders. */
+/* twelve papers, four columns by three */
+.bq-paper-grid { grid-template-columns: repeat(4, 1fr) !important; gap: 9px; }
+.bq-paper-grid .bq-swatch-label { font-size: 0.68rem; }
+.bq-paper-colour {
+  background: var(--cream); border: 1px solid #e6efed; border-radius: 14px;
+  padding: 14px 16px 12px; display: flex; flex-direction: column; gap: 10px;
+}
+/* The controls must not end flush against the nav. The card is min-height 700
+   with the nav on `margin-top: auto`, so on a short step the auto margin holds
+   the buttons well clear, but the wrap step fills the card and the paper box
+   came to rest directly on them. */
+.bq-wrap-controls { margin-bottom: 18px; }
+.bq-control { display: flex; flex-direction: column; gap: 5px; }
+.bq-control-label {
+  font-family: Arial, Helvetica, sans-serif; font-size: 0.76rem; font-weight: 700;
+  color: var(--darkteal); letter-spacing: 0.02em;
+}
+/* The three sliders are one group under one heading. Left as three peers of
+   the Material label above them, "Or mix your own" sat directly under the
+   material tiles and read as though it were about the material. The heading
+   is the picker label; the three inside it are quieter, so the column has one
+   level of hierarchy rather than four labels of equal weight. */
+.bq-slider-group { display: flex; flex-direction: column; gap: 8px; margin-top: 4px; }
+.bq-control-sub {
+  font-family: Arial, Helvetica, sans-serif; font-size: 0.7rem; font-weight: 400;
+  color: rgba(29,100,102,0.85); letter-spacing: 0.02em;
+}
+/* the same track the flower tiles use, so one control reads one way */
+.bq-light-slider {
+  -webkit-appearance: none; appearance: none; width: 100%; height: 10px;
+  border-radius: 50px; outline: none; cursor: pointer;
+  background: linear-gradient(90deg, #24303a 0%, #8fa0ab 45%, #ffffff 100%);
+}
+.bq-light-slider::-webkit-slider-thumb {
+  -webkit-appearance: none; appearance: none; width: 20px; height: 20px;
+  border-radius: 50%; background: #fff; border: 2px solid var(--teal); cursor: pointer;
+}
+.bq-light-slider::-moz-range-thumb {
+  width: 20px; height: 20px; border-radius: 50%; background: #fff;
+  border: 2px solid var(--teal); cursor: pointer;
+}
+/* Two lines reserved, not one. A passing paper's message is one line and a
+   warning's is two, so at `min-height: 1.45em` the whole block grew and shrank
+   by 21px every time a swatch was clicked, which is visible movement directly
+   under the cursor doing the clicking. */
+.bq-wrap-check {
+  font-family: Arial, Helvetica, sans-serif; font-size: 0.78rem; line-height: 1.45;
+  margin: 2px 0 0; min-height: 2.9em;
+}
+.bq-wrap-check.ok { color: #1d6466; }
+.bq-wrap-check.warn { color: #8a4116; }
+.bq-wrap-fix {
+  background: none; border: none; padding: 0; cursor: pointer;
+  font-family: inherit; font-size: inherit; font-weight: 700;
+  color: #8a4116; text-decoration: underline;
+}
 
 /* ── Flower grid ── */
-.bq-flower-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
+.bq-flower-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(118px, 1fr)); gap: 14px; }
+
 .bq-flower-tile {
   background: var(--cream); border: 3px solid transparent; border-radius: 16px;
-  padding: 10px 10px 12px; cursor: pointer; text-align: center;
+  padding: 10px 12px 12px; cursor: pointer; text-align: center;
   display: flex; flex-direction: column; align-items: center; gap: 4px;
   transition: border-color 0.15s, transform 0.15s, box-shadow 0.15s;
   position: relative;
 }
 .bq-flower-tile:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(29,100,102,0.12); }
 .bq-flower-tile.picked { border-color: var(--teal); background: var(--lightsky); }
-.bq-flower-tile canvas { width: 100px; height: 84px; display: block; }
+.bq-flower-tile canvas { width: 100px; max-width: 100%; height: 84px; display: block; margin: 0 auto; }
 .bq-flower-tile .fname { font-weight: 700; font-size: 0.95rem; color: var(--darkteal); }
-.bq-flower-tile .fmeaning { font-size: 0.72rem; color: var(--teal); text-transform: uppercase; letter-spacing: 0.03em; }
+/* Two lines are reserved for the meaning whatever the flower, so every tile is
+   the same height and the grid stays aligned. On a narrow phone the longer
+   meanings wrap and the shorter ones do not. The flower tiles carry the name
+   and the meaning only, as the shared garden's do; the three line blurb that
+   used to sit under them made the picking screen far taller than it needed to
+   be. `.fblurb` still serves the foliage tiles. */
+.bq-flower-tile .fmeaning { font-size: 0.72rem; color: var(--teal); text-transform: uppercase; letter-spacing: 0.03em; line-height: 1.25; min-height: 2.5em; display: flex; align-items: center; justify-content: center; }
 .bq-flower-tile .fblurb { font-size: 0.76rem; color: rgba(29,100,102,0.75); line-height: 1.35; margin-top: 2px; }
-.bq-check {
-  position: absolute; top: 8px; right: 8px; width: 20px; height: 20px; border-radius: 50%;
-  background: var(--teal); color: var(--white); display: none;
-  align-items: center; justify-content: center; font-size: 12px; font-weight: 900;
+
+/* Per flower colour slider. Hidden until that flower is in the bouquet, so
+   an untouched grid stays as calm as it was with one global control. */
+.bq-tile-hue {
+  width: 100%; margin-top: 10px; padding: 0 2px; align-self: stretch;
+  visibility: hidden; pointer-events: none;
 }
-.bq-flower-tile.picked .bq-check { display: flex; }
+.bq-tile-hue.on { visibility: visible; pointer-events: auto; }
+.bq-tile-hue .gg-hue-slider { height: 8px; }
+.bq-tile-hue .gg-hue-slider::-webkit-slider-thumb { width: 18px; height: 18px; border-width: 2.5px; margin-top: -5px; }
+.bq-tile-hue .gg-hue-slider::-moz-range-thumb { width: 18px; height: 18px; border-width: 2.5px; }
+.bq-tile-hue .gg-hue-slider::-moz-range-track { height: 8px; }
+
+.bq-visually-hidden {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+
+.bq-count-badge {
+  position: absolute; top: 8px; right: 8px; width: 22px; height: 22px; border-radius: 50%;
+  background: var(--teal); color: var(--white); display: none;
+  align-items: center; justify-content: center; font-size: 12px; font-weight: 700;
+}
+
+/* ── Quantity stepper ── */
+.bq-stepper { display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 8px; }
+.bq-step-btn {
+  width: 28px; height: 28px; border-radius: 50%; border: 1.5px solid var(--teal);
+  background: var(--white); color: var(--darkteal); font-size: 15px; font-weight: 700;
+  line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center;
+  transition: background 0.15s, opacity 0.15s;
+}
+.bq-step-btn:hover:not(:disabled) { background: var(--sky); }
+.bq-step-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+.bq-step-n { min-width: 16px; font-weight: 700; font-size: 0.95rem; color: var(--darkteal); }
 
 .bq-count-note { text-align: center; font-size: 0.85rem; color: var(--teal); margin-top: 16px; font-weight: 700; }
+/* only shown once there is a bouquet to rearrange, since it is nonsense advice
+   against an empty holder */
+/* above the preview, so it is read before the bouquet rather than found after
+   it, and only once there is a bouquet to rearrange */
+/* Inside the frame, across the top, over the empty space above the bouquet.
+   The bouquet is drawn in a 400 by 500 box and paints from about a fifth of
+   the way down, so this sits on canvas the bouquet never reaches and covers
+   nothing. z-index 2 puts it over the canvas rather than under it. */
+.bq-drag-hint {
+  position: absolute; top: 10px; left: 10px; right: 10px; z-index: 2;
+  text-align: center; font-size: 0.76rem; color: rgba(29,100,102,0.72);
+  line-height: 1.4; margin: 0; pointer-events: none; display: none;
+}
+.bq-drag-hint.on { display: block; }
 .bq-count-note.ok { color: var(--darkteal); }
 
 /* ── Hue slider (matches the garden apps' hue control) ── */
-.bq-hue-control { margin-top: 20px; }
-.bq-hue-control label { display: block; font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; color: var(--teal); margin-bottom: 10px; line-height: 1.4; }
 .gg-hue-slider {
   -webkit-appearance: none; appearance: none; width: 100%;
   height: 10px; border-radius: 999px;
@@ -139,50 +390,41 @@ body {
 .gg-hue-slider::-moz-range-track { height: 10px; border-radius: 999px; background: transparent; }
 .gg-hue-slider::-moz-range-thumb { width: 22px; height: 22px; border-radius: 50%; background: var(--white); border: 3px solid var(--darkteal); box-shadow: 0 0 4px rgba(0,0,0,0.35); cursor: pointer; }
 
-/* ── Swatch grids (wrap / card / background) ── */
+/* ── Swatch grids (wrap / card / backdrop) ── */
 .bq-swatch-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
 .bq-swatch {
   aspect-ratio: 1; border-radius: 14px; border: 3px solid transparent; cursor: pointer;
-  position: relative; transition: border-color 0.15s, transform 0.15s;
-  box-shadow: inset 0 0 0 1px rgba(29,100,102,0.08);
+  position: relative; overflow: hidden; transition: border-color 0.15s, transform 0.15s;
+}
+/* The pale swatches had no edge at all. White is #f8f8f7 on the cream box's
+   #fff9e3, which is 1.01:1, and the ring this replaces was 0.08 alpha, so it
+   measured 1.06:1 against the tile it was supposed to outline. Newsprint was
+   1.25 and Cellophane 1.17, and Snow on the card grid and Cream on the
+   backdrop grid are the same colour as the page behind them.
+
+   It has to be a pseudo element and not the ring it replaces: the paper and
+   material swatches carry a `.bq-swatch-canvas` at `inset: 0`, and a child
+   paints over an inset box-shadow. 0.28 was picked by measuring both sides,
+   1.53:1 against a White tile and 1.55:1 against the cream box, while staying
+   at 1.21:1 on the Black tile so it does not shout on the dark papers. The
+   check badge sits at z-index 2 and stays above it. */
+.bq-swatch::after {
+  content: ""; position: absolute; inset: 0; z-index: 1; pointer-events: none;
+  border-radius: inherit; box-shadow: inset 0 0 0 1px rgba(29,100,102,0.28);
 }
 .bq-swatch:hover { transform: translateY(-2px); }
+.bq-swatch:focus-visible { outline: 3px solid var(--darkteal); outline-offset: 2px; }
 .bq-swatch.picked { border-color: var(--darkteal); }
-.bq-swatch .bq-check { top: 6px; right: 6px; width: 18px; height: 18px; font-size: 11px; background: var(--darkteal); }
+.bq-swatch-canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.bq-check {
+  position: absolute; top: 6px; right: 6px; width: 20px; height: 20px; border-radius: 50%;
+  background: var(--darkteal); color: var(--white); display: none;
+  align-items: center; justify-content: center; z-index: 2;
+}
 .bq-swatch.picked .bq-check { display: flex; }
 .bq-swatch-label { text-align: center; font-size: 0.68rem; margin-top: 6px; color: var(--teal); font-weight: 700; }
 .bq-swatch-item { display: flex; flex-direction: column; }
-@media (max-width: 480px) { .bq-swatch-grid { grid-template-columns: repeat(4, 1fr); gap: 8px; } }
-
-/* wrap paper patterns */
-.wrap-blossom { background-color:#f4c6c6; background-image: radial-gradient(circle, rgba(255,255,255,0.65) 18%, transparent 19%); background-size: 16px 16px; }
-.wrap-golden  { background-color:#fbe484; background-image: repeating-linear-gradient(45deg,#fbe484,#fbe484 8px,#f3d456 8px,#f3d456 16px); }
-.wrap-sky     { background-color:#b7e4e7; background-image: linear-gradient(90deg, rgba(255,255,255,.55) 50%, transparent 50%), linear-gradient(rgba(255,255,255,.55) 50%, transparent 50%); background-size: 11px 11px; }
-.wrap-lilac   { background-color:#c8c0e0; background-image: repeating-radial-gradient(circle at 50% 0, #e2ddf1 0 6px, #c8c0e0 6px 13px); background-size: 16px 16px; }
-.wrap-sage    { background-color:#a8d5ba; background-image: repeating-linear-gradient(45deg, rgba(255,255,255,0.30) 0 2px, transparent 2px 7px), repeating-linear-gradient(-45deg, rgba(0,0,0,0.07) 0 2px, transparent 2px 7px); }
-.wrap-kraft   { background-color:#d9c3a3; background-image: repeating-linear-gradient(0deg, rgba(120,90,50,0.08) 0 1px, transparent 1px 5px), repeating-linear-gradient(90deg, rgba(120,90,50,0.06) 0 1px, transparent 1px 8px); }
-.wrap-rose    { background-color:#e8b4bc; background-image: radial-gradient(circle, #fff 2px, transparent 2.5px); background-size: 16px 16px; background-position: 0 0, 8px 8px; }
-.wrap-snow    { background-color:#fff9e3; background-image: repeating-linear-gradient(135deg, rgba(29,100,102,0.10) 0 3px, transparent 3px 12px); }
-
-/* card colors (solid) */
-.card-blossom { background:#f4c6c6; }
-.card-golden  { background:#fbe484; }
-.card-sky     { background:#b7e4e7; }
-.card-lilac   { background:#c8c0e0; }
-.card-sage    { background:#a8d5ba; }
-.card-kraft   { background:#d9c3a3; }
-.card-rose    { background:#e8b4bc; }
-.card-snow    { background:#fff9e3; }
-
-/* backdrop gradients */
-.bg-blossom { background: linear-gradient(160deg,#fdeef0 0%,#f4c6c6 140%); }
-.bg-golden  { background: linear-gradient(160deg,#fffbe9 0%,#fbe484 140%); }
-.bg-sky     { background: linear-gradient(160deg,#eafbfb 0%,#b7e4e7 140%); }
-.bg-lilac   { background: linear-gradient(160deg,#f2effa 0%,#c8c0e0 140%); }
-.bg-sage    { background: linear-gradient(160deg,#eef9f1 0%,#a8d5ba 140%); }
-.bg-kraft   { background: linear-gradient(160deg,#f8f1e4 0%,#d9c3a3 140%); }
-.bg-rose    { background: linear-gradient(160deg,#fbeef0 0%,#e8b4bc 140%); }
-.bg-snow    { background: linear-gradient(160deg,#fffef8 0%,#fff9e3 140%); }
+@media (max-width: 480px) { .bq-swatch-grid { gap: 8px; } }
 
 /* ── Letter step ── */
 .bq-field { margin-bottom: 16px; }
@@ -193,7 +435,7 @@ body {
   outline: none; background: var(--cream); color: var(--darkteal);
 }
 .bq-field input[type="text"]:focus, .bq-field textarea:focus { border-color: var(--teal); box-shadow: 0 0 0 3px rgba(66,146,136,0.15); }
-.bq-field textarea { min-height: 120px; resize: vertical; line-height: 1.5; font-family: Georgia, serif; font-style: italic; }
+.bq-field textarea { min-height: 120px; resize: vertical; line-height: 1.5; font-family: 'Fraunces', 'Georgia', serif; font-style: italic; }
 .bq-charcount { text-align: right; font-size: 0.72rem; color: rgba(29,100,102,0.55); margin-top: 4px; }
 
 /* ── Nav buttons ── */
@@ -213,66 +455,43 @@ body {
 .bq-btn-ghost { background: var(--lightsky); color: var(--darkteal); flex: 0 0 auto; }
 .bq-btn-ghost:hover { background: var(--sky); }
 
-/* ── Reveal stage ── */
+/* ── Reveal stage ──
+   The bouquet, wrapper and bow are all painted on the one canvas, so the
+   stage only has to hold the canvas and the little card tag. */
 #bqRevealWrap { display: none; min-height: 100vh; padding: 70px 16px 60px; transition: background 0.6s ease; }
 #bqRevealWrap.active { display: block; }
 
 .bq-reveal-inner { max-width: 480px; margin: 0 auto; text-align: center; }
-.bq-reveal-heading { font-family: Georgia, serif; font-size: 1.5rem; color: var(--darkteal); margin-bottom: 4px; }
+.bq-reveal-heading { font-family: 'Fraunces', 'Georgia', serif; font-size: 26px; font-weight: 600; font-variation-settings: 'SOFT' 50, 'WONK' 0; color: var(--darkteal); margin-bottom: 4px; }
 .bq-reveal-sub { font-size: 0.9rem; color: rgba(29,100,102,0.7); margin-bottom: 10px; }
 
-.bq-stage { position: relative; width: 100%; max-width: 400px; height: 420px; margin: 0 auto; }
+.bq-stage { position: relative; width: 100%; max-width: 400px; margin: 0 auto; }
 
-#bouquetCanvas { position: absolute; left: 50%; bottom: 130px; transform: translateX(-50%); z-index: 3; opacity: 0; transition: opacity 0.8s ease 0.5s, transform 0.8s ease 0.5s; }
-.bq-stage.revealed #bouquetCanvas { opacity: 1; transform: translateX(-50%) translateY(0); }
+#bouquetCanvas {
+  display: block; width: 100%;
+  opacity: 0; transform: translateY(16px);
+  transition: opacity 0.8s ease 0.15s, transform 0.8s cubic-bezier(.2,.8,.3,1) 0.15s;
+  filter: drop-shadow(0 10px 26px rgba(29,100,102,0.20));
+}
+.bq-stage.revealed #bouquetCanvas { opacity: 1; transform: translateY(0); }
 
-.bq-wrap-cone {
-  position: absolute; left: 50%; bottom: 0; transform: translateX(-50%) translateY(40px); z-index: 4;
-  width: 220px; height: 190px;
-  clip-path: polygon(38% 0%, 62% 0%, 100% 100%, 0% 100%);
-  box-shadow: 0 10px 26px rgba(29,100,102,0.22);
-  opacity: 0;
-  transition: opacity 0.6s ease 0.15s, transform 0.6s cubic-bezier(.2,.8,.3,1) 0.15s;
-}
-.bq-stage.revealed .bq-wrap-cone { opacity: 1; transform: translateX(-50%) translateY(0); }
-
-/* asymmetric paper fold — right panel reads a touch darker, like the reference wraps.
-   The parent's clip-path already constrains this to the cone silhouette. */
-.bq-cone-fold {
-  position: absolute; inset: 0;
-  clip-path: polygon(50% 0%, 100% 0%, 100% 100%, 50% 100%);
-  background: linear-gradient(115deg, rgba(0,0,0,0.03) 0%, rgba(0,0,0,0.11) 55%, rgba(0,0,0,0.05) 100%);
-}
-.bq-cone-fold::after {
-  content: ""; position: absolute; left: -1px; top: 0; bottom: 0; width: 2px;
-  background: rgba(0,0,0,0.14);
-}
-
-.bq-cone-ribbon {
-  position: absolute; left: 50%; top: 8%; transform: translateX(-50%); z-index: 5;
-  width: 100%; height: 20px; background: rgba(255,255,255,0.001);
-}
-.bq-cone-ribbon::before {
-  content: ""; position: absolute; left: 0; right: 0; top: 0; height: 14px;
-  background: #f6e2b0; border-top: 1.5px solid #d9b877; border-bottom: 1.5px solid #d9b877;
-}
-.bq-bow { position: absolute; left: 50%; top: 3%; transform: translate(-50%, -35%) scale(0.001); width: 82px; height: auto; z-index: 6; opacity: 0; transition: transform 0.6s cubic-bezier(.34,1.56,.64,1) 0.9s, opacity 0.4s ease 0.9s; }
-.bq-stage.revealed .bq-bow { transform: translate(-50%, -35%) scale(1); opacity: 1; }
-
+/* In front of the canvas, beside the bouquet. It was briefly placed behind the
+   canvas so the paper would hide its edge and it would look tucked into the
+   wrap, but the canvas then swallowed every pointer event and the card could
+   not be tapped at all. Being usable beats looking tucked. */
 .bq-card-tag {
-  position: absolute; right: -6px; bottom: 150px; z-index: 7; width: 92px; height: 66px;
-  cursor: pointer; perspective: 900px; opacity: 0; transform: translateY(10px) rotate(6deg);
-  transition: opacity 0.6s ease 1.2s, transform 0.6s ease 1.2s;
+  position: absolute; right: 2%; bottom: 16%; z-index: 7; width: 96px; height: 68px;
+  cursor: pointer; opacity: 0; transform: translateY(10px) rotate(6deg);
+  transition: opacity 0.6s ease 0.9s, transform 0.6s ease 0.9s;
 }
 .bq-stage.revealed .bq-card-tag { opacity: 1; transform: translateY(0) rotate(6deg); }
-.bq-card-tag .flip-inner { position: relative; width: 100%; height: 100%; transition: transform 0.6s; transform-style: preserve-3d; }
-.bq-card-tag.open .flip-inner { transform: rotateY(180deg); }
+.bq-card-tag:focus-visible { outline: 3px solid var(--darkteal); outline-offset: 3px; }
 .bq-card-face {
-  position: absolute; inset: 0; backface-visibility: hidden; border-radius: 8px;
+  position: absolute; inset: 0; border-radius: 8px;
   border: 1px solid rgba(29,100,102,0.18); box-shadow: 0 4px 10px rgba(29,100,102,0.18);
-  display: flex; align-items: center; justify-content: center; font-size: 0.68rem; font-weight: 700; color: var(--darkteal); text-align: center; padding: 6px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+  font-size: 0.68rem; font-weight: 700; color: var(--darkteal); text-align: center; padding: 6px;
 }
-.bq-card-back { transform: rotateY(180deg); }
 
 #bqCardModal {
   position: fixed; inset: 0; background: rgba(29,100,102,0.35); backdrop-filter: blur(2px);
@@ -281,25 +500,423 @@ body {
 #bqCardModal.open { display: flex; }
 .bq-letter-card {
   width: 100%; max-width: 340px; border-radius: 16px; padding: 30px 26px; box-shadow: var(--shadowlg);
-  font-family: Georgia, serif; text-align: left; position: relative;
+  font-family: 'Fraunces', 'Georgia', serif; text-align: left; position: relative;
 }
 .bq-letter-card .to { font-size: 1.1rem; font-weight: 700; color: var(--darkteal); margin-bottom: 12px; }
 .bq-letter-card .msg { font-style: italic; color: rgba(29,66,66,0.88); line-height: 1.7; white-space: pre-wrap; margin-bottom: 18px; }
 .bq-letter-card .from { text-align: right; font-weight: 700; color: var(--darkteal); }
-.bq-letter-close { position: absolute; top: 10px; right: 12px; background: none; border: none; font-size: 1.2rem; cursor: pointer; color: var(--darkteal); }
+.bq-letter-close {
+  position: absolute; top: 10px; right: 12px; background: none; border: none;
+  cursor: pointer; color: var(--darkteal); padding: 4px; display: flex; line-height: 0;
+}
 
 .bq-share-panel { margin-top: 30px; display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
 .bq-copied-msg { font-size: 0.78rem; color: var(--teal); font-weight: 700; margin-top: 8px; height: 16px; }
+
+#bqBackNav { max-width: 340px; margin: 20px auto 0; }
 
 .bq-recipient-cta { margin-top: 34px; }
 .bq-recipient-cta p { font-size: 0.9rem; color: rgba(29,100,102,0.75); margin-bottom: 10px; }
 
 .bq-link-error { max-width: 440px; margin: 120px auto; text-align: center; }
-.bq-link-error h2 { font-family: Georgia, serif; color: var(--darkteal); }
+.bq-link-error h2 { font-family: 'Fraunces', 'Georgia', serif; font-weight: 600; font-variation-settings: 'SOFT' 50, 'WONK' 0; color: var(--darkteal); }
 .bq-link-error p { color: var(--teal); margin: 10px 0 20px; }
 
 @media (max-width: 480px) {
   .bq-card { padding: 24px 18px 20px; }
-  .bq-swatch-grid { grid-template-columns: repeat(4, 1fr); }
-  .bq-stage { height: 420px; }
+  .bq-card-tag { width: 82px; height: 60px; right: 0; }
+}
+
+
+/* ── Foliage step ──
+   Reuses the flower tile so the two picking screens feel like one family.
+   Five options read better as a wider grid than the flower grid's three. */
+.bq-foliage-grid { align-content: start; }
+.bq-foliage-tile { cursor: pointer; }
+.bq-foliage-tile .fblurb { min-height: 2.7em; }
+.bq-foliage-tile.picked { border-color: var(--teal); background: var(--lightsky); }
+.bq-foliage-tile:focus-visible { outline: 3px solid var(--teal); outline-offset: 2px; }
+
+
+/* ── Bloom tooltip ──
+   Sits over the bouquet canvas when a flower is hovered or tapped. Positioned
+   from JS, so only the look lives here. */
+/* The gardens pop a near white box with dark text when you hover a flower,
+   the same snow their cards are made of. This was dark teal with cream text,
+   which read as a different product's tooltip. */
+.bq-bloom-tip {
+  position: absolute; z-index: 5; pointer-events: none;
+  background: snow; color: var(--darkteal);
+  border: 1px solid #e6efed;
+  padding: 7px 11px; border-radius: 10px;
+  font-size: 0.78rem; line-height: 1.3; text-align: center;
+  box-shadow: 0 6px 18px rgba(29,100,102,0.20);
+  opacity: 0; transform: translateY(4px);
+  transition: opacity 0.14s, transform 0.14s;
+  max-width: 170px;
+}
+.bq-bloom-tip.on { opacity: 1; transform: none; }
+.bq-bloom-tip strong { display: block; font-weight: 700; }
+.bq-bloom-tip span { display: block; color: var(--teal); font-size: 0.72rem; }
+
+.bq-recipient-links { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
+
+/* the wrap step shows the swatches beside a live bouquet, so a paper can be
+   judged on the bouquet rather than on a 64px square */
+/* Nine papers, locked to three columns so they always sit as a tidy 3 by 3.
+   Left to auto-fit they reflowed into uneven rows as the column narrowed. */
+.bq-wrap-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); align-content: start; }
+
+
+/* ── The note preview ──
+   The last three steps had no preview at all, so the card colour, the words
+   and the backdrop were each chosen blind and only met at the reveal. Then it
+   was the note alone, which dropped the bouquet halfway through the wizard and
+   stopped the preview being a preview of the same object. It is the reveal
+   now: the bouquet, the card tucked into it, on the backdrop, and only what
+   the step is choosing changes.
+
+   `data-note-mode` says whether the card is shut or open. Shut on the card
+   colour and backdrop steps, open on the letter step, because the letter step
+   is the one where the words have to be readable while they are typed. */
+.bq-note-holder {
+  border: 1px solid #e6efed; border-radius: 18px;
+  padding: 12px; min-height: 200px; overflow: hidden;
+  display: flex; align-items: center; justify-content: center;
+  /* every holder paints the backdrop, so the ground stops changing under the
+     sender between step 4 and step 6 */
+  background: var(--cream);
+}
+.bq-note-stage { position: relative; width: 100%; max-width: 260px; margin: 0 auto; }
+/* A canvas carries an intrinsic size and a flex item may shrink below its
+   stated width, which is why this is a block in a positioned box rather than
+   anything flexed. */
+.bq-note-bouquet {
+  display: block; width: 100%;
+  filter: drop-shadow(0 8px 18px rgba(29,100,102,0.18));
+}
+
+/* The reveal's card tag at the scale this frame allows, and placed off the
+   same two percentages, so it tucks against the wrap here exactly as it does
+   there. In front of the canvas, never behind it. */
+.bq-mini-tag {
+  position: absolute; right: 2%; bottom: 16%; z-index: 3;
+  width: 62px; height: 44px; border-radius: 6px; transform: rotate(6deg);
+  border: 1px solid rgba(29,100,102,0.18); box-shadow: 0 3px 8px rgba(29,100,102,0.18);
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 0.52rem; font-weight: 700; color: var(--darkteal); text-align: center;
+}
+
+/* The open note covers most of the frame with the bouquet showing around it,
+   which is what tapping the card does on the reveal. Sized for reading rather
+   than to scale: at true scale the note is about a third of the frame and only
+   a few words of the message are legible while it is being written. */
+.bq-note {
+  /* Anchored to the BOTTOM of the stage, not centred on it. Centred and full
+     width the bouquet came out as two slivers above and below, which reads as
+     a note with an accident behind it. Anchored low it grows upward like a
+     card lifted out of the wrap, so the blooms stay visible above it: 94px of
+     bouquet with a normal message, and still 36px with the full 600
+     characters, where a centred note would have run off the top. 86 rather
+     than 100 wide so the paper shows down both sides too. */
+  position: absolute; left: 50%; bottom: 8%; transform: translateX(-50%);
+  z-index: 4; width: 86%; border-radius: 12px; padding: 16px 15px;
+  box-shadow: 0 10px 26px rgba(29,100,102,0.28);
+  font-family: 'Fraunces', 'Georgia', serif; text-align: left;
+  background: hsl(45, 40%, 97%);
+}
+.bq-note .to { font-size: 0.9rem; font-weight: 700; color: var(--darkteal); margin: 0 0 8px; }
+/* The message scrolls inside the note rather than growing it: a 600 character
+   letter would otherwise push the preview past the picker beside it and the
+   step would resize as it was typed, which is the exact thing the 980px card
+   was unified to stop. */
+.bq-note .msg {
+  font-style: italic; color: rgba(29,66,66,0.88); line-height: 1.6;
+  white-space: pre-wrap; word-break: break-word; margin: 0 0 10px;
+  font-size: 0.82rem; max-height: 170px; overflow-y: auto;
+}
+.bq-note .msg:empty::before { content: "Your message will appear here."; font-style: normal; color: rgba(29,100,102,0.5); }
+.bq-note .from { text-align: right; font-weight: 700; color: var(--darkteal); margin: 0; font-size: 0.84rem; }
+
+[data-note-mode="closed"] .bq-note { display: none; }
+[data-note-mode="open"] .bq-mini-tag { display: none; }
+
+/* ==========================================================================
+   THE FORK: a real bouquet, or a drawn one
+   ========================================================================== */
+
+/* Text and summary steps cap their own content, the same way the letter and
+   reveal steps do, so a 980px card never stretches a paragraph into a banner. */
+.bq-narrow { max-width: 620px; margin: 0 auto; }
+.bq-fineprint {
+  font-family: Arial, Helvetica, sans-serif; font-size: 0.74rem; line-height: 1.5;
+  color: rgba(29,100,102,0.62); margin: 14px 0 0;
+}
+
+/* ── The mode chooser ── */
+.bq-mode-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 18px; margin-top: 28px; }
+.bq-mode-tile {
+  display: flex; flex-direction: column; align-items: flex-start; gap: 10px;
+  text-align: left; padding: 28px 24px 24px;
+  background: var(--cream); border: 2px solid var(--sky); border-radius: 18px;
+  cursor: pointer; font-family: Arial, Helvetica, sans-serif;
+  transition: transform 0.18s, border-color 0.18s, box-shadow 0.18s, background 0.18s;
+}
+.bq-mode-tile:hover, .bq-mode-tile:focus-visible {
+  transform: translateY(-3px); border-color: var(--teal);
+  background: var(--white); box-shadow: var(--shadow); outline: none;
+}
+.bq-mode-tile:active { transform: translateY(-1px); }
+.bq-mode-art { color: var(--teal); display: block; }
+.bq-mode-name {
+  font-family: 'Fraunces', 'Georgia', serif; font-weight: 600; font-size: 1.35rem;
+  font-variation-settings: 'SOFT' 50, 'WONK' 0; color: var(--darkteal);
+}
+.bq-mode-blurb { font-size: 0.9rem; line-height: 1.55; color: #2f6260; }
+.bq-mode-meta { font-size: 0.74rem; font-weight: 700; letter-spacing: 0.02em; color: var(--teal); margin-top: auto; }
+
+/* ── The nine templates ──
+   The canvas is capped rather than filling its column. `renderBouquetCanvas`
+   takes its height from `clientWidth` at a fixed 5:4, so a 300px column would
+   paint a 375px tall bouquet and three rows of those run the card past 1300px.
+   At 140 the gallery lands near the 700px every other step holds. */
+.bq-template-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-top: 24px; }
+.bq-template-tile {
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  background: var(--cream); border: 1.5px solid #e6efed; border-radius: 16px;
+  padding: 12px 10px 14px; cursor: pointer; text-align: center;
+  transition: transform 0.18s, border-color 0.18s, box-shadow 0.18s, background 0.18s;
+}
+.bq-template-tile:hover, .bq-template-tile:focus-visible {
+  transform: translateY(-3px); border-color: var(--teal);
+  background: var(--white); box-shadow: var(--shadow); outline: none;
+}
+.bq-template-tile:active { transform: translateY(-1px); }
+.bq-template-canvas { display: block; width: 100%; max-width: 140px; margin: 0 auto; }
+.bq-template-body { display: flex; flex-direction: column; gap: 2px; }
+.bq-template-name {
+  font-family: 'Fraunces', 'Georgia', serif; font-weight: 600; font-size: 0.98rem;
+  font-variation-settings: 'SOFT' 50, 'WONK' 0; color: var(--darkteal);
+}
+.bq-template-blurb { font-family: Arial, Helvetica, sans-serif; font-size: 0.72rem; line-height: 1.4; color: #2f6260; }
+
+/* ── Physical: the city ── */
+.bq-city-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 24px; }
+.bq-city-tile {
+  display: flex; flex-direction: column; gap: 2px; padding: 16px 16px 14px;
+  background: var(--cream); border: 2px solid #e6efed; border-radius: 14px;
+  cursor: pointer; font-family: Arial, Helvetica, sans-serif;
+  transition: transform 0.18s, border-color 0.18s, box-shadow 0.18s, background 0.18s;
+}
+.bq-city-tile:hover, .bq-city-tile:focus-visible {
+  transform: translateY(-2px); border-color: var(--sky); background: var(--white);
+  box-shadow: var(--shadow); outline: none;
+}
+.bq-city-tile.picked { border-color: var(--teal); background: var(--white); }
+.bq-city-name {
+  font-family: 'Fraunces', 'Georgia', serif; font-weight: 600; font-size: 1.1rem;
+  font-variation-settings: 'SOFT' 50, 'WONK' 0; color: var(--darkteal);
+}
+.bq-city-area { font-size: 0.74rem; color: #2f6260; }
+.bq-city-ongkir { font-size: 0.8rem; font-weight: 700; color: var(--teal); margin-top: 6px; }
+.bq-city-when { font-size: 0.72rem; color: rgba(29,100,102,0.62); }
+
+/* ── Physical: the florist catalogue ──
+   The photo frame is 4:3 and sits where a real photograph will. While a
+   catalogue entry's `img` is null the frame paints a labelled placeholder, so
+   it reads as somewhere a picture goes rather than as a broken image. */
+.bq-shop-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-top: 24px; }
+.bq-shop-tile {
+  display: flex; flex-direction: column; overflow: hidden;
+  background: var(--cream); border: 2px solid #e6efed; border-radius: 16px;
+  cursor: pointer; font-family: Arial, Helvetica, sans-serif;
+  transition: transform 0.18s, border-color 0.18s, box-shadow 0.18s, background 0.18s;
+}
+.bq-shop-tile:hover, .bq-shop-tile:focus-visible {
+  transform: translateY(-3px); border-color: var(--sky); background: var(--white);
+  box-shadow: var(--shadow); outline: none;
+}
+.bq-shop-tile.picked { border-color: var(--teal); background: var(--white); }
+.bq-shop-photo {
+  aspect-ratio: 4 / 3; width: 100%;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;
+  color: rgba(29,100,102,0.55); font-size: 0.72rem; font-weight: 700; letter-spacing: 0.03em;
+}
+.bq-shop-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.bq-shop-body { display: flex; flex-direction: column; gap: 2px; padding: 12px 14px 14px; }
+.bq-shop-name {
+  font-family: 'Fraunces', 'Georgia', serif; font-weight: 600; font-size: 1.02rem;
+  font-variation-settings: 'SOFT' 50, 'WONK' 0; color: var(--darkteal);
+}
+.bq-shop-blurb { font-size: 0.74rem; line-height: 1.4; color: #2f6260; }
+.bq-shop-from { font-size: 0.72rem; color: rgba(29,100,102,0.62); margin-top: 4px; }
+.bq-shop-price { font-size: 0.92rem; font-weight: 700; color: var(--teal); margin-top: 6px; }
+
+/* ── Physical: the card, and the delivery form ── */
+.bq-phys-card {
+  background: hsl(45, 40%, 97%); border: 1px solid #e6efed; border-radius: 14px;
+  padding: 22px 20px; box-shadow: var(--shadow);
+  font-family: 'Fraunces', 'Georgia', serif; text-align: left; min-height: 200px;
+}
+.bq-phys-card .to { font-size: 0.95rem; font-weight: 700; color: var(--darkteal); margin: 0 0 10px; }
+.bq-phys-card .msg {
+  font-style: italic; color: rgba(29,66,66,0.88); line-height: 1.6; font-size: 0.9rem;
+  white-space: pre-wrap; word-break: break-word; margin: 0 0 12px; min-height: 84px;
+}
+.bq-phys-card .msg:empty::before { content: "Your card will read like this."; font-style: normal; color: rgba(29,100,102,0.45); }
+.bq-phys-card .from { text-align: right; font-weight: 700; color: var(--darkteal); margin: 0; font-size: 0.9rem; }
+
+.bq-form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 18px; margin-top: 22px; }
+.bq-field-wide { grid-column: 1 / -1; }
+/* the base field rule only names text and textarea, and this form adds two
+   more input types that have to look the same */
+.bq-field input[type="tel"], .bq-field input[type="date"] {
+  width: 100%; font-family: Arial, Helvetica, sans-serif; font-size: 1rem;
+  border: 1.5px solid var(--sky); border-radius: 12px; padding: 12px 14px;
+  outline: none; background: var(--cream); color: var(--darkteal);
+}
+.bq-field input[type="tel"]:focus, .bq-field input[type="date"]:focus {
+  border-color: var(--teal); box-shadow: 0 0 0 3px rgba(66,146,136,0.15);
+}
+#physAddress { min-height: 84px; }
+
+/* ── Physical: the mock checkout ── */
+.bq-pay-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 4px; }
+.bq-pay-tile {
+  display: flex; flex-direction: column; gap: 3px; padding: 14px 14px 13px;
+  background: var(--cream); border: 2px solid #e6efed; border-radius: 14px;
+  cursor: pointer; font-family: Arial, Helvetica, sans-serif;
+  transition: transform 0.18s, border-color 0.18s, box-shadow 0.18s, background 0.18s;
+}
+.bq-pay-tile:hover, .bq-pay-tile:focus-visible {
+  transform: translateY(-2px); border-color: var(--sky); background: var(--white); outline: none;
+}
+.bq-pay-tile.picked { border-color: var(--teal); background: var(--white); }
+.bq-pay-name { font-size: 0.92rem; font-weight: 700; color: var(--darkteal); }
+.bq-pay-note { font-size: 0.7rem; line-height: 1.35; color: #2f6260; }
+
+.bq-pay-panel { margin-top: 16px; opacity: 0; transform: translateY(-4px); transition: opacity 0.2s, transform 0.2s; }
+.bq-pay-panel.on { opacity: 1; transform: none; }
+.bq-pay-options { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
+.bq-pay-chip {
+  font-family: Arial, Helvetica, sans-serif; font-size: 0.8rem; font-weight: 700;
+  padding: 8px 14px; border-radius: 50px; cursor: pointer;
+  background: var(--lightsky); color: var(--darkteal); border: 1.5px solid transparent;
+  transition: background 0.15s, border-color 0.15s;
+}
+.bq-pay-chip:hover { background: var(--sky); }
+.bq-pay-chip.picked { border-color: var(--teal); background: var(--white); }
+
+.bq-qris { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.bq-qris-canvas {
+  display: block; width: 180px; height: 180px; border-radius: 10px;
+  border: 1.5px solid #e6efed; background: #fff;
+}
+.bq-va { display: flex; flex-direction: column; gap: 4px; }
+.bq-va-bank { font-size: 0.78rem; font-weight: 700; color: var(--teal); letter-spacing: 0.02em; }
+.bq-va-number {
+  font-family: 'Courier New', Courier, monospace; font-size: 1.35rem; font-weight: 700;
+  color: var(--darkteal); letter-spacing: 0.04em;
+}
+.bq-ewallet { display: flex; flex-direction: column; gap: 4px; }
+.bq-ew-name {
+  font-family: 'Fraunces', 'Georgia', serif; font-weight: 600; font-size: 1.2rem;
+  font-variation-settings: 'SOFT' 50, 'WONK' 0; color: var(--darkteal);
+}
+.bq-pay-hint { font-family: Arial, Helvetica, sans-serif; font-size: 0.76rem; line-height: 1.5; color: rgba(29,100,102,0.7); margin: 4px 0 0; }
+
+.bq-pay-summary {
+  background: var(--cream); border: 1px solid #e6efed; border-radius: 14px; padding: 16px 18px;
+  font-family: Arial, Helvetica, sans-serif;
+}
+.bq-pay-row { display: flex; justify-content: space-between; gap: 14px; font-size: 0.84rem; color: #2f6260; padding: 7px 0; }
+.bq-pay-row .v { font-weight: 700; color: var(--darkteal); white-space: nowrap; }
+.bq-pay-row.total { border-top: 1.5px solid var(--sky); margin-top: 6px; padding-top: 12px; font-size: 1rem; }
+.bq-pay-row.total .k { font-weight: 700; color: var(--darkteal); }
+
+/* ── Physical: the order ── */
+.bq-receipt {
+  background: var(--cream); border: 1px solid #e6efed; border-radius: 14px;
+  padding: 8px 18px; margin-top: 22px; font-family: Arial, Helvetica, sans-serif;
+}
+.bq-rr { display: flex; justify-content: space-between; gap: 16px; padding: 9px 0; font-size: 0.84rem; border-bottom: 1px solid rgba(29,100,102,0.08); }
+.bq-rr:last-child { border-bottom: none; }
+.bq-rr .k { color: #2f6260; flex: 0 0 auto; }
+.bq-rr .v { font-weight: 700; color: var(--darkteal); text-align: right; }
+.bq-receipt-card {
+  background: hsl(45, 40%, 97%); border: 1px solid #e6efed; border-radius: 14px;
+  padding: 20px 20px; margin-top: 14px; font-family: 'Fraunces', 'Georgia', serif;
+}
+.bq-receipt-card .to { font-size: 0.92rem; font-weight: 700; color: var(--darkteal); margin: 0 0 8px; }
+.bq-receipt-card .msg { font-style: italic; color: rgba(29,66,66,0.88); line-height: 1.6; font-size: 0.88rem; white-space: pre-wrap; word-break: break-word; margin: 0 0 10px; }
+.bq-receipt-card .from { text-align: right; font-weight: 700; color: var(--darkteal); margin: 0; font-size: 0.88rem; }
+
+/* ==========================================================================
+   A GARDEN CURSOR
+   ==========================================================================
+   A leaf at rest and a bloom over anything clickable, both inline SVG data
+   URIs so no image file is added. Every rule keeps its keyword fallback after
+   the comma, which is what renders if a browser refuses the SVG, and text
+   inputs are deliberately left alone: a caret is the one cursor that carries
+   real information about what a control does. */
+body {
+  cursor: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'><path d='M3.2 2.6c9.2.6 15.6 5.6 16.4 14.6C10.4 17 3.8 11.8 3.2 2.6z' fill='%231d6466'/><path d='M4.4 4c5.4 2.6 9.8 6.6 12.6 11.4' stroke='%23fff9e3' stroke-width='1.5' fill='none' stroke-linecap='round'/></svg>") 3 3, auto;
+}
+/* Every clickable thing takes the bloom. The CLASSES are listed as well as the
+   elements, and that is not belt and braces: `.bq-btn-outline` is a class rule
+   carrying `cursor: pointer`, which outranks a bare `button` selector, so the
+   buttons kept the system pointer until they were named here. Anything new that
+   sets its own `cursor: pointer` on a class has to be added to this list. */
+a, button, [role="button"],
+.bq-btn, .bq-btn-outline, .bq-btn-ghost, .bq-step-btn, .bq-wrap-fix, .bq-letter-close,
+.bq-swatch, .bq-flower-tile, .bq-foliage-tile, .bq-card-tag,
+.bq-mode-tile, .bq-template-tile, .bq-city-tile, .bq-shop-tile, .bq-pay-tile,
+.bq-pay-chip, .bq-step-dot {
+
+  cursor: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='26' height='26' viewBox='0 0 26 26'><g transform='translate(9 9)'><ellipse cx='0' cy='-5.4' rx='3.1' ry='4.6' fill='%23fbe484' stroke='%231d6466' stroke-width='1.1'/><ellipse cx='5.1' cy='-1.7' rx='3.1' ry='4.6' fill='%23fbe484' stroke='%231d6466' stroke-width='1.1' transform='rotate(72)'/><ellipse cx='3.2' cy='4.4' rx='3.1' ry='4.6' fill='%23fbe484' stroke='%231d6466' stroke-width='1.1' transform='rotate(144)'/><ellipse cx='-3.2' cy='4.4' rx='3.1' ry='4.6' fill='%23fbe484' stroke='%231d6466' stroke-width='1.1' transform='rotate(216)'/><ellipse cx='-5.1' cy='-1.7' rx='3.1' ry='4.6' fill='%23fbe484' stroke='%231d6466' stroke-width='1.1' transform='rotate(288)'/><circle r='2.6' fill='%23429288'/></g></svg>") 9 9, pointer;
+}
+/* The exceptions, and they are listed last on purpose so they win. A caret and
+   a grab handle both say something true about the control they are on, which a
+   decorative cursor would throw away. */
+input, textarea, select, .bq-field input, .bq-field textarea { cursor: auto; }
+input[type="range"], .gg-hue-slider, .bq-light-slider { cursor: grab; }
+input[type="range"]:active, .gg-hue-slider:active, .bq-light-slider:active { cursor: grabbing; }
+button:disabled, .bq-btn:disabled, .bq-btn-outline:disabled,
+.bq-btn-ghost:disabled, .bq-step-btn:disabled { cursor: not-allowed; }
+
+/* ==========================================================================
+   MOTION
+   ==========================================================================
+   Everything here moves only `transform` and `opacity`. The card's measured
+   heights, the 980px width and the 280px preview column are all load bearing,
+   so nothing in this block is allowed to change layout. */
+.bq-swatch, .bq-flower-tile, .bq-foliage-tile { transition: transform 0.15s, border-color 0.15s, box-shadow 0.15s; }
+.bq-swatch:active, .bq-flower-tile:active, .bq-foliage-tile:active { transform: scale(0.97); }
+.bq-btn:active:not(:disabled), .bq-btn-outline:active, .bq-btn-ghost:active { transform: translateY(0) scale(0.98); }
+.bq-step-dot { transition: color 0.25s; }
+.bq-step-dot .circ { transition: background 0.25s, color 0.25s, transform 0.25s; }
+.bq-step-dot.current .circ { transform: scale(1.12); }
+
+@media (prefers-reduced-motion: reduce) {
+  .bq-step { animation: none; }
+  .bq-mode-tile, .bq-template-tile, .bq-city-tile, .bq-shop-tile, .bq-pay-tile,
+  .bq-swatch, .bq-flower-tile, .bq-foliage-tile, .bq-btn, .bq-btn-outline, .bq-btn-ghost,
+  .bq-pay-panel, .bq-step-dot, .bq-step-dot .circ { transition: none; }
+  .bq-mode-tile:hover, .bq-template-tile:hover, .bq-city-tile:hover,
+  .bq-shop-tile:hover, .bq-pay-tile:hover { transform: none; }
+  .bq-swatch:active, .bq-flower-tile:active, .bq-foliage-tile:active { transform: none; }
+  .bq-pay-panel { opacity: 1; transform: none; }
+}
+
+/* ── Narrow screens ── */
+@media (max-width: 900px) {
+  .bq-mode-grid { grid-template-columns: 1fr; }
+  .bq-template-grid, .bq-city-grid, .bq-shop-grid { grid-template-columns: repeat(2, 1fr); }
+  .bq-pay-grid { grid-template-columns: 1fr; }
+  .bq-form-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 560px) {
+  .bq-template-grid, .bq-city-grid, .bq-shop-grid { grid-template-columns: 1fr; }
+  .bq-template-canvas { max-width: 160px; }
 }

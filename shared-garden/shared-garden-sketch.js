@@ -27,15 +27,21 @@ let saveBtn, tipsCard;
 
 const GARDEN_KEY = "community_garden_daily";
 
+/* The meanings are the personal garden's, word for word, since the two gardens
+   draw the same eight species and a flower cannot stand for one thing on one
+   page and something else on the other. Here you pick the species yourself, so
+   the meaning has to be visible while you are choosing rather than afterwards. */
 const speciesList = [
-{ id: "daisy", name: "Daisy" },
-{ id: "tulip", name: "Tulip" },
-{ id: "rose", name: "Rose" },
-{ id: "sunflower", name: "Sunflower" },
-{ id: "lily", name: "Lily" },
-{ id: "sakura", name: "Sakura" },
-{ id: "lotus", name: "Lotus" },
-{ id: "lavender", name: "Lavender" },
+{ id: "daisy", name: "Daisy", meaning: "Simplicity and joy" },
+{ id: "tulip", name: "Tulip", meaning: "Renewal & change" },
+{ id: "rose", name: "Rose", meaning: "Love & depth" },
+{ id: "sunflower", name: "Sunflower", meaning: "Hope & resilience" },
+{ id: "lily", name: "Lily", meaning: "Peace & restoration" },
+{ id: "sakura", name: "Sakura", meaning: "Reflection & presence" },
+{ id: "lotus", name: "Lotus", meaning: "Strength & rising" },
+/* Orchid and chrysanthemum are drawn by this sketch but deliberately absent
+   from `speciesList`, so they appear in no picker. See CLAUDE.md. */
+{ id: "lavender", name: "Lavender", meaning: "Calm & safety" },
 ];
 
 let shared;
@@ -69,16 +75,18 @@ tulip: 6,
 rose: 8,
 sunflower: 24,
 lily: 12,
-sakura: 5
+sakura: 5,
+orchid: 5,
+chrysanth: 18
 }[id] || 16;
 }
 
 function defaultSat(sp) {
-return { daisy: 45, tulip: 50, rose: 55, sunflower: 60, lily: 40, sakura: 40 }[sp] || 45;
+return { daisy: 45, tulip: 50, rose: 55, sunflower: 60, lily: 40, sakura: 40, lotus: 50, orchid: 50, chrysanth: 48 }[sp] || 45;
 }
 
 function defaultLight(sp) {
-return { daisy: 65, tulip: 60, rose: 55, sunflower: 65, lily: 70, sakura: 75 }[sp] || 65;
+return { daisy: 65, tulip: 60, rose: 55, sunflower: 65, lily: 70, sakura: 75, lotus: 70, orchid: 68, chrysanth: 72 }[sp] || 65;
 }
 
 function addFlower(text, name, species, hue) {
@@ -227,7 +235,9 @@ sunflower: { w: 0.45, h: 1.25 },
 rose:      { w: 0.60, h: 1.05 },
 lily:     { w: 0.70, h: 1.00 },
 tulip:     { w: 0.80, h: 1.10 },
-sakura:    { w: 0.75, h: 1.00 }
+sakura:    { w: 0.75, h: 1.00 },
+    orchid:    { w: 0.72, h: 1.00 },
+    chrysanth: { w: 0.60, h: 1.10 }
 }[species] || { w: 0.55, h: 1.10 });
 }
 
@@ -250,7 +260,7 @@ return h;
 
 /* --------------------- Overlay controls --------------------- */
 function drawOverlayControls() {
-  // Sway is always on — no controls needed
+  // Sway is always on, no controls needed
 }
 
 function findFlowerAt(px, py) {
@@ -406,17 +416,32 @@ line(x1, y1, x2, y2);
 }
 }
 
+/* The hero's cloud, not three circles.
+   index.html's hero draws a rounded bar with two circles sitting on it,
+   asymmetric, and the gardens drew a symmetric trio, so the same page carried
+   two different clouds. These are the hero's own proportions, averaged across
+   its three sizes and taken relative to the bar's width W:
+
+     bar     W wide, 0.269W tall, its top 0.19W down
+     bump 1  0.433W across, at 0.138W from the left, flush with the top
+     bump 2  0.314W across, at 0.456W from the left, 0.052W down
+
+   `c.size` stays the centre circle diameter it always was, so the stored
+   clouds do not change; W is 1.6 of it, which is the width the old trio
+   spanned. The alpha is the hero's 0.9, not the old 205. */
 function drawClouds() {
 noStroke();
 for (const c of clouds) {
 c.x += c.speed;
 if (c.x > width + 170) c.x = -170;
 
-fill(255, 255, 255, 205);
-const s = c.size;
-circle(c.x, c.y, s);
-circle(c.x + s * 0.4, c.y + s * 0.12, s * 0.75);
-circle(c.x - s * 0.4, c.y + s * 0.12, s * 0.75);
+fill(255, 255, 255, 230);
+const W = c.size * 1.6;
+const x = c.x - W / 2, y = c.y - W * 0.22;
+const bodyH = W * 0.269, b1 = W * 0.433, b2 = W * 0.314;
+rect(x, y + W * 0.19, W, bodyH, bodyH / 2);
+circle(x + W * 0.138 + b1 / 2, y + b1 / 2, b1);
+circle(x + W * 0.456 + b2 / 2, y + W * 0.052 + b2 / 2, b2);
 }
 }
 
@@ -692,6 +717,65 @@ pop();
 }
 
 // ===== LAVENDER BLOOM =====
+/* Phalaenopsis, face on. Three narrow sepals behind (one up, two down), two
+   broad petals in front, and the lip at the bottom in a deeper tone. The lip is
+   what makes it read as an orchid rather than a generic five petalled bloom.
+   It is a CENTRED bloom, unlike the lotus it replaces, so it needs none of
+   lotus's origin nudge or label offset. */
+function drawOrchidBloom(R, hue, sat, light) {
+noStroke();
+const Ro = R * 1.28;
+const lobe = (ang, len, wid, sa, li, al, pinch) => {
+push();
+rotate(ang + 90);
+fill(hue, sa, li, al);
+beginShape();
+vertex(0, 0);
+bezierVertex(wid, -len * (pinch || 0.22), wid, -len * 0.82, 0, -len);
+bezierVertex(-wid, -len * 0.82, -wid, -len * (pinch || 0.22), 0, 0);
+endShape(CLOSE);
+pop();
+};
+lobe(-90, Ro * 1.00, Ro * 0.31, sat * 0.72, light + 13, 0.92);
+lobe( 42, Ro * 0.94, Ro * 0.31, sat * 0.72, light + 13, 0.92);
+lobe(138, Ro * 0.94, Ro * 0.31, sat * 0.72, light + 13, 0.92);
+lobe(-40,  Ro * 0.95, Ro * 0.60, sat * 0.85, light + 19, 0.96, 0.30);
+lobe(-140, Ro * 0.95, Ro * 0.60, sat * 0.85, light + 19, 0.96, 0.30);
+lobe( 62, Ro * 0.44, Ro * 0.20, sat + 12, light - 8,  1);
+lobe(118, Ro * 0.44, Ro * 0.20, sat + 12, light - 8,  1);
+lobe( 90, Ro * 0.52, Ro * 0.26, sat + 18, light - 15, 1, 0.34);
+fill(hue, sat * 0.35, light + 26, 1);
+ellipse(0, Ro * 0.05, Ro * 0.13, Ro * 0.19);
+}
+
+/* Pompom chrysanthemum: concentric rings of short rounded petals, lightening
+   inward so it reads as a ball rather than a disc. A chrysanthemum is in the
+   same family as the daisy, so drawn as a single flat bloom the two tiles are
+   the same picture twice; the pompom is what keeps them apart. */
+function drawChrysanthBloom(R, hue, sat, light) {
+noStroke();
+const Rm = R * 1.12;
+const rings = [
+{ n: 18, r: 0.92, pw: 0.23, ph: 0.32, dl: -9, a: 0.95 },
+{ n: 16, r: 0.70, pw: 0.21, ph: 0.29, dl: -3, a: 1 },
+{ n: 12, r: 0.49, pw: 0.19, ph: 0.26, dl:  4, a: 1 },
+{ n: 8,  r: 0.27, pw: 0.17, ph: 0.23, dl: 10, a: 1 }
+];
+for (let ri = 0; ri < rings.length; ri++) {
+const ring = rings[ri];
+for (let i = 0; i < ring.n; i++) {
+push();
+/* each ring is offset, or the petals line up into spokes */
+rotate(i * (360 / ring.n) + ri * 11);
+fill(hue, sat, light + ring.dl, ring.a);
+ellipse(0, -Rm * ring.r, Rm * ring.pw, Rm * ring.ph);
+pop();
+}
+}
+fill(hue, sat * 0.6, light + 16, 1);
+circle(0, 0, Rm * 0.14);
+}
+
 function drawLavenderBloom(h, hue, sat, light) {
 push();
 noStroke();
@@ -756,6 +840,10 @@ drawTulipBloom(R, hue, sat, light);
 drawRoseBloom(R, hue, sat, light);
 } else if (f.species === "sunflower") {
 drawSunflowerBloom(R, hue, sat, light);
+} else if (f.species === "chrysanth") {
+drawChrysanthBloom(R, hue, sat, light);
+} else if (f.species === "orchid") {
+drawOrchidBloom(R, hue, sat, light);
 } else if (f.species === "sakura") {
 drawCherryBloom(R, hue, sat, light);
 } else if (f.species === "lily") {
@@ -1071,7 +1159,7 @@ return aBloomY - bBloomY;
 return layer;
 }
 
-// Bloomed stems — drawn BEFORE their hill so the hill hides the base
+// Bloomed stems, drawn BEFORE their hill so the hill hides the base
 function drawFlowersStemsOnly(layerName) {
 const layer = getLayerSorted(layerName);
 for (const f of layer) {
@@ -1084,7 +1172,7 @@ pop();
 }
 }
 
-// Growing sprouts — drawn BEFORE their hill so the hill hides the base
+// Growing sprouts, drawn BEFORE their hill so the hill hides the base
 function drawFlowersGrowingOnly(layerName) {
 const layer = getLayerSorted(layerName);
 for (const f of layer) {
@@ -1097,7 +1185,7 @@ pop();
 }
 }
 
-// Blooms — drawn AFTER their hill so they float above the landscape
+// Blooms, drawn AFTER their hill so they float above the landscape
 function drawFlowersBloomsOnly(layerName) {
 const layer = getLayerSorted(layerName);
 for (const f of layer) {
@@ -1427,6 +1515,59 @@ pg.pop();
 }
 
 // ===== LAVENDER PREVIEW =====
+function drawOrchidPreview(pg, R, hue, sat, light) {
+pg.push();
+pg.noStroke();
+const Ro = R * 1.28;
+const lobe = (ang, len, wid, sa, li, al, pinch) => {
+pg.push();
+pg.rotate(ang + 90);
+pg.fill(hue, sa, li, al);
+pg.beginShape();
+pg.vertex(0, 0);
+pg.bezierVertex(wid, -len * (pinch || 0.22), wid, -len * 0.82, 0, -len);
+pg.bezierVertex(-wid, -len * 0.82, -wid, -len * (pinch || 0.22), 0, 0);
+pg.endShape(pg.CLOSE);
+pg.pop();
+};
+lobe(-90, Ro * 1.00, Ro * 0.31, sat * 0.72, light + 13, 0.92);
+lobe( 42, Ro * 0.94, Ro * 0.31, sat * 0.72, light + 13, 0.92);
+lobe(138, Ro * 0.94, Ro * 0.31, sat * 0.72, light + 13, 0.92);
+lobe(-40,  Ro * 0.95, Ro * 0.60, sat * 0.85, light + 19, 0.96, 0.30);
+lobe(-140, Ro * 0.95, Ro * 0.60, sat * 0.85, light + 19, 0.96, 0.30);
+lobe( 62, Ro * 0.44, Ro * 0.20, sat + 12, light - 8,  1);
+lobe(118, Ro * 0.44, Ro * 0.20, sat + 12, light - 8,  1);
+lobe( 90, Ro * 0.52, Ro * 0.26, sat + 18, light - 15, 1, 0.34);
+pg.fill(hue, sat * 0.35, light + 26, 1);
+pg.ellipse(0, Ro * 0.05, Ro * 0.13, Ro * 0.19);
+pg.pop();
+}
+
+function drawChrysanthPreview(pg, R, hue, sat, light) {
+pg.push();
+pg.noStroke();
+const Rm = R * 1.12;
+const rings = [
+{ n: 18, r: 0.92, pw: 0.23, ph: 0.32, dl: -9, a: 0.95 },
+{ n: 16, r: 0.70, pw: 0.21, ph: 0.29, dl: -3, a: 1 },
+{ n: 12, r: 0.49, pw: 0.19, ph: 0.26, dl:  4, a: 1 },
+{ n: 8,  r: 0.27, pw: 0.17, ph: 0.23, dl: 10, a: 1 }
+];
+for (let ri = 0; ri < rings.length; ri++) {
+const ring = rings[ri];
+for (let i = 0; i < ring.n; i++) {
+pg.push();
+pg.rotate(i * (360 / ring.n) + ri * 11);
+pg.fill(hue, sat, light + ring.dl, ring.a);
+pg.ellipse(0, -Rm * ring.r, Rm * ring.pw, Rm * ring.ph);
+pg.pop();
+}
+}
+pg.fill(hue, sat * 0.6, light + 16, 1);
+pg.circle(0, 0, Rm * 0.14);
+pg.pop();
+}
+
 function drawLavenderPreview(pg, h, hue, sat, light) {
 pg.push();
 pg.noStroke();
@@ -1487,6 +1628,8 @@ sunflower: 0.80,
 lily: 0.95,
 sakura: 0.95,
 lotus: 0.8,
+orchid: 0.95,
+chrysanth: 0.95,
 lavender: 0.9
 };
 const scale = scaleMap[speciesId] || 1.0;
@@ -1506,6 +1649,10 @@ drawTulipPreview(pg, R, hue, sat, light);
 drawRosePreview(pg, R, hue, sat, light);
 } else if (speciesId === "sunflower") {
 drawSunflowerPreview(pg, R, hue, sat, light);
+} else if (speciesId === "chrysanth") {
+drawChrysanthPreview(pg, R, hue, sat, light);
+} else if (speciesId === "orchid") {
+drawOrchidPreview(pg, R, hue, sat, light);
 } else if (speciesId === "sakura") {
 drawCherryBlossomPreview(pg, R, hue, sat, light);
 } else if (speciesId === "lily") {
@@ -1556,6 +1703,11 @@ holder.elt.appendChild(canvas);
 }
 
 function updateConfirmPreview() {
+  const meaningDiv = select("#confirm-meaning");
+  if (meaningDiv) {
+    const sp = speciesList.find(x => x.id === chosenSpecies);
+    meaningDiv.html(sp ? sp.name + " : " + sp.meaning : "");
+  }
   const holder = select("#confirm-preview");
   if (!holder) return;
   holder.elt.innerHTML = "";
@@ -1741,7 +1893,7 @@ let canvas;
 function setup() {
 buildUI();
 
-canvas = createCanvas(10, 10);
+canvas = createCanvas(windowWidth, windowHeight);
 canvas.parent("garden-wrap");
 canvas.style("pointer-events", "none");
 canvas.style("position", "absolute");
@@ -2020,7 +2172,7 @@ landingWrap.style("z-index", "100");
 landingWrap.style("pointer-events", "auto");
 
 const card = createDiv().addClass("gg-card").parent(landingWrap);
-createElement("h1", "Gratitude Garden").addClass("gg-title").parent(card);
+createElement("h1", "The Shared Garden").addClass("gg-title").parent(card);
 createP("Type one thing you are grateful for, plant it, and see your flower bloom!")
 .addClass("gg-sub")
 .parent(card);
@@ -2129,7 +2281,7 @@ selectTitle.style("margin", "0 auto 24px auto");
 selectTitle.style("margin", "0 0 8px 0");
 }
 
-const selectSub = createP("Pick a color and a flower style you like")
+const selectSub = createP("Pick a flower and a color. Each one stands for something.")
 .addClass("gg-sub")
 .parent(selectCard);
 selectSub.style("margin", "4px 0 16px 0");
@@ -2175,6 +2327,13 @@ nameSpan.style("color", "#0f5132");
 if (isNarrow) {
 nameSpan.style("font-size", "14px");
 }
+
+const meaningSpan = createSpan(sp.meaning).addClass("gg-tile-meaning").parent(tile);
+meaningSpan.style("text-align", "center");
+meaningSpan.style("width", "100%");
+meaningSpan.style("color", "#2c7a7b");
+meaningSpan.style("line-height", "1.2");
+meaningSpan.style("font-size", isNarrow ? "9px" : "11px");
 tile.mousePressed(() => {
   chosenSpecies = sp.id;
   showStep("confirm");
@@ -2193,7 +2352,10 @@ const confirmWrap = createDiv().id("confirm-wrap").parent(root).addClass("gg-wra
 confirmWrap.style("z-index", "100");
 confirmWrap.style("pointer-events", "auto");
 confirmWrap.style("display", "none");
-confirmWrap.style("background", "rgba(207, 238, 240, 0.85)");
+/* No wash over the viewport. At 85 percent opaque this hid the sky, hills and
+   ground behind it, so the garden appeared to vanish the moment you reached
+   the colour step. Every other step leaves the wrap transparent and lets its
+   card stand on the scene, and the card carries its own background. */
 
 const confirmCard = createDiv().addClass("gg-card").parent(confirmWrap);
 confirmCard.style("box-sizing", "border-box");
@@ -2203,6 +2365,16 @@ confirmCard.style("padding", "28px 24px");
 confirmCard.style("text-align", "center");
 
 createElement("h2", "Your Flower").addClass("gg-title").style("font-size", "28px").style("margin-bottom", "8px").parent(confirmCard);
+
+/* The same line the personal garden puts under its heading, species then what
+   it stands for, so the meaning is still in front of you at the colour step
+   and not only back on the grid where you picked it. */
+const confirmMeaning = createDiv().id("confirm-meaning").parent(confirmCard);
+confirmMeaning.style("text-align", "center");
+confirmMeaning.style("font-size", "13px");
+confirmMeaning.style("color", "#2c7a7b");
+confirmMeaning.style("font-style", "italic");
+confirmMeaning.style("margin-bottom", "4px");
 
 const confirmPreviewHolder = createDiv().id("confirm-preview").parent(confirmCard);
 confirmPreviewHolder.style("width", "140px");
@@ -2316,6 +2488,13 @@ window.open("https://linktr.ee/kenoijam", "_blank");
 
 function showStep(s) {
   step = s;
+
+  /* The garden is the backdrop for every step, not just the last one. This
+     line was missing, so the CSS `display: none` on #garden-wrap stood at all
+     times and the sky, hills and ground never appeared behind anything. The
+     personal garden shows its wrap unconditionally for exactly this reason. */
+  gardenWrap.style("display", "block");
+
   landingWrap.style("display", s === "landing" ? "flex" : "none");
   usernameWrap.style("display", s === "username" ? "flex" : "none");
   selectWrap.style("display", s === "select" ? "flex" : "none");

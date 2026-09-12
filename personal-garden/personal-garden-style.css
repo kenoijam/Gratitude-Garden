@@ -1,3 +1,43 @@
+/* ── Fraunces, a real variable font, finally present ──
+   These pages spent their whole life falling back to Georgia, because the two
+   Mauritius files the old @font-face rules named were never in the repo. This
+   one is here. It is ONE family with a variable weight axis from 100 to 900,
+   so a semibold genuinely exists and `font-weight: 600` is no longer just bold.
+   The italic is a second face on the same family, so `font-style: italic` picks
+   it up on its own.
+   SOFT 50 rounds the terminals, which is the friendliness the font was chosen
+   for; WONK stays 0, since its slanted alternates are charming in a wordmark
+   and distracting in a paragraph. Both are set on the heading rules, so body
+   text in Arial is untouched. */
+@font-face {
+  font-family: 'Fraunces';
+  src: url('../Fraunces.ttf') format('truetype');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Fraunces';
+  src: url('../Fraunces-Italic.ttf') format('truetype');
+  font-weight: 100 900;
+  font-style: italic;
+  font-display: swap;
+}
+/* ── Serif headings, at NORMAL weight ──
+   These pages went to Arial for a turn and came back. The serif is the landing
+   page's, `'Fraunces', 'Georgia', serif`, so all four pages match
+   again. What is different is the weight: every heading here is normal, not
+   700, because at 700 Georgia comes out thick and the wordmark's lighter
+   setting was the one that read as simple. **The landing page keeps 700**, so
+   its 61px hero does not go thin against a full sky. Buttons stay 700
+   everywhere; that is a separate rule.
+   Fraunces is in the repo, so this is what actually renders now. */
+/* ── Shared type, one system across all four pages ──
+   Headings in the site's condensed serif, body in Arial. The two font files
+   are not in the repo, so every page falls back to Georgia today; the point of
+   declaring them here is that if they are ever added, the gardens and the
+   bouquet change with the landing page instead of drifting away from it. */
+
 html, body {
   margin: 0;
   padding: 0;
@@ -5,7 +45,7 @@ html, body {
 }
 
 body {
-  font-family: "Inter", sans-serif;
+  font-family: Arial, Helvetica, sans-serif;
   background: #cfeef0;
 }
 
@@ -21,7 +61,7 @@ body {
 /* Input fields styling */
 textarea,
 input[type="text"] {
-  font-family: inter;
+  font-family: Arial, Helvetica, sans-serif;
   outline: none;
 }
 
@@ -63,13 +103,24 @@ input[type="text"]:focus {
 }
 
 .gg-title {
-  font-size: 40px;
-  font-weight: 700;
+/* Title to subtext ratio. Georgia has exactly TWO weights: measured, 300/400/500
+   all render identically and 600/700/800 all render identically, so a semibold
+   is not available and asking for 600 just gives bold again. A title gains its
+   presence from the RATIO instead. The hero runs about 3.4; these were 1.73 and
+   2.22, which is why they read flat. */
+  font-family: 'Fraunces', 'Georgia', serif;
+  font-size: 42px;
+  /* 600, a real semibold. This was the weight originally wanted and it was
+     not available while Georgia was the fallback, since Georgia renders
+     600 identically to 700. Fraunces has a variable axis, so it is now a
+     genuine weight between normal and the landing page's 700. */
+  font-weight: 600;
+  font-variation-settings: 'SOFT' 50, 'WONK' 0;
   text-align: center;
   color: #0f5132;
 }
 .gg-sub {
-  font-size: 18px;
+  font-size: 16px;
   text-align: center;
   color: #2c7a7b;
 }
@@ -81,6 +132,10 @@ input[type="text"]:focus {
   padding: 14px 18px;
   border-radius: 12px;
   font-size: 18px;
+  /* 700, matching every other button on the site. The landing page's buttons
+     are bold and these were weight 400, which made the gardens' primary action
+     read as the softest button anywhere in the project. */
+  font-weight: 700;
   border: none !important;
   cursor: pointer;
   width: 100%;
@@ -137,7 +192,7 @@ input[type="text"]:focus {
   height: 110px;
 }
 
-/* Prompt overlays — always on top of garden */
+/* Prompt overlays, always on top of garden */
 .gg-wrap {
   position: fixed;
   inset: 0;
@@ -181,8 +236,10 @@ input[type="text"]:focus {
 
 #tips-card h3 {
   margin: 0 0 6px 0;
-  font-size: 18px;
-  font-weight: 700;
+  font-family: 'Fraunces', 'Georgia', serif;
+  font-size: 21px;
+  font-weight: 600;
+  font-variation-settings: 'SOFT' 50, 'WONK' 0;
   color: #0f5132;
 }
 
@@ -207,7 +264,7 @@ input[type="text"]:focus {
   cursor: pointer;
   position: absolute;
   top: 16px;
-  right: 12px;
+  right: 66px;   /* clears the music button, which owns right 16 on every page */
   z-index: 20;
   pointer-events: auto;
   font-size: 14px;
@@ -361,7 +418,7 @@ input[type="text"]:focus {
 }
 
   .gg-title { font-size: 32px; }
-  .gg-sub { font-size: 17px; line-height: 1.5; }
+  .gg-sub { font-size: 15px; line-height: 1.5; }
   .gg-btn { font-size: 18px; padding: 16px 20px; min-height: 52px; }
   .gg-back { font-size: 18px; padding: 16px; min-height: 48px; }
   .gg-card { padding: 28px 22px; }
@@ -400,3 +457,90 @@ button {
 #prompt3-wrap button {
   color: #2c7a7b;
 }
+
+/* ── Sign in gate ──
+   Shown only when Supabase is configured and nobody is signed in. The garden
+   itself is not loaded behind this, so there is nothing to see through it. */
+/* every full screen step the accounts flow puts up: the sign in gate, the offer
+   to carry a browser garden across, and the set a new password form. Only one
+   is ever meant to be on screen, and each removes the one before it. */
+.gg-overlay {
+  position: fixed; inset: 0; z-index: 400;
+  display: flex; align-items: center; justify-content: center; padding: 24px;
+  background: linear-gradient(170deg, #cfeef0 0%, #eaf7f2 60%, #fff9e3 100%);
+}
+.gg-auth-card {
+  width: 100%; max-width: 380px; background: snow;
+  border: 1px solid #e6efed; border-radius: 18px; padding: 28px 26px 24px;
+  box-shadow: 0 14px 40px rgba(29,100,102,0.16);
+  font-family: Arial, Helvetica, sans-serif;
+}
+.gg-auth-card h1 {
+  font-size: 1.4rem; color: #0f5132; margin: 0 0 6px; font-weight: 700;
+}
+.gg-auth-sub { font-size: 0.86rem; color: #4a7c72; line-height: 1.5; margin: 0 0 18px; }
+.gg-auth-card label {
+  display: block; font-size: 0.74rem; font-weight: 700; color: #2c7a7b;
+  text-transform: uppercase; letter-spacing: 0.03em; margin: 12px 0 5px;
+}
+.gg-auth-card input {
+  width: 100%; padding: 11px 12px; font-size: 0.95rem; font-family: inherit;
+  border: 1px solid #cfe5e1; border-radius: 10px; background: #fbfefd; color: #0f5132;
+}
+.gg-auth-card input:focus { outline: none; border-color: powderblue; box-shadow: 0 0 0 2px powderblue; }
+.gg-auth-msg { font-size: 0.82rem; color: #4a7c72; min-height: 1.2em; margin: 12px 0 0; line-height: 1.4; }
+.gg-auth-msg.bad { color: #c0553f; }
+.gg-auth-btn {
+  width: 100%; margin-top: 14px; padding: 12px; border: none; border-radius: 999px;
+  background: #2c7a7b; color: #fff; font-size: 0.95rem; font-weight: 700;
+  font-family: inherit; cursor: pointer;
+}
+.gg-auth-btn:disabled { opacity: 0.55; cursor: default; }
+.gg-auth-alt {
+  width: 100%; margin-top: 10px; padding: 8px; border: none; background: none;
+  color: #2c7a7b; font-size: 0.83rem; font-family: inherit; cursor: pointer;
+  text-decoration: underline;
+}
+/* the quiet third rank: forgot your password, under the two real choices */
+.gg-auth-link {
+  width: 100%; margin-top: 2px; padding: 4px; border: none; background: none;
+  color: #4a7c72; font-size: 0.78rem; font-family: inherit; cursor: pointer;
+  text-decoration: underline;
+}
+.gg-auth-link:disabled { opacity: 0.5; cursor: default; }
+.gg-auth-hint { font-size: 0.75rem; color: #6b9a90; margin: 6px 0 0; display: none; }
+/* The way past the gate without an account. It sits outside the form and below
+   a rule, because it is not one of the sign in choices; it is the other mode
+   the project has always had. */
+.gg-auth-skip {
+  width: 100%; margin-top: 18px; padding: 10px 8px 0; background: none; cursor: pointer;
+  border: none; border-top: 1px solid #e6efed;
+  color: #6b9a90; font-size: 0.8rem; font-family: inherit; text-decoration: underline;
+}
+
+/* Who is signed in, and the way out. Bottom left: Home is top left, Save PNG is
+   top right, and the logo is bottom right. */
+#gg-account {
+  position: fixed; left: 14px; bottom: 16px; z-index: 200;
+  display: inline-flex; align-items: center; gap: 8px;
+  background: rgba(255,249,227,0.92); border: 1.5px solid #b7e4e7; border-radius: 50px;
+  padding: 6px 8px 6px 14px; box-shadow: 0 2px 10px rgba(29,100,102,0.14);
+  font-family: Arial, Helvetica, sans-serif; font-size: 12px; color: #1d6466;
+  max-width: min(70vw, 320px);
+}
+.gg-account-who {
+  font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.gg-account-out {
+  flex: 0 0 auto; border: none; border-radius: 50px; cursor: pointer;
+  background: #e1f7f7; color: #1d6466; font-family: inherit;
+  font-size: 11px; font-weight: 700; padding: 5px 11px;
+}
+.gg-account-out:hover { background: #b7e4e7; }
+@media (max-width: 768px) { #gg-account { font-size: 11px; left: 10px; bottom: 12px; } }
+
+/* Card headings match the landing page's, so a garden does not read as a
+   different website from the page that introduces it. The sketches build these
+   with p5.dom and set no font-family, so they inherit from here. */
+.gg-card h1, .gg-card h2, .gg-card h3,
+.gg-auth-card h1, .gg-auth-card h2 { font-family: 'Fraunces', 'Georgia', serif; font-weight: 600; font-variation-settings: 'SOFT' 50, 'WONK' 0; letter-spacing: 0.01em; }

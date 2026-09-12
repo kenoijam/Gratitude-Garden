@@ -1,12 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <!-- Supabase client, and the keys it reads.
+       These two MUST stay inside <head>. They were briefly above <!DOCTYPE>,
+       which is never valid: anything before the doctype makes the browser
+       ignore it and render the whole page in QUIRKS MODE, which silently
+       changes layout on every one of these pages. -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+  <script src="../config.js"></script>
   <meta charset="UTF-8">
   <title>Gratitude Garden</title>
-  <style>
-    #save-btn   { top: 16px !important; }
-    /* #name-wrap  { top: 30px !important; } */
-  </style>
   <link rel="stylesheet" href="personal-garden-style.css" />
 
   <script src="personal-garden-p5.min.js"></script>
@@ -14,7 +17,19 @@
 
 <script src="personal-garden-p5.party.js"></script>
 
-<script src="personal-garden-sketch.js"></script>
+<!-- Accounts. The sketch is deliberately NOT loaded here: p5 starts as soon as
+     it is parsed and its preload() cannot wait on a promise, so the auth module
+     injects the sketch once there is a garden to draw. With the placeholders
+     still in /config.js this signs nobody in and the garden saves to this
+     browser, exactly as it did before.
+
+     The Supabase client and the config are loaded ONCE, at the top of this
+     head. They used to be loaded a second time here as well, and the second
+     copy of the config reassigned both keys back to their placeholders, so
+     real keys pasted into /config.js were silently thrown away and accounts
+     simply never switched on. One config, at the repo root, for all four
+     pages. -->
+<script src="personal-garden-auth.js"></script>
 
 </head>
 <script>
@@ -27,9 +42,14 @@ if(/iPhone|iPad|iPod/.test(navigator.userAgent)){
     <div id="ui-root"></div>
     <a href="../index.html" id="back-to-home" style="position:fixed;top:20px;left:14px;z-index:200;display:inline-flex;align-items:center;gap:6px;background:rgba(255,249,227,0.92);color:#1d6466;border:1.5px solid #b7e4e7;border-radius:50px;padding:7px 16px 7px 12px;font-family:Arial,Helvetica,sans-serif;font-size:13px;font-weight:700;text-decoration:none;box-shadow:0 2px 10px rgba(29,100,102,0.14);transition:background 0.2s,transform 0.15s;" onmouseover="this.style.background='#e1f7f7';this.style.transform='translateY(-1px)'" onmouseout="this.style.background='rgba(255,249,227,0.92)';this.style.transform='none'">
       <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M9 2L4 7l5 5" stroke="#1d6466" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      Back
+      Home
     </a>
 
+
+  <!-- Background music. Relaxing calm: D major pentatonic, the slowest and lowest of the four.
+       One shared engine, synthesised live, no audio files. The mood is the
+       only thing that differs per page. -->
+  <script src="../garden-music.js" data-mood="calm"></script>
 </body>
 
 </html>

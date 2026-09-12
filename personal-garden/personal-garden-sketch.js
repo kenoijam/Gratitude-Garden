@@ -1,5 +1,6 @@
 /* Personal Gratitude Garden - Memory Journal */
-/* ⚠️ TEST MODE: Multi-plant enabled, "Plant Another" button added */
+/* One flower a day. The daily gate below is the whole point of the garden:
+   it is a practice you come back to, not something to fill in one sitting. */
 const BASE_W = 1440;
 const BASE_H = 900;
 const isTouchDevice = /Mobi|Android|iPhone|iPad|iPod/.test(
@@ -20,12 +21,35 @@ let isSaving = false;
 let flowerCounter = 0;
 let gardenScale = 1;
 let logoDiv;
+let nameSuffixEl = null;
+let fitTitle = () => {};
+
+/* The garden's own title. It was 15px Arial against a 21px serif "Garden Tips"
+   in the corner, so the loudest heading on the page was a side note. 26px is
+   the size a heading inside a card takes across this project, and it is the
+   serif every other page puts its headings in. The note under it takes 15px,
+   the 0.58 ratio the bouquet's steps use under their own 26px heading. */
+const NAME_FONT = "'Fraunces', 'Georgia', serif";
+const NAME_PX = 28;
+/* 13, not 15. The garden's name and the line under it are a title and its
+   subtext like any other, and Georgia has no semibold to lean on, so the ratio
+   is what gives the title its presence: 2.15 here, the same as a bouquet step. */
+const NOTE_PX = 13;
+/* #name-wrap is nowrap and centred, so at 26px it cannot fall back to a second
+   line: "Keni's Gratitude Garden" alone is 336px, and the field takes names up
+   to 30 characters. fitTitle shrinks the whole title until it fits the window,
+   down to a floor, rather than letting a long name run off both edges. */
+/* 13, not 15: a 30 character name at 15px is still 356px, which is wider
+   than a 380px layout leaves. Only the longest names on the narrowest layouts
+   ever reach the floor. */
+const NAME_PX_MIN = 13;
+let titlePx = NAME_PX;
 
 let prompt1Wrap, prompt2Wrap, prompt3Wrap, flowerPreviewWrap, gardenWrap;
 let continueBtn1, continueBtn2, continueBtn3;
 let journalField;
 let colorPickerSelect, plantBtn;
-let saveBtn, tipsCard;
+let saveBtn, tipsCard, dailyNote;
 let previewGraphics;
 let gardenName = "";
 
@@ -73,6 +97,28 @@ const flowerMeanings = {
     meaning: "resilience & strength",
     quote: "You moved through something hard today. That quiet strength matters more than you know."
   },
+  /* HIDDEN. The orchid and the chrysanthemum below are drawn everywhere the
+     other eight are, but they are in no picker and no mood map, so nothing can
+     plant one. They were built as florist orderable stand ins for the lotus and
+     the sakura; that is meant to become its own separate thing for the real
+     bouquet rather than a change to this garden.
+
+     Their keyword lists are EMPTY, not missing. `chooseFlowerForMood` reads
+     `.keywords` off entries here, so a removed or renamed field throws the
+     moment anyone writes a journal entry. The real lists are parked alongside
+     under `keywordsHidden`, ready to swap back in. */
+  orchid: {
+    keywords: [],
+    keywordsHidden: ["difficult", "struggling", "overwhelmed", "swamped", "pushing through", "accepting", "strong", "despite", "kept going", "still here", "persevering", "surviving", "managing", "enduring", "holding on", "held it together", "composed"],
+    meaning: "grace & endurance",
+    quote: "You held yourself together today, and that took more than anyone saw. That is its own kind of strength."
+  },
+  chrysanth: {
+    keywords: [],
+    keywordsHidden: ["grateful", "gratitude", "thankful", "noticed", "noticing", "memory", "remember", "appreciating", "appreciate", "present", "savoured", "savored", "small moment", "took it in", "paused"],
+    meaning: "reflection & presence",
+    quote: "You noticed something worth holding onto today. That kind of awareness is rare and beautiful."
+  },
   lavender: {
     keywords: ["anxious", "anxiety", "tense", "tension", "stressed", "stress", "nervous", "worried", "worrying", "uneasy", "panicking", "overwhelmed", "on edge", "unsettled", "restless"],
     meaning: "calm & safety",
@@ -96,25 +142,16 @@ function preload() {
 }
 
 function loadGarden() {
-  const saved = localStorage.getItem(STORAGE_KEY);
-  if (saved) {
-    try {
-      flowers = JSON.parse(saved);
-      flowerCounter = flowers.length;
-      // Loaded flowers are already fully grown — force BLOOM stage
-      flowers.forEach(f => {
-  f.growthStage = GROWTH_STAGES.BLOOM;
-  f.growthStartTime = 0;
-  f.isOld = true;
-});
-    } catch (e) {
-      console.error("Failed to load garden:", e);
-      flowers = [];
-    }
-  } else {
-    flowers = [];
-  }
-  gardenName = localStorage.getItem(STORAGE_KEY + "_name") || "";
+  const boot = window.__gardenBoot || { flowers: [], name: "" };
+  flowers = Array.isArray(boot.flowers) ? boot.flowers : [];
+  flowerCounter = flowers.length;
+  // Loaded flowers are already fully grown, so force the BLOOM stage
+  flowers.forEach(f => {
+    f.growthStage = GROWTH_STAGES.BLOOM;
+    f.growthStartTime = 0;
+    f.isOld = true;
+  });
+  gardenName = boot.name || "";
   if (flowers.length > 0) {
   flowers.forEach(f => f.isLatest = false);
   flowers[flowers.length - 1].isLatest = true;
@@ -122,11 +159,7 @@ function loadGarden() {
 }
 
 function saveGarden() {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(flowers));
-  } catch (e) {
-    console.error("Failed to save garden:", e);
-  }
+  if (window.GardenStore) window.GardenStore.save(flowers);
 }
 
 // Direct mapping from prompt selections to flower species
@@ -166,8 +199,14 @@ function chooseFlowerForMood(dayRating, dayShaper, journal) {
 
   if (journal) {
     const jText = journal.toLowerCase();
-    Object.keys(flowerMeanings).forEach(species => {
-      flowerMeanings[species].keywords.forEach(keyword => {
+    /* Only species that can actually be planted are counted. `flowerMeanings`
+       also holds the hidden orchid and chrysanthemum, and without this guard a
+       keyword hit on one of those would write `votes[undefined]` and quietly
+       poison the result. */
+    Object.keys(votes).forEach(species => {
+      const m = flowerMeanings[species];
+      if (!m || !m.keywords) return;
+      m.keywords.forEach(keyword => {
         if (jText.includes(keyword)) votes[species] += 2;
       });
     });
@@ -192,16 +231,18 @@ function speciesPetalCount(id) {
     rose: 8,
     sunflower: 24,
     lily: 12,
-    sakura: 5
+    sakura: 5,
+    orchid: 5,
+    chrysanth: 18
   }[id] || 16;
 }
 
 function defaultSat(sp) {
-  return { daisy: 45, tulip: 50, rose: 55, sunflower: 60, lily: 40, sakura: 40, lotus: 50, lavender: 55 }[sp] || 45;
+  return { daisy: 45, tulip: 50, rose: 55, sunflower: 60, lily: 40, sakura: 40, lotus: 50, orchid: 50, chrysanth: 48, lavender: 55 }[sp] || 45;
 }
 
 function defaultLight(sp) {
-  return { daisy: 65, tulip: 60, rose: 55, sunflower: 65, lily: 70, sakura: 75, lotus: 70, lavender: 68 }[sp] || 65;
+  return { daisy: 65, tulip: 60, rose: 55, sunflower: 65, lily: 70, sakura: 75, lotus: 70, orchid: 68, chrysanth: 72, lavender: 68 }[sp] || 65;
 }
 
 function getTodayDate() {
@@ -212,22 +253,32 @@ function getTodayDate() {
   return `${month}/${day}/${year}`;
 }
 
+/* The marker is a cache; the garden is the truth.
+   Every flower carries the date it was planted, so "have I planted today" is
+   answerable from the flowers alone. The marker is still read first because it
+   is what follows an account between devices, but when the two disagree the
+   garden wins and the marker is repaired. This only ever unblocks: a marker
+   that says today with no flower dated today is stale, and before this it shut
+   the prompts off with nothing on screen to say why and no way back except
+   clearing storage by hand.
+
+   loadGarden() runs in preload(), which p5 finishes before setup(), so
+   `flowers` is populated by the time anything asks. */
 function hasPlantedToday() {
   const today = getTodayDate();
-  const last = localStorage.getItem(LAST_PLANT_KEY);
-  return last === today;
+  const last = window.GardenStore ? window.GardenStore.lastPlanted() : "";
+  if (last !== today) return false;
+  if (flowers.some(f => f && f.date === today)) return true;
+  if (window.GardenStore) window.GardenStore.markPlanted("");
+  return false;
 }
 
 function markPlantedToday() {
-  const today = getTodayDate();
-  localStorage.setItem(LAST_PLANT_KEY, today);
+  if (window.GardenStore) window.GardenStore.markPlanted(getTodayDate());
 }
 
 function addFlower(dayRating, dayShaper, journal, species, hue) {
-//   if (hasPlantedToday()) {
-//   alert("You've already planted today 🌱 Come back tomorrow!");
-//   return;
-// }
+  if (hasPlantedToday()) return;
   const flowerCount = flowers.length;
   let size;
   if (flowerCount < 10) {
@@ -358,7 +409,9 @@ function speciesShapeCfg(species) {
     rose:      { w: 0.60, h: 1.05 },
     lily:     { w: 0.70, h: 1.00 },
     tulip:     { w: 0.80, h: 1.10 },
-    sakura:    { w: 0.75, h: 1.00 }
+    sakura:    { w: 0.75, h: 1.00 },
+    orchid:    { w: 0.72, h: 1.00 },
+    chrysanth: { w: 0.60, h: 1.10 }
   }[species] || { w: 0.55, h: 1.10 });
 }
 
@@ -405,17 +458,32 @@ function drawSunGradient() {
   }
 }
 
+/* The hero's cloud, not three circles.
+   index.html's hero draws a rounded bar with two circles sitting on it,
+   asymmetric, and the gardens drew a symmetric trio, so the same page carried
+   two different clouds. These are the hero's own proportions, averaged across
+   its three sizes and taken relative to the bar's width W:
+
+     bar     W wide, 0.269W tall, its top 0.19W down
+     bump 1  0.433W across, at 0.138W from the left, flush with the top
+     bump 2  0.314W across, at 0.456W from the left, 0.052W down
+
+   `c.size` stays the centre circle diameter it always was, so the stored
+   clouds do not change; W is 1.6 of it, which is the width the old trio
+   spanned. The alpha is the hero's 0.9, not the old 205. */
 function drawClouds() {
   noStroke();
   for (const c of clouds) {
     c.x += c.speed;
     if (c.x > width + 170) c.x = -170;
 
-    fill(255, 255, 255, 205);
-    const s = c.size;
-    circle(c.x, c.y, s);
-    circle(c.x + s * 0.4, c.y + s * 0.12, s * 0.75);
-    circle(c.x - s * 0.4, c.y + s * 0.12, s * 0.75);
+    fill(255, 255, 255, 230);
+    const W = c.size * 1.6;
+    const x = c.x - W / 2, y = c.y - W * 0.22;
+    const bodyH = W * 0.269, b1 = W * 0.433, b2 = W * 0.314;
+    rect(x, y + W * 0.19, W, bodyH, bodyH / 2);
+    circle(x + W * 0.138 + b1 / 2, y + b1 / 2, b1);
+    circle(x + W * 0.456 + b2 / 2, y + W * 0.052 + b2 / 2, b2);
   }
 }
 
@@ -679,6 +747,65 @@ function drawLotusBloom(R, hue, sat, light) {
   pop();
 }
 
+/* Phalaenopsis, face on. Three narrow sepals behind (one up, two down), two
+   broad petals in front, and the lip at the bottom in a deeper tone. The lip
+   is what makes it read as an orchid rather than a generic five petalled
+   bloom, so it keeps real contrast. Unlike the lotus it replaces, this is a
+   CENTRED bloom, so it needs none of lotus's origin nudge or label offset. */
+function drawOrchidBloom(R, hue, sat, light) {
+  noStroke();
+  const Ro = R * 1.28;
+  const lobe = (ang, len, wid, sa, li, al, pinch) => {
+    push();
+    rotate(ang + 90);
+    fill(hue, sa, li, al);
+    beginShape();
+    vertex(0, 0);
+    bezierVertex(wid, -len * (pinch || 0.22), wid, -len * 0.82, 0, -len);
+    bezierVertex(-wid, -len * 0.82, -wid, -len * (pinch || 0.22), 0, 0);
+    endShape(CLOSE);
+    pop();
+  };
+  lobe(-90, Ro * 1.00, Ro * 0.31, sat * 0.72, light + 13, 0.92);
+  lobe( 42, Ro * 0.94, Ro * 0.31, sat * 0.72, light + 13, 0.92);
+  lobe(138, Ro * 0.94, Ro * 0.31, sat * 0.72, light + 13, 0.92);
+  lobe(-40,  Ro * 0.95, Ro * 0.60, sat * 0.85, light + 19, 0.96, 0.30);
+  lobe(-140, Ro * 0.95, Ro * 0.60, sat * 0.85, light + 19, 0.96, 0.30);
+  lobe( 62, Ro * 0.44, Ro * 0.20, sat + 12, light - 8,  1);
+  lobe(118, Ro * 0.44, Ro * 0.20, sat + 12, light - 8,  1);
+  lobe( 90, Ro * 0.52, Ro * 0.26, sat + 18, light - 15, 1, 0.34);
+  fill(hue, sat * 0.35, light + 26, 1);
+  ellipse(0, Ro * 0.05, Ro * 0.13, Ro * 0.19);
+}
+
+/* Pompom chrysanthemum: concentric rings of short rounded petals, lightening
+   inward so it reads as a ball rather than a disc. Drawn as a pompom and not
+   as a single flat bloom for a specific reason: a chrysanthemum is in the same
+   family as the daisy, and drawn simply the two are the same picture twice. */
+function drawChrysanthBloom(R, hue, sat, light) {
+  noStroke();
+  const Rm = R * 1.12;
+  const rings = [
+    { n: 18, r: 0.92, pw: 0.23, ph: 0.32, dl: -9, a: 0.95 },
+    { n: 16, r: 0.70, pw: 0.21, ph: 0.29, dl: -3, a: 1 },
+    { n: 12, r: 0.49, pw: 0.19, ph: 0.26, dl:  4, a: 1 },
+    { n: 8,  r: 0.27, pw: 0.17, ph: 0.23, dl: 10, a: 1 }
+  ];
+  for (let ri = 0; ri < rings.length; ri++) {
+    const ring = rings[ri];
+    for (let i = 0; i < ring.n; i++) {
+      push();
+      /* each ring is offset, or the petals line up into spokes */
+      rotate(i * (360 / ring.n) + ri * 11);
+      fill(hue, sat, light + ring.dl, ring.a);
+      ellipse(0, -Rm * ring.r, Rm * ring.pw, Rm * ring.ph);
+      pop();
+    }
+  }
+  fill(hue, sat * 0.6, light + 16, 1);
+  circle(0, 0, Rm * 0.14);
+}
+
 function drawLavenderBloom(h, hue, sat, light) {
   push();
   noStroke();
@@ -742,6 +869,10 @@ function drawBloom(f) {
     drawSunflowerBloom(R, hue, sat, light);
   } else if (f.species === "sakura") {
     drawCherryBloom(R, hue, sat, light);
+  } else if (f.species === "chrysanth") {
+    drawChrysanthBloom(R, hue, sat, light);       /* hidden from the picker, drawn anyway */
+  } else if (f.species === "orchid") {
+    drawOrchidBloom(R, hue, sat, light);          /* hidden from the picker, drawn anyway */
   } else if (f.species === "lily") {
     drawLilyBloom(R, hue, sat, light);
   } else if (f.species === "lotus"){
@@ -781,6 +912,10 @@ function drawPreviewFlower(pg, species, hue) {
     drawSunflowerBloomOnGraphics(pg, R, hue, sat, light);
   } else if (species === "sakura") {
     drawCherryBloomOnGraphics(pg, R, hue, sat, light);
+  } else if (species === "chrysanth") {
+    drawChrysanthBloomOnGraphics(pg, R, hue, sat, light);
+  } else if (species === "orchid") {
+    drawOrchidBloomOnGraphics(pg, R, hue, sat, light);
   } else if (species === "lily") {
     drawLilyBloomOnGraphics(pg, R, hue, sat, light);
   } else if (species === "lotus") {
@@ -945,6 +1080,59 @@ function drawLotusBloomOnGraphics(pg, R, hue, sat, light) {
   drawPetal(0, 0, 0.9, 0.9, -30, col);
   drawPetal(0, 0, 0.9, 0.9, 30, col);
   drawPetal(0, 0, 0.9, 1, 0, col);
+  pg.pop();
+}
+
+function drawOrchidBloomOnGraphics(pg, R, hue, sat, light) {
+  pg.push();
+  pg.noStroke();
+  const Ro = R * 1.28;
+  const lobe = (ang, len, wid, sa, li, al, pinch) => {
+    pg.push();
+    pg.rotate(ang + 90);
+    pg.fill(hue, sa, li, al);
+    pg.beginShape();
+    pg.vertex(0, 0);
+    pg.bezierVertex(wid, -len * (pinch || 0.22), wid, -len * 0.82, 0, -len);
+    pg.bezierVertex(-wid, -len * 0.82, -wid, -len * (pinch || 0.22), 0, 0);
+    pg.endShape(pg.CLOSE);
+    pg.pop();
+  };
+  lobe(-90, Ro * 1.00, Ro * 0.31, sat * 0.72, light + 13, 0.92);
+  lobe( 42, Ro * 0.94, Ro * 0.31, sat * 0.72, light + 13, 0.92);
+  lobe(138, Ro * 0.94, Ro * 0.31, sat * 0.72, light + 13, 0.92);
+  lobe(-40,  Ro * 0.95, Ro * 0.60, sat * 0.85, light + 19, 0.96, 0.30);
+  lobe(-140, Ro * 0.95, Ro * 0.60, sat * 0.85, light + 19, 0.96, 0.30);
+  lobe( 62, Ro * 0.44, Ro * 0.20, sat + 12, light - 8,  1);
+  lobe(118, Ro * 0.44, Ro * 0.20, sat + 12, light - 8,  1);
+  lobe( 90, Ro * 0.52, Ro * 0.26, sat + 18, light - 15, 1, 0.34);
+  pg.fill(hue, sat * 0.35, light + 26, 1);
+  pg.ellipse(0, Ro * 0.05, Ro * 0.13, Ro * 0.19);
+  pg.pop();
+}
+
+function drawChrysanthBloomOnGraphics(pg, R, hue, sat, light) {
+  pg.push();
+  pg.noStroke();
+  const Rm = R * 1.12;
+  const rings = [
+    { n: 18, r: 0.92, pw: 0.23, ph: 0.32, dl: -9, a: 0.95 },
+    { n: 16, r: 0.70, pw: 0.21, ph: 0.29, dl: -3, a: 1 },
+    { n: 12, r: 0.49, pw: 0.19, ph: 0.26, dl:  4, a: 1 },
+    { n: 8,  r: 0.27, pw: 0.17, ph: 0.23, dl: 10, a: 1 }
+  ];
+  for (let ri = 0; ri < rings.length; ri++) {
+    const ring = rings[ri];
+    for (let i = 0; i < ring.n; i++) {
+      pg.push();
+      pg.rotate(i * (360 / ring.n) + ri * 11);
+      pg.fill(hue, sat, light + ring.dl, ring.a);
+      pg.ellipse(0, -Rm * ring.r, Rm * ring.pw, Rm * ring.ph);
+      pg.pop();
+    }
+  }
+  pg.fill(hue, sat * 0.6, light + 16, 1);
+  pg.circle(0, 0, Rm * 0.14);
   pg.pop();
 }
 
@@ -1234,7 +1422,7 @@ function drawGrowingStem(f, progress) {
   pop();
 }
 
-// Bloomed stems only — drawn BEFORE their hill so the hill hides the base
+// Bloomed stems only, drawn BEFORE their hill so the hill hides the base
 function drawFlowersStemsOnly(layerName) {
   const layer = getLayerSorted(layerName);
   for (const f of layer) {
@@ -1246,7 +1434,7 @@ function drawFlowersStemsOnly(layerName) {
   }
 }
 
-// Growing sprouts — drawn AFTER their hill so they poke above it
+// Growing sprouts, drawn AFTER their hill so they poke above it
 function drawFlowersGrowingOnly(layerName) {
   const layer = getLayerSorted(layerName);
   for (const f of layer) {
@@ -1259,7 +1447,7 @@ function drawFlowersGrowingOnly(layerName) {
   }
 }
 
-// Blooms — drawn AFTER all hills so they float above the landscape
+// Blooms, drawn AFTER all hills so they float above the landscape
 function drawFlowersBloomsOnly(layerName) {
   const layer = getLayerSorted(layerName);
   for (const f of layer) {
@@ -1272,7 +1460,7 @@ function drawFlowersBloomsOnly(layerName) {
 }
 
 function updateGrowthStage(f) {
-  if (f.isOld) return; // 🔥 stop old flowers from animating
+  if (f.isOld) return; // stop old flowers from animating
 
   const elapsed = millis() - f.growthStartTime;
   if (elapsed < 2000) f.growthStage = GROWTH_STAGES.BUD;
@@ -1280,7 +1468,7 @@ function updateGrowthStage(f) {
   else f.growthStage = GROWTH_STAGES.BLOOM;
 }
 
-// Bloomed stems only — drawn BEFORE their hill so the hill hides the base
+// Bloomed stems only, drawn BEFORE their hill so the hill hides the base
 function drawFlowersStemsOnly(layerName) {
   const layer = getLayerSorted(layerName);
   for (const f of layer) {
@@ -1293,7 +1481,7 @@ function drawFlowersStemsOnly(layerName) {
   }
 }
 
-// Growing sprouts — drawn AFTER their hill so they poke above it
+// Growing sprouts, drawn AFTER their hill so they poke above it
 function drawFlowersGrowingOnly(layerName) {
   const layer = getLayerSorted(layerName);
   for (const f of layer) {
@@ -1306,7 +1494,7 @@ function drawFlowersGrowingOnly(layerName) {
   }
 }
 
-// Blooms — drawn AFTER all hills so they float above the landscape
+// Blooms, drawn AFTER all hills so they float above the landscape
 function drawFlowersBloomsOnly(layerName) {
   const layer = getLayerSorted(layerName);
   for (const f of layer) {
@@ -1372,7 +1560,7 @@ function drawHoverTooltip() {
   const flowerMeaning = flowerMeanings[f.species];
   if (flowerMeaning) {
     const speciesLabel = f.species.charAt(0).toUpperCase() + f.species.slice(1);
-    const headerText = `${speciesLabel} — ${flowerMeaning.meaning}`;
+    const headerText = `${speciesLabel}: ${flowerMeaning.meaning}`;
     textSize(12);
     textStyle(BOLD);
     if (textWidth(headerText) > innerWidth) {
@@ -1537,13 +1725,17 @@ function updateResponsiveFlowerLayout() {
       f.sizeNorm = f.size    / height;
     }
   }
-  // Cap stem height relative to width on narrow screens
-if (width < 720) {
-  const maxStemForWidth = width * 0.45;
-  if (f.stemLen > maxStemForWidth) {
-    f.stemLen = maxStemForWidth;
+  /* Cap stem height relative to width on narrow screens.
+     This used to reference `f` outside the `for...of` that declared it, so it
+     threw a ReferenceError on every resize under 720px and took the rest of
+     windowResized() with it. The cap was never applied to anything; it applies
+     to each flower now, which is what the loops above it do. */
+  if (width < 720) {
+    const maxStemForWidth = width * 0.45;
+    for (const f of flowers) {
+      if (f.stemLen > maxStemForWidth) f.stemLen = maxStemForWidth;
+    }
   }
-}
 }
 
 function buildLogo() {
@@ -1608,6 +1800,9 @@ function resetPromptSelections() {
   });
 }
 
+/* Dead. Nothing calls this. It is showStep's logic again with different
+   reset behaviour, and it never rendered the daily note, which is the bug
+   buildUI used to carry. Route through showStep instead of reviving it. */
 function updateScreen() {
   // ALWAYS show garden background
   gardenWrap.style("display", "block");
@@ -1618,7 +1813,7 @@ function updateScreen() {
   prompt3Wrap.style("display", "none");
   flowerPreviewWrap.style("display", "none");
 
-  // 🔥 HIDE garden UI by default
+  // HIDE garden UI by default
   if (saveBtn) saveBtn.style("display", "none");
   if (tipsCard) tipsCard.style("display", "none");
 
@@ -1626,7 +1821,7 @@ function updateScreen() {
   if (hasPlantedToday()) {
     step = "garden";
 
-    // ✅ show garden UI again
+    // show garden UI again
     if (saveBtn) saveBtn.style("display", "block");
     if (tipsCard) tipsCard.style("display", "block");
     if (logoDiv) logoDiv.style("display", "block");
@@ -1661,7 +1856,7 @@ function buildUI() {
   card1.style("width", "min(460px, 92vw)");
   card1.style("box-sizing", "border-box");
   card1.style("padding", "24px 28px 20px 28px");
-  createElement("h3", "How was your day?").style("text-align", "center").style("color", "#0f5132").style("font-size", "16px").style("font-weight", "700").style("margin", "0 0 16px 0").parent(card1);
+  createElement("h3", "How was your day?").style("text-align", "center").style("color", "#0f5132").style("font-size", "23px").style("font-weight", "600").style("margin", "0 0 16px 0").parent(card1);
   
   const btnGrid1 = createDiv().parent(card1);
   btnGrid1.style("display", "grid");
@@ -1708,7 +1903,7 @@ function buildUI() {
   continueBtn1.style("border-radius", "12px");
   continueBtn1.style("padding", "14px");
   continueBtn1.style("font-size", "15px");
-  continueBtn1.style("font-weight", "600");
+  continueBtn1.style("font-weight", "700");
   continueBtn1.style("width", "100%");
   continueBtn1.style("cursor", "pointer");
   continueBtn1.style("margin-bottom", "8px");
@@ -1727,7 +1922,7 @@ function buildUI() {
   card2.style("width", "min(460px, 92vw)");
   card2.style("box-sizing", "border-box");
   card2.style("padding", "24px 28px 20px 28px");
-  createElement("h3", "What shaped your day?").style("text-align", "center").style("color", "#0f5132").style("font-size", "16px").style("font-weight", "700").style("margin", "0 0 16px 0").parent(card2);
+  createElement("h3", "What shaped your day?").style("text-align", "center").style("color", "#0f5132").style("font-size", "23px").style("font-weight", "600").style("margin", "0 0 16px 0").parent(card2);
   
   const btnGrid2 = createDiv().parent(card2);
   btnGrid2.style("display", "grid");
@@ -1774,7 +1969,7 @@ function buildUI() {
   continueBtn2.style("border-radius", "12px");
   continueBtn2.style("padding", "14px");
   continueBtn2.style("font-size", "15px");
-  continueBtn2.style("font-weight", "600");
+  continueBtn2.style("font-weight", "700");
   continueBtn2.style("width", "100%");
   continueBtn2.style("cursor", "pointer");
   continueBtn2.style("margin-bottom", "8px");
@@ -1806,8 +2001,8 @@ function buildUI() {
   card3.style("width", "min(460px, 92vw)");
   card3.style("box-sizing", "border-box");
   card3.style("padding", "24px 28px 20px 28px");
-  createElement("h3", "Anything else?").style("text-align", "center").style("color", "#0f5132").style("font-size", "16px").style("font-weight", "700").style("margin", "0 0 2px 0").parent(card3);
-  createP("Optional — add more thoughts if you'd like").addClass("gg-sub").style("font-size", "13px").style("margin", "0 0 12px 0").style("text-align", "center").style("color", "#5a9e8e").parent(card3);
+  createElement("h3", "Anything else?").style("text-align", "center").style("color", "#0f5132").style("font-size", "23px").style("font-weight", "600").style("margin", "0 0 2px 0").parent(card3);
+  createP("Optional, add more thoughts if you'd like").addClass("gg-sub").style("font-size", "13px").style("margin", "0 0 12px 0").style("text-align", "center").style("color", "#5a9e8e").parent(card3);
   
   journalField = createElement("textarea").parent(card3);
   journalField.attribute("maxlength", "500");
@@ -1832,7 +2027,7 @@ function buildUI() {
   continueBtn3.style("border-radius", "12px");
   continueBtn3.style("padding", "14px");
   continueBtn3.style("font-size", "15px");
-  continueBtn3.style("font-weight", "600");
+  continueBtn3.style("font-weight", "700");
   continueBtn3.style("width", "100%");
   continueBtn3.style("cursor", "pointer");
   continueBtn3.style("margin-bottom", "8px");
@@ -1866,7 +2061,7 @@ function buildUI() {
   card4.style("width", "min(460px, 92vw)");
   card4.style("box-sizing", "border-box");
   card4.style("padding", "24px 28px 20px 28px");
-  createElement("h2", "Your Flower").style("text-align", "center").style("color", "#0f5132").style("font-size", "18px").style("font-weight", "700").style("margin", "0 0 4px 0").parent(card4);
+  createElement("h2", "Your Flower").style("text-align", "center").style("color", "#0f5132").style("font-size", "26px").style("font-weight", "600").style("margin", "0 0 4px 0").parent(card4);
   
   const flowerNameDiv = createDiv().id("flower-name").parent(card4);
   flowerNameDiv.style("text-align", "center");
@@ -1918,7 +2113,7 @@ function buildUI() {
   plantBtn.style("border-radius", "12px");
   plantBtn.style("padding", "14px");
   plantBtn.style("font-size", "15px");
-  plantBtn.style("font-weight", "600");
+  plantBtn.style("font-weight", "700");
   plantBtn.style("width", "100%");
   plantBtn.style("cursor", "pointer");
   plantBtn.style("margin-bottom", "8px");
@@ -1935,28 +2130,6 @@ function buildUI() {
 
   gardenWrap = createDiv().id("garden-wrap").parent(root);
   gardenWrap.style("pointer-events", "none");
-
-  const plantAnotherBtn = createButton("+ Plant Another Flower").id("plant-another-btn").parent(gardenWrap);
-  plantAnotherBtn.style("display", "none");
-  plantAnotherBtn.style("pointer-events", "auto");
-  plantAnotherBtn.style("position", "absolute");
-  plantAnotherBtn.style("top", "28px");
-  plantAnotherBtn.style("left", "50%");
-  plantAnotherBtn.style("transform", "translateX(-50%)");
-  plantAnotherBtn.style("background", "#2c7a7b");
-  plantAnotherBtn.style("color", "white");
-  plantAnotherBtn.style("border", "none");
-  plantAnotherBtn.style("border-radius", "999px");
-  plantAnotherBtn.style("padding", "12px 24px");
-  plantAnotherBtn.style("font-size", "15px");
-  plantAnotherBtn.style("font-weight", "600");
-  plantAnotherBtn.style("cursor", "pointer");
-  plantAnotherBtn.style("z-index", "30");
-  plantAnotherBtn.style("box-shadow", "0 4px 14px rgba(0,0,0,0.18)");
-  plantAnotherBtn.mousePressed(() => {
-    resetPromptSelections();
-    showStep("prompt1");
-  });
 
   // const clearBtn = createButton("Clear Garden").id("clear-garden-btn").parent(gardenWrap);
   // clearBtn.style("display", "none");
@@ -1990,8 +2163,8 @@ function buildUI() {
   saveBtn.style("display", "none");
   saveBtn.style("pointer-events", "auto");
   saveBtn.style("position", "absolute");
-  saveBtn.style("top", "82px");
-  saveBtn.style("right", "16px");
+  saveBtn.style("top", "20px");   /* level with the Home link opposite it */
+  saveBtn.style("right", "66px");   /* clears the 38px music button at right 16 */
   saveBtn.style("background", "#e8f6f3");
   saveBtn.style("border", "1px solid #cfe5e1");
   saveBtn.style("color", "#0f5132");
@@ -2015,7 +2188,10 @@ function buildUI() {
   const ul = createElement("ul").parent(tipsCard);
   createElement("li", "You've planted a flower that reflects your mood today.").parent(ul);
   createElement("li", "Your newest flower will have sparkles around it.").parent(ul);
-  createElement("li", "Your garden is saved on this device automatically.").parent(ul);
+  const savedWhere = (window.GardenStore && window.GardenStore.signedIn)
+    ? "Your garden is saved to your account, on any device."
+    : "Your garden is saved in this browser automatically.";
+  createElement("li", savedWhere).parent(ul);
   createElement("li", "Click the name at the top to personalize your garden.").parent(ul);
   tipsCard.style("display", "none");
 
@@ -2023,7 +2199,7 @@ function buildUI() {
   nameWrap.style("display", "none");
   nameWrap.style("pointer-events", "auto");
   nameWrap.style("position", "absolute");
-  nameWrap.style("top", "110px");
+  nameWrap.style("top", "18px");
   nameWrap.style("left", "50%");
   nameWrap.style("transform", "translateX(-50%)");
   nameWrap.style("z-index", "30");
@@ -2038,10 +2214,13 @@ function buildUI() {
   nameField.style("border", "none");
   nameField.style("border-bottom", "2px solid transparent");
   nameField.style("border-radius", "0");
-  nameField.style("padding", "2px 4px");
-  nameField.style("font-family", "'Inter', sans-serif");
-  nameField.style("font-size", "15px");
-  nameField.style("font-weight", "700");
+  /* No right padding. With 4px there the input's box held the name away from
+     the "'s" that follows it and the title read as "Keni 's Gratitude Garden". */
+  nameField.style("padding", "2px 0 2px 4px");
+  nameField.style("font-family", NAME_FONT);
+  nameField.style("font-size", NAME_PX + "px");
+  nameField.style("font-weight", "600");
+  nameField.style("font-variation-settings", "'SOFT' 50, 'WONK' 0");
   nameField.style("color", "#0f5132");
   nameField.style("background", "transparent");
   nameField.style("outline", "none");
@@ -2055,15 +2234,41 @@ function buildUI() {
 
   const resizeNameField = () => {
     const tmp = document.createElement("span");
-    tmp.style.cssText = "font-size:15px;font-weight:700;visibility:hidden;position:absolute;white-space:pre;";
+    /* the same font the field is in, or the measured width is wrong and the
+       name either clips or leaves a gap before the "'s" */
+    tmp.style.cssText = "font-family:" + NAME_FONT + ";font-size:" + titlePx +
+      "px;font-weight:600;visibility:hidden;position:absolute;white-space:pre;";
     tmp.textContent = nameField.elt.value || nameField.elt.placeholder;
     document.body.appendChild(tmp);
     const w = Math.max(40, tmp.offsetWidth + 6);
     nameField.elt.style.width = w + "px";
     document.body.removeChild(tmp);
   };
-  nameField.elt.addEventListener("input", resizeNameField);
-  if (gardenName) setTimeout(resizeNameField, 50);
+
+  /* Measure, then shrink. Guessing a size from a breakpoint gets a short name
+     wrong at one width and a long one wrong at another; the only thing that
+     answers it is the rendered width of this name at this size. */
+  fitTitle = () => {
+    /* A hidden tab or a detached frame reports a width of 0, and shrinking to
+       the floor on the strength of that leaves the title tiny when the page
+       comes back. Below 200 there is nothing worth fitting to, so keep the
+       size we already have. */
+    if (windowWidth < 200) return;
+    const room = windowWidth - 32;
+    titlePx = NAME_PX;
+    for (let i = 0; i < 14; i++) {
+      nameField.elt.style.fontSize = titlePx + "px";
+      nameSuffixEl.style.fontSize = titlePx + "px";
+      resizeNameField();
+      if (nameWrap.elt.offsetWidth <= room || titlePx <= NAME_PX_MIN) break;
+      titlePx -= 1;
+    }
+    /* the note keeps the 0.58 ratio it was given, and the two stay 5px apart */
+    const notePx = Math.max(10, Math.round(titlePx * 0.46));
+    dailyNote.style("font-size", notePx + "px");
+    dailyNote.style("top", (18 + Math.round(titlePx * 1.38) + 5) + "px");
+  };
+  nameField.elt.addEventListener("input", () => fitTitle());
 
   nameField.elt.addEventListener("mouseenter", () => {
     nameField.elt.style.borderBottomColor = "#4db6ac";
@@ -2080,19 +2285,36 @@ function buildUI() {
     nameField.elt.style.cursor = "text";
   });
 
+  dailyNote = createDiv("").id("daily-note").parent(gardenWrap);
+  dailyNote.style("display", "none");
+  dailyNote.style("position", "absolute");
+  dailyNote.style("top", "58px");
+  dailyNote.style("left", "50%");
+  dailyNote.style("transform", "translateX(-50%)");
+  dailyNote.style("text-align", "center");
+  dailyNote.style("z-index", "30");
+  dailyNote.style("pointer-events", "none");
+  dailyNote.style("font-family", "Arial, Helvetica, sans-serif");
+  dailyNote.style("font-size", NOTE_PX + "px");
+  dailyNote.style("color", "#2c7a7b");
+  dailyNote.style("text-shadow", "1px 1px 0 rgba(255,255,255,0.6)");
+
   const nameSuffix = createSpan("'s Gratitude Garden").parent(nameWrap);
-  nameSuffix.style("font-family", "'Inter', sans-serif");
-  nameSuffix.style("font-size", "15px");
-  nameSuffix.style("font-weight", "700");
+  nameSuffixEl = nameSuffix.elt;
+  nameSuffix.style("font-family", NAME_FONT);
+  nameSuffix.style("font-size", NAME_PX + "px");
+  nameSuffix.style("font-weight", "600");
+  nameSuffix.style("font-variation-settings", "'SOFT' 50, 'WONK' 0");
   nameSuffix.style("color", "#0f5132");
   nameSuffix.style("pointer-events", "none");
   nameSuffix.style("text-shadow", "1px 1px 0 rgba(255,255,255,0.6)");
 
   if (gardenName) nameField.value(gardenName);
+  fitTitle();
 
   const saveName = () => {
     gardenName = nameField.value().trim();
-    localStorage.setItem(STORAGE_KEY + "_name", gardenName);
+    if (window.GardenStore) window.GardenStore.saveName(gardenName);
   };
 
   nameField.elt.addEventListener("blur", saveName);
@@ -2104,19 +2326,12 @@ function buildUI() {
 
   // RESET ALL SCREENS FIRST
 prompt1Wrap.style("display", "none");
-prompt2Wrap.style("display", "none");
-prompt3Wrap.style("display", "none");
-flowerPreviewWrap.style("display", "none");
-gardenWrap.style("display", "none");
-
-// THEN DECIDE WHAT TO SHOW
-if (hasPlantedToday()) {
-  step = "garden";
-  gardenWrap.style("display", "block");
-} else {
-  step = "prompt1";
-  prompt1Wrap.style("display", "flex");
-}
+/* Through showStep, not by hand. This used to set `step` and toggle the wraps
+   itself, which meant the daily note was never rendered on load: a returning
+   visitor was dropped into the garden with no prompts and nothing saying why.
+   showStep is the one driver, so it also gets the Save button, the tips card
+   and the name field right. */
+showStep(hasPlantedToday() ? "garden" : "prompt1");
 }
 
 function updateFlowerPreview() {
@@ -2149,7 +2364,7 @@ function updateFlowerPreview() {
 
     const nameDiv = select("#flower-name");
     if (nameDiv) {
-      nameDiv.html(`${speciesLabel} &mdash; ${data.meaning}`);
+      nameDiv.html(`${speciesLabel} : ${data.meaning}`);
     }
 
     const quoteDiv = select("#flower-quote");
@@ -2193,11 +2408,6 @@ function showStep(s) {
     tipsCard.style("display", s === "garden" && hasFlower ? "block" : "none");
   }
 
-  const plantAnotherBtn = select("#plant-another-btn");
-  if (plantAnotherBtn) {
-    plantAnotherBtn.style("display", s === "garden" ? "block" : "none");
-  }
-
   const clearBtn = select("#clear-garden-btn");
   if (clearBtn) {
     clearBtn.style("display", s === "garden" ? "block" : "none");
@@ -2206,6 +2416,12 @@ function showStep(s) {
   const nameWrap = select("#name-wrap");
   if (nameWrap) {
     nameWrap.style("display", s === "garden" ? "flex" : "none");
+  }
+
+  if (dailyNote) {
+    const planted = s === "garden" && hasPlantedToday();
+    dailyNote.html(planted ? "Today's flower is planted. Come back tomorrow for another." : "");
+    dailyNote.style("display", planted ? "block" : "none");
   }
 
   const logo = select("#gg-logo");
@@ -2222,6 +2438,7 @@ function windowResized() {
   groundLevel = height * 0.76;
   buildClouds(true);
   updateResponsiveFlowerLayout();
+  fitTitle();
 }
 
 function setup() {
@@ -2255,11 +2472,13 @@ function setup() {
   groundLevel = height * 0.76;
   updateResponsiveFlowerLayout();
 
-  if (flowers.length === 0) {
-    showStep("prompt1");
-  } else {
-    showStep("garden");
-  }
+  /* The daily gate, not the flower count. This asked "does this garden hold
+     any flowers" and sent everyone who had ever planted straight to the
+     garden, forever: it runs after buildUI, so it overrode the gate buildUI
+     had just applied and the prompts never came back the next day. The
+     question is whether today's flower is planted, which is the same question
+     buildUI asks, so both now ask it the same way. */
+  showStep(hasPlantedToday() ? "garden" : "prompt1");
 }
 
 function draw() {
