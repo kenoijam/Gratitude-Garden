@@ -82,139 +82,142 @@ return { daisy: 65, tulip: 60, rose: 55, sunflower: 65, lily: 70, sakura: 75 }[s
 }
 
 function addFlower(text, name, species, hue) {
-const word = name.trim().slice(0, 20);
+  const word = name.trim().slice(0, 20);
 
-const flowerCount = flowers.length;
-let size;
-if (flowerCount < 10) {
-size = random(28, 36);
-} else if (flowerCount < 30) {
-size = random(24, 32);
-} else if (flowerCount < 60) {
-size = random(20, 28);
-} else {
-size = random(16, 24);
-}
+  const flowerCount = flowers.length;
+  let size;
+  if (flowerCount < 10) {
+    size = random(28, 36);
+  } else if (flowerCount < 30) {
+    size = random(24, 32);
+  } else if (flowerCount < 60) {
+    size = random(20, 28);
+  } else {
+    size = random(16, 24);
+  }
 
-const groundLevel = height * 0.76;
-const rows = ["front", "middle", "back"];
+  const groundLevel = height * 0.76;
+  const rows = ["front", "middle", "back"];
 
-let x = 0;
-let stemLen = 160;
-let baseY = groundLevel;
-let chosenRow = "front";
+  let x = 0;
+  let stemLen = 160;
+  let baseY = groundLevel;
+  let chosenRow = "front";
 
-const minFlowerDistanceFactor = width < 720 ? 0.7 : 0.9;
-const maxAttempts = 500;
+  const minFlowerDistanceFactor = width < 720 ? 0.7 : 0.9;
 
-for (const row of rows) {
-let attempts = 0;
-let foundSpot = false;
+  for (const row of rows) {
+    let targetBaseY = groundLevel;
+    let minStem, maxStem;
+    var stemScale = width < 720 ? 0.7 : 1;
 
-while (attempts < maxAttempts && !foundSpot) {
-attempts++;
+    if (row === "front") {
+      minStem = height * 0.16 * stemScale;
+      maxStem = height * 0.24 * stemScale;
+    } else if (row === "middle") {
+      targetBaseY = groundLevel - height * 0.04;
+      minStem = height * 0.26 * stemScale;
+      maxStem = height * 0.36 * stemScale;
+    } else {
+      targetBaseY = groundLevel - height * 0.08;
+      minStem = height * 0.32 * stemScale;
+      maxStem = height * 0.42 * stemScale;
+    }
 
-let candidateStemLen;
-var stemScale = width < 720 ? 0.7 : 1;
-if (row === "front") {
-candidateStemLen = random(height * 0.16, height * 0.24) * stemScale;
-} else if (row === "middle") {
-candidateStemLen = random(height * 0.26, height * 0.36) * stemScale;
-} else {
-candidateStemLen = random(height * 0.32, height * 0.42) * stemScale;
-}
+    const maxAttempts = 80;
+    let bestX = random(50, width - 50);
+    let bestClearance = -1;
+    let bestStemLen = null;
 
-const candidateX = random(50, width - 50);
-const candidateBloomY = groundLevel - candidateStemLen;
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+      const candidateX = random(50, width - 50);
+      const candidateStem = random(minStem, maxStem);
+      const candidateBloomY = targetBaseY - candidateStem;
 
-foundSpot = true;
+      let minDist = Infinity;
+      for (const f of flowers) {
+        const existingStemLen = (f.stemNorm != null ? f.stemNorm * height : f.stemLen);
+        const existingX = (f.xNorm != null ? f.xNorm * width : f.x);
+        const existingBloomY = groundLevel - existingStemLen;
 
-for (const f of flowers) {
-const existingStemLen = (f.stemNorm != null ? f.stemNorm * height : f.stemLen);
-const existingX       = (f.xNorm    != null ? f.xNorm    * width  : f.x);
-const existingBloomY  = groundLevel - existingStemLen;
+        const dx = candidateX - existingX;
+        const dy = candidateBloomY - existingBloomY;
+        const d = sqrt(dx * dx + dy * dy);
+        const needed = (size + f.size) * minFlowerDistanceFactor;
+        if (d < needed) { minDist = 0; break; }
+        if (d < minDist) minDist = d;
+      }
 
-const dx = candidateX - existingX;
-const dy = candidateBloomY - existingBloomY;
-const distance = sqrt(dx * dx + dy * dy);
-const requiredDistance = (size + f.size) * minFlowerDistanceFactor;
-if (distance < requiredDistance) {
-foundSpot = false;
-break;
-}
-}
+      if (minDist > bestClearance) {
+        bestClearance = minDist;
+        bestX = candidateX;
+        bestStemLen = candidateStem;
+      }
+      if (minDist > size * 2.5) break;
+    }
 
-if (foundSpot) {
-x = candidateX;
-stemLen = candidateStemLen;
-baseY = groundLevel;
-chosenRow = row;
-break;
-}
-}
+    if (bestClearance > 0 && bestStemLen) {
+      x = bestX;
+      stemLen = bestStemLen;
+      baseY = targetBaseY;
+      chosenRow = row;
+      break;
+    }
+  }
 
-if (foundSpot) break;
-}
+  if (!x) {
+    x = random(50, width - 50);
+    stemLen = random(120, 200);
+    baseY = groundLevel;
+    chosenRow = "front";
+  }
 
-if (!x) {
-x = random(50, width - 50);
-stemLen = random(120, 200);
-baseY = groundLevel;
-chosenRow = "front";
-}
+  let layer;
+  if (chosenRow === "front") layer = "front";
+  else if (chosenRow === "middle") layer = "mid";
+  else layer = "back";
 
-if (chosenRow === "middle") {
-baseY = groundLevel - height * 0.04;
-} else if (chosenRow === "back") {
-baseY = groundLevel - height * 0.08;
-}
+  const petals = speciesPetalCount(species);
 
-let layer;
-if (chosenRow === "front") layer = "front";
-else if (chosenRow === "middle") layer = "mid";
-else layer = "back";
+  const newFlower = {
+    word,
+    gratitude: text,
+    species,
+    x,
+    baseY,
+    layer,
+    stemLen,
+    size,
 
-const petals = speciesPetalCount(species);
+    xNorm: x / width,
+    stemNorm: stemLen / BASE_H,
+    sizeNorm: size / BASE_H,
 
-const newFlower = {
-word,
-gratitude: text,
-species,
-x,
-baseY,
-layer,
-stemLen,
-size,
+    phase: random(360),
+    petals,
+    hue,
+    sat: defaultSat(species),
+    light: defaultLight(species),
 
-xNorm: x / width,
-stemNorm: stemLen / BASE_H,
-sizeNorm: size / BASE_H,
+    createdIndex: flowerCounter++
+  };
 
-phase: random(360),
-petals,
-hue,
-sat: defaultSat(species),
-light: defaultLight(species),
+  if (!shared.flowers) {
+    shared.flowers = [];
+  }
 
-createdIndex: flowerCounter++
-};
+  shared.flowers.push(newFlower);
 
-if (!shared.flowers) {
-shared.flowers = [];
-}
+  const localFlower = { ...newFlower };
+  localFlower.growthStage = GROWTH_STAGES.BUD;
+  localFlower.growthStartTime = millis();
+  localFlower.plantedTime = Date.now();
+  localFlower.isMyFlower = true;
+  flowers.push(localFlower);
 
-shared.flowers.push(newFlower);
+  myLocalFlowerIndex = flowers.length - 1;
 
-const localFlower = { ...newFlower };
-localFlower.growthStage = GROWTH_STAGES.BUD;
-localFlower.growthStartTime = millis();
-localFlower.plantedTime = Date.now();
-localFlower.isMyFlower = true;
-flowers.push(localFlower);
-
-myLocalFlowerIndex = flowers.length - 1;
-
-updateResponsiveFlowerLayout();
+  updateResponsiveFlowerLayout();
 }
 
 function speciesShapeCfg(species) {
@@ -1552,6 +1555,29 @@ holder.elt.appendChild(canvas);
 });
 }
 
+function updateConfirmPreview() {
+  const holder = select("#confirm-preview");
+  if (!holder) return;
+  holder.elt.innerHTML = "";
+  const pg = createGraphics(140, 140);
+  pg.angleMode(DEGREES);
+  pg.pixelDensity(1);
+  pg.colorMode(RGB, 255);
+  pg.clear();
+  pg.push();
+  pg.translate(pg.width / 2, pg.height / 2);
+  drawPreviewBloom(pg, chosenSpecies, chosenHue);
+  pg.pop();
+  const canvas = pg.canvas;
+  if (canvas) {
+    canvas.style.display = "block";
+    canvas.style.width = "100%";
+    canvas.style.height = "100%";
+    canvas.style.objectFit = "contain";
+    holder.elt.appendChild(canvas);
+  }
+}
+
 function rebalanceRowsForNarrowScreens() {
 if (!flowers || !flowers.length) return;
 if (width >= 720) return;
@@ -2110,29 +2136,6 @@ selectSub.style("margin", "4px 0 16px 0");
 selectSub.style("text-align", "center");
 selectSub.style("color", "#1f7460");
 
-const colorRow = createDiv().parent(selectCard);
-colorRow.id("color-section");
-colorRow.style("width", "100%");
-colorRow.style("display", "flex");
-colorRow.style("justify-content", "center");
-colorRow.style("margin", isNarrow ? "0 0 16px 0" : "2px 0 18px 0");
-
-colorPickerSelect = createSlider(0, 360, chosenHue);
-colorPickerSelect.parent(colorRow);
-colorPickerSelect.addClass("gg-hue-slider");
-colorPickerSelect.style("width", "100%");
-colorPickerSelect.style("pointer-events", "auto");
-
-const sliderEl = colorPickerSelect.elt;
-sliderEl.style.background =
-"linear-gradient(90deg,#f7a9a8,#f4e98c,#9be4a5,#8dd7f5,#c9a4f9,#f79ad3,#f7a9a8)";
-sliderEl.style.borderRadius = "999px";
-
-colorPickerSelect.input(() => {
-chosenHue = colorPickerSelect.value();
-drawSpeciesPreviews();
-});
-
 const grid = createDiv().addClass("gg-grid").parent(selectCard);
 grid.style("flex", "1 1 auto");
 if (isNarrow) {
@@ -2173,10 +2176,8 @@ if (isNarrow) {
 nameSpan.style("font-size", "14px");
 }
 tile.mousePressed(() => {
-chosenSpecies = sp.id;
-addFlower(gratitudeText, username, chosenSpecies, chosenHue);
-saveGarden();
-showStep("garden");
+  chosenSpecies = sp.id;
+  showStep("confirm");
 });
 
 speciesButtons[sp.id] = { tile, holder };
@@ -2186,6 +2187,56 @@ const backBtnSelect = createButton("Back")
 .parent(selectCard);
 backBtnSelect.mousePressed(() => showStep("username"));
 backBtnSelect.style("margin-top", "8px");
+
+/* Confirm / Customize Color */
+const confirmWrap = createDiv().id("confirm-wrap").parent(root).addClass("gg-wrap");
+confirmWrap.style("z-index", "100");
+confirmWrap.style("pointer-events", "auto");
+confirmWrap.style("display", "none");
+confirmWrap.style("background", "rgba(207, 238, 240, 0.85)");
+
+const confirmCard = createDiv().addClass("gg-card").parent(confirmWrap);
+confirmCard.style("box-sizing", "border-box");
+confirmCard.style("width", isNarrow ? "96vw" : "420px");
+confirmCard.style("max-width", "420px");
+confirmCard.style("padding", "28px 24px");
+confirmCard.style("text-align", "center");
+
+createElement("h2", "Your Flower").addClass("gg-title").style("font-size", "28px").style("margin-bottom", "8px").parent(confirmCard);
+
+const confirmPreviewHolder = createDiv().id("confirm-preview").parent(confirmCard);
+confirmPreviewHolder.style("width", "140px");
+confirmPreviewHolder.style("height", "140px");
+confirmPreviewHolder.style("margin", "12px auto");
+
+const confirmColorLabel = createP("Choose your flower color:").parent(confirmCard);
+confirmColorLabel.style("font-size", "14px");
+confirmColorLabel.style("color", "#0f5132");
+confirmColorLabel.style("margin", "12px 0 8px 0");
+
+const confirmSlider = createSlider(0, 360, chosenHue);
+confirmSlider.parent(confirmCard);
+confirmSlider.addClass("gg-hue-slider");
+confirmSlider.style("width", "100%");
+confirmSlider.style("pointer-events", "auto");
+confirmSlider.style("margin-bottom", "16px");
+const confirmSliderEl = confirmSlider.elt;
+confirmSliderEl.style.background = "linear-gradient(90deg,#f7a9a8,#f4e98c,#9be4a5,#8dd7f5,#c9a4f9,#f79ad3,#f7a9a8)";
+confirmSliderEl.style.borderRadius = "999px";
+confirmSlider.input(() => {
+  chosenHue = confirmSlider.value();
+  updateConfirmPreview();
+});
+
+const plantBtn = createButton("Plant in Garden").addClass("gg-btn").parent(confirmCard);
+plantBtn.mousePressed(() => {
+  addFlower(gratitudeText, username, chosenSpecies, chosenHue);
+  saveGarden();
+  showStep("garden");
+});
+
+const confirmBack = createButton("Back").addClass("gg-back").parent(confirmCard);
+confirmBack.mousePressed(() => showStep("select"));
 
 /* Garden */
 gardenWrap = createDiv().id("garden-wrap").parent(root);
@@ -2264,13 +2315,15 @@ window.open("https://linktr.ee/kenoijam", "_blank");
 }
 
 function showStep(s) {
-step = s;
-
-landingWrap.style("display", s === "landing" ? "flex" : "none");
-usernameWrap.style("display", s === "username" ? "flex" : "none");
-selectWrap.style("display", s === "select" ? "flex" : "none");
-
-gardenWrap.style("display", "block");
+  step = s;
+  landingWrap.style("display", s === "landing" ? "flex" : "none");
+  usernameWrap.style("display", s === "username" ? "flex" : "none");
+  selectWrap.style("display", s === "select" ? "flex" : "none");
+  select("#confirm-wrap").style("display", s === "confirm" ? "flex" : "none");
+  
+  if (s === "confirm") {
+    updateConfirmPreview();
+  }
 
 if (s === "garden") {
 hoveredFlower = null;
