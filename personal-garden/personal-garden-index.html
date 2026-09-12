@@ -35,6 +35,11 @@
      once. It must load BEFORE any sketch draws. -->
 <script src="../garden-life.js"></script>
 
+  <!-- One account across the whole project: the client, the session, the
+       username and the friends list. Must load BEFORE the page modules,
+       which borrow its client rather than making a second one. -->
+  <script src="../garden-account.js"></script>
+
 <script src="personal-garden-auth.js"></script>
 
 </head>

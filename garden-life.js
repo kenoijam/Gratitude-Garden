@@ -23,8 +23,9 @@
      GardenLife.sky(ctx, w, h, opts)     birds. After the clouds, under the hills.
      GardenLife.meadow(ctx, w, h, opts)  butterflies and motes. Over everything.
      GardenLife.drift(ctx, w, h, opts)   motes alone, for a whole PAGE rather
-                                         than a scene. The landing page runs it
-                                         on a fixed canvas over everything.
+                                         than a scene. Held in PAGE coordinates
+                                         and drawn one section at a time, so
+                                         they scroll with the copy.
 
    Everything is placed in BANDS, [top, bottom] in the caller's own units.
    The default bands are derived from opts.horizon, which is all a garden has
@@ -167,25 +168,7 @@
       });
     }
 
-    /* A second, larger set for `drift`. It is not the same list at a
-       different density: these have to carry a tone, since a page runs pale
-       sections and dark ones past them and one colour cannot sit on both. */
-    var nDust = Math.round(clamp(w / 58, 12, 34));
-    var dust = [];
-    for (var u2 = 0; u2 < nDust; u2++) {
-      dust.push({
-        x: rnd(u2 * 97.1) * 1,          /* 0..1 across the page */
-        y: rnd(u2 * 101.3) * 1,         /* 0..1 down it */
-        r: 1.0 + rnd(u2 * 103.9) * 1.9,
-        drift: 3 + rnd(u2 * 107.7) * 11,
-        rise: 3 + rnd(u2 * 109.3) * 10,
-        tw: 0.35 + rnd(u2 * 113.1) * 0.6,
-        phase: rnd(u2 * 127.3) * 6.28,
-        warm: rnd(u2 * 131.9) > 0.5
-      });
-    }
-
-    return { w: w, h: h, flies: flies, birds: birds, motes: motes, dust: dust };
+    return { w: w, h: h, flies: flies, birds: birds, motes: motes };
   }
 
   /* Rebuilt only on a real size change. Rebuilding on every pixel of a window
@@ -374,33 +357,72 @@
     ctx.globalAlpha = 1;
   }
 
-  /* Motes alone, across a whole PAGE rather than inside a scene. The landing
-     page runs this on one fixed canvas over everything, so the motes stay
-     where they are while the page scrolls past behind them, which is how dust
-     in front of a lens behaves and is also free: nothing has to be re-laid
-     out or re-measured on scroll.
+  /* The dust belongs to the SECTIONS, not to the window. Each band gets its
+     own motes, held in page coordinates and drawn at `pageY - scrollY`, so
+     scrolling carries them past exactly like the copy does. Held in viewport
+     coordinates instead, which is what this was first, the same dozen motes
+     hang in the same places however far the page is scrolled, and the whole
+     effect reads as dirt on the screen rather than as air in a room.
 
-     `opts.toneAt(y)` answers one question, is the ground behind this point
-     dark, and the caller is the only thing that can answer it. Anything else
-     would mean reading pixels back off the page every frame. */
+     Only what is on screen is drawn, so a long page costs no more per frame
+     than a short one. */
+  var dust = null, dustSig = "";
+
+  function buildDust(w, bands) {
+    var out = [];
+    for (var b = 0; b < bands.length; b++) {
+      var bh = Math.max(60, bands[b].bottom - bands[b].top);
+      /* Per section rather than per page, so a short section is not skipped
+         and a tall one is not left with a single mote rattling around it. */
+      var n = Math.round(clamp(bh / 62, 4, 22));
+      for (var i = 0; i < n; i++) {
+        var sd = (b + 1) * 977 + i * 31;
+        out.push({
+          band: b,
+          fx: rnd(sd * 1.7),
+          fy: rnd(sd * 2.3),
+          r: 1.0 + rnd(sd * 3.1) * 1.9,
+          drift: 3 + rnd(sd * 5.9) * 11,
+          rise: 3 + rnd(sd * 7.3) * 10,
+          tw: 0.35 + rnd(sd * 11.9) * 0.6,
+          phase: rnd(sd * 13.7) * 6.28,
+          warm: rnd(sd * 17.3) > 0.5
+        });
+      }
+    }
+    return out;
+  }
+
   function drift(ctx, w, h, opts) {
     if (!ctx || w <= 0 || h <= 0) return;
-    var P = ensure(w, h);
+    var bands = (opts && opts.bands) || [];
+    if (!bands.length) return;
+    var scroll = (opts && opts.scrollY) || 0;
     var t = clock();
     var u = unitFor(w, opts);
-    var toneAt = (opts && opts.toneAt) || null;
-    var wrapW = w + 60, wrapH = h + 40;
+    var wrapW = w + 60;
+
+    /* Rebuilt only when the page's shape actually changes. Rebuilding on
+       every scroll would re-seed every mote sixty times a second. */
+    var sig = Math.round(w) + "|" + bands.map(function (b) {
+      return Math.round(b.top) + "," + Math.round(b.bottom) + "," + (b.dark ? 1 : 0);
+    }).join(";");
+    if (sig !== dustSig) { dustSig = sig; dust = buildDust(w, bands); }
 
     ctx.save();
-    for (var i = 0; i < P.dust.length; i++) {
-      var d = P.dust[i];
-      var x = (d.x * wrapW + t * d.drift) % wrapW - 30;
-      /* Rising, and wrapped past both edges rather than at them, so a mote
-         fades in off screen instead of appearing out of nothing. */
-      var y = h + 20 - ((d.y * wrapH + t * d.rise) % wrapH);
+    for (var i = 0; i < dust.length; i++) {
+      var d = dust[i];
+      var band = bands[d.band];
+      if (!band) continue;
+      var bh = Math.max(60, band.bottom - band.top);
+      var off = (d.fy * bh - t * d.rise) % bh;
+      if (off < 0) off += bh;                  /* rising, wrapped in its own band */
+      var y = band.top + off - scroll;
+      if (y < -40 || y > h + 40) continue;     /* off screen, nothing to pay for */
+      var x = (d.fx * wrapW + t * d.drift) % wrapW - 30;
       var tw = 0.5 + 0.5 * Math.sin(t * d.tw + d.phase);
       paintMote(ctx, x, y, d.r * u * (0.8 + tw * 0.45),
-                0.10 + tw * 0.30, d.warm, toneAt ? !!toneAt(y) : false);
+                0.10 + tw * 0.30, d.warm, !!band.dark);
     }
     ctx.restore();
   }

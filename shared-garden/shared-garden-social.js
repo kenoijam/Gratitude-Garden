@@ -343,28 +343,13 @@
     });
   }
 
-  /* Created on first sign in if it is not there. A comment with no name under
-     it is worse than no comment, and nothing else in this project creates the
-     row. The username has to be unique, so a collision retries once with the
-     account's own id on the end, which cannot collide with anything. */
+  /* Profiles belong to garden-account.js, which is also what puts the
+     username claim screen in front of somebody who has just signed up. This
+     file only ever READS a name. */
   function ensureProfile() {
-    if (!me) return Promise.resolve(null);
-    return sb.from("profiles").select("*").eq("id", me.id).maybeSingle()
-      .then(function (res) {
-        if (res.data) { myProfile = res.data; return myProfile; }
-        var base = String(me.email || "gardener").split("@")[0]
-          .replace(/[^a-zA-Z0-9_]/g, "").slice(0, 18) || "gardener";
-        return sb.from("profiles").insert({ id: me.id, username: base })
-          .select().maybeSingle()
-          .then(function (ins) {
-            if (!ins.error) { myProfile = ins.data; return myProfile; }
-            return sb.from("profiles")
-              .insert({ id: me.id, username: base + "_" + me.id.slice(0, 6) })
-              .select().maybeSingle()
-              .then(function (i2) { myProfile = i2.data || null; return myProfile; });
-          });
-      })
-      .catch(function () { return null; });
+    var acc = window.GardenAccount;
+    if (!acc || !acc.isLive()) return Promise.resolve(null);
+    return acc.refresh().then(function () { myProfile = acc.profile(); return myProfile; });
   }
 
   /* ----------------------------------------------------------------- views */
@@ -614,7 +599,11 @@
      exactly as it did before any of this existed. */
   var live = false;
   if (CFG && window.supabase && window.supabase.createClient) {
-    sb = window.supabase.createClient(CFG.url, CFG.key);
+    /* Borrowed from garden-account.js rather than made here, so this panel
+       and the friends list are signed into the same session. */
+    sb = (window.GardenAccount && window.GardenAccount.isLive())
+      ? window.GardenAccount.client()
+      : window.supabase.createClient(CFG.url, CFG.key);
     live = true;
     if (document.body) ready();
     else document.addEventListener("DOMContentLoaded", ready);

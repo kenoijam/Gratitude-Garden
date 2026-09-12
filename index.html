@@ -103,6 +103,12 @@
     </g>
   </svg>
 
+  <!-- The birds. Its own canvas over the whole hero section, so they can fly
+       up among the clouds rather than just above the flowers: the meadow
+       canvas below starts far too low for that. z-index 3 puts them over the
+       clouds and the sun at 2 and under the copy at 5. -->
+  <canvas id="hero-sky" aria-hidden="true"></canvas>
+
   <div class="cloud-wrap">
     <div class="cloud cloud-1"><div class="bump1"></div><div class="bump2"></div><div class="body"></div></div>
     <div class="cloud cloud-2"><div class="bump1"></div><div class="bump2"></div><div class="body"></div></div>
@@ -428,15 +434,11 @@
        than deriving them from a horizon: its flowers grow UPWARD out of a
        ground line at the bottom of the picture, where a garden's sit around
        and below its horizon, so the derived bands belong to the gardens. */
-    if (window.GardenLife) {
-      /* The hero's sky is a thin strip between the copy and the flowers, and
-         a visitor reads the top of a page for a few seconds and then scrolls.
-         On the gardens' default rhythm the flock is away for twenty two of
-         every fifty two seconds, which most people would simply never see, so
-         here the gap is eight and the birds carry a little more weight. */
-      GardenLife.sky(ctx, LOGICAL_W, logH,
-        { birds: [16, 104], cross: 26, gap: 8, scale: 1.2, ink: "rgba(47,98,96,0.58)" });
-    }
+    /* The birds are NOT drawn here any more. This canvas begins where the
+       meadow does, well below the copy, so a bird in it could only ever fly
+       just above the flowers, which is not where a bird is. They moved to
+       #hero-sky, which covers the whole hero section and can put them up
+       among the clouds. */
 
     // 1. Back hills (behind flowers)
     ctx.fillStyle='#a9d9cf';
@@ -1835,45 +1837,58 @@
   <script>
   (function () {
     var c = document.getElementById('page-dust');
+    var sky = document.getElementById('hero-sky');
+    var hero = document.querySelector('.hero');
     if (!c || !window.GardenLife) return;
     var ctx = c.getContext('2d');
+    var skyCtx = sky ? sky.getContext('2d') : null;
 
-    /* Which stretches of the page are DARK. A mote has to go white on the
-       dark teal and gold on the cream, or it is invisible on one of them, and
-       reading pixels back off the page every frame to find out is not an
-       option. These two are measured once in page space and only re-measured
-       when something could have moved. */
-    var darkBands = [];
+    /* Every section, in PAGE coordinates, with whether its ground is dark.
+       The motes belong to the sections rather than to the window: held in
+       viewport coordinates, which is what this was first, the same dozen
+       motes hang in the same places however far you scroll and the whole
+       thing reads as dirt on the screen rather than as air in a room.
+
+       The dark flag is what picks the palette. White is right on the teal
+       and invisible on cream, so the pale sections take a warm gold and a
+       soft teal instead, and only the page can say which is which. */
+    var SECTIONS = [
+      ['.hero', false], ['.about', false], ['.gardens', false],
+      ['.catalogue', false], ['.wisdom', true], ['.cta', false], ['footer', true]
+    ];
+    var bands = [];
     var lastMeasure = 0;
 
-    function measure() {
-      var dpr = Math.min(window.devicePixelRatio || 1, 2);
-      var w = window.innerWidth, h = window.innerHeight;
-      if (c.width !== Math.round(w * dpr) || c.height !== Math.round(h * dpr)) {
-        c.width = Math.round(w * dpr);
-        c.height = Math.round(h * dpr);
-        c.style.width = w + 'px';
-        c.style.height = h + 'px';
+    function dpr() { return Math.min(window.devicePixelRatio || 1, 2); }
+
+    function fit(canvas, context, w, h) {
+      var d = dpr();
+      if (canvas.width !== Math.round(w * d) || canvas.height !== Math.round(h * d)) {
+        canvas.width = Math.round(w * d);
+        canvas.height = Math.round(h * d);
+        canvas.style.width = w + 'px';
+        canvas.style.height = h + 'px';
       }
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      darkBands = [];
-      ['#wisdom', 'footer'].forEach(function (sel) {
-        var el = document.querySelector(sel);
-        if (!el) return;
-        var r = el.getBoundingClientRect();
-        darkBands.push([r.top + window.scrollY, r.bottom + window.scrollY]);
-      });
-      lastMeasure = Date.now();
+      context.setTransform(d, 0, 0, d, 0, 0);
     }
 
-    /* The canvas is fixed, so a mote's y is a VIEWPORT y and the scroll
-       position is what turns it into a page one. */
-    function onDark(y) {
-      var py = y + window.scrollY;
-      for (var i = 0; i < darkBands.length; i++) {
-        if (py >= darkBands[i][0] && py <= darkBands[i][1]) return true;
+    function measure() {
+      var w = window.innerWidth, h = window.innerHeight;
+      if (w <= 0 || h <= 0) return;
+      fit(c, ctx, w, h);
+      bands = [];
+      SECTIONS.forEach(function (row) {
+        var elm = document.querySelector(row[0]);
+        if (!elm) return;
+        var r = elm.getBoundingClientRect();
+        if (r.height <= 0) return;
+        bands.push({ top: r.top + window.scrollY, bottom: r.bottom + window.scrollY, dark: row[1] });
+      });
+      if (sky && skyCtx && hero) {
+        var hr = hero.getBoundingClientRect();
+        fit(sky, skyCtx, hr.width, hr.height);
       }
-      return false;
+      lastMeasure = Date.now();
     }
 
     function paint() {
@@ -1884,10 +1899,26 @@
          and in some embedded views, stays zero for good otherwise: no resize
          event ever fires to correct it, and the page then carries an empty
          canvas with nothing on it and no error. */
-      var dpr = Math.min(window.devicePixelRatio || 1, 2);
-      if (c.width !== Math.round(w * dpr) || c.height !== Math.round(h * dpr)) measure();
+      var d = dpr();
+      if (c.width !== Math.round(w * d) || c.height !== Math.round(h * d) || !bands.length) measure();
       ctx.clearRect(0, 0, w, h);
-      GardenLife.drift(ctx, w, h, { toneAt: onDark });
+      GardenLife.drift(ctx, w, h, { bands: bands, scrollY: window.scrollY });
+
+      /* The hero's birds. Painted only while the hero is anywhere on screen,
+         since there is nothing to see once it has scrolled away. */
+      if (sky && skyCtx && hero) {
+        var hr = hero.getBoundingClientRect();
+        if (hr.bottom > 0 && hr.top < h) {
+          skyCtx.clearRect(0, 0, hr.width, hr.height);
+          /* Up among the clouds. They sit between 12 and 19 percent of the
+             hero's height and stand about 90px tall, so this band holds the
+             birds beside them and never down among the flowers. */
+          GardenLife.sky(skyCtx, hr.width, hr.height, {
+            birds: [hr.height * 0.08, hr.height * 0.30],
+            cross: 26, gap: 8, scale: 1.25, ink: 'rgba(47,98,96,0.62)'
+          });
+        }
+      }
     }
 
     measure();
@@ -1903,12 +1934,18 @@
       if (document.hidden) return;
       if (now - last < 33) return;
       last = now;
-      /* The cards fold and the reveal animations run, so the dark sections
-         can move after load. Cheap enough to check back now and then. */
+      /* The cards fold and the reveal animations run, so section heights can
+         move after load. Cheap enough to check back now and then. */
       if (Date.now() - lastMeasure > 1500) measure();
       paint();
     }
-    if (!GardenLife.reduced) requestAnimationFrame(tick);
+    if (GardenLife.reduced) {
+      /* Still, but it must still follow the page, or every mote is stranded
+         wherever the reader happened to be when it was painted. */
+      window.addEventListener('scroll', paint, { passive: true });
+    } else {
+      requestAnimationFrame(tick);
+    }
   })();
   </script>
 

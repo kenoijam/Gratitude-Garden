@@ -179,10 +179,10 @@ For a piece of coursework you are demonstrating, that is usually a nuisance.
 
 ---
 
-## Step 6: Turn on likes and comments in the shared garden
+## Step 6: Turn on usernames, likes, comments and friends
 
 This one is optional. Skip it and everything else still works; the shared
-garden simply has no like button and no comments on it.
+garden simply has no like button, no comments and no friends list on it.
 
 Go back to the **SQL Editor**, click **New query**, paste all of this in and
 press **Run**. It is safe to run more than once: every line either creates
@@ -266,6 +266,49 @@ drop policy if exists "create own profile" on public.profiles;
 drop policy if exists "update own profile" on public.profiles;
 create policy "create own profile" on public.profiles for insert with check (auth.uid() = id);
 create policy "update own profile" on public.profiles for update using (auth.uid() = id);
+
+-- ---------------------------------------------------------------------
+-- Usernames and friends.
+--
+-- A username is how somebody is found, so it has to be unique no matter how
+-- it is capitalised: Keni and keni are the same person as far as searching
+-- is concerned, and allowing both is how people get impersonated.
+-- ---------------------------------------------------------------------
+create unique index if not exists profiles_username_lower_key
+  on public.profiles (lower(username));
+
+-- friendships already exists and holds id, requester_id, addressee_id,
+-- status and created_at.
+alter table public.friendships enable row level security;
+
+-- One row per PAIR, whichever way round it was asked. Without this, two
+-- people who request each other at the same time end up as friends twice and
+-- every list shows them double.
+create unique index if not exists friendships_pair_key
+  on public.friendships (least(requester_id, addressee_id), greatest(requester_id, addressee_id));
+
+drop policy if exists "see my friendships" on public.friendships;
+drop policy if exists "ask to be friends"  on public.friendships;
+drop policy if exists "answer a request"   on public.friendships;
+drop policy if exists "end a friendship"   on public.friendships;
+
+-- You can only ever see a row you are part of. Nobody can read who else is
+-- friends with whom.
+create policy "see my friendships" on public.friendships
+  for select using (auth.uid() = requester_id or auth.uid() = addressee_id);
+
+-- You may only ask in your own name, and not of yourself.
+create policy "ask to be friends" on public.friendships
+  for insert with check (auth.uid() = requester_id and requester_id <> addressee_id);
+
+-- Only the person who was ASKED may accept. The asker cannot accept on their
+-- own behalf, which is the whole point of a request.
+create policy "answer a request" on public.friendships
+  for update using (auth.uid() = addressee_id);
+
+-- Either side may end it, and declining is the same operation as removing.
+create policy "end a friendship" on public.friendships
+  for delete using (auth.uid() = requester_id or auth.uid() = addressee_id);
 ```
 
 You should see **Success. No rows returned**. That is what success looks like
@@ -281,8 +324,12 @@ for a query that only changes the shape of things.
   at a bloom that already exists in the garden, so the worst case is clutter
   rather than anything reaching another person.
 - **Every profile is readable by anyone**, which is what puts a name under a
-  comment. If you would rather it were not, that is a policy change on
-  `profiles` and it will take the names off the comments with it.
+  comment and what makes username search work at all. If you would rather it
+  were not, that is a policy change on `profiles`, and it will take the names
+  off the comments and break friend search with it.
+- **A friendship row is visible only to the two people in it.** Nobody can
+  read who else is friends with whom, and only the person who was asked can
+  accept, which is what makes it a request rather than an announcement.
 
 ## Check that it worked
 

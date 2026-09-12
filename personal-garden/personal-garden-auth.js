@@ -150,7 +150,31 @@
           name: row.garden_name || "",
           lastPlanted: row.last_planted || ""
         };
-      });
+      })
+      .then(seedNameFromUsername);
+  }
+
+  /* The garden's title starts as the username and stays editable afterwards.
+     Only ever filled in when it is EMPTY: someone who has already named their
+     garden something else must not have it renamed under them, and the two
+     are separate things after this moment. The username is the fixed handle
+     friends search for; the title is decoration. */
+  function seedNameFromUsername() {
+    if (current.name) return;
+    var acc = window.GardenAccount;
+    if (!acc || !acc.isLive()) return;
+    var u = acc.username();
+    if (u) { current.name = u; return; }
+    /* The username may still be being claimed on the screen above this one,
+       so take it when it arrives rather than giving up here. */
+    acc.onChange(function (st) {
+      if (current.name || !st.profile || !st.profile.username) return;
+      current.name = st.profile.username;
+      GardenStore.saveName(current.name);
+      if (typeof window.applyGardenName === "function") {
+        window.applyGardenName(current.name);
+      }
+    });
   }
 
   var freshAccount = false;
@@ -472,7 +496,13 @@
     return;
   }
 
-  sb = window.supabase.createClient(URL_, KEY);
+  /* ONE client per page, made by garden-account.js and borrowed here. Two
+     clients both watch the same stored session and both try to refresh it,
+     and the account module needs the same session this gate signs into, or
+     signing in on this page would leave the friends list logged out. */
+  sb = (window.GardenAccount && window.GardenAccount.isLive())
+    ? window.GardenAccount.client()
+    : window.supabase.createClient(URL_, KEY);
 
   /* The reset link lands here with a recovery session. This fires before, or
      instead of, the ordinary session check below, so the flag stops the garden

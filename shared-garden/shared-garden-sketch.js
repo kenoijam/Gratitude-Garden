@@ -21,7 +21,7 @@ let gardenScale = 1;
 
 let landingWrap, usernameWrap, selectWrap, gardenWrap;
 let gratitudeField, charCount, continueBtn;
-let usernameField, usernameContinueBtn;
+let usernameField, usernameContinueBtn, usernameNote;
 let colorPickerSelect, speciesButtons = {};
 let saveBtn, tipsCard;
 
@@ -843,35 +843,77 @@ ellipse(0, y - 10, 6, 11);
 pop();
 }
 
-/* A soft drop shadow under a bloom, and it is legibility rather than style.
- The garden's ground runs #a9d9cf, #8fcfbe and #7ec4b4, all pale teals, and
- the sender picks the flower's hue freely: a pale teal or a pale blue bloom
- sat on that ground at almost no contrast and simply disappeared into the
- grass. A shadow works whatever hue is chosen, where an outline or a floor
- on lightness would fight the choice the person just made.
+/* ONE soft shadow for the whole flower.
 
- It is set on `drawingContext`, p5's own 2D context, because p5 has no
- shadow API of its own. Every petal casts it, which sounds wrong and is in
- fact what makes it read as ONE shadow: petals are drawn front to back over
- each other, so each petal paints over the shadow of the one before it and
- only the outer silhouette survives.
+   The garden's ground runs #a9d9cf, #8fcfbe and #7ec4b4, all pale teals, and
+   the planter picks the hue freely, so a pale teal or pale blue bloom sat on
+   that ground at almost no contrast and disappeared into the grass. A shadow
+   works whatever hue is chosen, where an outline or a floor on lightness
+   would fight the choice the person just made.
 
- The blur and the drop are scaled from the bloom's own radius, or a small
- flower wears a shadow built for a large one. */
-function bloomShadow(R) {
-drawingContext.shadowColor = "rgba(20,64,58,0.32)";
-drawingContext.shadowBlur = Math.max(6, R * 0.30);
-drawingContext.shadowOffsetX = Math.max(1, R * 0.04);
-drawingContext.shadowOffsetY = Math.max(2.5, R * 0.11);
+   The first version set drawingContext.shadow* and let EVERY PETAL cast one.
+   That reads as petal by petal shading rather than as a flower standing on
+   grass, because a petal's shadow falls on the petals around it. Canvas has
+   no way to shadow a group of shapes as one, and an exact silhouette would
+   mean rendering the bloom to an offscreen buffer, which these sketches
+   cannot do: the species functions draw through p5's globals, and the only
+   parallel families that take a buffer are the PREVIEW ones, which are
+   separate copies and would put a different flower's outline under the
+   flower actually drawn.
+
+   So it is one ellipse, per bloom, sized from each species' MEASURED painted
+   extent. It is drawn far off canvas and brought back purely as its own
+   shadow, which is what makes it a single soft shape with one alpha and no
+   seams anywhere.
+
+   BLOOM_BOX is [centre y, half width, half height] as multiples of R,
+   measured by rendering each species alone and reading back its painted
+   bounding box. Lotus and lavender grow UPWARD from an origin that
+   bloomOriginNudge pushes down, which is why their centre y is negative and
+   why a shadow centred on the origin would have sat below the flower.
+*/
+var BLOOM_BOX = {
+  tulip:     [ 0.19, 0.70, 0.88],
+  rose:      [ 0.05, 1.10, 1.10],
+  sunflower: [ 0.05, 1.40, 1.43],
+  sakura:    [ 0.00, 1.13, 1.13],
+  lily:      [ 0.05, 1.00, 1.13],
+  daisy:     [ 0.05, 1.08, 1.08],
+  lotus:     [-0.92, 1.23, 1.09],
+  lavender:  [-1.02, 0.48, 1.14],
+  orchid:    [-0.15, 1.13, 1.13],
+  chrysanth: [ 0.05, 1.27, 1.29]
+};
+
+/* A little smaller than the bloom, so the flower overhangs its own shadow
+   rather than sitting inside a dark halo the same size as itself. */
+var SHADOW_FIT = 0.86;
+
+function bloomShadow(f, R) {
+  var box = BLOOM_BOX[f.species] || BLOOM_BOX.daisy;
+  var ctx = drawingContext;
+
+  /* p5 scales drawingContext by the pixel density, but canvas shadow offsets
+     and blur are NOT touched by the transform: they are device pixels. Both
+     therefore have to be multiplied by the density by hand, or the shadow
+     lands in the wrong place and comes out half as soft as asked for. */
+  var dpr = (typeof pixelDensity === "function") ? pixelDensity() : 1;
+  var FAR = 6000;                       /* far outside any canvas */
+  var dx = Math.max(1, R * 0.05);
+  var dy = Math.max(2.5, R * 0.13);
+
+  ctx.save();
+  ctx.shadowColor = "rgba(18,62,56,0.30)";
+  ctx.shadowBlur = Math.max(5, R * 0.26) * dpr;
+  ctx.shadowOffsetX = (dx - FAR) * dpr;
+  ctx.shadowOffsetY = dy * dpr;
+  ctx.fillStyle = "#000";
+  ctx.beginPath();
+  ctx.ellipse(FAR, box[0] * R, box[1] * R * SHADOW_FIT, box[2] * R * SHADOW_FIT,
+              0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
 }
-
-function clearBloomShadow() {
-drawingContext.shadowColor = "rgba(0,0,0,0)";
-drawingContext.shadowBlur = 0;
-drawingContext.shadowOffsetX = 0;
-drawingContext.shadowOffsetY = 0;
-}
-
 function drawBloom(f) {
 colorMode(HSL, 360, 100, 100, 1);
 noStroke();
@@ -880,8 +922,7 @@ const R     = f.size;
 const hue   = f.hue;
 const sat   = f.sat;
 const light = f.light;
-
-bloomShadow(f.species === "lavender" ? R * 0.9 : R);
+bloomShadow(f, R);
 
 if (f.species === "tulip") {
 drawTulipBloom(R, hue, sat, light);
@@ -904,10 +945,6 @@ drawLavenderBloom(R * 1.5, hue, sat, light);
 } else {
 drawDaisyBloom(R, hue, sat, light);
 }
-
-/* Cleared before the label, which is drawn in this same function: a shadow
-   under white text on a coloured halo turns it to mud. */
-clearBloomShadow();
 
 const scaleFactor = (width < 720 ? gardenScale : 1);
 const labelSize = max(11, 16 * scaleFactor);
@@ -2294,6 +2331,38 @@ usernameField.style("pointer-events", "auto");
 usernameField.input(() => {
 username = usernameField.elt.value;
 });
+
+usernameNote = createP("").parent(usernameCard);
+usernameNote.style("font-size", "13px");
+usernameNote.style("color", "#2c7a7b");
+usernameNote.style("margin", "-12px 0 14px");
+usernameNote.style("text-align", "left");
+
+/* Signed in, the name is the account's and cannot be edited, so a flower in
+   the meadow is traceable to a real account rather than to whoever typed that
+   word today. Signed out, the free text box works exactly as it always has,
+   which is what keeps the shared garden something anyone can try without an
+   account. */
+window.applyAccountUsername = function () {
+if (!usernameField) return;
+const acc = window.GardenAccount;
+const u = (acc && acc.isLive() && acc.username()) || "";
+if (u) {
+username = u;
+usernameField.elt.value = u;
+usernameField.elt.readOnly = true;
+usernameField.style("background", "#f1f8f7");
+usernameField.style("color", "#5a8f8d");
+usernameNote.html("Signed in as " + u + ", so your flower carries this name.");
+} else {
+usernameField.elt.readOnly = false;
+usernameField.style("background", "#ffffff");
+usernameField.style("color", "#1d6466");
+usernameNote.html("");
+}
+};
+if (window.GardenAccount) GardenAccount.onChange(window.applyAccountUsername);
+else window.applyAccountUsername();
 
 usernameContinueBtn = createButton("Continue to Flower Selection")
 .addClass("gg-btn")
