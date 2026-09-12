@@ -32,5 +32,5 @@
    Either is correct here. The one beside it, the SECRET key, previously
    called `service_role`, must never go in this file. The page refuses it. */
 
-window.SUPABASE_URL = "YOUR_PROJECT_URL";
-window.SUPABASE_ANON_KEY = "YOUR_PUBLISHABLE_OR_ANON_KEY";
+window.SUPABASE_URL = "https://ezcpoxgnkhxiqnmmtwse.supabase.co";
+window.SUPABASE_ANON_KEY = "sb_publishable_PmhTvIXNQzG8-N8CsYIeVw_c1w4XAcO";
