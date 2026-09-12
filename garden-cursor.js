@@ -102,9 +102,24 @@
      rule carrying `cursor: pointer`, which outranks a bare `button` selector,
      so the buttons kept the system pointer until they were named here.
      Anything new that sets its own `cursor: pointer` on a class has to be
-     added to this list. */
+     added to this list.
+
+     What is NOT here matters as much. Three entries were taken out because
+     they made the flower appear over things nobody would call a button:
+
+       .garden-card-inner  the whole of each of the three cards, six hundred
+                           pixels of title, paragraph and small print, when
+                           the only thing to press is the button at its foot.
+       .flower-tile        the whole of each guide tile, its name and its
+                           meaning included.
+       label[for]          a form label, which is clickable in the technical
+                           sense and in no other.
+
+     All three still work exactly as before; they just show the arrow while
+     you read them. The rule is that the flower marks a CONTROL, and a big
+     box you happen to be able to click is not one. */
   var CLICKABLE = [
-    "a", "button", "[role=\"button\"]", "summary", "label[for]",
+    "a", "button", "[role=\"button\"]", "summary",
     /* the bouquet builder */
     ".bq-btn", ".bq-btn-outline", ".bq-btn-ghost", ".bq-step-btn", ".bq-wrap-fix",
     ".bq-letter-close", ".bq-swatch", ".bq-flower-tile", ".bq-foliage-tile",
@@ -114,7 +129,7 @@
     ".gg-btn", ".gg-back", ".gg-tile", ".gg-card-btn",
     /* the landing page */
     ".btn-primary", ".btn-outline", ".btn-on-dark", ".btn-card-light",
-    ".side-nav-item", ".flower-tile", ".garden-card-inner", ".card-fold-toggle",
+    ".side-nav-item", ".card-fold-toggle",
     /* the panels this project adds */
     ".ga-mini", ".ga-btn", ".ga-link", ".ga-rename-link", ".gj-day", ".gj-arrow",
     ".gs-btn", ".gs-link"

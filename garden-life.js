@@ -458,7 +458,11 @@
       var bh = Math.max(60, bands[b].bottom - bands[b].top);
       /* Per section rather than per page, so a short section is not skipped
          and a tall one is not left with a single mote rattling around it. */
-      var n = Math.round(clamp(bh / 62, 4, 22));
+      /* One per 95px of section, which works out at about nine on screen at
+         a time whatever the section's height, since the canvas is one
+         viewport tall. It was one per 62, roughly fourteen, and the brief
+         after they came back was fewer than before rather than more. */
+      var n = Math.round(clamp(bh / 95, 3, 16));
       for (var i = 0; i < n; i++) {
         var sd = (b + 1) * 977 + i * 31;
         out.push({
@@ -525,7 +529,10 @@
       if (y < -40 || y > h + 40) continue;     /* off screen, nothing to pay for */
       var x = (d.fx * wrapW + t * d.drift) % wrapW - 30;
       var tw = 0.5 + 0.5 * Math.sin(t * d.tw + d.phase);
-      paintMote(ctx, x, y, (2.0 + d.r * 0.9) * u * (0.92 + tw * 0.16),
+      /* A shade larger than the gardens' own, because these sit on flat
+         colour rather than among flowers and have nothing beside them to give
+         a sense of scale. */
+      paintMote(ctx, x, y, (2.4 + d.r * 1.1) * u * (0.92 + tw * 0.16),
                 0.10 + tw * 0.30, d.warm, !!band.dark, t * 0.45 + d.phase);
     }
 

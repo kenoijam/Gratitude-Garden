@@ -335,10 +335,19 @@ section { padding: 5rem 5rem; }
   font-family: Arial, Helvetica, sans-serif;
   font-size: 0.95rem;
   line-height: 1.75;
-  margin-bottom: -0.5rem;
+  /* NO negative margin. It was -0.5rem, which pulled the small print 9px UP
+     into the paragraph's last line on all three cards at once: a paragraph
+     does not leave 9px of slack under its final line, so the pull came
+     straight out of the text. If the gap ever needs closing again, take it
+     off the note's own padding, not off the paragraph.
+
+     It was also hiding a second fault. A paragraph that runs to five lines
+     grows past the four reserved here, so the personal card's body came out
+     330px against the other two at 302 and the row of pictures stopped
+     lining up. The copy is cut to four lines on all three, and the
+     reservation is what keeps them level if one ever runs short. */
+  margin-bottom: 0;
   max-width: 420px;
-  /* Four lines reserved so the small print under it, and everything after,
-     lines up across the three cards however long each paragraph runs. */
   min-height: calc(4 * 0.95rem * 1.75);
 }
 /* Solid, not translucent. At 0.78 and 0.82 these were being mixed with the card
@@ -1023,6 +1032,13 @@ section { padding: 2.2rem 3.4rem; }
   margin-bottom: -100vh;
   pointer-events: none;
   z-index: -1;
+  /* `.about` is a GRID, so its canvas is a grid item and would otherwise be
+     dealt into a cell: it came out 561px wide in one column instead of 1190
+     across the section, and it added an implicit row to the layout. Spanning
+     every track puts it back over the whole section, and on the five block
+     sections these two lines do nothing at all. */
+  grid-column: 1 / -1;
+  grid-row: 1;
 }
 .about, .gardens, .catalogue, .wisdom, .cta, footer { position: relative; }
 
@@ -1076,16 +1092,18 @@ section { padding: 2.2rem 3.4rem; }
   top: 50%;
   transform: translate(-50%, -50%);
   margin: 0;
-  /* Narrow enough to clear the inside of the ring. The nearest bloom's edge
-     runs about 95px from the centre, and a box this size corners at 80. */
-  width: 9.2em;
+  /* Narrow enough to clear the INSIDE of the ring at its smallest, which is
+     the case that matters: at the minimum radius the nearest bloom's edge is
+     only about 76px from the middle, and the old three line box cornered at
+     97 and sat on the lotus. One short line at 7.4em corners at 65. */
+  width: 7.4em;
+  font-size: 0.98rem;
   text-align: center;
   font-family: 'Fraunces', 'Georgia', serif;
   font-style: italic;
   font-weight: 400;
   font-variation-settings: 'SOFT' 50, 'WONK' 0;
-  font-size: 1.06rem;
-  line-height: 1.5;
+  line-height: 1.45;
   /* The body copy floor on this page, measured against the darkest ground any
      of it sits on. Nothing here goes lighter. */
   color: #2f6260;
@@ -1177,16 +1195,34 @@ section { padding: 2.2rem 3.4rem; }
 @media (min-width: 1180px) {
   .catalogue-split {
     display: grid;
-    /* The heading column is kept deliberately narrow. Every pixel it gives up
-       goes into the ring's radius, and the ring is the thing being looked at;
-       a display heading is happy on four short lines. */
-    grid-template-columns: minmax(260px, 300px) 1fr;
-    gap: 44px;
+    /* Nearer a half than a third. The heading column was 260 to 300 against a
+       ring taking everything else, which set the title on four short lines in
+       a strip down the side; at this ratio it reads as one of two halves and
+       the line under it has room to be a sentence. The ring loses about 80px
+       of column for it, which at its current radius it can afford. */
+    /* Nearer a half than the third it was. The heading column was 260 to 300
+       against a ring taking everything else, which set the title on four
+       short lines in a strip down the side.
+
+       It cannot actually BE half. The ring needs about 700px of column to
+       hold its labels at its minimum radius, and at a true 50/50 split of
+       1190 it gets 570 and collapses onto that minimum, at which point the
+       blooms stop growing and the centre line runs into them. 0.62fr against
+       1fr is the most the heading can take while the ring still works. */
+    grid-template-columns: minmax(300px, 0.62fr) 1fr;
+    gap: 52px;
     /* Centred in the section as a pair. Left to the section's own width the
        ring drifted off centre as the heading column took its share. */
     max-width: 1340px;
     margin: 0 auto;
     align-items: center;
+    /* The row is shorter than the ring alone used to be, because the heading
+       column took width off the ring's radius and the ring's height follows
+       its radius. Without this the section fell to 0.73 of a screen, under
+       the three quarter floor the rest of the page is tuned to. Both columns
+       are already centred in the row, so the extra height goes evenly above
+       and below rather than hanging off one end. */
+    min-height: 560px;
   }
   .catalogue-header { margin-bottom: 0; }
   /* The ring takes its column whole. Its own max-width is what caps it on a
@@ -1215,7 +1251,11 @@ section { padding: 2.2rem 3.4rem; }
    It is deliberately NOT a loop. A headline that never stops moving is a
    headline nobody reads, and on a page whose whole subject is slowing down it
    would be the one thing on screen refusing to. */
-.wig { display: inline-block; }
+/* INLINE, not inline-block. The animated elements are the individual letter
+   spans; the word itself only needs to hold them. As an inline-block a
+   two word emphasis like "symbolic bloom" became one unbreakable box and
+   overflowed a phone. */
+.wig { display: inline; }
 .wig .wl {
   display: inline-block;
   /* Each letter leaves 38ms after the one before it, which is what makes it a

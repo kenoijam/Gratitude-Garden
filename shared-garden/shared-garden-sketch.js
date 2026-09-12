@@ -2707,7 +2707,12 @@ dailyNote.style("position", "absolute");
    occupy the right 192px and the Home link the left 120, so 200 either side is
    the clear middle; the 260 floor stops the box collapsing to nothing on a
    phone, where those controls are smaller anyway. */
-dailyNote.style("top", "20px");
+/* 30, not 20. Level with the icons to the pixel read as slightly HIGH, because
+   the icons are 38px circles and this is a single line of 15px text: the eye
+   lines up the middle of the text with the middle of the mass above it, and
+   a circle's mass sits lower than its box. Ten pixels down is where the two
+   look level. */
+dailyNote.style("top", "30px");
 dailyNote.style("left", "50%");
 dailyNote.style("transform", "translateX(-50%)");
 dailyNote.style("min-height", "38px");
