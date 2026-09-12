@@ -8,6 +8,11 @@
        changes layout on every one of these pages. -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
   <script src="../config.js"></script>
+
+  <!-- The account, so a finished bouquet can be sent to a friend rather than
+       only copied as a link. With no project configured this does nothing and
+       the builder is exactly as it was. -->
+  <script src="../garden-account.js"></script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>The Bouquet Builder, Gratitude Garden</title>
@@ -499,12 +504,27 @@
       </div>
 
       <div class="bq-share-panel" id="bqSharePanel">
+        <button class="bq-btn" id="sendFriendBtn" style="display:none;">Send to a friend</button>
         <button class="bq-btn" id="copyLinkBtn">Copy link to send</button>
         <a class="bq-btn-ghost" id="waShareBtn" href="#">WhatsApp</a>
         <a class="bq-btn-ghost" id="emailShareBtn" href="#">Email</a>
         <button class="bq-btn-outline" id="startOverBtn">Start over</button>
       </div>
       <div class="bq-copied-msg" id="copiedMsg"></div>
+
+      <!-- Sending to a friend. Hidden until there is an account behind it, so
+           somebody with no Supabase project sees the builder unchanged. -->
+      <div class="bq-send" id="bqSend" style="display:none;">
+        <label class="bq-send-label" for="bqFriendPick">Who is it for?</label>
+        <select id="bqFriendPick"></select>
+        <textarea id="bqSendNote" maxlength="160" rows="2"
+          placeholder="A line to go with it, if you like"></textarea>
+        <div class="bq-send-actions">
+          <button class="bq-btn-outline" id="bqSendCancel" type="button">Cancel</button>
+          <button class="bq-btn" id="bqSendGo" type="button">Send it</button>
+        </div>
+        <p class="bq-send-msg" id="bqSendMsg"></p>
+      </div>
 
       <div class="bq-recipient-cta" id="bqRecipientCta" style="display:none;">
         <p>Someone put this together for you.</p>

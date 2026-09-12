@@ -331,6 +331,118 @@ for a query that only changes the shape of things.
   read who else is friends with whom, and only the person who was asked can
   accept, which is what makes it a request rather than an announcement.
 
+## Step 7: Turn on the history log and sending a bouquet
+
+Also optional, and also safe to run more than once. **SQL Editor, New query,
+paste, Run.**
+
+```sql
+-- ---------------------------------------------------------------------
+-- One row per person per day per garden. This is what draws the icon
+-- under each day in the journal strip.
+-- ---------------------------------------------------------------------
+alter table public.garden_entries
+  add column if not exists day     text    not null default '',
+  add column if not exists garden  text    not null default 'personal',
+  add column if not exists species text    not null default 'daisy',
+  add column if not exists hue     integer not null default 0,
+  add column if not exists sat     integer not null default 60,
+  add column if not exists light   integer not null default 65,
+  add column if not exists word    text    not null default '',
+  add column if not exists note    text    not null default '';
+
+-- One a day, per garden. The page checks too, but only this is enforced.
+create unique index if not exists garden_entries_one_a_day
+  on public.garden_entries (user_id, garden, day);
+
+alter table public.garden_entries enable row level security;
+drop policy if exists "read own entries"   on public.garden_entries;
+drop policy if exists "write own entries"  on public.garden_entries;
+drop policy if exists "update own entries" on public.garden_entries;
+create policy "read own entries"   on public.garden_entries for select using (auth.uid() = user_id);
+create policy "write own entries"  on public.garden_entries for insert with check (auth.uid() = user_id);
+create policy "update own entries" on public.garden_entries for update using (auth.uid() = user_id);
+
+-- ---------------------------------------------------------------------
+-- The shared meadow, one snapshot row per day.
+--
+-- p5.party's demo server does not keep a room once its date has passed, so
+-- without this a past day in the log has nothing to show. The snapshot is
+-- written by whoever is signed in and standing in the garden, from the live
+-- room, which is the authority on what is planted.
+-- ---------------------------------------------------------------------
+create table if not exists public.shared_days (
+  day        text primary key,
+  flowers    jsonb       not null default '[]'::jsonb,
+  updated_at timestamptz not null default now(),
+  updated_by uuid references auth.users on delete set null
+);
+
+alter table public.shared_days enable row level security;
+drop policy if exists "read any day"     on public.shared_days;
+drop policy if exists "snapshot today"   on public.shared_days;
+drop policy if exists "resnapshot today" on public.shared_days;
+
+-- A past meadow is public, the same as the garden was on the day.
+create policy "read any day" on public.shared_days for select using (true);
+
+-- Only around TODAY, and only signed in. The window is three days wide
+-- because the page names the day in ITS timezone and the database checks in
+-- UTC, and those disagree for part of every day. What it stops is somebody
+-- rewriting last month.
+create policy "snapshot today" on public.shared_days
+  for insert with check (
+    auth.uid() is not null and updated_by = auth.uid()
+    and day >= to_char(now() - interval '1 day', 'YYYY-MM-DD')
+    and day <= to_char(now() + interval '1 day', 'YYYY-MM-DD'));
+
+create policy "resnapshot today" on public.shared_days
+  for update using (
+    auth.uid() is not null
+    and day >= to_char(now() - interval '1 day', 'YYYY-MM-DD')
+    and day <= to_char(now() + interval '1 day', 'YYYY-MM-DD'));
+
+-- ---------------------------------------------------------------------
+-- Sending a bouquet to a friend. `payload` is the builder's own encoded
+-- bouquet, the exact string that already travels in a share link, so a sent
+-- bouquet and a linked one are the same object and render through the same
+-- code.
+-- ---------------------------------------------------------------------
+alter table public.bouquets
+  add column if not exists payload text    not null default '',
+  add column if not exists opened  boolean not null default false;
+
+alter table public.bouquets enable row level security;
+drop policy if exists "see my bouquets"   on public.bouquets;
+drop policy if exists "send a bouquet"    on public.bouquets;
+drop policy if exists "mark mine opened"  on public.bouquets;
+drop policy if exists "unsend or delete"  on public.bouquets;
+
+-- Only the two people involved can see it.
+create policy "see my bouquets" on public.bouquets
+  for select using (auth.uid() = sender_id or auth.uid() = recipient_id);
+create policy "send a bouquet" on public.bouquets
+  for insert with check (auth.uid() = sender_id and sender_id <> recipient_id);
+create policy "mark mine opened" on public.bouquets
+  for update using (auth.uid() = recipient_id);
+create policy "unsend or delete" on public.bouquets
+  for delete using (auth.uid() = sender_id or auth.uid() = recipient_id);
+```
+
+**Success. No rows returned** is what you should see.
+
+### What this does and does not protect
+
+- **A journal entry is yours alone.** Nobody else can read what you planted or
+  what you wrote, in either garden.
+- **A day's shared meadow is public**, which it was on the day. What the
+  snapshot cannot do is be complete on a day when nobody signed in visited the
+  garden, because there was nobody there to write it down.
+- **A snapshot can only be written around today.** Somebody signed in could
+  still write a wrong snapshot for today, which is the loose thread; they
+  cannot touch last week.
+- **A bouquet is visible only to its sender and the person it went to.**
+
 ## Check that it worked
 
 Serve the site and open the personal garden.

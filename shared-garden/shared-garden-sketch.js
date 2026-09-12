@@ -2019,6 +2019,8 @@ resizeGardenCanvas();
 
 initDailyGarden();
 showStep("landing");
+
+mountJournal();
 }
 
 function draw() {
@@ -2081,6 +2083,8 @@ drawFlowersGrowingOnly("front");
 drawForegroundHill();
 drawFlowersBloomsOnly("front");
 
+maybeSnapshot();
+
 // Sparkles on top of everything
 /* The butterflies and the motes go on LAST, over the flowers and over the
    labels, because they are in the air in front of the garden. They stay
@@ -2106,6 +2110,58 @@ if (hoveredFlower) {
 drawHoverTooltip();
 }
 }
+}
+
+/* ONE FLOWER A DAY, the same rule the personal garden has always had.
+   Without it one person can fill the meadow on their own, and a shared garden
+   that is mostly one voice is not shared.
+
+   Two checks, because neither is enough alone. The ROOM is the honest one:
+   today's flowers are right there in `shared.flowers`, so a name that has
+   already planted is visible to everybody and cannot be hidden by clearing
+   anything. The BROWSER marker catches the same person typing a fresh name,
+   which the room cannot see.
+
+   Neither is airtight, and that is the accepted cost of a garden anyone can
+   plant in without an account: somebody determined can clear their storage
+   and type a new name. The alternative was to require an account to plant at
+   all, which was considered and turned down, because being able to try this
+   in ten seconds is the point of the page. */
+const SHARED_DAY_KEY = "gg_shared_last_planted";
+
+function sharedPlantedToday(name) {
+  try {
+    if (localStorage.getItem(SHARED_DAY_KEY) === roomKey) return "browser";
+  } catch (e) {}
+
+  const n = String(name || "").trim().toLowerCase();
+  if (n && shared && Array.isArray(shared.flowers)) {
+    for (let i = 0; i < shared.flowers.length; i++) {
+      if (String(shared.flowers[i].word || "").trim().toLowerCase() === n) return "name";
+    }
+  }
+  return null;
+}
+
+function markSharedPlanted() {
+  try { localStorage.setItem(SHARED_DAY_KEY, roomKey); } catch (e) {}
+}
+
+/* Runs whenever the username step is shown or the name is typed, so somebody
+   is told BEFORE they pick a flower rather than after. */
+function refreshUsernameStep() {
+  if (!usernameNote || !usernameContinueBtn) return;
+  const why = sharedPlantedToday(username);
+  if (!why) {
+    usernameContinueBtn.html("Continue to Flower Selection");
+    if (window.applyAccountUsername) window.applyAccountUsername();
+    else usernameNote.html("");
+    return;
+  }
+  usernameNote.html(why === "name"
+    ? "That name has already planted today. The garden takes one flower a day from each person, and it starts fresh tomorrow."
+    : "You have planted today. The garden takes one flower a day, and it starts fresh tomorrow.");
+  usernameContinueBtn.html("See today's garden");
 }
 
 function todayStr() {
@@ -2334,6 +2390,7 @@ usernameField.style("resize", "none");
 usernameField.style("pointer-events", "auto");
 usernameField.input(() => {
 username = usernameField.elt.value;
+refreshUsernameStep();
 });
 
 usernameNote = createP("").parent(usernameCard);
@@ -2358,6 +2415,7 @@ usernameField.elt.readOnly = true;
 usernameField.style("background", "#f1f8f7");
 usernameField.style("color", "#5a8f8d");
 usernameNote.html("Signed in as " + u + ", so your flower carries this name.");
+if (typeof sharedPlantedToday === "function" && sharedPlantedToday(u)) refreshUsernameStep();
 } else {
 usernameField.elt.readOnly = false;
 usernameField.style("background", "#ffffff");
@@ -2373,6 +2431,8 @@ usernameContinueBtn = createButton("Continue to Flower Selection")
 .parent(usernameCard);
 usernameContinueBtn.mousePressed(() => {
 if (!username.trim()) return;
+/* Already planted: this button shows the garden instead of the picker. */
+if (sharedPlantedToday(username)) { showStep("garden"); return; }
 showStep("select");
 drawSpeciesPreviews();
 });
@@ -2539,8 +2599,23 @@ confirmSlider.input(() => {
 
 const plantBtn = createButton("Plant in Garden").addClass("gg-btn").parent(confirmCard);
 plantBtn.mousePressed(() => {
+  /* Checked again here, not only at the username step. Somebody can sit on
+     the picker while another tab plants, and the room is the authority. */
+  if (sharedPlantedToday(username)) { showStep("garden"); return; }
   addFlower(gratitudeText, username, chosenSpecies, chosenHue);
+  markSharedPlanted();
   saveGarden();
+  if (window.GardenJournal) {
+    GardenJournal.record("shared", {
+      day: todayStr(),
+      species: chosenSpecies,
+      hue: Math.round(chosenHue),
+      sat: Math.round(defaultSat(chosenSpecies)),
+      light: Math.round(defaultLight(chosenSpecies)),
+      word: username,
+      note: gratitudeText
+    });
+  }
   showStep("garden");
 });
 
@@ -2641,6 +2716,13 @@ function showStep(s) {
     updateConfirmPreview();
   }
 
+  /* Re-checked on arrival, not only as the name is typed: the room fills up
+     while somebody is still on the landing step, and a signed in name is
+     filled in for them rather than typed at all. */
+  if (s === "username") {
+    refreshUsernameStep();
+  }
+
 if (s === "garden") {
 hoveredFlower = null;
 }
@@ -2666,3 +2748,76 @@ logo.style("display", step === "garden" && hasFlower ? "block" : "none");
 loop();
 }
 
+
+
+/* -------------------------------------------------------------------------
+   The journal
+
+   Unlike the personal garden, this one has to WRITE things down. p5.party
+   keys its room by the date and the demo server does not keep a room once
+   its day has passed, so a past day has nothing to replay from unless it was
+   recorded while it was happening. Checked: loading four past room keys
+   returns objects with no `flowers` in them at all.
+
+   Two writes: a row of your own in garden_entries, which draws your icon in
+   the strip, and a snapshot of the whole meadow, which is what a past day
+   actually shows. The snapshot is throttled, because the garden redraws sixty
+   times a second and the room changes far less often than that.
+
+   The icon is drawn by the preview family this sketch already owns, through a
+   p5.Graphics whose canvas is blitted into the small DOM canvas the strip
+   holds. An eighth copy of the flower maths would drift from the seven that
+   already exist.
+   ------------------------------------------------------------------------- */
+let journalBuf = null;
+let lastSnapshot = 0;
+
+function paintJournalBloom(el, species, hue) {
+if (!el || !el.width) return;
+/* SQUARE, because the strip's slot is square and squashing a tall buffer
+   into it would stretch every bloom sideways. */
+if (!journalBuf) {
+/* 96 rather than 132 is measured, not chosen: this garden's preview draws
+   at baseR 30, so in a 132 box a bloom filled under half the slot and read
+   as a speck. At 96 it fills about two thirds and the widest species, the
+   sunflower, still clears the edge. */
+journalBuf = createGraphics(96, 96);
+journalBuf.angleMode(DEGREES);
+journalBuf.pixelDensity(2);
+}
+journalBuf.clear();
+/* drawPreviewBloom draws around the ORIGIN and leaves the centring to its
+   caller, which is why the icons first came out as a quarter of a flower in
+   the top left corner. The picker translates before calling it; so does
+   this. */
+journalBuf.push();
+journalBuf.translate(journalBuf.width / 2, journalBuf.height / 2);
+drawPreviewBloom(journalBuf, species, hue);
+journalBuf.pop();
+const c = el.getContext("2d");
+c.clearRect(0, 0, el.width, el.height);
+c.drawImage(journalBuf.canvas, 0, 0, el.width, el.height);
+}
+
+function mountJournal() {
+if (!window.GardenJournal) return;
+GardenJournal.mount({
+garden: "shared",
+meaning: function (sp) {
+const found = speciesList.find(x => x.id === sp);
+return found ? found.meaning : "";
+},
+paint: paintJournalBloom
+});
+}
+
+/* Called from draw(). Cheap on every frame, but the write itself happens once
+   a minute at most and only from somebody signed in. */
+function maybeSnapshot() {
+if (!window.GardenJournal) return;
+if (!shared || !Array.isArray(shared.flowers) || !shared.flowers.length) return;
+const now = Date.now();
+if (now - lastSnapshot < 60000) return;
+lastSnapshot = now;
+GardenJournal.snapshot(todayStr(), shared.flowers);
+}

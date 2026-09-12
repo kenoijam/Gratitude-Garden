@@ -464,6 +464,34 @@ Note that `html` sets `scroll-behavior: smooth`, so anything that scrolls the pa
 
 ~1100 lines with three separate inline `<script>` blocks, opening at lines 103, 724 and 825: the hero meadow canvas (flower family #6 in the sync table), side-nav scroll-spy + flower catalogue modal (`flowerData` at ~line 753), and the card-scene + catalogue canvases (family #7). Both flower families live in this one file and must be edited separately. `styles.css` holds the design tokens (`--cream`, `--sky`, `--teal`, `--darkteal`, `--yellow`, `--lightsky`) that the bouquet page redeclares and the garden pages ignore.
 
+## The journal (`garden-journal.js`)
+
+**A week strip, seven days across, with the flower planted that day drawn under each one.** One file at the repo root, loaded by both gardens, and the two need very different things from it. That difference is the whole design.
+
+| | where a past day comes from |
+|---|---|
+| personal | NOTHING new is stored. Every flower already carries its date, mood, shaper and journal entry, and that array already syncs to the account, so the log is a VIEW of data the garden has always had. |
+| shared | everything has to be written down as it happens. |
+
+- **p5.party does not keep a room once its date has passed.** Checked before building anything for it: loading four past room keys returns objects with no `flowers` in them at all. So the shared side writes two things when a flower is planted. A row in `garden_entries`, which is yours alone and draws your icon in the strip. And a snapshot of the whole meadow in `shared_days`, which is public and is what a past day replays from.
+- **The snapshot is throttled to once a minute** and only written by somebody signed in, because the garden redraws sixty times a second and the room changes far less often than that.
+- **A day with no snapshot says so.** The garden is only remembered from the day somebody signed in was standing in it, and the panel tells you that rather than showing an empty meadow as if nothing had been planted.
+- **Neither garden needs an account for the strip to work.** Without one both fall back to this browser's storage, and only the whole-meadow replay is missing.
+- **Three sources are merged on read, in order of how much they can be trusted**: the garden's own data first, then the account, then this browser.
+- **The icon is drawn by each garden's OWN preview family**, through a `p5.Graphics` whose canvas is blitted into the small DOM canvas the strip holds. An eighth copy of the flower maths would drift from the seven that already exist. The two call it differently and that matters: `drawPreviewFlower` centres itself, `drawPreviewBloom` draws around the ORIGIN and leaves centring to its caller. Missing that gave a strip of quarter flowers tucked into the top left corner of every slot.
+- **The buffer is SQUARE**, because the slot is square and a tall buffer squashed into it stretches every bloom sideways. The shared garden's is 96 rather than 132, measured: at 132 a bloom filled under half the slot and read as a speck, and at 96 all eight species fill 49 to 67 percent with none of them clipping.
+- **Everything works in YYYY-MM-DD** so days sort as strings. The personal garden stores MM/DD/YYYY on every flower, which is what its labels print, so `fromUS` is the one conversion.
+- **A day in the future is disabled, not empty.** It has not happened; it is not a blank page.
+- The panel opens from the LEFT, which is the side its button is on, and which also means it can never be confused with the friends panel on the right.
+
+### One flower a day in the shared garden
+
+**Two checks, because neither is enough alone.** The ROOM is the honest one: today's flowers are in `shared.flowers`, so a name that has already planted is visible to everybody and cannot be hidden by clearing anything. The BROWSER marker catches the same person typing a fresh name, which the room cannot see.
+
+- **Neither is airtight, and that is the accepted cost of a garden anyone can plant in without an account.** Somebody determined can clear their storage and type a new name. Requiring an account to plant was considered and turned down, because being able to try the page in ten seconds is the point of it.
+- **Checked at the username step AND again at the plant button.** The first is so nobody picks a flower for nothing; the second is because somebody can sit on the picker while another tab plants.
+- **When it is blocked, Continue becomes "See today's garden"** rather than a dead button.
+
 ## Sound
 
 **`garden-music.js` at the repo root is loaded by ALL FOUR pages, and there is deliberately only one copy.** This project already pays for the same flower maths living in seven places; a second audio engine would drift the same way within a session. The page names its mood on the script tag itself, which is how one shared file tells four pages apart without any of them setting a global first:
@@ -519,6 +547,12 @@ It owns four things: the client and session, the profile row, the username, and 
 - **Declining DELETES the row rather than marking it**, so the pair are free to ask again another day. A kept row would be blocked by that pair index for good.
 - **A username can be changed from the friends panel**, through the same uniqueness check as claiming it. The display name follows it ONLY when it was never set to anything of its own, so somebody who has deliberately called themselves something else keeps it.
 - **Nobody can rename anybody else, including from a tool.** The update policy on `profiles` is `auth.uid() = id`, so a rename can only be done by that person signed in, or by an owner in the Supabase dashboard's table editor.
+- **The button has TWO states and that is the point.** Signed out it says Sign in and opens the sign in card; signed in it shows the username and opens the friends panel. A button that appeared only once you were signed in gave the landing page no way of GETTING signed in, which was exactly the gap there.
+- **`data-chip` on the script tag names the corner**, the way `garden-music.js` names its mood. The gardens keep their bottom right; the landing page passes `top`, which puts the chip 8px to the left of the music button, since everything else that page carries is in the top corners.
+- **There is ONE sign in form, `mountSignIn`, mounted wherever it is needed**: inside the shared garden's comment panel, and inside an overlay for the chip. The personal garden's gate is deliberately NOT this. It is a full page flow with password recovery and a carry-over offer, and folding it in would make one form answer to two very different situations.
+- **Signing in from the standalone overlay RELOADS the page.** A page that signed in halfway through is worse than one that reloads: the personal garden in particular has already decided what to show long before that button is pressed.
+- **A sent bouquet carries `encodeState(state)`**, the exact string that already travels in a share link, so a sent bouquet and a linked one are the same object and open through the same code. Nothing new renders a bouquet. The send panel stays hidden unless there is an account AND it has at least one friend, since a picker with nothing in it is a dead end rather than an invitation.
+- **The pip counts friend requests AND unopened bouquets**, because both are somebody waiting on you.
 - **`onChange` fires immediately with whatever is known**, so a caller never has to handle "before the first event" as a separate case.
 - **The friends button sits bottom right, and moves up to 60px when `#gg-account` exists.** That chip is built by another module whose session check may still be in flight, so the position is checked again a moment after load.
 
@@ -552,6 +586,7 @@ In both gardens `meadow` is called **before `drawNewestSparkles()`**, so the bur
 - **Sizes come off a 1440 wide logical scene**, which is the gardens' `BASE_W` and the hero's logical width, so both land on the same figure with no page specific tuning. Clamped to 0.62 and 1.25, or a phone draws butterflies too small to read as butterflies.
 - **`drift` is the landing page's, and it runs on its own fixed canvas**, `#page-dust` at `z-index: 6`. Six is measured, not guessed: every section's own content tops out at 5, and the flower modal is 300, the music button 260 and the side nav 9000, so the motes sit over the whole page and under all three.
 - **The motes belong to the SECTIONS, not to the window.** They are held in page coordinates and drawn at `pageY - scrollY`, so scrolling carries them past exactly like the copy does. The first version held them in viewport coordinates, and the same dozen motes then hung in the same places however far the page was scrolled, which reads as dirt on the screen rather than as air in a room. Each band gets its own count from its own height, and only what is on screen is drawn, so a long page costs no more per frame than a short one.
+- **`drift` carries BUTTERFLIES too, about one per section**, held in page coordinates like the sparkles and kept inside their own band by the same headroom rule the gardens use. They are drawn after the sparkles, so the one solid object on the canvas is never behind the specks of light. Measured across the landing page: 9 of 15 viewport positions down a 7511px page have one in view, which is present without being crowded.
 - **The population is rebuilt only when the page's shape changes**, keyed on a signature of the width and every band's top, bottom and tone. Rebuilding on scroll would re-seed every mote thirty times a second.
 - **A mote is a SPARKLE, the four pointed star the gardens throw around a newly planted flower, not a soft dot.** Two stacked circles was the first version and it read as jitter rather than as light: a dot two pixels across, moving a third of a pixel a frame and pulsing its radius, is just antialiasing changing its mind. A star has a shape to recognise, so the eye reads it as one thing turning. The geometry is `drawNewestSparkles` exactly, four outer points with the inner corners at 0.35 of the radius, over a soft halo. What differs is the SPEED: the garden's sparkle runs off `frameCount` at a rate that suits a burst lasting a few seconds, and these hang around as long as the page is open, so they are slowed right down and driven by the clock, which also makes them frame rate independent.
 - **The brightness twinkles and the size barely moves.** A radius that swings hard is the other half of what read as jitter, along with sub pixel drift, which is why the drift and rise speeds went up rather than down.

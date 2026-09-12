@@ -18,6 +18,10 @@
        username and the friends list. Must load BEFORE the page modules,
        which borrow its client rather than making a second one. -->
   <script src="../garden-account.js"></script>
+
+  <!-- The day by day log. Loaded after the account module, whose client it
+       borrows for the parts that follow somebody between devices. -->
+  <script src="../garden-journal.js"></script>
   <meta charset="UTF-8">
   <title>Gratitude Garden</title>
   <link rel="stylesheet" href="shared-garden-style.css" />

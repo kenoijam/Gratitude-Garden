@@ -30,6 +30,13 @@
   var CFG = (typeof window.readSupabaseConfig === "function")
     ? window.readSupabaseConfig() : null;
 
+  /* Which corner the chip lives in, named on the script tag itself, the way
+     garden-music.js names its mood. The gardens keep their own bottom right
+     corner; the landing page has nothing there and everything else it carries
+     is in the top corners, so it asks for `top`. */
+  var TAG = document.currentScript;
+  var CORNER = (TAG && TAG.getAttribute("data-chip")) || "bottom";
+
   var sb = null;
   var live = false;
   var me = null;          /* the signed in user */
@@ -77,6 +84,7 @@
 
     /* ---- the friends button ---- */
     '#ga-friends-btn{position:fixed;right:14px;bottom:16px;z-index:210;' +
+      'max-width:46vw;overflow:hidden;' +
       'display:inline-flex;align-items:center;gap:7px;padding:7px 15px 7px 12px;' +
       'border-radius:50px;border:1.5px solid #b7e4e7;background:rgba(255,249,227,0.92);' +
       'color:#1d6466;font-family:Arial,Helvetica,sans-serif;font-size:13px;font-weight:700;' +
@@ -87,6 +95,11 @@
     '#ga-friends-btn .ga-pip{display:none;min-width:17px;height:17px;border-radius:9px;' +
       'background:#e2557e;color:snow;font-size:11px;line-height:17px;text-align:center;padding:0 4px;}' +
     '#ga-friends-btn[data-pending="1"] .ga-pip{display:inline-block;}' +
+    '#ga-friends-btn .ga-label{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}' +
+    /* The landing page's corner. The music button is 38px at right:16, so it
+       occupies 16 to 54, and 62 leaves an 8px gap beside it. */
+    '#ga-friends-btn[data-corner="top"]{top:20px;bottom:auto;right:62px;}' +
+    '@media (max-width:768px){#ga-friends-btn[data-corner="top"]{top:16px;right:54px;}}' +
 
     /* ---- the friends panel ---- */
     '#ga-panel{position:fixed;top:0;right:0;bottom:0;width:360px;max-width:100%;z-index:560;' +
@@ -140,7 +153,20 @@
     '.ga-mini[data-kind="go"]{background:mediumturquoise;border-color:mediumturquoise;color:snow;}' +
     '.ga-mini[data-kind="go"]:hover:not(:disabled){background:turquoise;border-color:turquoise;}' +
     '.ga-mini[data-kind="quiet"]{background:none;border-color:#e6efed;color:#8aa9a7;}' +
-    '.ga-none{font-size:13.5px;color:#8aa9a7;line-height:1.6;margin:0;}';
+    '.ga-none{font-size:13.5px;color:#8aa9a7;line-height:1.6;margin:0;}' +
+    '.ga-link{display:block;width:100%;margin-top:9px;background:none;border:none;' +
+      'color:#2c7a7b;font-family:inherit;font-size:13px;text-decoration:underline;' +
+      'cursor:pointer;padding:0;}' +
+    '.ga-card input+input{margin-top:9px;}' +
+    '#ga-signin .ga-close{position:absolute;top:16px;right:16px;width:32px;height:32px;' +
+      'border-radius:50%;border:1.5px solid #b7e4e7;background:rgba(255,249,227,0.92);' +
+      'color:#1d6466;cursor:pointer;display:flex;align-items:center;justify-content:center;}' +
+    '.ga-bq{border:1.5px solid #eaf4f2;border-radius:12px;padding:11px 13px;margin-bottom:10px;}' +
+    '.ga-bq b{display:block;font-size:13.5px;color:#0f5132;}' +
+    '.ga-bq p{font-size:13px;color:#2f6260;line-height:1.5;margin:4px 0 0;' +
+      'overflow-wrap:anywhere;}' +
+    '.ga-bq .ga-act{margin-top:9px;justify-content:flex-end;}' +
+    '.ga-bq[data-new="1"]{border-color:#f3b9cd;background:#fff7fa;}';
 
   var FRIEND_ICON =
     '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" ' +
@@ -199,6 +225,115 @@
         return !(res.data && res.data.length);
       })
       .catch(function () { return null; });
+  }
+
+  /* ---------------------------------------------------------------- sign in */
+  /* ONE sign in form, mounted wherever it is needed. The shared garden puts
+     it inside its comment panel, the button on the landing page puts it in an
+     overlay. The personal garden's gate is deliberately NOT this: it is a
+     full page flow with password recovery and a carry-over offer, and folding
+     it in here would make one form answer to two very different situations. */
+  function mountSignIn(box, opts) {
+    opts = opts || {};
+    var mode = "in";
+
+    function render() {
+      box.innerHTML = "";
+      if (opts.lead) {
+        box.appendChild(el("p", "ga-sub", mode === "in"
+          ? opts.lead
+          : "Create an account to add friends and keep your garden across devices."));
+      }
+      var email = el("input"); email.type = "email"; email.placeholder = "Email";
+      email.autocomplete = "email";
+      var pass = el("input"); pass.type = "password";
+      pass.placeholder = mode === "in" ? "Password" : "Password, at least 6 characters";
+      pass.autocomplete = mode === "in" ? "current-password" : "new-password";
+
+      var go = el("button", opts.btnClass || "ga-btn", mode === "in" ? "Sign in" : "Create account");
+      go.type = "button";
+      var swap = el("button", "ga-link",
+        mode === "in" ? "New here? Create an account" : "Already have an account? Sign in");
+      swap.type = "button";
+      swap.addEventListener("click", function () { mode = mode === "in" ? "up" : "in"; render(); });
+
+      var msg = el("p", "ga-msg");
+      msg.setAttribute("data-tone", "idle");
+
+      go.addEventListener("click", function () {
+        var e = email.value.trim(), pw = pass.value;
+        if (!e || !pw) {
+          msg.setAttribute("data-tone", "bad");
+          msg.textContent = "Both an email and a password are needed.";
+          return;
+        }
+        go.disabled = true;
+        go.textContent = mode === "in" ? "Signing in" : "Creating";
+        var call = mode === "in"
+          ? sb.auth.signInWithPassword({ email: e, password: pw })
+          : sb.auth.signUp({ email: e, password: pw });
+        call.then(function (res) {
+          go.disabled = false;
+          go.textContent = mode === "in" ? "Sign in" : "Create account";
+          if (res.error) {
+            msg.setAttribute("data-tone", "bad");
+            msg.textContent = res.error.message;
+            return;
+          }
+          /* With confirmation emails left on, signUp returns a user and NO
+             session. Saying so is the only honest answer; the page would
+             otherwise look signed in while every write was refused. */
+          if (!res.data || !res.data.session) {
+            msg.setAttribute("data-tone", "good");
+            msg.textContent = "Check your email for a confirmation link, then come back and sign in.";
+            return;
+          }
+          if (opts.done) opts.done();
+        }).catch(function () {
+          go.disabled = false;
+          go.textContent = mode === "in" ? "Sign in" : "Create account";
+          msg.setAttribute("data-tone", "bad");
+          msg.textContent = "Could not reach the garden. Check your connection.";
+        });
+      });
+
+      [email, pass].forEach(function (f) {
+        f.addEventListener("keydown", function (ev) { if (ev.key === "Enter") go.click(); });
+      });
+
+      box.appendChild(email); box.appendChild(pass);
+      box.appendChild(go); box.appendChild(swap); box.appendChild(msg);
+    }
+    render();
+  }
+
+  function openSignIn() {
+    if (document.getElementById("ga-signin")) return;
+    var wrap = el("div"); wrap.id = "ga-signin";
+    wrap.style.cssText = document.getElementById("ga-claim") ? "" : "";
+    wrap.className = "";
+    /* Same backdrop as the claim screen, which is the same backdrop as the
+       personal garden's gate: signing in looks like one thing everywhere. */
+    wrap.id = "ga-claim";
+    var card = el("div", "ga-card");
+    card.appendChild(el("h1", null, "Your Gratitude Garden"));
+    var form = el("div");
+    card.appendChild(form);
+    mountSignIn(form, {
+      lead: "Sign in to add friends, keep your garden across devices, and send a bouquet.",
+      /* A page that signed in halfway through is worse than one that reloads.
+         The personal garden in particular has already decided what to show
+         before this button is ever pressed. */
+      done: function () { location.reload(); }
+    });
+    var later = el("button", "ga-link", "Not now");
+    later.type = "button";
+    later.addEventListener("click", function () { wrap.remove(); });
+    card.appendChild(later);
+    wrap.appendChild(card);
+    document.body.appendChild(wrap);
+    var first = card.querySelector("input");
+    if (first) first.focus();
   }
 
   /* ------------------------------------------------------------ claim screen */
@@ -358,11 +493,15 @@
     btn = el("button");
     btn.id = "ga-friends-btn";
     btn.type = "button";
-    btn.innerHTML = FRIEND_ICON + "<span>Friends</span><span class=\"ga-pip\"></span>";
+    btn.innerHTML = FRIEND_ICON + "<span class=\"ga-label\">Sign in</span><span class=\"ga-pip\"></span>";
+    /* Two states, one button. Signed out it is the way in; signed in it is
+       the way to your friends. A page that showed neither until you were
+       already signed in had no way of GETTING signed in, which is exactly the
+       gap the landing page had. */
     btn.addEventListener("click", function () {
+      if (!me) { openSignIn(); return; }
       if (panel.getAttribute("data-open") === "1") closePanel(); else openPanel();
     });
-    btn.style.display = "none";
 
     panel = el("div");
     panel.id = "ga-panel";
@@ -402,6 +541,11 @@
      flight. */
   function placeButton() {
     if (!btn) return;
+    if (CORNER === "top") { btn.setAttribute("data-corner", "top"); return; }
+    /* The personal garden already puts its signed in chip in the bottom right
+       corner, so on that page this sits above it rather than on top of it.
+       Checked again after a moment because that chip is built by another
+       module whose session check may still be in flight. */
     btn.style.bottom = document.getElementById("gg-account") ? "60px" : "16px";
   }
 
@@ -643,6 +787,8 @@
         });
       }
 
+      renderBouquets();
+
       if (data.outgoing.length) {
         panelBody.appendChild(el("div", "ga-h", "Waiting on a reply"));
         data.outgoing.forEach(function (i) {
@@ -656,11 +802,89 @@
     });
   }
 
+  /* Bouquets sent between friends. The payload is the builder's own encoded
+     bouquet, the exact string that already travels in a share link, so a sent
+     bouquet and a linked one are the same object and open through the same
+     code. Nothing new renders a bouquet. */
+  function loadBouquets() {
+    if (!me) return Promise.resolve([]);
+    return sb.from("bouquets").select("*").order("created_at", { ascending: false })
+      .then(function (res) {
+        if (res.error || !res.data) return [];
+        var rows = res.data.filter(function (r) { return r.recipient_id === me.id; });
+        var ids = {};
+        rows.forEach(function (r) { if (r.sender_id) ids[r.sender_id] = 1; });
+        var list = Object.keys(ids);
+        var who = list.length
+          ? sb.from("profiles").select("id,username,display_name").in("id", list)
+          : Promise.resolve({ data: [] });
+        return Promise.resolve(who).then(function (pr) {
+          var byId = {};
+          (pr.data || []).forEach(function (x) { byId[x.id] = x; });
+          rows.forEach(function (r) { r._from = shownName(byId[r.sender_id]) || "Someone"; });
+          return rows;
+        });
+      })
+      .catch(function () { return []; });
+  }
+
+  function bouquetHref(payload) {
+    /* Relative, and it has to be: this panel runs from the repo root on the
+       landing page and from a subfolder in either garden. */
+    var here = location.pathname;
+    var base = /\/(personal-garden|shared-garden)\//.test(here) ? "../" : "";
+    return base + "bouquet/bouquet-index.html?b=" + encodeURIComponent(payload);
+  }
+
+  function renderBouquets() {
+    var host = el("div");
+    panelBody.appendChild(host);
+    loadBouquets().then(function (rows) {
+      if (!rows.length) return;
+      var unopened = rows.filter(function (r) { return !r.opened; }).length;
+      host.appendChild(el("div", "ga-h",
+        "Bouquets for you" + (unopened ? " (" + unopened + " new)" : "")));
+      rows.forEach(function (r) {
+        var box = el("div", "ga-bq");
+        if (!r.opened) box.setAttribute("data-new", "1");
+        box.appendChild(el("b", null, "From " + r._from));
+        if (r.message) box.appendChild(el("p", null, r.message));
+        var act = el("div", "ga-act");
+        var open = el("a", "ga-mini", r.opened ? "Open again" : "Open it");
+        open.setAttribute("data-kind", "go");
+        open.href = bouquetHref(r.payload || "");
+        open.style.textDecoration = "none";
+        open.addEventListener("click", function () {
+          if (!r.opened) sb.from("bouquets").update({ opened: true }).eq("id", r.id);
+        });
+        act.appendChild(open);
+        box.appendChild(act);
+        host.appendChild(box);
+      });
+      /* The pip counts bouquets as well as friend requests, because both are
+         somebody waiting on you. */
+      var pending = (state.incoming.length + unopened);
+      if (btn) {
+        btn.setAttribute("data-pending", pending ? "1" : "0");
+        var pip = btn.querySelector(".ga-pip");
+        if (pip) pip.textContent = pending ? String(pending) : "";
+      }
+    });
+  }
+
   function showChrome() {
     if (!btn) return;
-    btn.style.display = me ? "inline-flex" : "none";
-    if (me) { placeButton(); refreshPanel(); }
-    else closePanel();
+    var label = btn.querySelector(".ga-label");
+    if (me) {
+      label.textContent = (profile && profile.username) ? profile.username : "Friends";
+      placeButton();
+      refreshPanel();
+    } else {
+      label.textContent = "Sign in";
+      btn.setAttribute("data-pending", "0");
+      closePanel();
+      placeButton();
+    }
   }
 
   /* -------------------------------------------------------------------- boot */
@@ -706,6 +930,16 @@
       try { fn({ user: me, profile: profile }); } catch (e) {}
     },
     refresh: function () { return loadProfile().then(function () { fire(); showChrome(); }); },
-    openFriends: openPanel
+    openFriends: openPanel,
+    openSignIn: openSignIn,
+    mountSignIn: mountSignIn,
+    friends: loadFriends,
+    sendBouquet: function (toId, payload, message) {
+      if (!me) return Promise.reject(new Error("not signed in"));
+      return sb.from("bouquets").insert({
+        sender_id: me.id, recipient_id: toId,
+        payload: String(payload || ""), message: String(message || "")
+      });
+    }
   };
 })();

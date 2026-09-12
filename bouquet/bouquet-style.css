@@ -920,3 +920,56 @@ button:disabled, .bq-btn:disabled, .bq-btn-outline:disabled,
   .bq-template-grid, .bq-city-grid, .bq-shop-grid { grid-template-columns: 1fr; }
   .bq-template-canvas { max-width: 160px; }
 }
+
+
+/* ---------------------------------------------------------------------------
+   Sending a finished bouquet to a friend.
+
+   It sits under the share buttons rather than replacing them: a link still
+   works for anybody who is not on the garden, and the sent bouquet carries
+   the very same encoded state, so the two are the same object.
+   --------------------------------------------------------------------------- */
+.bq-send {
+  max-width: 420px;
+  margin: 14px auto 0;
+  text-align: left;
+  background: #fffdf6;
+  border: 1.5px solid #eadfc4;
+  border-radius: 14px;
+  padding: 15px 16px 14px;
+}
+.bq-send-label {
+  display: block;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #9a8b66;
+  margin-bottom: 7px;
+}
+.bq-send select,
+.bq-send textarea {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px 12px;
+  border: 1.5px solid #e4d9bd;
+  border-radius: 10px;
+  background: #fffef9;
+  font-family: inherit;
+  font-size: 0.92rem;
+  color: #4a4030;
+}
+.bq-send textarea { margin-top: 9px; resize: vertical; }
+.bq-send select:focus,
+.bq-send textarea:focus { outline: none; border-color: #c9b98d; }
+.bq-send-actions {
+  display: flex;
+  gap: 9px;
+  justify-content: flex-end;
+  margin-top: 11px;
+}
+.bq-send-actions .bq-btn,
+.bq-send-actions .bq-btn-outline { width: auto; padding: 9px 18px; font-size: 0.92rem; }
+.bq-send-msg { font-size: 0.84rem; line-height: 1.5; margin: 9px 0 0; min-height: 1.4em; }
+.bq-send-msg[data-tone="bad"] { color: #b3261e; }
+.bq-send-msg[data-tone="good"] { color: #2c7a7b; }

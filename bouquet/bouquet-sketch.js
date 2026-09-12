@@ -3315,6 +3315,81 @@ function initCardTagInteraction() {
 
 /* ---------------------------------------------------------- share ---------------------------------------------------------- */
 
+/* Sending a finished bouquet to a friend.
+
+   The sent bouquet carries `encodeState(state)`, the exact string that
+   already travels in a share link, so a sent bouquet and a linked one are the
+   same object and open through the same code. Nothing new renders a bouquet,
+   and a physical order still has neither, because an order is not a gift you
+   forward.
+
+   The whole panel stays hidden unless there is an account behind it AND that
+   account has at least one friend, since a picker with nothing in it is a
+   dead end rather than an invitation. */
+function initSendToFriend() {
+  const btn = document.getElementById("sendFriendBtn");
+  const box = document.getElementById("bqSend");
+  const pick = document.getElementById("bqFriendPick");
+  const note = document.getElementById("bqSendNote");
+  const go = document.getElementById("bqSendGo");
+  const cancel = document.getElementById("bqSendCancel");
+  const msg = document.getElementById("bqSendMsg");
+  if (!btn || !box || !window.GardenAccount) return;
+
+  function say(tone, text) {
+    msg.setAttribute("data-tone", tone);
+    msg.textContent = text;
+  }
+
+  function refresh() {
+    const acc = window.GardenAccount;
+    if (!acc.isLive() || !acc.user()) { btn.style.display = "none"; box.style.display = "none"; return; }
+    acc.friends().then(data => {
+      const list = data.friends || [];
+      if (!list.length) { btn.style.display = "none"; box.style.display = "none"; return; }
+      btn.style.display = "";
+      pick.innerHTML = "";
+      list.forEach(f => {
+        const o = document.createElement("option");
+        o.value = f.id;
+        o.textContent = (f.profile && (f.profile.display_name || f.profile.username)) || "a friend";
+        pick.appendChild(o);
+      });
+    });
+  }
+
+  btn.addEventListener("click", () => {
+    box.style.display = box.style.display === "none" ? "" : "none";
+    say("", "");
+    if (box.style.display !== "none") pick.focus();
+  });
+  cancel.addEventListener("click", () => { box.style.display = "none"; });
+
+  go.addEventListener("click", () => {
+    const to = pick.value;
+    if (!to) return;
+    go.disabled = true;
+    const was = go.textContent;
+    go.textContent = "Sending";
+    window.GardenAccount.sendBouquet(to, encodeState(state), note.value.trim())
+      .then(res => {
+        go.disabled = false;
+        go.textContent = was;
+        if (res && res.error) { say("bad", res.error.message); return; }
+        say("good", "Sent. It is waiting in their friends panel.");
+        note.value = "";
+        setTimeout(() => { box.style.display = "none"; say("", ""); }, 2600);
+      })
+      .catch(() => {
+        go.disabled = false;
+        go.textContent = was;
+        say("bad", "Could not send it just now.");
+      });
+  });
+
+  window.GardenAccount.onChange(refresh);
+}
+
 function initShareActions() {
   document.getElementById("copyLinkBtn").addEventListener("click", async () => {
     const url = buildShareUrl();
@@ -3341,6 +3416,8 @@ function initShareActions() {
     const body = `I made you a little bouquet. Open it here:\n\n${buildShareUrl()}`;
     window.location.href = `mailto:?subject=${encodeURIComponent("A bouquet for you")}&body=${encodeURIComponent(body)}`;
   });
+
+  initSendToFriend();
 
   document.getElementById("startOverBtn").addEventListener("click", () => {
     window.location.href = window.location.pathname;

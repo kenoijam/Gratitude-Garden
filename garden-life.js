@@ -399,7 +399,50 @@
 
      Only what is on screen is drawn, so a long page costs no more per frame
      than a short one. */
-  var dust = null, dustSig = "";
+  var dust = null, dustSig = "", pageFlies = null;
+
+  /* Butterflies for a whole page, held in page coordinates like the
+     sparkles. Roughly one per section, each kept inside its own band, so a
+     long page never has them all in one place and a short one is not empty.
+     They are the same drawing and the same flight as a garden's, only placed
+     against the page rather than against a scene.
+
+     `flyAt` and `drawButterfly` are declared further down the file. That is
+     fine and deliberate rather than an oversight: function declarations hoist
+     within this module, and keeping the butterfly drawing beside the garden's
+     own butterflies is worth more than source order. */
+  function buildPageFlies(bands) {
+    var TINTS = [
+      { wing: "hsl(45,88%,74%)",  edge: "hsl(36,62%,52%)" },
+      { wing: "hsl(342,62%,82%)", edge: "hsl(340,45%,60%)" },
+      { wing: "hsl(268,48%,82%)", edge: "hsl(266,35%,58%)" }
+    ];
+    var out = [];
+    for (var b = 0; b < bands.length; b++) {
+      var bh = bands[b].bottom - bands[b].top;
+      if (bh < 260) continue;                 /* too short to fly in */
+      var sd = (b + 3) * 613;
+      var homeYf = 0.18 + rnd(sd * 7.7) * 0.64;
+      out.push({
+        band: b,
+        tint: TINTS[b % TINTS.length],
+        homeXf: 0.15 + rnd(sd * 3.1) * 0.7,
+        homeYf: homeYf,
+        ax: 110 + rnd(sd * 2.3) * 150,
+        /* The same headroom rule the gardens use: home plus the full swing of
+           both sines still lands inside the band, so a butterfly can never
+           wander out of the section it belongs to. */
+        ayf: (Math.min(homeYf, 1 - homeYf) / 1.42) * (0.45 + rnd(sd * 5.9) * 0.55),
+        wx: 0.14 + rnd(sd * 11.3) * 0.10,
+        wy: 0.28 + rnd(sd * 13.7) * 0.16,
+        px: rnd(sd * 17.1) * 6.28,
+        py: rnd(sd * 19.9) * 6.28,
+        flap: 7.4 + rnd(sd * 23.3) * 2.8,
+        size: 10 + rnd(sd * 29.1) * 4
+      });
+    }
+    return out;
+  }
 
   function buildDust(w, bands) {
     var out = [];
@@ -443,7 +486,11 @@
     var sig = Math.round(w) + "|" + bands.map(function (b) {
       return Math.round(b.top) + "," + Math.round(b.bottom) + "," + (b.dark ? 1 : 0);
     }).join(";");
-    if (sig !== dustSig) { dustSig = sig; dust = buildDust(w, bands); }
+    if (sig !== dustSig) {
+      dustSig = sig;
+      dust = buildDust(w, bands);
+      pageFlies = buildPageFlies(bands);
+    }
 
     ctx.save();
     for (var i = 0; i < dust.length; i++) {
@@ -460,6 +507,24 @@
       paintMote(ctx, x, y, (2.0 + d.r * 0.9) * u * (0.92 + tw * 0.16),
                 0.10 + tw * 0.30, d.warm, !!band.dark, t * 0.45 + d.phase);
     }
+
+    /* Butterflies, drawn AFTER the sparkles so the one solid object on the
+       canvas is never behind the specks of light. */
+    for (var j = 0; j < pageFlies.length; j++) {
+      var f = pageFlies[j];
+      var fb = bands[f.band];
+      if (!fb) continue;
+      var fh = Math.max(120, fb.bottom - fb.top);
+      var home = [f.homeXf * w, fb.top + f.homeYf * fh - scroll];
+      var ay = f.ayf * fh;
+      var now = flyAt(f, t, home, ay);
+      if (now[1] < -80 || now[1] > h + 80) continue;
+      var soon = flyAt(f, t + 0.18, home, ay);
+      var ang = Math.atan2(soon[1] - now[1], soon[0] - now[0]);
+      var open = 0.26 + 0.74 * Math.abs(Math.sin(t * f.flap + f.px));
+      drawButterfly(ctx, now[0], now[1], ang, f.size * u, open, f.tint);
+    }
+
     ctx.restore();
   }
 

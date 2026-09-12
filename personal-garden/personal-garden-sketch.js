@@ -2555,6 +2555,8 @@ function setup() {
      question is whether today's flower is planted, which is the same question
      buildUI asks, so both now ask it the same way. */
   showStep(hasPlantedToday() ? "garden" : "prompt1");
+
+  mountJournal();
 }
 
 function draw() {
@@ -2608,4 +2610,58 @@ function draw() {
       drawHoverTooltip();
     }
   }
+}
+
+/* -------------------------------------------------------------------------
+   The journal
+
+   Nothing new is stored for this garden. Every flower already carries the
+   date it was planted, the mood, the shaper and the journal entry, and that
+   array already syncs to the account, so the log is a VIEW of data the garden
+   has always had rather than a second copy of it.
+
+   The icon under each day is drawn by the preview family this sketch already
+   owns, through a p5.Graphics whose canvas is then blitted into the small DOM
+   canvas the strip holds. That matters: an eighth copy of the flower maths
+   would drift from the seven that already exist.
+   ------------------------------------------------------------------------- */
+var journalBuf = null;
+
+function paintJournalBloom(el, species, hue) {
+  if (!el || !el.width) return;
+  /* SQUARE, because the strip's slot is square and squashing a tall buffer
+     into it would stretch every bloom sideways. Unlike the shared garden's,
+     drawPreviewFlower centres itself, so nothing is translated here. */
+  if (!journalBuf) {
+    journalBuf = createGraphics(150, 150);
+    journalBuf.pixelDensity(2);
+  }
+  journalBuf.clear();
+  drawPreviewFlower(journalBuf, species, hue);
+  var c = el.getContext("2d");
+  c.clearRect(0, 0, el.width, el.height);
+  c.drawImage(journalBuf.canvas, 0, 0, el.width, el.height);
+}
+
+function mountJournal() {
+  if (!window.GardenJournal) return;
+  GardenJournal.mount({
+    garden: "personal",
+    entries: function () {
+      var out = {};
+      flowers.forEach(function (f) {
+        var day = GardenJournal.fromUS(f.date);
+        if (!day) return;
+        out[day] = {
+          day: day, species: f.species, hue: f.hue, sat: f.sat, light: f.light,
+          note: f.journal || "", mood: f.dayRating || "", shaper: f.dayShaper || ""
+        };
+      });
+      return out;
+    },
+    meaning: function (sp) {
+      return (flowerMeanings[sp] && flowerMeanings[sp].meaning) || "";
+    },
+    paint: paintJournalBloom
+  });
 }
