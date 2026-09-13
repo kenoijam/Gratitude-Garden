@@ -723,7 +723,14 @@ footer { padding: 140px 2.5rem 2rem; }   /* 100px clear, matching the sections, 
   .hero { padding-top: 82px; min-height: 100dvh; height: auto; overflow: visible; }
   /* height is auto here, so the auto margins collapse and the block needs its
      own gap above the meadow again */
-  .hero-text-block { padding: 0 1.5rem; max-width: 100%; margin-bottom: 2.5rem; }
+  /* PUSHED DOWN, so the birds and the clouds have the top of the sky to
+     themselves. On a wide screen the copy is a centred column with empty sky
+     either side of it and nothing ever crosses; on a phone the words run the
+     full width, so a cloud drifting past at 7 to 22 percent of the height and
+     a skein of birds at 8 to 30 pass straight through the headline. Starting
+     the copy below that band is the only thing that separates them, since
+     both are painted on canvases behind it. */
+  .hero-text-block { padding: 3.4rem 1.5rem 0; max-width: 100%; margin-bottom: 2.5rem; }
   /* The hero has to stay ahead of the section titles above, which are now 9vw
      themselves. */
   .hero-title { font-size: clamp(2.3rem, 10.5vw, 3.4rem); line-height: 1.06; }
@@ -1365,6 +1372,32 @@ section { padding: 2.2rem 3.4rem; }
 @media (hover: none) {
   .flower-ring { display: none !important; }
   .catalogue .flowers-grid { display: grid !important; }
+
+  /* NO HOVER EFFECTS ON A TOUCH SCREEN, and this is why a button sometimes
+     needed pressing twice. Safari on iOS has no pointer to hover with, so it
+     fakes one: the first tap on something carrying a `:hover` rule APPLIES
+     that rule instead of activating the thing, and the tap that does the work
+     is the second. Every lift and colour change on this page was a `:hover`,
+     so every one of them could eat a tap.
+
+     They are turned off rather than rewritten because a lift means nothing
+     on a screen with no cursor to lift away from. */
+  .btn-primary:hover, .btn-outline:hover, .btn-on-dark:hover,
+  .btn-card-light:hover, .btn-card-dark:hover,
+  .garden-card:hover, .flower-tile:hover, .side-nav-item:hover,
+  .card-fold-toggle:hover, .cs-tag:hover, .flower-modal-close:hover {
+    transform: none;
+    box-shadow: inherit;
+  }
+}
+
+/* THE OTHER HALF OF THE SAME PROBLEM. A browser waits about 300ms after a tap
+   on anything it might have to double tap to zoom, and a press that does
+   nothing for a third of a second reads as a press that did not register, so
+   you press again. `manipulation` says this element is never a zoom target,
+   which removes the wait entirely. */
+button, a, [role="button"], summary, input[type="range"], label[for] {
+  touch-action: manipulation;
 }
 @media (prefers-reduced-motion: reduce) {
   .fr-bloom, .fr-label, .fr-centre { transition: none; }

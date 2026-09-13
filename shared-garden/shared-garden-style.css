@@ -562,3 +562,33 @@ input[type="text"]:focus {
     font-size: 16px !important;
   }
 }
+
+/* NO HOVER EFFECTS ON A TOUCH SCREEN, and `touch-action` on everything that
+   is pressed. iOS has no pointer, so the first tap on anything carrying a
+   `:hover` rule applies the hover instead of activating it, and the browser
+   also waits about 300ms on anything it might have to double tap to zoom.
+   Between them that is a button that needs pressing twice. The long note is
+   in the landing page's `styles.css`. */
+@media (hover: none) {
+  .gg-btn:hover, .gg-back:hover, .gg-tile:hover, .gg-card-btn:hover,
+  #save-btn:hover, #gj-btn:hover, #gg-music-btn:hover, #ga-friends-btn:hover,
+  #back-to-home:hover { transform: none !important; }
+}
+button, a, [role="button"], summary, input[type="range"], label[for] {
+  touch-action: manipulation;
+}
+
+/* HOME IS JUST THE CHEVRON ON A PHONE. The word costs about 70px of a 390px
+   row that the garden's own name is trying to centre itself in, and a back
+   chevron in the top left corner is the one piece of navigation nobody has
+   to be told. The word stays in `aria-label`. Every number carries
+   `!important`, since the link is styled inline in the page's markup. */
+@media (max-width: 768px) {
+  #back-to-home {
+    padding: 8px 10px !important;
+    gap: 0 !important;
+    font-size: 0 !important;
+    line-height: 0 !important;
+  }
+  #back-to-home svg { width: 16px !important; height: 16px !important; }
+}

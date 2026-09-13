@@ -2259,6 +2259,20 @@
           [].forEach.call(inners, function (o) { if (o !== inner) setFolded(o, true); });
         }
         setFolded(inner, !opening);
+        /* IT LOOKS LIKE IT OPENS UPWARD, and nothing here is animating
+           upward. Opening a card adds several hundred pixels ABOVE where
+           your thumb is if one of the cards higher up was the one that just
+           closed, so the whole column slides and the card you pressed ends
+           up above the fold. Bringing its own top back to the top of the
+           screen is what makes it read as opening downward from where you
+           pressed. */
+        if (opening) {
+          var card = inner.closest('.garden-card') || inner;
+          requestAnimationFrame(function () {
+            var top = card.getBoundingClientRect().top + window.scrollY - 16;
+            window.scrollTo({ top: top, behavior: 'smooth' });
+          });
+        }
       });
     });
     applyFolding();
@@ -2648,6 +2662,15 @@
            passing, so its own top is the offset the module needs. Everything
            else stays in page coordinates, which is what keeps the sparkles
            travelling with the copy rather than with the window. */
+        /* NOT WHILE THE PAGE IS MOVING. Six sticky canvases re-rasterising
+           thirty times a second on top of a scroll is what the jitter was:
+           the phone is already compositing the scroll, and this asks it to
+           repaint the layer underneath at the same time. The flag is the one
+           `garden-cursor.js` already sets on the root element while a scroll
+           is in progress, so there is one answer to "is the page moving" and
+           not two. The motes drift a few pixels a second, so a pause of half
+           a second while a thumb is on the glass is invisible. */
+        if (document.documentElement.getAttribute("data-gg-scrolling") === "1") return;
         GardenLife.drift(rec.ctx, w, h, {
           bands: bands,
           scrollY: window.scrollY + r.top,

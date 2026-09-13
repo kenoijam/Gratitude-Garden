@@ -198,6 +198,14 @@ body {
    showing, so it never disagrees with the buttons it replaces. */
 .bq-sticky-bar { display: none; }
 @media (max-width: 780px) {
+  /* THIS IS WHY THE BAR WAS STUCK. `hidden` works through the browser's own
+     stylesheet, which every author rule outranks, so `display: flex` below
+     kept it on screen no matter how many times the code set `bar.hidden`.
+     Reading `bar.hidden` back said true while the thing was plainly visible,
+     which is the worst kind of disagreement to debug. It has to be undone
+     explicitly, and with `!important`, because the rule it is fighting is in
+     the same block. */
+  .bq-sticky-bar[hidden] { display: none !important; }
   .bq-sticky-bar {
     display: flex;
     align-items: center;
@@ -564,7 +572,18 @@ body {
   cursor: pointer; color: var(--darkteal); padding: 4px; display: flex; line-height: 0;
 }
 
-.bq-share-panel { margin-top: 30px; display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
+.bq-share-panel { margin-top: 30px; display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; align-items: center; }
+.bq-share-icons { display: flex; gap: 10px; align-items: center; }
+.bq-share-icon {
+  width: 46px; height: 46px; border-radius: 50%;
+  border: 1.5px solid rgba(29,100,102,0.28);
+  background: #fff; color: #1d6466;
+  display: flex; align-items: center; justify-content: center;
+  padding: 0; cursor: pointer; text-decoration: none;
+  transition: background 0.2s;
+}
+.bq-share-icon svg { width: 22px; height: 22px; display: block; }
+@media (hover: hover) { .bq-share-icon:hover { background: #e1f7f7; } }
 .bq-copied-msg { font-size: 0.78rem; color: var(--teal); font-weight: 700; margin-top: 8px; height: 16px; }
 
 #bqBackNav { max-width: 340px; margin: 20px auto 0; }
@@ -938,7 +957,7 @@ body {
 
 /* ── Narrow screens ── */
 @media (max-width: 900px) {
-  .bq-mode-grid { grid-template-columns: 1fr; }
+  /* The mode chooser stays TWO columns, see the 780px block. */
   .bq-template-grid, .bq-city-grid, .bq-shop-grid { grid-template-columns: repeat(2, 1fr); }
   .bq-pay-grid { grid-template-columns: 1fr; }
   .bq-form-grid { grid-template-columns: 1fr; }
@@ -998,6 +1017,26 @@ body {
   font-variation-settings: 'SOFT' 50, 'WONK' 0;
   font-size: 1.25rem; color: #0f5132; margin: 0 0 4px;
 }
+/* The field and the box were inheriting the reveal's centred text, which put
+   a label over the middle of a select and read as a caption rather than as a
+   form. A dialog reads left. */
+.bq-send, .bq-send * { text-align: left; }
+.bq-send select,
+.bq-send textarea {
+  width: 100%;
+  box-sizing: border-box;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 16px;                      /* the iOS zoom floor */
+  border: 1.5px solid #e0d5bb;
+  border-radius: 10px;
+  padding: 11px 12px;
+  background: #fff;
+  color: #1d6466;
+  margin: 0 0 12px;
+}
+.bq-send textarea { resize: vertical; min-height: 74px; line-height: 1.45; }
+.bq-send-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 2px; }
+.bq-send .bq-sent, .bq-send .bq-sent * { text-align: center; }
 .bq-send-lede { font-size: 0.86rem; color: #5a8f8d; margin: 0 0 14px; line-height: 1.5; }
 .bq-send-label {
   display: block;
@@ -1084,14 +1123,36 @@ body {
    equal specificity the later rule wins: the overrides were being written and
    then quietly undone a hundred lines later. */
 @media (max-width: 780px) {
-  /* NO PREVIEW IN THE COLUMN AT ALL. Three arrangements were tried here and
-     each failed in its own way: pinned and full sized covered the options,
-     pinned and short still sat over whatever scrolled under it, and left in
-     the flow it went off the top and you scrolled back and forth to see what
-     a change had done. The answer is that a 375px column cannot hold two
-     things at once, so the picture moved OUT of it and onto a button in the
-     bar, which opens it over everything. See `.bq-peek` below. */
-  .bq-preview-col { display: none; }
+  /* NO PREVIEW ON THE THREE PICKING STEPS, and ONLY those three. Three
+     arrangements were tried and each failed its own way: pinned and full
+     sized covered the options, pinned and short still sat over whatever
+     scrolled under it, and left in the flow it went off the top so every
+     change meant scrolling back. A 375px column cannot hold the options and
+     the picture at once, so on those steps the picture moved out of it and
+     onto a button in the bar.
+
+     THE LAST THREE STEPS KEEP THEIRS. Hiding the column outright was wrong
+     and broke them: the card colour, the letter and the backdrop have no
+     grid of tiles competing for the width, and the preview IS the step,
+     since a card colour means nothing except as the card. */
+  .bq-step[data-step="flowers"] .bq-preview-col,
+  .bq-step[data-step="foliage"] .bq-preview-col,
+  .bq-step[data-step="wrap"]    .bq-preview-col { display: none; }
+
+  /* The note preview is the whole point of its step, so it gets room. */
+  .bq-step[data-step="card"] .bq-preview-col,
+  .bq-step[data-step="letter"] .bq-preview-col,
+  .bq-step[data-step="bg"] .bq-preview-col { order: -1; margin-bottom: 14px; }
+  .bq-pick-layout { display: flex; flex-direction: column; }
+
+  /* THE MODE CHOOSER SIDE BY SIDE. One under the other put the digital
+     bouquet below the fold, so the screen asking you to choose between two
+     things showed one of them. */
+  .bq-mode-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+  .bq-mode-tile { padding: 14px 12px 16px; }
+  .bq-mode-tile h3 { font-size: 1.05rem; }
+  .bq-mode-tile p { font-size: 0.82rem; line-height: 1.45; }
+  .bq-mode-note { font-size: 0.76rem; }
 
   /* The step's own nav gives way to the bar at the foot, which carries the
      same two buttons where a thumb is. */
@@ -1113,6 +1174,37 @@ body {
   }
   .bq-peek-btn svg { width: 20px; height: 20px; display: block; }
   .bq-peek-btn:disabled { opacity: 0.4; }
+
+  /* THE ACTIONS HAVE TO BE ON SCREEN WITH THE BOUQUET. Full size the picture
+     took the whole of a phone screen, so the ways to send it were below the
+     fold and a finished bouquet looked like a dead end. Two thirds leaves the
+     row of icons visible without scrolling, which is the point of them. */
+  .bq-stage { max-width: 240px; }
+  .bq-reveal-heading { font-size: 1.5rem; }
+  .bq-reveal-sub { font-size: 0.85rem; }
+  .bq-share-panel { margin-top: 16px; gap: 8px; }
+  /* The reveal keeps its own Back, since the foot bar is gone there. Centred
+     with everything else rather than hanging off the left edge. */
+  #bqBackNav { display: flex; justify-content: center; padding-top: 14px; }
+  .bq-share-icon { width: 44px; height: 44px; }
+  .bq-share-panel .bq-btn,
+  .bq-share-panel .bq-btn-outline { padding: 10px 18px; font-size: 0.9rem; }
+}
+
+/* THE SAME TAP EATING HOVER PROBLEM AS THE LANDING PAGE. iOS has no pointer,
+   so the first tap on anything with a `:hover` rule applies the hover and the
+   second does the work. See the long note in `styles.css`. */
+@media (hover: none) {
+  .bq-btn:hover, .bq-btn-outline:hover, .bq-btn-ghost:hover,
+  .bq-swatch:hover, .bq-flower-tile:hover, .bq-foliage-tile:hover,
+  .bq-mode-tile:hover, .bq-template-tile:hover, .bq-step-btn:hover,
+  .bq-city-tile:hover, .bq-shop-tile:hover, .bq-pay-tile:hover,
+  .bq-share-icon:hover, .bq-peek-btn:hover {
+    transform: none;
+  }
+}
+button, a, [role="button"], summary, input[type="range"], label[for] {
+  touch-action: manipulation;
 }
 
 /* THE BOUQUET, FULL SIZE, OVER EVERYTHING. Wider than a phone too, since a
@@ -1154,4 +1246,19 @@ body {
   input[type="date"], textarea, select {
     font-size: 16px !important;
   }
+}
+
+/* HOME IS JUST THE CHEVRON ON A PHONE. The word costs about 70px of a 390px
+   row that the garden's own name is trying to centre itself in, and a back
+   chevron in the top left corner is the one piece of navigation nobody has
+   to be told. The word stays in `aria-label`. Every number carries
+   `!important`, since the link is styled inline in the page's markup. */
+@media (max-width: 768px) {
+  #back-to-home {
+    padding: 8px 10px !important;
+    gap: 0 !important;
+    font-size: 0 !important;
+    line-height: 0 !important;
+  }
+  #back-to-home svg { width: 16px !important; height: 16px !important; }
 }

@@ -29,7 +29,7 @@
 </head>
 <body>
 
-  <a href="../index.html" id="back-to-home">
+  <a href="../index.html" id="back-to-home" aria-label="Home">
     <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M9 2L4 7l5 5" stroke="#1d6466" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
     Home
   </a>
@@ -510,11 +510,37 @@
         <button class="bq-btn-ghost" id="backToBg">Back</button>
       </div>
 
+      <!-- THE THREE WAYS TO SEND A LINK ARE ICONS, the two that need words keep
+           them. Copy, WhatsApp and Email are the same action three times over
+           and are recognised as pictures; "Send to a friend" needs a name on
+           it because it does something different, and "Start over" has to be
+           unmistakable because it throws the bouquet away. Every icon keeps
+           its words in `aria-label` and in the project's own hover tip. -->
       <div class="bq-share-panel" id="bqSharePanel">
         <button class="bq-btn" id="sendFriendBtn" style="display:none;">Send to a friend</button>
-        <button class="bq-btn" id="copyLinkBtn">Copy link to send</button>
-        <a class="bq-btn-ghost" id="waShareBtn" href="#">WhatsApp</a>
-        <a class="bq-btn-ghost" id="emailShareBtn" href="#">Email</a>
+        <div class="bq-share-icons">
+          <button class="bq-share-icon" id="copyLinkBtn" aria-label="Copy the link" data-tip="Copy link">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                 stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <rect x="9" y="9" width="11" height="11" rx="2.4"/>
+              <path d="M5 15H4.6A1.6 1.6 0 0 1 3 13.4V4.6A1.6 1.6 0 0 1 4.6 3h8.8A1.6 1.6 0 0 1 15 4.6V5"/>
+            </svg>
+          </button>
+          <a class="bq-share-icon" id="waShareBtn" href="#" aria-label="Send on WhatsApp" data-tip="WhatsApp">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                 stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M20.5 11.6a8.4 8.4 0 0 1-12.3 7.5L3.5 20.5l1.4-4.6A8.4 8.4 0 1 1 20.5 11.6z"/>
+              <path d="M8.9 8.2c.3-.6.6-.6.9-.6h.5c.2 0 .4 0 .6.5l.7 1.7c.1.2 0 .4-.1.6l-.4.5c-.1.2-.2.3 0 .6a6 6 0 0 0 2.7 2.3c.3.1.4 0 .6-.1l.6-.7c.2-.2.3-.2.6-.1l1.6.8c.2.1.3.2.3.4 0 .7-.5 1.4-.8 1.6-.3.2-1.3.6-2.9 0a9 9 0 0 1-4.6-4.4c-.5-1.1-.4-2.2-.3-2.5z"/>
+            </svg>
+          </a>
+          <a class="bq-share-icon" id="emailShareBtn" href="#" aria-label="Send by email" data-tip="Email">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                 stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <rect x="2.6" y="5" width="18.8" height="14" rx="2.4"/>
+              <path d="M3.4 6.6 12 12.8l8.6-6.2"/>
+            </svg>
+          </a>
+        </div>
         <button class="bq-btn-outline" id="startOverBtn">Start over</button>
       </div>
       <div class="bq-copied-msg" id="copiedMsg"></div>

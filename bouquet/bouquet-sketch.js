@@ -2735,7 +2735,11 @@ function initTemplateStep() {
   own.addEventListener("keydown", e => {
     if (e.key === "Enter" || e.key === " ") { e.preventDefault(); ownPick(); }
   });
-  grid.appendChild(own);
+  /* FIRST, NOT LAST. It was the sixth tile, which put building from nothing
+     at the end of a list of shortcuts and read as the thing you fall back to
+     when none of the five fit. Offered first, the five read as shortcuts from
+     it, which is what they are. */
+  grid.insertBefore(own, grid.firstChild);
 }
 
 function initModeStep() {
@@ -3269,7 +3273,13 @@ function syncStickyBar(name) {
      from the foliage step on is always, and on the flowers step is once
      enough stems are picked. */
   var peekBtn = document.getElementById("bqPeekBtn");
-  if (peekBtn) peekBtn.disabled = !(state.flowers && state.flowers.length);
+  if (peekBtn) {
+    /* The last three steps show the real thing in their own column, so a
+       button offering to show it again is noise. */
+    var picking = ["flowers", "foliage", "wrap"].indexOf(name) >= 0;
+    peekBtn.hidden = !picking;
+    peekBtn.disabled = !(state.flowers && state.flowers.length);
+  }
 
   /* The step's own Continue can be enabled or its count rewritten at any
      moment by whatever the picker does, and none of that knows about this bar.
@@ -3279,6 +3289,10 @@ function syncStickyBar(name) {
   bar._watch = new MutationObserver(function () {
     if (count) sCount.textContent = count.getAttribute("data-short") || count.textContent;
     if (nextBtn) { sNext.textContent = nextBtn.textContent; sNext.disabled = nextBtn.disabled; }
+    /* The peek has to be re-enabled HERE too. Picking the first stem does not
+       change the step, so without this the button stayed disabled from the
+       moment the step opened with an empty bouquet and a tap did nothing. */
+    if (peekBtn) peekBtn.disabled = !(state.flowers && state.flowers.length);
   });
   bar._watch.observe(step, { subtree: true, childList: true, characterData: true,
                              attributes: true, attributeFilter: ["disabled"] });
@@ -3320,7 +3334,15 @@ function syncStickyBar(name) {
       /* Sized after it is shown, or the measurement is of a hidden box. */
       var w = Math.min(box.clientWidth - 40, 360);
       cv.style.width = w + "px";
+      /* DRAGGING LIVES HERE ON A PHONE. `attachBloomDrag` only ever attaches
+         to a canvas carrying `data-drag-swap`, which was the column preview,
+         and taking that off the picking steps took rearranging with it. The
+         full size view is the better place for it anyway: the blooms are
+         twice the size and there is nothing else on screen to catch a
+         finger. */
+      cv.setAttribute("data-drag-swap", "");
       renderBouquetCanvas(cv, state.flowers, currentWrap());
+      if (typeof attachBloomDrag === "function") attachBloomDrag(cv);
     }
     btn.addEventListener("click", open);
     close.addEventListener("click", shut);
