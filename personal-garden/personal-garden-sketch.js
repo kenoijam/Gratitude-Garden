@@ -2298,7 +2298,23 @@ function buildUI() {
   photoInput.attribute("accept", "image/*");
   photoInput.style("display", "none");
 
-  const photoBtn = createButton("Add a photo").parent(photoRow);
+  /* A GALLERY ICON, not a camera, and the words stay beside it. The input is
+     `accept="image/*"` with no `capture`, so a phone offers the camera and
+     the camera roll both; a camera icon would promise only the first. The
+     label stays because an unlabelled dashed box in the middle of a form is
+     a guess, and this is the one control on the step nobody is looking for.
+
+     `createButton` writes its argument as innerHTML, which is what lets the
+     icon be inline SVG rather than a file. */
+  const PHOTO_ICON =
+    '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" aria-hidden="true" ' +
+    'style="flex:0 0 auto">' +
+    '<rect x="3" y="5" width="18" height="14" rx="3" stroke="currentColor" stroke-width="2"/>' +
+    '<circle cx="8.6" cy="10" r="1.7" fill="currentColor"/>' +
+    '<path d="M4 16.4l4.3-4a1.6 1.6 0 0 1 2.2 0l3.1 2.9 2-1.8a1.6 1.6 0 0 1 2.2 0L20 15.6" ' +
+    'stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>' +
+    '</svg>';
+  const photoBtn = createButton(PHOTO_ICON + "<span>Add a photo</span>").parent(photoRow);
   photoBtn.style("background", "none");
   photoBtn.style("border", "2px dashed #bde0d6");
   photoBtn.style("border-radius", "12px");
@@ -2308,6 +2324,11 @@ function buildUI() {
   photoBtn.style("color", "#2c7a7b");
   photoBtn.style("cursor", "pointer");
   photoBtn.style("pointer-events", "auto");
+  /* Flex, or the icon sits on the text's baseline and rides high. */
+  photoBtn.style("display", "inline-flex");
+  photoBtn.style("align-items", "center");
+  photoBtn.style("gap", "7px");
+  photoBtn.style("line-height", "1");
 
   photoThumb = createElement("img").parent(photoRow);
   photoThumb.style("display", "none");

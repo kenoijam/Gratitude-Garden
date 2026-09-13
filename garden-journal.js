@@ -142,6 +142,44 @@
       .catch(function () { return ""; });
   }
 
+  /* FULL SIZE, over everything. The panel is a 300px column and a photo in it
+     is a thumbnail whatever the fit, so there has to be a way to actually
+     look at the thing. Built and torn down per open rather than kept in the
+     document, since a signed URL expires within the hour and a stale one left
+     lying in the markup would be a broken picture waiting to happen. */
+  var lightbox = null;
+  function closeShot() {
+    if (!lightbox) return;
+    var el = lightbox;
+    lightbox = null;
+    el.removeAttribute("data-in");
+    document.removeEventListener("keydown", onShotKey);
+    setTimeout(function () { if (el.parentNode) el.parentNode.removeChild(el); }, 200);
+  }
+  function onShotKey(e) { if (e.key === "Escape") closeShot(); }
+  function openShot(url) {
+    closeShot();
+    var box = document.createElement("div");
+    box.className = "gj-lightbox";
+    var img = document.createElement("img");
+    img.alt = "";
+    img.src = url;
+    var x = document.createElement("button");
+    x.className = "gj-lb-close";
+    x.type = "button";
+    x.setAttribute("aria-label", "Close the photo");
+    x.innerHTML = "&#10005;";
+    box.appendChild(img);
+    box.appendChild(x);
+    /* A tap anywhere that is not the picture closes it, which is what every
+       viewer does and is also the only target a thumb can find reliably. */
+    box.addEventListener("click", function (e) { if (e.target !== img) closeShot(); });
+    document.body.appendChild(box);
+    lightbox = box;
+    document.addEventListener("keydown", onShotKey);
+    requestAnimationFrame(function () { box.setAttribute("data-in", "1"); });
+  }
+
   function cloudEntries(garden) {
     if (!live() || !uid()) return Promise.resolve({});
     return sb().from("garden_entries").select("*").eq("garden", garden)
@@ -246,9 +284,32 @@
     '.gj-meaning{font-size:13px;color:#5a8f8d;margin:0 0 12px;}' +
     '.gj-field{font-size:13.5px;color:#2f6260;line-height:1.55;margin:0 0 7px;}' +
     '.gj-field b{color:#0f5132;}' +
+    /* CONTAIN, NOT COVER. A 4:3 box cropping to fill turned a portrait
+       photo into a strip through its middle, which on a screenshot is
+       most of the picture gone and no way to get it back. It letterboxes
+       now, so whatever shape the photo is, all of it is there. */
     '.gj-shot{width:100%;aspect-ratio:4/3;border-radius:12px;overflow:hidden;' +
-      'background:#eef6f4;margin:0 0 12px;}' +
-    '.gj-shot img{width:100%;height:100%;object-fit:cover;display:block;}' +
+      'background:#e4efed;margin:0 0 12px;position:relative;display:block;' +
+      'padding:0;border:0;width:100%;}' +
+    '.gj-shot img{width:100%;height:100%;object-fit:contain;display:block;}' +
+    /* It is a real <button>, so a keyboard reaches it and the project's
+       own cursor already treats it as something to press. */
+    '.gj-shot:focus-visible{outline:2px solid #2c7a7b;outline-offset:2px;}' +
+    '.gj-shot-hint{position:absolute;right:7px;bottom:7px;background:rgba(15,81,50,0.62);' +
+      'color:#fff9e3;font-size:11px;font-weight:700;letter-spacing:.04em;' +
+      'padding:3px 8px;border-radius:999px;pointer-events:none;}' +
+    /* The full size view. Fixed and above everything the gardens carry:
+       the music button is 260 and the panel itself 240. */
+    '.gj-lightbox{position:fixed;inset:0;z-index:9500;display:flex;' +
+      'align-items:center;justify-content:center;padding:26px;' +
+      'background:rgba(10,48,44,0.82);opacity:0;transition:opacity .18s ease;}' +
+    '.gj-lightbox[data-in="1"]{opacity:1;}' +
+    '.gj-lightbox img{max-width:100%;max-height:100%;border-radius:12px;' +
+      'box-shadow:0 18px 60px rgba(0,0,0,.42);display:block;}' +
+    '.gj-lb-close{position:absolute;top:16px;right:16px;width:38px;height:38px;' +
+      'border-radius:50%;border:0;background:rgba(255,249,227,0.92);color:#1d6466;' +
+      'font-size:17px;line-height:1;display:flex;align-items:center;' +
+      'justify-content:center;}' +
     '.gj-quote{font-size:14px;color:#2f6260;line-height:1.6;margin:0 0 12px;' +
       'padding-left:11px;border-left:2.5px solid #bde0d6;overflow-wrap:anywhere;}' +
     '.gj-none{font-size:13.5px;color:#8aa9a7;line-height:1.6;margin:0;}' +
@@ -373,6 +434,9 @@
     refresh();
   }
   function close() {
+    /* The full size photo is appended to the body, not to the panel, so it
+       would otherwise be left hanging over a closed panel. */
+    closeShot();
     panel.setAttribute("data-open", "0");
     panel.setAttribute("aria-hidden", "true");
   }
@@ -451,7 +515,11 @@
           /* The frame goes in straight away at the right size and the picture
              arrives into it, so the panel does not jump when the signed URL
              comes back. */
-          var shot = el("div", "gj-shot");
+          var shot = document.createElement("button");
+          shot.className = "gj-shot";
+          shot.type = "button";
+          shot.disabled = true;          /* nothing to open until it arrives */
+          shot.setAttribute("aria-label", "Open the photo for this day");
           body.appendChild(shot);
           photoUrl(e.photo).then(function (u) {
             if (!u) { shot.remove(); return; }
@@ -459,6 +527,12 @@
             img.alt = "";
             img.src = u;
             shot.appendChild(img);
+            var hint = document.createElement("span");
+            hint.className = "gj-shot-hint";
+            hint.textContent = "Tap to open";
+            shot.appendChild(hint);
+            shot.disabled = false;
+            shot.addEventListener("click", function () { openShot(u); });
           });
         }
         if (e.note) body.appendChild(el("p", "gj-quote", e.note));

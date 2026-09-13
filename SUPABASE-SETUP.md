@@ -623,7 +623,53 @@ update public.gardens
 ```
 
 **Today's flower stays where it is**, so you will end up with two for today.
-To have the second one replace it rather than join it, empty the day instead:
+
+### Already ended up with two, and want to keep only the newest
+
+Look first. This lists every flower you have for that date, oldest at the top:
+
+```sql
+select ord,
+       fl->>'date'    as date,
+       fl->>'species' as species,
+       fl->>'journal' as journal
+  from public.gardens g,
+       jsonb_array_elements(g.flowers) with ordinality as t(fl, ord)
+ where g.user_id = (select id from auth.users where email = 'you@example.com')
+   and fl->>'date' = '09/13/2026'
+ order by ord;
+```
+
+Then this keeps the LAST one of that date and drops the rest of that date,
+leaving every other day alone:
+
+```sql
+update public.gardens g
+   set flowers = coalesce((
+         select jsonb_agg(fl order by ord)
+           from jsonb_array_elements(g.flowers) with ordinality as t(fl, ord)
+          where fl->>'date' is distinct from '09/13/2026'
+             or ord = (select max(ord2)
+                         from jsonb_array_elements(g.flowers)
+                              with ordinality as t2(fl2, ord2)
+                        where fl2->>'date' = '09/13/2026')
+       ), '[]'::jsonb)
+ where g.user_id = (select id from auth.users where email = 'you@example.com');
+```
+
+Three things about it worth knowing. **The date is a literal, not `now()`**,
+because your Supabase project runs in UTC and you may not, so on either side
+of midnight the two disagree; the string is the one printed on the bloom, so
+copy it off the flower. **`with ordinality` is what gives the array an order**
+to take the last of, since a jsonb array has no other handle on position.
+And **`is distinct from` rather than `<>`**, or a flower with no date at all
+compares to NULL and is silently dropped along with the duplicates.
+
+**The photo is untouched either way.** It hangs off the DAY in
+`garden_entries`, not off a flower, so the History panel keeps showing it
+however many flowers that day has.
+
+To have a replanting replace today rather than join it, empty the day instead:
 
 ```sql
 update public.gardens
