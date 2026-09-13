@@ -711,7 +711,9 @@ footer { padding: 140px 2.5rem 2rem; }   /* 100px clear, matching the sections, 
   /* height is auto here, so the auto margins collapse and the block needs its
      own gap above the meadow again */
   .hero-text-block { padding: 0 1.5rem; max-width: 100%; margin-bottom: 2.5rem; }
-  .hero-title { font-size: clamp(2rem, 9vw, 3rem); line-height: 1.08; }
+  /* The hero has to stay ahead of the section titles above, which are now 9vw
+     themselves. */
+  .hero-title { font-size: clamp(2.3rem, 10.5vw, 3.4rem); line-height: 1.06; }
   .hero-subtitle { font-size: 0.9rem; max-width: 100%; }
   .meadow-scene { margin-left: -3.6rem; margin-right: -3.6rem; }
 
@@ -744,7 +746,12 @@ footer { padding: 140px 2.5rem 2rem; }   /* 100px clear, matching the sections, 
   .feature-icon { width: 32px; height: 32px; }
   .feature-title { font-size: 0.88rem; }
   .feature-desc { font-size: 0.78rem; }
-  .section-title { font-size: clamp(1.6rem, 6vw, 2.4rem); }
+  /* A section title on a phone was 27.2px against a 34px control in the
+     corner and a 16.15px line underneath it, so the loudest thing on the
+     screen was a button and the title read as a subheading. The ratio to the
+     line under it was 1.68 against the desktop's 3.06. At 9vw it is 35 on a
+     390 screen, which clears the control and gets the ratio back to 2.2. */
+  .section-title { font-size: clamp(2.05rem, 9vw, 2.9rem); }
   .section-desc { font-size: 0.95rem; }
 
   /* Gardens */
@@ -786,8 +793,14 @@ footer { padding: 140px 2.5rem 2rem; }   /* 100px clear, matching the sections, 
     padding-top: 1.8rem;
   }
 
-  .flower-tile { padding: 0.7rem 0.5rem; }
-  .flower-svg-wrap { height: 80px; }
+  /* SQUARE on a phone. The mood line and the chip are already hidden here, so
+     a tile is a flower and a name and nothing else, and left to size itself it
+     came out 130 wide by 209 tall: a tall box round a round thing. A square
+     reads as a card of one flower, and two of them side by side fill the width
+     without a ragged edge below. `justify-content: center` is what stops the
+     pair sitting at the top of the box once the height is no longer theirs. */
+  .flower-tile { padding: 0.6rem 0.4rem; aspect-ratio: 1; justify-content: center; }
+  .flower-svg-wrap { height: 68px; margin-bottom: 0.35rem; }
   .flower-name { font-size: 0.9rem; }
   .flower-mood { display: none; }
   .flower-tile > .flower-chip { display: none; }
@@ -826,7 +839,15 @@ footer { padding: 140px 2.5rem 2rem; }   /* 100px clear, matching the sections, 
 
   /* Footer */
   footer { padding: 96px 3.6rem 1.5rem; }   /* top matches the headroom rule above */
-  .footer-top { flex-direction: column; gap: 1.5rem; }
+  /* Stacked, and each fold takes the WHOLE width. As flex items they were
+     shrink to fit, so the summary was only as wide as its own heading and the
+     chevron sat against the text instead of out at the right edge where a
+     control belongs. `gap` goes because each fold carries its own rule and
+     padding now, and the two together left a hole under the closed one. */
+  .footer-top { flex-direction: column; gap: 0; align-items: stretch;
+    /* 2.5rem left a hole between the last fold's own rule and the divider
+       above the credit. The folds carry their own spacing now. */
+    margin-bottom: 1.1rem; }
   .footer-col h4 { text-align: left; }
   .footer-col ul { align-items: flex-start; }
   .footer-bottom { flex-direction: row; justify-content: space-between; align-items: center; gap: 0; text-align: left; }
@@ -1374,4 +1395,61 @@ section { padding: 2.2rem 3.4rem; }
 }
 @media (prefers-reduced-motion: reduce) {
   .wig:hover .wl, .wig.wig-run .wl { animation: none; }
+}
+
+
+/* ===========================================================================
+   THE FOOTER FOLDS ON A PHONE
+   ===========================================================================
+   Both blocks are `<details open>`. On a wide screen they sit side by side
+   with room to spare, so the marker is hidden and they behave exactly as the
+   two plain divs they replaced. On a phone the footer is otherwise a screen
+   of stacked text arriving after everything else, so each closes to its own
+   heading with a chevron.
+
+   THE `open` ATTRIBUTE IS IN THE MARKUP ON PURPOSE. A details element with no
+   `open` arrives shut before any stylesheet can say otherwise, which would
+   hide the page's only navigation at the foot of a desktop view for a frame
+   and for anyone browsing without CSS. The phone rule closes them instead. */
+.footer-fold > summary {
+  list-style: none;
+  cursor: pointer;
+}
+.footer-fold > summary::-webkit-details-marker { display: none; }
+.footer-fold > summary > h4,
+.footer-fold > summary > .footer-brand-logo { display: inline-block; margin: 0; }
+
+@media (max-width: 768px) {
+  .footer-fold {
+    width: 100%;
+    border-bottom: 1px solid rgba(255,249,227,0.16);
+    padding-bottom: 0.7rem;
+    margin-bottom: 0.7rem;
+  }
+  .footer-fold:last-of-type { border-bottom: none; }
+  .footer-fold > summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.35rem 0;
+  }
+  /* The chevron is drawn on the summary rather than added to the markup, so
+     the two blocks need nothing of their own. It turns when the block opens. */
+  .footer-fold > summary::after {
+    content: '';
+    width: 9px;
+    height: 9px;
+    flex: 0 0 auto;
+    border-right: 2px solid var(--cream);
+    border-bottom: 2px solid var(--cream);
+    transform: rotate(45deg) translate(-2px, -2px);
+    transition: transform 0.22s ease;
+    opacity: 0.75;
+  }
+  .footer-fold[open] > summary::after { transform: rotate(-135deg) translate(-3px, -3px); }
+  .footer-fold > :not(summary) { margin-top: 0.5rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .footer-fold > summary::after { transition: none; }
 }

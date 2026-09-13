@@ -165,20 +165,35 @@
   var geom = null;
   function measure(){
     var W = window.innerWidth;
+    /* The meadow is drawn in a 1440 wide logical scene and scaled to fit, so
+       on a phone the scale was 390/1440 = 0.27 and a bloom of radius 17 came
+       out five pixels across. What fixes it is showing a NARROWER SLICE of the
+       logical scene rather than the whole of it: the same flowers, at 0.56
+       rather than 0.27, which is a bloom twice the size.
+
+       The flowers' x positions are then squeezed by the same ratio in draw(),
+       so the row still spans the full width rather than running off the right
+       edge, and `minSpacing` thins out whichever of them end up too close. */
+    var VIEW_W = W < 620 ? 700 : W < 900 ? 1050 : 1440;
     var LOGICAL_W = 1440, LOGICAL_H = 310;
-    var scale = W / LOGICAL_W;
+    var scale = W / VIEW_W;
     var meadowEl = c.parentElement;
     var rect = meadowEl ? meadowEl.getBoundingClientRect() : {top: 500};
     var meadowAbsTop = rect.top + window.scrollY;
     var meadowFromViewTop = (window.scrollY < 10) ? rect.top : meadowAbsTop;
     var H = Math.max(Math.round(LOGICAL_H * scale), window.innerHeight - meadowFromViewTop);
-    geom = { W: W, H: H, scale: scale, LOGICAL_W: LOGICAL_W, LOGICAL_H_actual: Math.round(H / scale) };
+    geom = { W: W, H: H, scale: scale, LOGICAL_W: LOGICAL_W, VIEW_W: VIEW_W,
+             xk: VIEW_W / LOGICAL_W,
+             LOGICAL_H_actual: Math.round(H / scale) };
   }
 
   function draw(){
     if (!geom) measure();
     var W = geom.W, LOGICAL_W = geom.LOGICAL_W, scale = geom.scale;
     var H = geom.H, LOGICAL_H_actual = geom.LOGICAL_H_actual;
+    /* 1 on a wide screen, less on a narrow one: how far the flowers' x
+       positions are squeezed so the row still spans the viewport. */
+    var xk = geom.xk || 1;
     if (c.width !== W || c.height !== H) {
       c.width = W; c.height = H;
       c.style.width = W + 'px';
@@ -472,11 +487,12 @@
     var minSpacing = W < 480 ? 40 : W < 768 ? 60 : 0;
     var lastDrawnX = -9999;
     allFlowers.forEach(function(row){
-      var screenX = row[0] * scale; // convert logical x to screen pixels
+      var lx = row[0] * xk;
+      var screenX = lx * scale; // convert logical x to screen pixels
       if(row[0] > LOGICAL_W - 60) return;
       if(minSpacing > 0 && screenX - lastDrawnX < minSpacing) return;
       lastDrawnX = screenX;
-      var pos=stem(row[0],row[1],row[2], SWAY * Math.sin(phase + row[0] * 0.011));
+      var pos=stem(lx,row[1],row[2], SWAY * Math.sin(phase + row[0] * 0.011));
       ctx.save(); ctx.translate(pos[0],pos[1]);
       row[3](row[4],row[5],row[6],row[7]);
       ctx.restore();
@@ -493,7 +509,8 @@
        tops out just under the tallest stem, so nothing flies off into the
        copy above the canvas. */
     if (window.GardenLife) {
-      GardenLife.meadow(ctx, LOGICAL_W, logH, { fly: [88, 228], motes: [186, Math.min(logH - 6, GY + 46)] });
+      GardenLife.meadow(ctx, geom.VIEW_W || LOGICAL_W, logH,
+        { fly: [88, 228], motes: [186, Math.min(logH - 6, GY + 46)] });
     }
 
     ctx.restore();
@@ -539,12 +556,12 @@
       One practice, three ways, grown from the same eight flowers.
     </p>
     <p class="section-desc">
-      The Personal Garden is a private journal where your words choose your flower. The Shared Garden is a public meadow anyone can plant in, refreshed daily. The Bouquet Builder wraps a few stems and a note for one person.
+      The Personal Garden is private, and your words choose the flower. The Shared Garden is a public meadow, refreshed daily. The Bouquet Builder wraps a few stems and a note for one person.
       <p class="section-desc">
-      Two you keep and return to. One you give away. Reflect, share, give.
+      Two you keep. One you give away. Reflect, share, give.
     </p>
     <p class="section-desc">
-      One account joins them up: the username you plant under, your garden on any device, the history of every day, and the friends you send bouquets to. Skip it and all three still work in this browser.
+      One account joins them up: a username, your garden on any device, and the friends you send bouquets to. Skip it and all three still work here.
     </p>
   </div>
 
@@ -908,19 +925,25 @@
 
 <!-- FIX 6: Footer, removed Sampoerna University, Keni to Kenisha Gabriella Wijaya -->
 <footer>
+  <!-- Both blocks are <details> so they can COLLAPSE ON A PHONE, where the
+       footer is otherwise a screen of stacked text under everything else. The
+       `open` attribute is on both, and the phone stylesheet is what closes
+       them: a details element with no `open` would arrive shut on a wide
+       screen too, before any CSS could say otherwise, and there the two sit
+       side by side with room to spare. -->
   <div class="footer-top" style="align-items:flex-start;">
-    <div>
-      <span class="footer-brand-logo">Gratitude Garden</span>
+    <details class="footer-col footer-fold" open>
+      <summary><span class="footer-brand-logo">Gratitude Garden</span></summary>
       <p class="footer-desc">Turn what you're grateful for into a flower. Keep it, share it in a meadow, or wrap it up for someone else.</p>
-    </div>
-    <div class="footer-col">
-      <h4>Explore</h4>
+    </details>
+    <details class="footer-col footer-fold" open>
+      <summary><h4>Explore</h4></summary>
       <ul>
         <li><a href="personal-garden/personal-garden-index.html" target="_self" rel="noopener">The Personal Garden</a></li>
         <li><a href="shared-garden/shared-garden-index.html" target="_self" rel="noopener">The Shared Garden</a></li>
         <li><a href="bouquet/bouquet-index.html" target="_self" rel="noopener">The Bouquet Builder</a></li>
       </ul>
-    </div>
+    </details>
   </div>
   <div class="footer-bottom">
     <div class="footer-credit">
@@ -1611,14 +1634,25 @@
       var ctx = cv.getContext('2d');
       ctx.setTransform(dpr,0,0,dpr,0,0);
       ctx.clearRect(0,0,size,size);
-      /* The same fractions the catalogue tiles use, so a bloom is the shape it
-         is everywhere else on the page. Lavender and lotus grow UPWARD out of
-         an origin the drawing pushes down, which is why their centres are not
-         the middle of the square. */
-      var cy = size*0.52;
-      if(it.id === 'lavender') cy = size*0.92;
-      else if(it.id === 'lotus') cy = size*0.76;
-      else if(it.id === 'tulip') cy = size*0.60;
+      /* Where the bloom's ORIGIN goes, which is not where its middle ends up:
+         every species paints a different amount above and below that point,
+         and the lavender and the lotus grow upward out of an origin their own
+         drawing pushes down.
+
+         These four numbers are MEASURED rather than copied from the catalogue
+         tiles. Painted and read back, the vertical centre of each bloom landed
+         at 0.519 for most of them, 0.635 for the tulip, 0.622 for the
+         lavender and 0.461 for the lotus, against a slot whose middle is 0.5.
+         The tulip sitting an eighth of its box low against the lily beside it
+         is what that looks like on the ring. Each origin is shifted by its own
+         error. **Re-measure if any species' drawing changes.** */
+      var cy = size*0.501;
+      if(it.id === 'lavender') cy = size*0.798;
+      else if(it.id === 'lotus') cy = size*0.799;
+      else if(it.id === 'tulip') cy = size*0.465;
+      /* The sakura was the one already centred before this correction, so the
+         shift applied to the rest took it 0.018 the other way. */
+      else if(it.id === 'sakura') cy = size*0.520;
       if(bloomFns[it.id]) bloomFns[it.id](ctx, size*0.5, cy, size*0.30, it.hue, it.sat, it.light);
 
       var ey = p.ey + H/2, sy = p.sy + H/2;
@@ -2393,7 +2427,15 @@
          across and 3 clear there is nearly always something in the air. */
       GardenLife.sky(ctx, r.width, r.height, {
         birds: [r.height * 0.08, r.height * 0.30],
-        cross: 24, gap: 3, scale: 1.25, ink: 'rgba(47,98,96,0.62)'
+        /* LEFT TO RIGHT every crossing, like the shared garden's, rather than
+           flipping each time. Alternating meant every other pass entered from
+           the side the eye had just stopped watching, which reads as the flock
+           having been away twice as long as it was.
+
+           `gap` is 1 against the gardens' 22. A visitor reads the top of a
+           page for a few seconds and then scrolls, so any clear sky at all is
+           sky most people only ever see empty. */
+        dir: 1, cross: 22, gap: 1, scale: 1.25, ink: 'rgba(47,98,96,0.62)'
       });
     }
 
@@ -2411,6 +2453,31 @@
       paint();
     }
     if (!GardenLife.reduced) requestAnimationFrame(tick);
+  })();
+  </script>
+
+  <!-- The footer's two blocks arrive open, which is right on a wide screen and
+       wrong on a phone, where the footer is a screen of stacked text after
+       everything else. CSS cannot close a `details`, so this does, and it
+       reopens them if the window grows back. -->
+  <script>
+  (function () {
+    var folds = document.querySelectorAll('.footer-fold');
+    if (!folds.length) return;
+    var phone = window.matchMedia('(max-width: 768px)');
+    /* Whether the reader has taken them over. Once somebody opens or closes
+       one by hand, a resize must not undo it under them. */
+    var touched = false;
+    [].forEach.call(folds, function (f) {
+      f.addEventListener('toggle', function () { touched = true; });
+    });
+    function apply() {
+      if (touched) return;
+      [].forEach.call(folds, function (f) { f.open = !phone.matches; });
+    }
+    apply();
+    (phone.addEventListener ? phone.addEventListener.bind(phone, 'change')
+                            : phone.addListener.bind(phone))(apply);
   })();
   </script>
 
