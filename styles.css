@@ -60,7 +60,13 @@ body { padding-left: 0 !important; }
 .side-nav-item:hover svg *, .side-nav-item.active svg * { stroke: var(--cream) !important; fill: none; }
 .side-nav-item::after { content: attr(data-label); position: absolute; left: 56px; top: 50%; transform: translateY(-50%); background: var(--darkteal); color: var(--cream); font-family: Arial,Helvetica,sans-serif; font-size: 0.7rem; font-weight: 700; padding: 0.3rem 0.7rem; border-radius: 6px; white-space: nowrap; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
 .side-nav-item:hover::after { opacity: 1; }
-@media (max-width: 768px) { .side-nav { left: 8px; gap: 5px; } .side-nav-item { width: 36px; height: 36px; } .side-nav-item svg { width: 16px; height: 16px; } .side-nav-item::after { display: none; } }
+/* GONE ON A PHONE, not shrunk. It was 36px circles at left 8, and on a narrow
+   screen the copy runs the full width, so the column sat straight on top of
+   the hero's paragraph and down the left edge of every section after it. What
+   it offers is a jump between sections, which on a phone is what scrolling
+   already is, so it was paying for itself in covered text and giving nothing
+   back. */
+@media (max-width: 768px) { .side-nav { display: none; } }
 
 /* ── HERO ── */
 .hero { height: 100vh; min-height: 100vh; background: linear-gradient(180deg, var(--sky) 0%, var(--lightsky) 58%, var(--cream) 100%); display: flex; flex-direction: column; align-items: center; justify-content: flex-start; position: relative; overflow: hidden; padding-top: 0; padding-bottom: 0; padding-left: 0; padding-right: 0; }
@@ -696,14 +702,12 @@ footer { padding: 140px 2.5rem 2rem; }   /* 100px clear, matching the sections, 
   /* Section spacing */
   section { padding: 2.8rem 3.6rem; }
 
-  /* Side nav */
-  .side-nav { left: 8px; gap: 5px; }
-  .side-nav-item { width: 38px; height: 38px; background: rgba(255,249,227,0.88); }
-  .side-nav-item svg { width: 16px; height: 16px; }
-  .side-nav-item::after { display: none; }
+  /* The side nav is hidden on a phone: see the note beside its own rule. */
 
-  /* Hero */
-  .hero { padding-top: 70px; min-height: 100dvh; height: auto; overflow: visible; }
+  /* Hero. 82 of top padding rather than 70: the account and music buttons are
+     fixed at the top right and end at 52 on a phone, and the eyebrow used to
+     start level with them. */
+  .hero { padding-top: 82px; min-height: 100dvh; height: auto; overflow: visible; }
   /* height is auto here, so the auto margins collapse and the block needs its
      own gap above the meadow again */
   .hero-text-block { padding: 0 1.5rem; max-width: 100%; margin-bottom: 2.5rem; }
@@ -1147,7 +1151,7 @@ section { padding: 2.2rem 3.4rem; }
      only about 76px from the middle, and the old three line box cornered at
      97 and sat on the lotus. One short line at 7.4em corners at 65. */
   width: 7.4em;
-  font-size: 0.98rem;
+  font-size: 1.05rem;
   text-align: center;
   font-family: 'Fraunces', 'Georgia', serif;
   font-style: italic;
@@ -1266,8 +1270,13 @@ section { padding: 2.2rem 3.4rem; }
   display: none;
   align-items: center;
   font-family: Arial, Helvetica, sans-serif;
-  font-size: 0.82rem;
-  line-height: 1.65;
+  /* The same size as `.section-desc`, the line under every section title, so
+     these read as part of the page's copy rather than as small print. The
+     SENTENCES had to shorten for it: at 1.05rem a 170px column holds about
+     twenty characters a line, and the column cannot widen without the ring
+     giving up radius. */
+  font-size: 1.05rem;
+  line-height: 1.55;
   /* The body copy floor on this page, measured against the darkest ground any
      of it sits on. Nothing here goes lighter. */
   color: #2f6260;

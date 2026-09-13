@@ -1,9 +1,10 @@
 /* =========================================================================
    garden-cursor.js  -  the chrome every page shares and no page owns
 
-   Two things live here, and they are together because both are needed on all
-   four pages and neither belongs to any one of them: the cursor, and the
-   little label that appears under an icon when you hover it. Putting either
+   Three things live here, and they are together because all three are needed
+   on all four pages and none belongs to any one of them: the cursor, the
+   little label that appears under an icon when you hover it, and the rule
+   that gets those icons out of the way while a phone is scrolling. Putting either
    in a page's own stylesheet is how the cursor ended up on one page of four
    in the first place.
 
@@ -282,6 +283,51 @@
     "@media (hover:none){[data-tip]::after{display:none;}}" +
     "@media (prefers-reduced-motion:reduce){[data-tip]::after{transition:opacity .01s;}}";
 
+  /* ------------------------------------------- the icons get out of the way */
+  /* On a PHONE the four round icons are fixed over a page whose copy runs the
+     full width, so a section title passes underneath them on the way past and
+     is cut in half while it does. On a wide screen this never happens, because
+     the content is narrower than the window and the corner is empty.
+
+     Padding the copy away from them was the other option and it is worse: the
+     overlap only exists for the second or two a title is level with them, and
+     the fix would cost every phone screen 90px of width for ever.
+
+     So they fade while the page is actually moving and come back 550ms after
+     it stops. Scrolling is when you are reading the page rather than reaching
+     for a control, which is exactly when they are not wanted. */
+  var SCROLL_HIDE =
+    "@media (max-width: 768px){" +
+      "#gg-music,#ga-friends-btn,#gj-btn,#save-btn{" +
+        "transition:opacity .2s ease,visibility 0s linear 0s;}" +
+      "html[data-gg-scrolling=\"1\"] #gg-music," +
+      "html[data-gg-scrolling=\"1\"] #ga-friends-btn," +
+      "html[data-gg-scrolling=\"1\"] #gj-btn," +
+      "html[data-gg-scrolling=\"1\"] #save-btn{" +
+        "opacity:0;pointer-events:none;}}" +
+    "@media (prefers-reduced-motion:reduce){" +
+      "html[data-gg-scrolling=\"1\"] #gg-music," +
+      "html[data-gg-scrolling=\"1\"] #ga-friends-btn," +
+      "html[data-gg-scrolling=\"1\"] #gj-btn," +
+      "html[data-gg-scrolling=\"1\"] #save-btn{transition:none;}}";
+
+  var scrollTimer = null;
+  function watchScroll() {
+    var root = document.documentElement;
+    window.addEventListener("scroll", function () {
+      /* Only where the rule above can fire. A garden does not scroll at all,
+         so this costs those pages nothing either way. */
+      if (window.innerWidth > 768) return;
+      root.setAttribute("data-gg-scrolling", "1");
+      clearTimeout(scrollTimer);
+      scrollTimer = setTimeout(function () {
+        root.removeAttribute("data-gg-scrolling");
+      }, 550);
+    }, { passive: true });
+  }
+  if (document.body) watchScroll();
+  else document.addEventListener("DOMContentLoaded", watchScroll);
+
   var tag = null;
   /* Both states take the hue now. The rose is the one you actually look at,
      so in the personal garden it is the rose that should carry the colour of
@@ -297,7 +343,7 @@
         (document.head || document.documentElement).appendChild(tag);
       }
     }
-    tag.textContent = css(hue) + TIP;
+    tag.textContent = css(hue) + TIP + SCROLL_HIDE;
   }
 
   apply(DEFAULT_HUE);

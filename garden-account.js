@@ -340,6 +340,12 @@
 
   /* ------------------------------------------------------------ claim screen */
   function openClaim() {
+    /* `claimOpen` guards against building the screen twice, but a flag that is
+       only cleared on SUCCESS can get stuck: if the element ever leaves the
+       page without a username being claimed, nothing would open it again for
+       the rest of the visit. Checking the document is what makes the flag
+       recoverable. */
+    if (!document.getElementById("ga-claim")) claimOpen = false;
     if (claimOpen || !me || profile) return;
     claimOpen = true;
 
@@ -552,6 +558,14 @@
 
   function openPanel() {
     if (!panel) return;
+    /* A SECOND WAY INTO THE CLAIM SCREEN. It is meant to appear by itself the
+       moment a new account first has a session, from either branch of `boot`,
+       and reading the code that is the only place a profile row is ever
+       created. But an account with no username can do nothing here: it cannot
+       be searched for, and a comment it leaves has no name under it. So if
+       somebody reaches the friends button without one, they are asked for it
+       here rather than shown an empty panel. */
+    if (me && !profile) { openClaim(); return; }
     panel.setAttribute("data-open", "1");
     panel.setAttribute("aria-hidden", "false");
     refreshPanel();
@@ -570,7 +584,12 @@
     var who = el("div", "ga-who");
     var b = el("b", null, name);
     who.appendChild(b);
-    if (item.profile && item.profile.display_name && item.profile.username) {
+    /* The username goes under the name only when it is a DIFFERENT string.
+       The test used to be that both fields exist, which is true the moment
+       somebody renames themselves: `openRename` copies the new name into
+       `display_name` as well whenever that was never set to anything of its
+       own, so the two match and the row printed the same word twice. */
+    if (item.profile && item.profile.username && item.profile.username !== name) {
       who.appendChild(el("span", null, item.profile.username));
     }
     row.appendChild(who);
