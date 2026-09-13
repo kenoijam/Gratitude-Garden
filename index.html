@@ -712,6 +712,17 @@
     <div class="flower-ring reveal" id="flowerRing">
       <svg class="fr-lines" id="frLines" aria-hidden="true"></svg>
       <p class="fr-centre" id="frCentre">Hover a bloom</p>
+      <!-- The two corners. A circle leaves its corners empty and these are
+           what fill them, on the diagonal where no label ever reaches. They
+           also give the section somewhere to say two things it otherwise
+           could not: that a meaning is fixed across the whole project, and
+           that how you get a flower differs by page. -->
+      <p class="fr-note fr-note-a">One meaning per flower, and it holds
+        everywhere. The same bloom stands for the same thing in both gardens
+        and in a bouquet.</p>
+      <p class="fr-note fr-note-b">In your own garden the words you write
+        choose the flower. In the shared garden and the bouquet you pick it
+        yourself.</p>
     </div>
   </div>
 
@@ -720,7 +731,7 @@
     <!-- ROSE -->
     <div class="flower-tile reveal" onclick="openFlowerModal('rose')">
       <div class="flower-svg-wrap">
-        <canvas class="flower-canvas" data-flower="rose" data-hue="340" data-sat="55" data-light="55" width="80" height="100"></canvas>
+        <canvas class="flower-canvas" data-flower="rose" data-hue="350" data-sat="55" data-light="55" width="80" height="100"></canvas>
       </div>
       <div class="flower-name">Rose</div>
       <div class="flower-mood">Love and depth</div>
@@ -730,7 +741,7 @@
     <!-- SUNFLOWER -->
     <div class="flower-tile reveal" onclick="openFlowerModal('sunflower')">
       <div class="flower-svg-wrap">
-        <canvas class="flower-canvas" data-flower="sunflower" data-hue="45" data-sat="60" data-light="65" width="80" height="100"></canvas>
+        <canvas class="flower-canvas" data-flower="sunflower" data-hue="48" data-sat="62" data-light="65" width="80" height="100"></canvas>
       </div>
       <div class="flower-name">Sunflower</div>
       <div class="flower-mood">Hope and resilience</div>
@@ -740,7 +751,7 @@
     <!-- LOTUS -->
     <div class="flower-tile reveal" onclick="openFlowerModal('lotus')">
       <div class="flower-svg-wrap">
-        <canvas class="flower-canvas" data-flower="lotus" data-hue="340" data-sat="50" data-light="70" width="80" height="100"></canvas>
+        <canvas class="flower-canvas" data-flower="lotus" data-hue="140" data-sat="34" data-light="68" width="80" height="100"></canvas>
       </div>
       <div class="flower-name">Lotus</div>
       <div class="flower-mood">Strength and Rising</div>
@@ -750,7 +761,7 @@
     <!-- LAVENDER -->
     <div class="flower-tile reveal" onclick="openFlowerModal('lavender')">
       <div class="flower-svg-wrap">
-        <canvas class="flower-canvas" data-flower="lavender" data-hue="270" data-sat="55" data-light="68" width="80" height="100"></canvas>
+        <canvas class="flower-canvas" data-flower="lavender" data-hue="272" data-sat="55" data-light="68" width="80" height="100"></canvas>
       </div>
       <div class="flower-name">Lavender</div>
       <div class="flower-mood">Calm and safety</div>
@@ -770,7 +781,7 @@
     <!-- DAISY -->
     <div class="flower-tile reveal" onclick="openFlowerModal('daisy')">
       <div class="flower-svg-wrap">
-        <canvas class="flower-canvas" data-flower="daisy" data-hue="22" data-sat="52" data-light="68" width="80" height="100"></canvas>
+        <canvas class="flower-canvas" data-flower="daisy" data-hue="25" data-sat="54" data-light="68" width="80" height="100"></canvas>
       </div>
       <div class="flower-name">Daisy</div>
       <div class="flower-mood">Simplicity and joy</div>
@@ -780,7 +791,7 @@
     <!-- LILY -->
     <div class="flower-tile reveal" onclick="openFlowerModal('lily')">
       <div class="flower-svg-wrap">
-        <canvas class="flower-canvas" data-flower="lily" data-hue="185" data-sat="40" data-light="70" width="80" height="100"></canvas>
+        <canvas class="flower-canvas" data-flower="lily" data-hue="190" data-sat="42" data-light="70" width="80" height="100"></canvas>
       </div>
       <div class="flower-name">Lily</div>
       <div class="flower-mood">Peace and restoration</div>
@@ -790,7 +801,7 @@
     <!-- SAKURA -->
     <div class="flower-tile reveal" onclick="openFlowerModal('sakura')">
       <div class="flower-svg-wrap">
-        <canvas class="flower-canvas" data-flower="sakura" data-hue="340" data-sat="40" data-light="75" width="80" height="100"></canvas>
+        <canvas class="flower-canvas" data-flower="sakura" data-hue="332" data-sat="44" data-light="75" width="80" height="100"></canvas>
       </div>
       <div class="flower-name">Sakura</div>
       <div class="flower-mood">Reflection and presence</div>
@@ -1411,28 +1422,41 @@
      The grid this sits beside is the same eight flowers and is kept for narrow
      and touch screens, where a ring has nowhere to put a label. */
   var RING = [
-    /* The two deep pinks STRADDLE THE TOP, at -112.5 and -67.5, and the rest
-       run clockwise from there in an unbroken climb up the colour wheel: the
-       sakura, the apricot daisy, the yellow sunflower, the teal lily, the blue
-       violet tulip and the lavender, which comes back round to meet the rose.
-       None of the eight sits on a compass point, which is what gives every
-       one of them a side to put its label on. Neighbours that read as the
-       same colour twice are what this order exists to avoid.
+    /* A COLOUR WHEEL, clockwise from the top left, and the hues were moved to
+       make it one. It used to carry the rose, the lotus and the sakura all at
+       340: three flowers, one pink, sitting side by side, with a 140 degree
+       jump from the sunflower straight to the lily. Now every step climbs and
+       no two are closer than 18 degrees, so the ring reads as a spectrum:
 
-       TWO of these hues were moved for the same reason. The tulip was 280,
-       four degrees off the lavender's 270; it is 232 now. The daisy was 55,
-       three degrees off the sunflower's 45; it is 22. The tile canvases below
-       carry the same numbers and must move with these, since the popup reads
-       its colour off the tile. */
-    { id:'rose',      a:-112.5, hue:340, sat:55, light:55 },
-    { id:'lotus',     a:-67.5,  hue:340, sat:50, light:70 },
-    { id:'sakura',    a:-22.5,  hue:340, sat:40, light:75 },
-    { id:'daisy',     a: 22.5,  hue:22,  sat:52, light:68 },
-    { id:'sunflower', a: 67.5,  hue:45,  sat:60, light:65 },
-    { id:'lily',      a:112.5,  hue:185, sat:40, light:70 },
-    { id:'tulip',     a:157.5,  hue:232, sat:52, light:62 },
-    { id:'lavender',  a:-157.5, hue:270, sat:55, light:68 }
+         rose 350, daisy 25, sunflower 48, lotus 140, lily 190, tulip 232,
+         lavender 272, sakura 332, and back to the rose.
+
+       THE LOTUS IS THE ONE THAT WENT GREEN, at 140, and it is the only one of
+       the three pinks that could. A rose has to be red and a cherry blossom
+       has to be pink; a lotus comes in white and cream and a pale green white,
+       so a soft sage one is a flower that exists. It is 34 saturation, kept
+       well down, or it stops reading as a bloom and starts reading as a leaf.
+
+       Its POSITION moved with its colour, from beside the rose at the top to
+       between the sunflower and the lily, which is where a green belongs on a
+       wheel and is also the one stretch that had nothing in it.
+
+       The 92 degree step from the sunflower to the lotus is the yellow green
+       arc, and it stays a gap on purpose: none of the eight is a yellow green
+       flower, and the leaves already are.
+
+       The eight tile canvases below carry the same numbers and must move with
+       these, since the popup reads its colour off the tile. */
+    { id:'rose',      a:-112.5, hue:350, sat:55, light:55 },
+    { id:'daisy',     a:-67.5,  hue:25,  sat:54, light:68 },
+    { id:'sunflower', a:-22.5,  hue:48,  sat:62, light:65 },
+    { id:'lotus',     a: 22.5,  hue:140, sat:34, light:68 },
+    { id:'lily',      a: 67.5,  hue:190, sat:42, light:70 },
+    { id:'tulip',     a:112.5,  hue:232, sat:52, light:62 },
+    { id:'lavender',  a:157.5,  hue:272, sat:55, light:68 },
+    { id:'sakura',    a:-157.5, hue:332, sat:44, light:75 }
   ];
+
 
   /* The lead and the tick are not decoration, they are the ring's budget:
      every pixel spent on the run out to a label is a pixel the radius does
@@ -1528,57 +1552,35 @@
     var labW = RING[0].lab.offsetWidth || 179;
     var free = W/2 - labW - TICK - LEAD - 10;
     /* The bloom's size and the ring's radius each depend on the other, so it
-       is SOLVED rather than iterated. Two passes of "guess a size, derive a
-       radius, derive a size" does not converge: at 1000px wide it settled on
-       a bloom of 184 against a radius of 198, when the rule says a bloom may
-       be at most 0.90 of the radius, and the ring then overflowed its own box
-       with the labels hanging outside the column.
+       is SOLVED rather than iterated: `size = K * Rr` and `Rr = free - F *
+       size`, so `Rr = free / (1 + K*F)`. Two passes of "guess a size, derive
+       a radius, derive a size" does not converge, and at 1000px wide it
+       settled on a bloom of 184 against a radius of 198, which is past the
+       rule that a bloom may be at most 0.90 of the radius; the ring then
+       overflowed its own box with the labels hanging outside it. */
+    var K = 0.90, F = 0.42;
+    /* A CIRCLE, and its radius is CAPPED rather than taken from the width.
 
-       size = K * Rx and Rx = free - F * size, so Rx = free / (1 + K*F). The
-       cap and the floor are applied afterwards, each with its own radius
-       derived from the size that was actually used.
+       It was briefly an ellipse, to stop the sides of the section standing
+       empty; the corner notes do that job now and the ring can be round
+       again. But the height follows the radius directly, so letting the
+       radius take all the width available runs the section past a screen and
+       a half: at 1240 the width alone would give 403, and the section would
+       be 1.58 screens. 215 is what keeps it at about 1.2, and the room that
+       leaves at the sides is where the two notes sit.
 
-       0.90 is close to a HARD CEILING rather than a preference. Eight blooms
+       The bloom is 0.90 of the radius, close to a hard ceiling: eight blooms
        round a circle sit a chord of 0.765 of the radius apart, and the widest
        species paints about 0.84 of its square, so two neighbours touch at
        about 0.91 whatever the radius is. */
-    var K = 0.90, F = 0.42;
-    var Rx = free / (1 + K * F);
-    var size = K * Rx;
-    if (size > 184) { size = 184; Rx = free - size * F; }
-    else if (size < 118) { size = 118; Rx = free - size * F; }
-    Rx = Math.max(120, Rx);
-
-    /* AN ELLIPSE, not a circle, and only once there is width to spare.
-
-       As a circle the eight blooms spanned 577px inside a section 1210 wide,
-       which left 316px of empty cream on each side while the sections above
-       and below filled the whole width. Spreading them sideways is the one
-       fix that uses that space without making the section taller, since the
-       height follows Ry alone.
-
-       Ry stops at RY_MAX and Rx carries on, so the ring is a true circle on a
-       narrow screen and flattens as the page widens. The height is therefore
-       fixed from RY_MAX up, whatever the width.
-
-       Rx IS CAPPED AT 1.9 TIMES Ry, and that is the thing to watch. The two
-       blooms straddling each end of the long axis sit 0.765 * Ry apart
-       vertically no matter how wide the ellipse gets, so flattening it
-       further does not move them apart, it only moves everything else away
-       from them. At Ry 215 that pair is 164px apart against a widest painted
-       bloom of 155. */
-    var RY_MAX = 215;
-    var Ry = Math.min(Rx, RY_MAX);
-    Rx = Math.min(Rx, Ry * 1.9);
+    var R_MAX = 215;
+    var Rr = Math.min(free / (1 + K * F), R_MAX);
+    var size = Math.min(184, Math.max(118, K * Rr));
 
     var cxs = W/2, maxY = 0;
     var pts = RING.map(function(item){
       var a = item.a * Math.PI/180, ux = Math.cos(a), uy = Math.sin(a);
-      /* The bloom sits ON the ellipse; everything after it runs out along the
-         same direction from the centre, which keeps a leader line pointing
-         back at the middle of the diagram rather than at a normal nobody can
-         see. */
-      var bx = cxs + ux*Rx, by = uy*Ry;                     /* y is still centred on 0 */
+      var bx = cxs + ux*Rr, by = uy*Rr;                     /* y is still centred on 0 */
       var off = size*0.42;
       var sx = bx + ux*off, sy = by + uy*off;
       var ex = bx + ux*(off + LEAD), ey = by + uy*(off + LEAD);
@@ -1598,8 +1600,8 @@
     if (guide) {
       guide.setAttribute('cx', (W/2).toFixed(1));
       guide.setAttribute('cy', (H/2).toFixed(1));
-      guide.setAttribute('rx', Rx.toFixed(1));
-      guide.setAttribute('ry', Ry.toFixed(1));
+      guide.setAttribute('rx', Rr.toFixed(1));
+      guide.setAttribute('ry', Rr.toFixed(1));
     }
 
     var dpr = window.devicePixelRatio || 1;

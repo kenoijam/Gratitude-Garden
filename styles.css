@@ -1120,12 +1120,11 @@ section { padding: 2.2rem 3.4rem; }
      section ran 1.35 screens against the page's rule of not much past one.
      The middle now only has to clear a one line hint.
 
-     1240, and the ring FILLS it, because it is an ellipse rather than a
-     circle: `layoutRing` caps the vertical radius and lets the horizontal one
-     carry on, so extra width spreads the eight sideways instead of making the
-     section taller. It was briefly 860, a circle, and the blooms spanned 577
-     inside a section 1210 wide, leaving 316px of empty cream on each side
-     while the sections above and below filled the lot. */
+     1240. The ring itself is a circle capped at a 215 radius, so it does not
+     fill this on its own; the two corner notes do, and the width is here to
+     give them somewhere to sit. It was briefly 860, which left 316px of empty
+     cream on each side while the sections above and below filled the lot, and
+     briefly an ellipse, which filled the width with flowers instead. */
   max-width: 1240px;
 }
 .flower-ring .fr-lines {
@@ -1229,6 +1228,40 @@ section { padding: 2.2rem 3.4rem; }
 .fr-label[data-side="l"] { text-align: right; }
 .fr-label[data-side="r"] { text-align: left; }
 .fr-label[data-side="c"] { text-align: center; }
+
+/* THE TWO CORNER NOTES.
+
+   A circle leaves its corners empty, and with the ring's radius capped so the
+   section does not run to a screen and a half, those corners are large. These
+   fill the top left and the bottom right, which is the diagonal: the eight
+   blooms sit at 22.5, 67.5, 112.5 and 157.5 degrees either side, so their
+   labels reach out along those lines and leave the 45 degree diagonals clear.
+
+   MEASURED, not guessed, and the WIDTH is the whole of it. A note is pinned
+   to the box's corner while the labels are placed from the CENTRE, so as the
+   box narrows the corner travels inward and the labels do not: a 300px note
+   clears the rose's label down to a box of about 1092 and collides below it,
+   which at 1180 it did. At 240 it clears from 1010, which is the box a 1180
+   window gives. **Re-measure after changing this width, the radius, the label
+   width or the leader lines**; all four move the same gap.
+
+   Hidden below 1180, where the box has no corners worth the name. */
+.fr-note {
+  position: absolute;
+  width: 240px;
+  margin: 0;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 0.86rem;
+  line-height: 1.6;
+  /* The body copy floor on this page, measured against the darkest ground any
+     of it sits on. Nothing here goes lighter. */
+  color: #2f6260;
+  pointer-events: none;
+  display: none;
+}
+.fr-note-a { top: 0; left: 0; text-align: left; }
+.fr-note-b { bottom: 0; right: 0; text-align: right; }
+@media (min-width: 1180px) { .fr-note { display: block; } }
 
 @media (min-width: 880px) {
   .flower-ring { display: block; }
