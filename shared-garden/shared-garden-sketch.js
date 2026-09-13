@@ -896,15 +896,28 @@ var BLOOM_BOX = {
    rather than sitting inside a dark halo the same size as itself. */
 var SHADOW_FIT = 0.90;
 
-function bloomShadow(f, R) {
+function bloomShadow(f, R, alphaK) {
+  var k = (alphaK === undefined) ? 1 : alphaK;
+  if (k <= 0) return;
   var box = BLOOM_BOX[f.species] || BLOOM_BOX.daisy;
   var ctx = drawingContext;
 
-  /* p5 scales drawingContext by the pixel density, but canvas shadow offsets
-     and blur are NOT touched by the transform: they are device pixels. Both
-     therefore have to be multiplied by the density by hand, or the shadow
-     lands in the wrong place and comes out half as soft as asked for. */
-  var dpr = (typeof pixelDensity === "function") ? pixelDensity() : 1;
+  /* THE OFFSET AND THE BLUR ARE DEVICE PIXELS AND THE TRANSFORM DOES NOT
+     TOUCH THEM, so both have to be converted by hand. It used to multiply by
+     the pixel density alone, which is right only while nothing else has
+     scaled the canvas. It reads the LIVE horizontal scale off the matrix
+     instead, so a bloom drawn inside a `scale()` still gets its shadow in
+     the right place.
+
+     What went wrong without it is worth keeping: the shape is drawn 6000
+     units off to the right and dragged back purely as its own shadow, so an
+     unaccounted scale of k left the shadow at 6000*(k-1) device pixels from
+     where it belongs. Growing a bloom from 0.18 to 1 therefore slid its
+     shadow in from somewhere off the left of the screen and snapped it into
+     place at the last frame, which is the pop that was visible. */
+  var m = (ctx.getTransform ? ctx.getTransform() : null);
+  var sx = m ? Math.sqrt(m.a * m.a + m.b * m.b) : 1;
+  if (!(sx > 0)) sx = 1;
   var FAR = 6000;                       /* far outside any canvas */
 
   /* CENTRED on the bloom, not dropped below it, and light. A shadow cast down
@@ -914,9 +927,9 @@ function bloomShadow(f, R) {
      grass and says nothing about the sun at all, which is what this needed to
      do in the first place. */
   ctx.save();
-  ctx.shadowColor = "rgba(18,62,56,0.18)";
-  ctx.shadowBlur = Math.max(6, R * 0.32) * dpr;
-  ctx.shadowOffsetX = -FAR * dpr;
+  ctx.shadowColor = "rgba(18,62,56," + (0.18 * k).toFixed(3) + ")";
+  ctx.shadowBlur = Math.max(6, R * 0.32) * sx;
+  ctx.shadowOffsetX = -FAR * sx;
   ctx.shadowOffsetY = 0;
   ctx.fillStyle = "#000";
   ctx.beginPath();
@@ -925,7 +938,10 @@ function bloomShadow(f, R) {
   ctx.fill();
   ctx.restore();
 }
-function drawBloom(f) {
+/* `shadowK` scales the drop shadow, 0 for none. A growing bloom passes a
+   ramp so the shadow arrives with the flower rather than appearing whole on
+   one frame. Everything else leaves it out and gets the full shadow. */
+function drawBloom(f, shadowK) {
 colorMode(HSL, 360, 100, 100, 1);
 noStroke();
 
@@ -933,7 +949,7 @@ const R     = f.size;
 const hue   = f.hue;
 const sat   = f.sat;
 const light = f.light;
-bloomShadow(f, R);
+bloomShadow(f, R, shadowK);
 
 if (f.species === "tulip") {
 drawTulipBloom(R, hue, sat, light);
@@ -1045,12 +1061,19 @@ line(0, 0, w * 0.9, 0);
 pop();
 }
 
-function drawLeavesOnStem(x0, y0, c1x, c1y, c2x, c2y, x3, y3) {
-const tAttach = 0.60;
+/* `lenK` is how far the pair has unfolded, 1 when finished, and `tAt` is
+   where on the curve they sit. Both are optional: every finished flower
+   calls this with neither and gets exactly what it always got. A growing one
+   passes both, because on a half risen stem the attachment point is at a
+   different PARAMETER even though it is at the same HEIGHT. */
+function drawLeavesOnStem(x0, y0, c1x, c1y, c2x, c2y, x3, y3, lenK, tAt) {
+const tAttach = (tAt === undefined) ? LEAF_T : tAt;
 const baseLen = 32;
+const k = (lenK === undefined) ? 1 : lenK;
+if (k <= 0) return;
 
 const scaleFactor = (width < 720 ? gardenScale : 1);
-const len = baseLen * scaleFactor;
+const len = baseLen * scaleFactor * k;
 
 drawLeafOnStem(x0, y0, c1x, c1y, c2x, c2y, x3, y3, tAttach, -1, len);
 drawLeafOnStem(x0, y0, c1x, c1y, c2x, c2y, x3, y3, tAttach,  1, len);
@@ -1131,6 +1154,41 @@ const GROW_OPEN = 1700;   /* the bud opens into the bloom */
 
 function growEase(t) { return 1 - Math.pow(1 - t, 3); }
 
+/* THE LEAVES. They used to arrive in a single frame at the very end, because
+   nothing drew them until growth was over and `drawFlowerStemAndLeaves` took
+   over, so a finished flower simply had leaves that the growing one never
+   had. They now unfold while the stem is still climbing.
+
+   `LEAF_T` is where they attach along the stem's curve and has always been
+   0.60. `LEAF_FRAC` is what that means as a fraction of the stem's HEIGHT,
+   and the two are not the same number. It is `bezierPoint(0, 0.4, 0.7, 1,
+   0.60)`, which is 0.6336, and it does not depend on how long the stem is:
+   the rising stem is the finished one with every control point scaled by the
+   same amount, so those 0.4 and 0.7 are constants.
+
+   That is what lets a leaf STAY WHERE IT CAME OUT while the stem goes on
+   growing past it, which is what a plant does. Drawn at a fixed parameter
+   instead, the leaves slide up the stem with the tip. */
+const LEAF_T = 0.60;
+const LEAF_FRAC = 0.6336;   /* bezierPoint(0, 0.4, 0.7, 1, LEAF_T) */
+const LEAF_OPEN = 900;      /* ms for the pair to unfold once they appear */
+/* The moment the tip first reaches that height, inverting `growEase`. */
+const LEAF_AT = GROW_RISE * (1 - Math.cbrt(1 - LEAF_FRAC));
+
+/* Which PARAMETER on the current curve sits at a given fraction of the
+   finished stem's height. Bisection, since the cubic has no tidy inverse and
+   eighteen halvings put it well inside a pixel. */
+function stemParamAtFrac(frac) {
+  if (frac >= 1) return 1;
+  if (frac <= 0) return 0;
+  let lo = 0, hi = 1;
+  for (let i = 0; i < 18; i++) {
+    const mid = (lo + hi) * 0.5;
+    if (bezierPoint(0, 0.4, 0.7, 1, mid) < frac) lo = mid; else hi = mid;
+  }
+  return (lo + hi) * 0.5;
+}
+
 /* A closed bud: a teardrop with two sepals at its foot and one seam down it,
    drawn around the origin so the caller only has to stand at the stem's tip.
 
@@ -1197,6 +1255,14 @@ function drawFlowerWithGrowth(f) {
     noFill();
     bezier(0, 0, 10 * p, -len * 0.4, -6 * p, -len * 0.7, 0, -len);
     pop();
+    /* The pair unfolds once the tip has climbed past where they belong. They
+       are placed by HEIGHT, not by parameter, so they stay put while the
+       stem carries on past them. */
+    if (p >= LEAF_FRAC) {
+      const lk = growEase(constrain((elapsed - LEAF_AT) / LEAF_OPEN, 0, 1));
+      drawLeavesOnStem(0, 0, 10 * p, -len * 0.4, -6 * p, -len * 0.7, 0, -len,
+                       lk, stemParamAtFrac(LEAF_FRAC / p));
+    }
     const r = budR * (0.45 + 0.55 * p);
     push();
     translate(0, -len - r * 0.5);
@@ -1215,6 +1281,9 @@ function drawFlowerWithGrowth(f) {
   noFill();
   bezier(0, 0, 10, -f.stemLen * 0.4, -6, -f.stemLen * 0.7, 0, -f.stemLen);
   pop();
+  /* Full length by now, and at their finished position, so this hands over
+     to `drawFlowerStemAndLeaves` without a step. */
+  drawLeavesOnStem(0, 0, 10, -f.stemLen * 0.4, -6, -f.stemLen * 0.7, 0, -f.stemLen);
 
   if (q < 0.98) {
     push();
@@ -1222,10 +1291,14 @@ function drawFlowerWithGrowth(f) {
     drawBudShape(f, budR * (1 - q * 0.72), 1);
     pop();
   }
+  /* NO SHADOW UNTIL THE BLOOM IS NEARLY THERE, then it comes up over the last
+     third of the opening. A bud has nothing to cast one, and a shadow that
+     simply switched on at the final frame would be the same pop in a
+     different place. */
   push();
   translate(0, -f.stemLen);
   scale(0.18 + 0.82 * q);
-  drawBloom(f);
+  drawBloom(f, constrain((q - 0.66) / 0.34, 0, 1));
   pop();
 }
 
