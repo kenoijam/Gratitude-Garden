@@ -408,9 +408,38 @@ create policy "resnapshot today" on public.shared_days
 -- bouquet and a linked one are the same object and render through the same
 -- code.
 -- ---------------------------------------------------------------------
+-- It is CREATED here and not only altered. The block used to open with the
+-- `alter` below, which fails outright on a project that has never had this
+-- table, and quietly inherits whatever shape it already has on one that does.
+create table if not exists public.bouquets (
+  id           uuid primary key default gen_random_uuid(),
+  sender_id    uuid not null references auth.users on delete cascade,
+  recipient_id uuid not null references auth.users on delete cascade,
+  payload      text not null default '',
+  message      text not null default '',
+  opened       boolean not null default false,
+  created_at   timestamptz not null default now()
+);
+
 alter table public.bouquets
   add column if not exists payload text    not null default '',
+  add column if not exists message text    not null default '',
   add column if not exists opened  boolean not null default false;
+
+-- ANY COLUMN THIS PROJECT DOES NOT WRITE MUST NOT BE REQUIRED. A table left
+-- over from an earlier shape can carry one, and a `not null` on it refuses
+-- every send with a message naming a column that appears nowhere in the code:
+--   null value in column "share_code" of relation "bouquets"
+--   violates not-null constraint
+-- This clears that one by name if it is there and leaves the data alone.
+do $$
+begin
+  if exists (select 1 from information_schema.columns
+              where table_schema = 'public' and table_name = 'bouquets'
+                and column_name = 'share_code') then
+    alter table public.bouquets alter column share_code drop not null;
+  end if;
+end $$;
 
 alter table public.bouquets enable row level security;
 drop policy if exists "see my bouquets"   on public.bouquets;

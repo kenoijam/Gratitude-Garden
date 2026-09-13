@@ -69,11 +69,19 @@
 
   /* The whole module is sized off a 1440 wide logical scene, which is the
      gardens' BASE_W and the hero's logical width, so both pages land on the
-     same figure with no page specific tuning. Clamped, or a phone draws
-     butterflies too small to read as butterflies. */
+     same figure with no page specific tuning.
+
+     THE FLOOR IS 0.92, NOT 0.62, and it is the only thing holding a phone up.
+     Straight proportion gives a 375 wide page 0.26, which is a butterfly four
+     pixels across: present in the arithmetic and invisible on the screen. At
+     0.62 it was still a speck. A butterfly is a fixed thing the eye either
+     recognises or does not, so it does NOT scale down with the page the way a
+     flower or a heading does; below about this size it stops being a
+     butterfly and becomes a fleck of dirt. The ceiling can stay generous
+     because a wide screen has room. */
   function unitFor(w, opts) {
     if (opts && opts.scale) return opts.scale;
-    return clamp(w / 1440, 0.62, 1.25);
+    return clamp(w / 1440, 0.92, 1.25);
   }
 
   /* ---------------------------------------------------------------- state */

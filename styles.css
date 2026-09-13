@@ -519,6 +519,16 @@ section { padding: 5rem 5rem; }
      already full width and cannot be mistaken for anything else */
   .btn-outline { border-width: 1.5px; border-color: rgba(29,100,102,0.5); }
   .btn-card-light, .btn-card-dark { border-width: 1.5px; }
+
+  /* THE HINT GETS A STRIP OF ITS OWN, UNDER THE PICTURE. It is absolutely
+     positioned along the slot's bottom edge, which on a wide card sits on
+     canvas the flowers never reach. On a phone the card is narrower, the
+     description is hidden and everything closes up, so "Tap or hover a
+     flower" landed on the picture above it and on the button below. Giving
+     the slot a margin and dropping the line into that margin means the strip
+     belongs to the hint and to nothing else. */
+  .card-art-slot { margin-bottom: 1.7rem; }
+  .cs-hint { bottom: -1.45rem; font-size: 0.72rem; opacity: 1; }
 }
 
 /* ── FLOWER CATALOGUE ── */
@@ -839,9 +849,17 @@ footer { padding: 140px 2.5rem 2rem; }   /* 100px clear, matching the sections, 
   /* CTA */
   .cta { padding: 72px 3.6rem 56px; }   /* top matches the headroom rule above */
   .cta-inner { padding: 2rem 1.2rem 2.2rem; }
-  .cta-buttons { flex-direction: column; align-items: center; gap: 0.75rem; }
+  .cta-buttons { flex-direction: column; align-items: center; gap: 0.6rem; margin-top: 1.5rem; }
+  /* SMALLER THAN FULL WIDTH, and shorter. At 320px wide with 1rem type and
+     0.9rem of padding, three stacked pills stood taller than the heading they
+     belong to and read as the section rather than as its actions: the title
+     resolves to about 34px on a 375 screen and each button was 51px of solid
+     colour. 240 and 0.72rem puts them back under it. */
   .cta-buttons .btn-primary,
-  .cta-buttons .btn-outline { width: 100%; max-width: 320px; text-align: center; }
+  .cta-buttons .btn-outline {
+    width: 100%; max-width: 240px; text-align: center;
+    padding: 0.72rem 1.5rem; font-size: 0.92rem;
+  }
 
   /* Footer */
   footer { padding: 96px 3.6rem 1.5rem; }   /* top matches the headroom rule above */

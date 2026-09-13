@@ -525,6 +525,14 @@
        follows for repeats. */
     var minSpacing = W < 768 ? Math.round(W * 0.155) : 0;
     var lastDrawnX = -9999;
+    /* WHERE THE BLOOMS ACTUALLY ENDED UP, recorded as they are drawn so a tap
+       can be tested against them. It has to come from HERE and not from the
+       data: `allFlowers` and every `drawDaisy` style function are declared
+       inside this function, so nothing outside can see them, and the position
+       is not in the data anyway. It carries the sway, and only the flowers
+       that survived `minSpacing`, so what is tappable is exactly what is on
+       the screen. */
+    hits.length = 0;
     allFlowers.forEach(function(row){
       var lx = row[0] * xk;
       var screenX = lx * scale; // convert logical x to screen pixels
@@ -535,6 +543,7 @@
       ctx.save(); ctx.translate(pos[0],pos[1]);
       row[3](row[4],row[5],row[6],row[7]);
       ctx.restore();
+      hits.push({ lx: pos[0], ly: pos[1], R: row[4], hue: row[5] });
     });
     // 3. Front ground strip over stem bases, so flowers appear to grow from ground
     ctx.fillStyle='#8fcfbe'; ctx.fillRect(-20,GY,1480,60);
@@ -548,20 +557,115 @@
        tops out just under the tallest stem, so nothing flies off into the
        copy above the canvas. */
     if (window.GardenLife) {
-      /* `unitFor` sizes a butterfly off the scene's own width, which after the
-         narrowing above is 540 on a phone, so they came out smaller still on
-         top of a canvas already scaled up. The explicit `scale` overrides
-         that: 0.78 in logical units against a 0.72 canvas scale is roughly
-         the size they are on a desktop, where both are 1. */
+      /* NO `scale` OVERRIDE. There used to be one, because `unitFor` sizes a
+         butterfly off the scene's own width and this scene is deliberately
+         narrow on a phone. Its own floor is 0.92 now, which is what a narrow
+         scene needs, and one rule for every page beats a figure tuned here
+         that has to be remembered over there. */
       GardenLife.meadow(ctx, geom.VIEW_W || LOGICAL_W, logH, {
         fly: [88, 228],
-        motes: [186, Math.min(logH - 6, GY + 46)],
-        scale: (geom.VIEW_W && geom.VIEW_W < 700) ? 0.62 : undefined
+        motes: [186, Math.min(logH - 6, GY + 46)]
       });
     }
 
+    drawTaps(ctx);
     ctx.restore();
   }
+
+  /* ── TOUCH A FLOWER AND IT SPARKLES ──────────────────────────────────────
+     The same four pointed star the gardens throw around a newly planted
+     bloom, so the hero answers a finger with the project's own gesture
+     rather than a new one invented for it.
+
+     It is drawn in LOGICAL units inside the same transform as the meadow, so
+     a burst sits on its flower at every width without any of the scaling
+     being repeated here. `taps` is a short list of live bursts; an empty
+     list costs one array check a frame, which is why the sway loop can keep
+     running as it did. */
+  var taps = [];
+  var TAP_MS = 900;
+
+  function burst(lx, ly, hue) {
+    var n = 9, arr = [];
+    for (var i = 0; i < n; i++) {
+      var a = (i / n) * Math.PI * 2 + Math.random() * 0.5;
+      arr.push({
+        a: a,
+        d: 16 + Math.random() * 26,          /* how far it travels, in logical units */
+        r: 3.4 + Math.random() * 2.6,
+        turn: Math.random() * Math.PI
+      });
+    }
+    taps.push({ x: lx, y: ly, hue: hue, t0: Date.now(), bits: arr });
+    if (taps.length > 4) taps.shift();       /* a burst per tap, not a firework display */
+  }
+
+  function star(ctx, x, y, r, turn, alpha, hue) {
+    /* `drawNewestSparkles` exactly: four outer points with the inner corners
+       at 0.35 of the radius, over a soft halo. */
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate(turn);
+    ctx.globalAlpha = alpha * 0.5;
+    ctx.fillStyle = 'hsl(' + hue + ',70%,86%)';
+    ctx.beginPath(); ctx.arc(0, 0, r * 1.7, 0, Math.PI * 2); ctx.fill();
+    ctx.globalAlpha = alpha;
+    ctx.fillStyle = '#fff9e3';
+    ctx.beginPath();
+    for (var i = 0; i < 8; i++) {
+      var rad = (i % 2 === 0) ? r : r * 0.35;
+      var ang = (i / 8) * Math.PI * 2 - Math.PI / 2;
+      var px = Math.cos(ang) * rad, py = Math.sin(ang) * rad;
+      if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+    }
+    ctx.closePath(); ctx.fill();
+    ctx.restore();
+  }
+
+  function drawTaps(ctx) {
+    if (!taps.length) return;
+    var now = Date.now();
+    for (var i = taps.length - 1; i >= 0; i--) {
+      var b = taps[i];
+      var p = (now - b.t0) / TAP_MS;
+      if (p >= 1) { taps.splice(i, 1); continue; }
+      /* Out fast and fading the whole way, which is what a spark does. */
+      var ease = 1 - Math.pow(1 - p, 2);
+      var alpha = (1 - p) * (1 - p);
+      for (var j = 0; j < b.bits.length; j++) {
+        var s = b.bits[j];
+        star(ctx,
+             b.x + Math.cos(s.a) * s.d * ease,
+             b.y + Math.sin(s.a) * s.d * ease - p * 8,   /* drifting up as it goes */
+             s.r * (1 - p * 0.35), s.turn + p * 2.2, alpha, b.hue);
+      }
+    }
+  }
+
+  /* WHICH FLOWER WAS TAPPED. `hits` is filled by `draw()` with where each
+     bloom actually landed, in logical units; this converts the pointer into
+     the same space and takes the nearest within reach. */
+  var hits = [];
+  function tapAt(clientX, clientY) {
+    if (!geom || !hits.length) return;
+    var r = c.getBoundingClientRect();
+    /* The rect is in the page's own pixels and the canvas may be laid out at
+       a different size to its CSS width, so go through the ratio rather than
+       assuming the two agree. */
+    var k = (r.width ? (geom.W / r.width) : 1) / geom.scale;
+    var px = (clientX - r.left) * k, py = (clientY - r.top) * k;
+    var best = null, bestD = Infinity;
+    for (var i = 0; i < hits.length; i++) {
+      var h = hits[i];
+      var d = Math.hypot(px - h.lx, py - h.ly);
+      var reach = Math.max(30, h.R * 1.8);
+      if (d < reach && d < bestD) { bestD = d; best = h; }
+    }
+    if (best) burst(best.lx, best.ly, best.hue);
+  }
+
+  c.style.pointerEvents = 'auto';
+  c.addEventListener('pointerdown', function (e) { tapAt(e.clientX, e.clientY); });
 
   function drawAfterLayout(){ measure(); draw(); setTimeout(function(){ measure(); draw(); }, 100); }
   if(document.readyState==='loading'){ document.addEventListener('DOMContentLoaded', drawAfterLayout); }
@@ -579,13 +683,18 @@
   }
   function tick(now){
     requestAnimationFrame(tick);
-    if (reduced || !onScreen || document.hidden) return;
+    if (!onScreen || document.hidden) return;
+    /* A SPARKLE BURST STILL HAS TO BE DRAWN when the sway does not run.
+       Reduced motion opts out of the drifting, not out of an answer to a
+       finger somebody has deliberately put on a flower, and the loop used to
+       return before this and never start at all. */
+    if (reduced && !taps.length) return;
     if (now - last < 33) return;
     last = now;
-    phase = now / 2600;              /* one slow cycle every ~16 seconds */
+    if (!reduced) phase = now / 2600;   /* one slow cycle every ~16 seconds */
     draw();
   }
-  if (!reduced) requestAnimationFrame(tick);
+  requestAnimationFrame(tick);
 })();
 </script>
 
@@ -633,7 +742,7 @@
         <svg class="feature-icon" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="18" cy="18" r="12" stroke="#429288" stroke-width="2" fill="#b7e4e7"/><ellipse cx="18" cy="18" rx="5" ry="12" stroke="#429288" stroke-width="1.5" fill="none"/><line x1="6" y1="18" x2="30" y2="18" stroke="#429288" stroke-width="1.5"/></svg>
         <div class="feature-card-text">
           <div class="feature-title">The Shared Garden</div>
-          <p class="feature-desc">Share a gratitude note in the community meadow.</p>
+          <p class="feature-desc">Share a note in the community meadow, and like and comment on others.</p>
         </div>
       </div>
       <div class="feature-card">
@@ -2128,6 +2237,15 @@
     }
   }
 
+  /* WHETHER WE HAVE ALREADY FOLDED FOR THIS BREAKPOINT. `applyFolding` shuts
+     every card, which is right when the layout crosses 768 and wrong at every
+     other moment, and it was being called from the window resize handler by
+     way of `initFolding`. On iOS the address bar collapses as you scroll and
+     that fires a RESIZE, so opening a card and then scrolling closed it again
+     under your thumb. The height changing is not a reason to fold anything;
+     only crossing the breakpoint is. */
+  var foldedFor = null;
+
   function initFolding() {
     var inners = document.querySelectorAll('.garden-card-inner');
     [].forEach.call(inners, function (inner) {
@@ -2170,14 +2288,20 @@
     });
   }
 
-  function applyFolding() {
+  function applyFolding(force) {
     var small = foldQuery.matches;
+    /* Only when the answer has actually changed, or when the media query
+       itself says so. Otherwise a card somebody opened stays open. */
+    if (!force && foldedFor === small) return;
+    foldedFor = small;
     [].forEach.call(document.querySelectorAll('.garden-card-inner'), function (inner) {
       setFolded(inner, small);
     });
   }
   (foldQuery.addEventListener ? foldQuery.addEventListener.bind(foldQuery, 'change')
-                              : foldQuery.addListener.bind(foldQuery))(applyFolding);
+                              : foldQuery.addListener.bind(foldQuery))(function () {
+    applyFolding(true);
+  });
 
   function renderCardShows() {
     var slots = document.querySelectorAll('.card-art-slot[data-show]');
@@ -2196,7 +2320,17 @@
   else { setTimeout(renderAll,80); }
   // Also re-render on full page load (fonts/images settled)
   window.addEventListener('load', function(){ setTimeout(renderAll, 100); });
-  window.addEventListener('resize',function(){ setTimeout(renderAll,120); });
+  /* WIDTH ONLY. Every canvas on this page is sized from the width, and a
+     phone fires `resize` on a height change alone every time its address bar
+     slides away, which on iOS is constantly while you scroll. Repainting
+     eleven canvases for that is waste; re-running the layout for it is the
+     bug above. */
+  var lastW = window.innerWidth;
+  window.addEventListener('resize', function () {
+    if (window.innerWidth === lastW) return;
+    lastW = window.innerWidth;
+    setTimeout(renderAll, 120);
+  });
 })();
 </script>
 <script src="bouquet/bouquet-sketch.js"></script>

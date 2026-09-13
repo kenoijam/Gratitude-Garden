@@ -936,7 +936,12 @@ body {
   .bq-form-grid { grid-template-columns: 1fr; }
 }
 @media (max-width: 560px) {
-  .bq-template-grid, .bq-city-grid, .bq-shop-grid { grid-template-columns: 1fr; }
+  /* TWO COLUMNS, NOT ONE, even at 360. Six templates in a single column is
+     six full width tiles and most of them below the fold, so the choice
+     reads as one option with a lot of scrolling after it. Two columns puts
+     all six within a screen and a bit. */
+  .bq-city-grid, .bq-shop-grid { grid-template-columns: 1fr; }
+  .bq-template-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
   .bq-template-canvas { max-width: 160px; }
 }
 
@@ -993,6 +998,24 @@ body {
 .bq-send-msg[data-tone="bad"] { color: #b3261e; }
 .bq-send-msg[data-tone="good"] { color: #2c7a7b; }
 
+/* The receipt. It stands where the form stood, so the panel does not grow
+   and there is nothing left to press twice. */
+.bq-sent { text-align: center; padding: 6px 0 2px; }
+.bq-sent-mark {
+  width: 44px; height: 44px; border-radius: 50%;
+  background: #e1f7f7; color: #2c7a7b;
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 10px;
+}
+.bq-sent-mark svg { width: 22px; height: 22px; display: block; }
+.bq-sent-line {
+  font-family: 'Fraunces', 'Georgia', serif; font-weight: 600;
+  font-variation-settings: 'SOFT' 50, 'WONK' 0;
+  font-size: 1.12rem; color: #0f5132; margin: 0 0 4px;
+}
+.bq-sent-sub { font-size: 0.85rem; color: #5a8f8d; margin: 0 0 14px; }
+.bq-sent .bq-btn { width: auto; padding: 9px 26px; font-size: 0.92rem; }
+
 
 /* The sixth template tile: build your own.
 
@@ -1024,14 +1047,31 @@ body {
    equal specificity the later rule wins: the overrides were being written and
    then quietly undone a hundred lines later. */
 @media (max-width: 780px) {
-  /* NOT STICKY here. Stuck to the top of a single column it pinned a full
-     sized bouquet over the options underneath it, so picking a flower meant
-     scrolling past a picture that would not move. */
-  .bq-preview-col { position: static; top: auto; }
-  /* Shorter too. At full height the preview was most of the first screen, so
-     the flowers began below the fold with nothing to say they were there. */
-  .bq-preview-holder { max-height: 40vh; }
-  .bq-preview-holder canvas { max-height: 40vh; width: auto; margin: 0 auto; }
+  /* A SHORT PREVIEW PINNED TO THE TOP, and the height is the whole argument.
+     It was sticky and full sized first, which pinned most of a screen of
+     bouquet over the options and meant picking a flower was scrolling past a
+     picture that would not move. It was then unpinned, which sent it up the
+     page out of sight and left you scrolling back and forth to see what a
+     change had done. A 118px strip is the middle: it never leaves, and it
+     costs about a seventh of a phone screen rather than half of it.
+
+     It has to come FIRST in the column, hence the order, because sticking to
+     the top of the viewport is no use to something laid out below the thing
+     it is describing. */
+  .bq-preview-col {
+    position: sticky; top: 0; z-index: 12; order: -1;
+    background: rgba(255, 249, 227, 0.97);
+    padding: 6px 0 8px;
+    border-bottom: 1.5px solid rgba(29,100,102,0.14);
+    margin-bottom: 4px;
+  }
+  .bq-pick-layout { display: flex; flex-direction: column; }
+  .bq-preview-holder { max-height: 118px; min-height: 0; }
+  .bq-preview-holder canvas { max-height: 118px; width: auto; margin: 0 auto; }
+  /* Its own label costs a row of a strip this short, and the picture is not
+     something anybody needs told is a preview. */
+  .bq-preview-col > .bq-control-label { display: none; }
+  .bq-drag-hint { font-size: 11px; }
 
   /* The step's own nav gives way to the bar at the foot, which carries the
      same two buttons where a thumb is. */

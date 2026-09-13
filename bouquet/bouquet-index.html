@@ -531,6 +531,18 @@
           <button class="bq-btn" id="bqSendGo" type="button">Send it</button>
         </div>
         <p class="bq-send-msg" id="bqSendMsg"></p>
+        <!-- THE CONFIRMATION REPLACES THE FORM rather than adding a line under
+             it. A sent bouquet is done, and leaving the fields sitting there
+             with a note beneath invites a second send of the same thing. -->
+        <div class="bq-sent" id="bqSent" hidden>
+          <div class="bq-sent-mark" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"
+                 stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5l5.2 5L20 7"/></svg>
+          </div>
+          <p class="bq-sent-line" id="bqSentLine"></p>
+          <p class="bq-sent-sub">It is waiting in their friends panel.</p>
+          <button class="bq-btn" id="bqSentDone" type="button">Done</button>
+        </div>
       </div>
 
       <div class="bq-recipient-cta" id="bqRecipientCta" style="display:none;">

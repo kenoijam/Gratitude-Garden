@@ -2919,6 +2919,13 @@ function syncFlowerGrid() {
     : total >= MAX_FLOWERS
       ? `${total} stems, that is a full bouquet`
       : `${total} stem${total === 1 ? "" : "s"} picked`;
+  /* A SHORT FORM FOR THE PHONE BAR. The sentence above is right on the step,
+     where it has the width of the card; in the bar at the foot it shares a
+     375px row with a Back and a Continue and wrapped to three lines. The bar
+     reads `data-short` when it is there and the full text when it is not. */
+  note.setAttribute("data-short", remaining > 0
+    ? `${total} of ${MIN_FLOWERS}`
+    : `${total} stem${total === 1 ? "" : "s"}`);
   note.classList.toggle("ok", remaining <= 0);
   document.getElementById("toFoliageBtn").disabled = remaining > 0;
 }
@@ -3000,6 +3007,10 @@ function syncFoliageGrid() {
       : real.length === 0 ? "Pick one, or two to mix them"
       : real.length === 1 ? "1 picked, add another to mix them"
       : "2 picked, the most you can mix";
+    note.setAttribute("data-short", chosen.includes("none")
+      ? "No foliage"
+      : real.length === 0 ? "Pick one or two"
+      : `${real.length} of ${MAX_FOLIAGE}`);
   }
   const btn = document.getElementById("toWrapBtn");
   if (btn) btn.disabled = chosen.length === 0;
@@ -3199,7 +3210,18 @@ function syncStickyBar(name) {
   var nav = step ? step.querySelector(".bq-nav") : null;
   /* The reveal and the chooser screens have no nav, and the reveal is not part
      of the builder at all. */
-  if (!step || !nav || CHROMELESS.indexOf(name) >= 0 || name === "reveal") {
+  /* THE REVEAL IS NOT A STEP YOU NAVIGATE, so the bar has no business over
+     it, and testing the step NAME alone was not enough: a received bouquet
+     and `renderFinal` put the reveal on screen without going through
+     `goToStep`, which left the letter step's Back and "Reveal my bouquet"
+     stuck across the bottom of a finished bouquet, on top of the very
+     buttons that share it. Asking whether the reveal is VISIBLE cannot be
+     fooled that way. */
+  var revealOn = (function () {
+    var rv = document.querySelector('#bqBuilder .bq-step[data-step="reveal"]');
+    return !!(rv && rv.offsetParent !== null);
+  })();
+  if (!step || !nav || revealOn || CHROMELESS.indexOf(name) >= 0 || name === "reveal") {
     bar.hidden = true;
     return;
   }
@@ -3213,7 +3235,7 @@ function syncStickyBar(name) {
   var sNext = document.getElementById("bqStickyNext");
   var sCount = document.getElementById("bqStickyCount");
 
-  sCount.textContent = count ? count.textContent : "";
+  sCount.textContent = count ? (count.getAttribute("data-short") || count.textContent) : "";
   sBack.hidden = !backBtn;
   sNext.hidden = !nextBtn;
   if (backBtn) sBack.textContent = backBtn.textContent;
@@ -3230,7 +3252,7 @@ function syncStickyBar(name) {
      it. */
   if (bar._watch) bar._watch.disconnect();
   bar._watch = new MutationObserver(function () {
-    if (count) sCount.textContent = count.textContent;
+    if (count) sCount.textContent = count.getAttribute("data-short") || count.textContent;
     if (nextBtn) { sNext.textContent = nextBtn.textContent; sNext.disabled = nextBtn.disabled; }
   });
   bar._watch.observe(step, { subtree: true, childList: true, characterData: true,
@@ -3367,6 +3389,11 @@ function initLetterStep() {
 let lastFocused = null;
 
 function renderFinal(isRecipientView) {
+  /* Whatever route got here, the reveal is now on screen, so the phone's nav
+     bar goes. A received bouquet never touches `goToStep` at all. */
+  var _bar = document.getElementById("bqStickyBar");
+  if (_bar) _bar.hidden = true;
+
   const revealWrap = document.getElementById("bqRevealWrap");
   const stage = document.getElementById("bqStage");
   const card = CARDS_MAP[state.card] || CARDS_MAP.snow;
@@ -3481,13 +3508,33 @@ function initSendToFriend() {
   btn.addEventListener("click", () => {
     box.style.display = box.style.display === "none" ? "" : "none";
     say("", "");
+    showForm(true);          /* so a second bouquet does not open on the receipt */
     if (box.style.display !== "none") pick.focus();
   });
   cancel.addEventListener("click", () => { box.style.display = "none"; });
 
+  /* THE CONFIRMATION REPLACES THE FORM. A sent bouquet is finished, and a
+     small line under a still filled in form invites sending the same thing
+     again; this says who it went to and offers one button, which is out. */
+  const sent = document.getElementById("bqSent");
+  const sentLine = document.getElementById("bqSentLine");
+  const sentDone = document.getElementById("bqSentDone");
+  const formRows = [pick, note, document.querySelector(".bq-send-actions"),
+                    document.querySelector(".bq-send-label")];
+  function showForm(on) {
+    formRows.forEach(el => { if (el) el.hidden = !on; });
+    if (sent) sent.hidden = on;
+  }
+  if (sentDone) sentDone.addEventListener("click", () => {
+    box.style.display = "none";
+    showForm(true);
+    say("", "");
+  });
+
   go.addEventListener("click", () => {
     const to = pick.value;
     if (!to) return;
+    const toName = (pick.options[pick.selectedIndex] || {}).textContent || "your friend";
     go.disabled = true;
     const was = go.textContent;
     go.textContent = "Sending";
@@ -3495,10 +3542,15 @@ function initSendToFriend() {
       .then(res => {
         go.disabled = false;
         go.textContent = was;
+        /* Supabase answers a refused or malformed write with an error OBJECT
+           rather than by throwing, so this branch is the one that catches a
+           real database complaint. It is shown verbatim: a message telling
+           somebody their send failed has to say what the database said. */
         if (res && res.error) { say("bad", res.error.message); return; }
-        say("good", "Sent. It is waiting in their friends panel.");
+        say("", "");
         note.value = "";
-        setTimeout(() => { box.style.display = "none"; say("", ""); }, 2600);
+        if (sentLine) sentLine.textContent = "Sent to " + toName;
+        showForm(false);
       })
       .catch(() => {
         go.disabled = false;
