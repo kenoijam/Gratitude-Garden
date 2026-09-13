@@ -1114,10 +1114,14 @@ section { padding: 2.2rem 3.4rem; }
   display: none;                     /* the media query below turns it on */
   margin: 0 auto;
   width: 100%;
-  /* 1020, up from 980. The ring is the whole section now rather than one of
-     two columns, and the radius is what the blooms grow out of. Wider than
-     this and the section runs past a screen and a quarter. */
-  max-width: 1020px;
+  /* 1160. The ring's width sets its radius, the radius sets the empty circle
+     in the middle, and the middle has to hold the section's title AT THE SAME
+     SIZE AS EVERY OTHER SECTION'S. At 1020 the clearance was 215 and the
+     title had to be shrunk to 35px against the other four at 55, which read
+     as the flower guide being a lesser section. This buys 71px of clearance
+     and the title keeps its size. It costs height: the section runs about
+     1.24 screens, against the gardens section's 1.31. */
+  max-width: 1160px;
 }
 .flower-ring .fr-lines {
   position: absolute;
@@ -1242,14 +1246,14 @@ section { padding: 2.2rem 3.4rem; }
 
    The geometry is a real constraint. `layoutRing` leaves the nearest bloom's
    inner edge at `Rr - size*0.42` from the middle, and the heading block has
-   to fit inside a circle of that radius: at 1440 that is 216, and a 360 by
-   150 block corners at 195. **Check that clearance after changing the ring's
+   to fit inside a circle of that radius: at 1440 that is about 286, and a 430
+   wide block of three or four lines corners well inside it. **Check that clearance after changing the ring's
    size, the label width or the leader lines**, because all three move the
    radius and the heading does not know about any of them.
 
    Below this width the ring is too small to hold it and the heading goes back
    above, which is what the block above does. */
-@media (min-width: 1180px) {
+@media (min-width: 1340px) {
   .catalogue-split { position: relative; }
   /* Centred by FLEX, never by a transform. `.catalogue-header` carries the
      `reveal` class, and `.reveal.visible` sets `transform: none` to undo its
@@ -1274,17 +1278,20 @@ section { padding: 2.2rem 3.4rem; }
     z-index: 2;
   }
   .catalogue-header > div {
-    /* 360, not 380. At the 1180 breakpoint the block cornered at 204 against
-       an inner clearance of 210, which is six pixels of margin for a layout
-       that has to hold at every width above it. At 360 it corners at 193. */
-    width: 360px;
+    width: 430px;
     text-align: center;
     pointer-events: auto;
   }
-  /* A heading inside a diagram is a caption, not a banner. The section size
-     would fill the ring on its own. */
-  .catalogue-header .section-title { font-size: 2.05rem; line-height: 1.14; }
-  .catalogue-header .section-desc { font-size: 0.92rem; margin-top: 0.5rem; }
+  /* NO font-size override. There was one, at 2.05rem, on the reasoning that a
+     heading inside a diagram is a caption rather than a banner. It is not:
+     this is the section's own title and every other section sets it at
+     `clamp(2.2rem, 3.8vw, 3.4rem)`, so at 1440 the other four measured 55px
+     and this one 35, and the flower guide read as a lesser section. The ring
+     was widened to make room for it instead. `line-height` is tightened only
+     because a centred block of three or four lines in a circle wants to be
+     compact. */
+  .catalogue-header .section-title { line-height: 1.08; margin-bottom: 0.7rem; }
+  .catalogue-header .section-desc { margin-top: 0.5rem; }
   /* The title IS the middle now. */
   .fr-centre { display: none; }
 }
