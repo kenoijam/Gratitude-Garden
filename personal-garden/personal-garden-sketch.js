@@ -1771,6 +1771,32 @@ function getLayerSorted(layerName) {
   return layer;
 }
 
+/* TAP A FLOWER TO READ THE DAY, which opens the book at that flower's own
+   date. The hover box is a glance; this is the whole entry.
+
+   Three guards, and each is load bearing:
+
+   - p5 calls `mousePressed` for a press ANYWHERE in the window, not only on
+     its canvas, so without the target test this fires while somebody is
+     pressing a button on a prompt card or typing in the book itself.
+   - Only in the garden step. On the prompt screens the canvas is behind a
+     card and a flower under it is not something anybody is pointing at.
+   - `checkHover` is re-run from the press position rather than trusting
+     `hoveredFlower`, because a touch screen never fires a move first and the
+     stored value would be whatever the last mouse happened to be over.
+
+   Returning nothing rather than `false` leaves p5's own default alone. */
+function mousePressed(event) {
+  if (step !== "garden") return;
+  var t = event && event.target;
+  if (!t || String(t.tagName).toUpperCase() !== "CANVAS") return;
+  if (!window.GardenJournal || !GardenJournal.openAt) return;
+  checkHover(mouseX, mouseY);
+  if (!hoveredFlower || !hoveredFlower.date) return;
+  var day = GardenJournal.fromUS(hoveredFlower.date);
+  if (day) GardenJournal.openAt(day);
+}
+
 function checkHover(px = mouseX, py = mouseY) {
   let best = null;
   let bestDist = Infinity;
@@ -1795,6 +1821,12 @@ function checkHover(px = mouseX, py = mouseY) {
 
 function drawHoverTooltip() {
   if (!hoveredFlower) return;
+  /* Nothing floats over the open book. The veil takes pointer events, so the
+     hover can no longer be UPDATED once the book is up, but the last flower
+     the pointer crossed stays set and its box would go on being painted
+     underneath: a glance and the full entry on screen at once, which is the
+     doubling the book exists to remove. */
+  if (window.GardenJournal && GardenJournal.isOpen && GardenJournal.isOpen()) return;
 
   const f = hoveredFlower;
   const t = frameCount * 0.01 + f.phase * 0.001;
@@ -1835,45 +1867,18 @@ function drawHoverTooltip() {
     textStyle(NORMAL);
   }
 
-  if (f.dayRating) {
-    lines.push({ text: `Mood: ${f.dayRating}`, bold: false });
-  }
-  if (f.dayShaper) {
-    lines.push({ text: `Shaped by: ${f.dayShaper}`, bold: false });
-  }
+  /* A GLANCE, NOT THE WHOLE ENTRY. This box used to carry the mood, what
+     shaped the day and the journal text as well, which is every word the
+     book now opens with when you TAP the flower. Two places saying the same
+     thing is the repetition the book was meant to remove, and the long
+     version had a real cost besides: a paragraph of journal made the box
+     taller than the flower it belonged to and it covered its own neighbours.
 
-  if (f.journal) {
-    textSize(12);
-    textStyle(NORMAL);
-
-    const prefix = "Entry: ";
-    const words = f.journal.split(" ");
-    let journalLines = [];
-    let currentLine = "";
-    let isFirst = true;
-
-    for (let word of words) {
-      const testPrefix = isFirst ? prefix : "";
-      const testLine = currentLine + word + " ";
-      if (textWidth(testPrefix + testLine) > innerWidth) {
-        if (currentLine.trim()) {
-          journalLines.push((isFirst ? prefix : "") + currentLine.trim());
-          isFirst = false;
-        }
-        currentLine = word + " ";
-      } else {
-        currentLine = testLine;
-      }
-    }
-    if (currentLine.trim()) {
-      journalLines.push((isFirst ? prefix : "") + currentLine.trim());
-    }
-
-    journalLines.forEach(l => lines.push({ text: l, bold: false }));
-  }
-
+     Species, what it stands for, the date, and a line saying there is more.
+     `Tap` rather than `Click`, since this garden is read on a phone too. */
   lines.push({ text: "---", bold: false, divider: true });
   lines.push({ text: f.date || "", bold: false, muted: true });
+  lines.push({ text: "Tap to read the day", bold: false, muted: true });
 
   textSize(12);
   const boxWidth = maxWidth;
@@ -2557,7 +2562,10 @@ saveBtn.mousePressed(() => {
      hovered for its meaning, or that every day already planted is still there
      to look back at. */
   const ul = createElement("ul").parent(tipsCard);
-  createElement("li", "Hover a flower for its meaning").parent(ul);
+  /* The tip has to name what the flower actually does now. Hovering gives a
+     glance; the day itself is a tap away, and nothing else on the page says
+     so, which is exactly what this card is for. */
+  createElement("li", "Tap a flower to read that day").parent(ul);
   createElement("li", "Sparkles mark your newest bloom").parent(ul);
   const savedWhere = (window.GardenStore && window.GardenStore.signedIn)
     ? "Saved to your account, any device"

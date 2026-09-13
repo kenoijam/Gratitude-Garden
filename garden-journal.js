@@ -234,35 +234,69 @@
     '@media (max-width:768px){#gj-btn{top:16px;right:96px;width:34px;height:34px;}' +
       '#gj-btn svg{width:16px;height:16px;}}' +
 
-    /* Opens from the LEFT, which is the side its button is on, and which also
-       means it can never be confused with the friends panel on the right. */
-    '#gj-panel{position:fixed;top:0;left:0;bottom:0;width:390px;max-width:100%;z-index:540;' +
-      'background:snow;border-right:1px solid #d9ece9;box-shadow:8px 0 28px rgba(29,100,102,0.12);' +
-      'font-family:Arial,Helvetica,sans-serif;color:#1d6466;display:flex;flex-direction:column;' +
-      'transform:translateX(-102%);transition:transform .28s ease;}' +
-    '#gj-panel[data-open="1"]{transform:none;}' +
-    '@media (prefers-reduced-motion:reduce){#gj-panel{transition:none;}}' +
-    '@media (max-width:560px){#gj-panel{top:auto;right:0;width:auto;height:78vh;' +
-      'border-right:none;border-top:1px solid #d9ece9;border-radius:18px 18px 0 0;' +
-      'box-shadow:0 -8px 28px rgba(29,100,102,0.16);transform:translateY(102%);}}' +
+    /* A BOOK IN THE MIDDLE, not a sheet down the side.
 
-    '#gj-head{padding:18px 20px 14px;border-bottom:1px solid #eaf4f2;position:relative;}' +
-    '#gj-head h2{font-family:Fraunces,Georgia,serif;font-size:22px;font-weight:600;' +
-      "font-variation-settings:'SOFT' 50,'WONK' 0;color:#0f5132;margin:0 0 12px;}" +
+       It used to slide in from the left. Reaching it by tapping a flower is
+       what changed that: a flower can be anywhere in the garden and the panel
+       always arrived in the same corner, so the thing you asked about and the
+       answer were nowhere near each other. Centred, the answer arrives where
+       you are looking, and the garden dims behind it rather than being shoved
+       aside. It is ONE reading view with two ways in, the icon and a flower,
+       which is also what keeps it from being the same panel twice. */
+    '#gj-veil{position:fixed;inset:0;z-index:535;background:rgba(12,58,54,0.34);' +
+      'opacity:0;pointer-events:none;transition:opacity .24s ease;}' +
+    '#gj-veil[data-open="1"]{opacity:1;pointer-events:auto;}' +
+    '#gj-panel{position:fixed;left:50%;top:50%;z-index:540;' +
+      'width:min(92vw,432px);max-height:min(88vh,650px);' +
+      'background:snow;border-radius:16px;border:1px solid #d9ece9;' +
+      'box-shadow:0 22px 60px rgba(29,100,102,0.30);' +
+      'font-family:Arial,Helvetica,sans-serif;color:#1d6466;display:flex;flex-direction:column;' +
+      'overflow:hidden;' +
+      'transform:translate(-50%,-50%) scale(.94);opacity:0;pointer-events:none;' +
+      'transition:transform .24s ease,opacity .24s ease;}' +
+    '#gj-panel[data-open="1"]{transform:translate(-50%,-50%) scale(1);opacity:1;' +
+      'pointer-events:auto;}' +
+    '@media (prefers-reduced-motion:reduce){#gj-panel,#gj-veil{transition:none;}}' +
+
+    /* THE SPINE. A band down the left with stitch marks on it, and every row
+       inside the book is indented past it. It is a `::before` on the panel
+       rather than a child, so nothing in the layout has to know about it and
+       the scrolling body slides under it cleanly. */
+    '#gj-panel::before{content:"";position:absolute;left:0;top:0;bottom:0;width:26px;' +
+      'background:linear-gradient(90deg,#e7f3f0 0%,#f4faf8 62%,rgba(244,250,248,0) 100%);' +
+      'border-right:1px solid #e3f0ed;pointer-events:none;z-index:2;}' +
+    '#gj-panel::after{content:"";position:absolute;left:12px;top:26px;bottom:26px;width:0;' +
+      'border-left:2px dashed #c6e2dc;pointer-events:none;z-index:3;}' +
+
+    '#gj-head{padding:16px 18px 12px 38px;border-bottom:1px solid #eaf4f2;position:relative;' +
+      'flex:0 0 auto;}' +
+    '#gj-head h2{font-family:Fraunces,Georgia,serif;font-size:13px;font-weight:700;' +
+      'letter-spacing:.12em;text-transform:uppercase;color:#8aa9a7;margin:0 0 8px;}' +
     '#gj-close{position:absolute;top:12px;right:12px;width:30px;height:30px;border-radius:50%;' +
       'border:1.5px solid #b7e4e7;background:rgba(255,249,227,0.92);color:#1d6466;cursor:pointer;' +
-      'padding:0;display:flex;align-items:center;justify-content:center;}' +
+      'padding:0;display:flex;align-items:center;justify-content:center;z-index:4;}' +
     '#gj-close:hover{background:#e1f7f7;}' +
+    /* The DATE row, with the two arrows that turn to the previous and next
+       day you actually planted. They sit beside the date because the date is
+       what they change; the week arrows sit beside the strip for the same
+       reason. Two pairs of chevrons in one panel only works if each one is
+       touching the thing it moves. */
+    '.gj-turn{display:flex;align-items:center;gap:10px;padding-right:34px;}' +
+    '.gj-turn .gj-date{flex:1 1 auto;margin:0;}' +
     '.gj-nav{display:flex;align-items:center;justify-content:space-between;gap:8px;}' +
-    '.gj-nav span{font-size:13px;color:#2c7a7b;font-weight:700;}' +
+    '.gj-nav span{font-size:12px;color:#2c7a7b;font-weight:700;}' +
     '.gj-arrow{width:28px;height:28px;border-radius:50%;border:1.5px solid #d9ece9;' +
-      'background:none;color:#1d6466;cursor:pointer;padding:0;' +
+      'background:none;color:#1d6466;cursor:pointer;padding:0;flex:0 0 auto;' +
       'display:flex;align-items:center;justify-content:center;}' +
     '.gj-arrow:hover:not(:disabled){background:#e1f7f7;}' +
     '.gj-arrow:disabled{opacity:.35;cursor:not-allowed;}' +
 
-    '#gj-strip{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;padding:14px 12px 12px;' +
-      'border-bottom:1px solid #eaf4f2;}' +
+    /* THE WEEK STRIP MOVED TO THE FOOT. It is the ribbon along the bottom of
+       a diary: an index you glance at rather than the first thing you read,
+       and the page itself is what you came for. */
+    '#gj-foot{flex:0 0 auto;border-top:1px solid #eaf4f2;background:#fbfefd;' +
+      'padding:10px 14px 12px 38px;}' +
+    '#gj-strip{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;padding:6px 0 0;}' +
     '.gj-day{display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 1px 7px;' +
       'border:1.5px solid transparent;border-radius:12px;background:none;cursor:pointer;' +
       'font-family:inherit;}' +
@@ -277,9 +311,17 @@
     '.gj-day:disabled{cursor:default;}' +
     '.gj-day:disabled:hover{background:none;}' +
 
-    '#gj-body{flex:1 1 auto;overflow-y:auto;padding:16px 20px 20px;}' +
-    '.gj-date{font-family:Fraunces,Georgia,serif;font-size:17px;font-weight:600;' +
-      "font-variation-settings:'SOFT' 50,'WONK' 0;color:#0f5132;margin:0 0 10px;}" +
+    /* A NARROW BOOK HAS TO KEEP ITS DATE ON ONE LINE. "Sunday, September 13"
+       at 19px is about 185px and the row between the two page arrows is
+       about 181 on a 375 screen, so it wrapped and dragged the arrows out of
+       line with it. Measured, not guessed. */
+    '@media (max-width:560px){.gj-date{font-size:16.5px;}' +
+      '#gj-head{padding-left:34px;}#gj-body{padding-left:34px;}' +
+      '#gj-foot{padding-left:30px;}}' +
+    '#gj-body{flex:1 1 auto;overflow-y:auto;padding:14px 18px 18px 38px;}' +
+    '.gj-date{font-family:Fraunces,Georgia,serif;font-size:19px;font-weight:600;' +
+      "font-variation-settings:'SOFT' 50,'WONK' 0;color:#0f5132;margin:0 0 10px;" +
+      'line-height:1.2;}' +
     '.gj-species{font-size:14px;font-weight:700;color:#0f5132;margin:0 0 2px;}' +
     '.gj-meaning{font-size:13px;color:#5a8f8d;margin:0 0 12px;}' +
     '.gj-field{font-size:13.5px;color:#2f6260;line-height:1.55;margin:0 0 7px;}' +
@@ -323,7 +365,20 @@
     '.gj-row b{display:block;font-size:13px;color:#0f5132;}' +
     '.gj-row p{font-size:13px;color:#2f6260;line-height:1.5;margin:2px 0 0;' +
       'overflow-wrap:anywhere;}' +
-    '.gj-mine{border-left:2.5px solid #7fcdcd;padding-left:9px;margin-left:-11px;}';
+    '.gj-mine{border-left:2.5px solid #7fcdcd;padding-left:9px;margin-left:-11px;}' +
+
+    /* LAST IN THE FILE ON PURPOSE. A later rule beats an earlier one at equal
+       specificity, so a phone override written above the base declaration it
+       overrides does nothing at all, silently. This block sat higher up first
+       and the date stayed at 19px and went on wrapping; the project has now
+       hit that same trap on four stylesheets.
+
+       "Sunday, September 13" at 19px measures about 185px and the row between
+       the two page arrows is about 181 on a 375 screen, so it wrapped to two
+       lines and dragged the arrows out of line with it. */
+    '@media (max-width:560px){.gj-date{font-size:16.5px;}' +
+      '#gj-head{padding-left:34px;}#gj-body{padding-left:34px;}' +
+      '#gj-foot{padding-left:30px;}}';
 
   var BOOK =
     '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" ' +
@@ -343,7 +398,7 @@
 
   /* --------------------------------------------------------------- the panel */
   var cfg = null;               /* { garden, entries(), meaning(), paint() } */
-  var panel, strip, body, navLabel, prevBtn, nextBtn, btn;
+  var panel, strip, body, navLabel, prevBtn, nextBtn, btn, veil, turnPrev, turnNext, dateLine;
   var weekStart = null;         /* Date of the Sunday shown */
   var chosen = null;            /* the day open below the strip */
   var byDay = {};               /* every day we know about */
@@ -387,6 +442,29 @@
     head.appendChild(x);
     head.appendChild(el("h2", null, "History"));
 
+    /* The page turn. These skip to the previous and next day that HAS an
+       entry rather than stepping through the calendar, since a diary of one
+       flower a day is mostly empty days and turning through those is turning
+       through nothing. The week strip below is where the calendar lives. */
+    var turn = el("div", "gj-turn");
+    turnPrev = el("button", "gj-arrow"); turnPrev.type = "button";
+    turnPrev.innerHTML = CHEV_L;
+    turnPrev.setAttribute("aria-label", "The entry before this one");
+    turnPrev.addEventListener("click", function () { turnPage(-1); });
+    turnNext = el("button", "gj-arrow"); turnNext.type = "button";
+    turnNext.innerHTML = CHEV_R;
+    turnNext.setAttribute("aria-label", "The entry after this one");
+    turnNext.addEventListener("click", function () { turnPage(1); });
+    dateLine = el("p", "gj-date");
+    turn.appendChild(turnPrev);
+    turn.appendChild(dateLine);
+    turn.appendChild(turnNext);
+    head.appendChild(turn);
+
+    body = el("div"); body.id = "gj-body";
+
+    /* The week, along the foot. */
+    var foot = el("div"); foot.id = "gj-foot";
     var nav = el("div", "gj-nav");
     prevBtn = el("button", "gj-arrow"); prevBtn.type = "button";
     prevBtn.innerHTML = CHEV_L;
@@ -398,15 +476,18 @@
     nextBtn.addEventListener("click", function () { shiftWeek(7); });
     navLabel = el("span");
     nav.appendChild(prevBtn); nav.appendChild(navLabel); nav.appendChild(nextBtn);
-    head.appendChild(nav);
-
     strip = el("div"); strip.id = "gj-strip";
-    body = el("div"); body.id = "gj-body";
+    foot.appendChild(nav);
+    foot.appendChild(strip);
 
     panel.appendChild(head);
-    panel.appendChild(strip);
     panel.appendChild(body);
+    panel.appendChild(foot);
+    veil = el("div"); veil.id = "gj-veil";
+    veil.setAttribute("data-open", "0");
+    veil.addEventListener("click", close);
     document.body.appendChild(btn);
+    document.body.appendChild(veil);
     document.body.appendChild(panel);
 
     document.addEventListener("keydown", function (e) {
@@ -423,6 +504,36 @@
     });
   }
 
+  /* Which days actually hold something, oldest first. The page turn walks
+     this rather than the calendar. */
+  function entryDays() {
+    return Object.keys(byDay).filter(function (d) { return !!byDay[d]; }).sort();
+  }
+  function turnPage(dir) {
+    var days = entryDays();
+    if (!days.length) return;
+    var i = days.indexOf(chosen);
+    var next;
+    if (i === -1) {
+      /* Standing on an empty day, so step to the nearest real one in that
+         direction rather than refusing to move. */
+      if (dir < 0) {
+        next = null;
+        for (var a = days.length - 1; a >= 0; a--) if (days[a] < chosen) { next = days[a]; break; }
+      } else {
+        next = null;
+        for (var b = 0; b < days.length; b++) if (days[b] > chosen) { next = days[b]; break; }
+      }
+    } else {
+      next = days[i + dir];
+    }
+    if (!next) return;
+    chosen = next;
+    weekStart = startOfWeek(new Date(
+      Number(next.slice(0, 4)), Number(next.slice(5, 7)) - 1, Number(next.slice(8, 10))));
+    drawStrip();
+  }
+
   function shiftWeek(n) {
     weekStart = new Date(weekStart.getFullYear(), weekStart.getMonth(), weekStart.getDate() + n);
     drawStrip();
@@ -431,7 +542,18 @@
   function open() {
     panel.setAttribute("data-open", "1");
     panel.setAttribute("aria-hidden", "false");
+    veil.setAttribute("data-open", "1");
     refresh();
+  }
+  /* Open the book AT a day. This is what a tapped flower calls, and it is the
+     whole reason the panel moved to the middle. */
+  function openAt(day) {
+    if (day) {
+      chosen = day;
+      weekStart = startOfWeek(new Date(
+        Number(day.slice(0, 4)), Number(day.slice(5, 7)) - 1, Number(day.slice(8, 10))));
+    }
+    open();
   }
   function close() {
     /* The full size photo is appended to the body, not to the panel, so it
@@ -439,6 +561,7 @@
     closeShot();
     panel.setAttribute("data-open", "0");
     panel.setAttribute("aria-hidden", "true");
+    veil.setAttribute("data-open", "0");
   }
 
   function refresh() {
@@ -493,12 +616,20 @@
       " to " + endOfWeek.toLocaleDateString(undefined, { day: "numeric", month: "short" });
     nextBtn.disabled = iso(endOfWeek) >= today();
 
+    /* The page turn is greyed at the ends of what there is, so the book
+       cannot be turned to a blank. */
+    var days = entryDays();
+    turnPrev.disabled = !days.some(function (d) { return d < chosen; });
+    turnNext.disabled = !days.some(function (d) { return d > chosen; });
+
+    dateLine.textContent = prettyDay(chosen);
     drawDetail();
   }
 
   function drawDetail() {
     body.innerHTML = "";
-    body.appendChild(el("p", "gj-date", prettyDay(chosen)));
+    /* The date is the page's heading and lives in the head, between the two
+       page turn arrows, so it is NOT repeated here. */
     var e = byDay[chosen];
 
     if (!e) {
@@ -611,6 +742,10 @@
     today: today,
     iso: iso,
     fromUS: fromUS,
-    open: function () { if (panel) open(); }
+    open: function () { if (panel) open(); },
+    /* `day` is YYYY-MM-DD. The personal garden hands this a flower's own
+       date so the book opens on that page rather than on today. */
+    openAt: function (day) { if (panel) openAt(day); },
+    isOpen: function () { return !!panel && panel.getAttribute("data-open") === "1"; }
   };
 })();
