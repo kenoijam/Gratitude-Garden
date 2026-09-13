@@ -1120,11 +1120,13 @@ section { padding: 2.2rem 3.4rem; }
      section ran 1.35 screens against the page's rule of not much past one.
      The middle now only has to clear a one line hint.
 
-     860 is where the ring stops SPENDING width on nothing. The bloom is
-     capped at 184, so past this point the extra width buys only a longer
-     radius, which spreads the eight further apart and makes the section
-     taller without making a single flower bigger. */
-  max-width: 860px;
+     1240, and the ring FILLS it, because it is an ellipse rather than a
+     circle: `layoutRing` caps the vertical radius and lets the horizontal one
+     carry on, so extra width spreads the eight sideways instead of making the
+     section taller. It was briefly 860, a circle, and the blooms spanned 577
+     inside a section 1210 wide, leaving 316px of empty cream on each side
+     while the sections above and below filled the lot. */
+  max-width: 1240px;
 }
 .flower-ring .fr-lines {
   position: absolute;

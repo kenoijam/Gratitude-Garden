@@ -1443,7 +1443,7 @@
   var LEAD = 20;        /* the radial run of the leader line */
   var TICK = 10;        /* the horizontal turn at its far end */
   var ringBuilt = false;
-  var guide = null;         /* the dashed circle the eight blooms stand on */
+  var guide = null;         /* the dashed ellipse the eight blooms stand on */
 
   function buildRing(){
     var host = document.getElementById('flowerRing');
@@ -1457,7 +1457,7 @@
        which is what a botanical plate does and what the labels are already
        pretending to be. Dashed and faint on purpose: it is the ruling on the
        page, not a thing to look at. */
-    guide = document.createElementNS('http://www.w3.org/2000/svg','circle');
+    guide = document.createElementNS('http://www.w3.org/2000/svg','ellipse');
     guide.setAttribute('fill','none');
     guide.setAttribute('stroke','rgba(66,146,136,0.30)');
     guide.setAttribute('stroke-width','1');
@@ -1534,7 +1534,7 @@
        be at most 0.90 of the radius, and the ring then overflowed its own box
        with the labels hanging outside the column.
 
-       size = K * Rr and Rr = free - F * size, so Rr = free / (1 + K*F). The
+       size = K * Rx and Rx = free - F * size, so Rx = free / (1 + K*F). The
        cap and the floor are applied afterwards, each with its own radius
        derived from the size that was actually used.
 
@@ -1543,23 +1543,50 @@
        species paints about 0.84 of its square, so two neighbours touch at
        about 0.91 whatever the radius is. */
     var K = 0.90, F = 0.42;
-    var Rr = free / (1 + K * F);
-    var size = K * Rr;
-    if (size > 184) { size = 184; Rr = free - size * F; }
-    else if (size < 118) { size = 118; Rr = free - size * F; }
-    Rr = Math.max(120, Rr);
+    var Rx = free / (1 + K * F);
+    var size = K * Rx;
+    if (size > 184) { size = 184; Rx = free - size * F; }
+    else if (size < 118) { size = 118; Rx = free - size * F; }
+    Rx = Math.max(120, Rx);
+
+    /* AN ELLIPSE, not a circle, and only once there is width to spare.
+
+       As a circle the eight blooms spanned 577px inside a section 1210 wide,
+       which left 316px of empty cream on each side while the sections above
+       and below filled the whole width. Spreading them sideways is the one
+       fix that uses that space without making the section taller, since the
+       height follows Ry alone.
+
+       Ry stops at RY_MAX and Rx carries on, so the ring is a true circle on a
+       narrow screen and flattens as the page widens. The height is therefore
+       fixed from RY_MAX up, whatever the width.
+
+       Rx IS CAPPED AT 1.9 TIMES Ry, and that is the thing to watch. The two
+       blooms straddling each end of the long axis sit 0.765 * Ry apart
+       vertically no matter how wide the ellipse gets, so flattening it
+       further does not move them apart, it only moves everything else away
+       from them. At Ry 215 that pair is 164px apart against a widest painted
+       bloom of 155. */
+    var RY_MAX = 215;
+    var Ry = Math.min(Rx, RY_MAX);
+    Rx = Math.min(Rx, Ry * 1.9);
 
     var cxs = W/2, maxY = 0;
     var pts = RING.map(function(item){
       var a = item.a * Math.PI/180, ux = Math.cos(a), uy = Math.sin(a);
-      var x = cxs + ux*Rr, y = uy*Rr;                       /* y is still centred on 0 */
-      var sx = cxs + ux*(Rr + size*0.42), sy = uy*(Rr + size*0.42);
-      var ex = cxs + ux*(Rr + size*0.42 + LEAD), ey = uy*(Rr + size*0.42 + LEAD);
+      /* The bloom sits ON the ellipse; everything after it runs out along the
+         same direction from the centre, which keeps a leader line pointing
+         back at the middle of the diagram rather than at a normal nobody can
+         see. */
+      var bx = cxs + ux*Rx, by = uy*Ry;                     /* y is still centred on 0 */
+      var off = size*0.42;
+      var sx = bx + ux*off, sy = by + uy*off;
+      var ex = bx + ux*(off + LEAD), ey = by + uy*(off + LEAD);
       var side = ux > 0 ? 1 : -1;
       var tx = ex + side*TICK;
       var lh = item.lab.offsetHeight || 52;
-      maxY = Math.max(maxY, Math.abs(y) + size/2, Math.abs(ey) + lh/2);
-      return { item:item, x:x, y:y, sx:sx, sy:sy, ex:ex, ey:ey, tx:tx, side:side, lh:lh };
+      maxY = Math.max(maxY, Math.abs(by) + size/2, Math.abs(ey) + lh/2);
+      return { item:item, x:bx, y:by, sx:sx, sy:sy, ex:ex, ey:ey, tx:tx, side:side, lh:lh };
     });
 
     /* The stage is exactly as tall as the thing it holds, measured, so a long
@@ -1571,7 +1598,8 @@
     if (guide) {
       guide.setAttribute('cx', (W/2).toFixed(1));
       guide.setAttribute('cy', (H/2).toFixed(1));
-      guide.setAttribute('r', Rr.toFixed(1));
+      guide.setAttribute('rx', Rx.toFixed(1));
+      guide.setAttribute('ry', Ry.toFixed(1));
     }
 
     var dpr = window.devicePixelRatio || 1;
