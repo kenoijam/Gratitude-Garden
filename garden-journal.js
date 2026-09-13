@@ -63,10 +63,6 @@
     var p = String(s || "").split("-");
     return new Date(+p[0], (+p[1] || 1) - 1, +p[2] || 1);
   }
-  function prettyDay(s) {
-    var d = parseIso(s);
-    return d.toLocaleDateString(undefined, { weekday: "long", day: "numeric", month: "long" });
-  }
 
   /* ----------------------------------------------------------------- store */
   function readLocal() {
@@ -248,13 +244,21 @@
       'opacity:0;pointer-events:none;transition:opacity .24s ease;}' +
     '#gj-veil[data-open="1"]{opacity:1;pointer-events:auto;}' +
     '#gj-panel{position:fixed;left:50%;top:50%;z-index:540;' +
-      'width:min(92vw,432px);max-height:min(88vh,650px);' +
-      /* A FLOOR, so a one line day and a day with a photo are the same
-         object. Below it the body simply carries empty page under the
-         writing, which is what the bottom of a diary page looks like
-         anyway. It is a minimum and not a fixed height: a long entry still
-         grows to the 88vh cap and then scrolls inside. */
-      'min-height:min(62vh,408px);' +
+      'width:min(92vw,432px);' +
+      /* ONE SIZE, ALWAYS. A floor was not enough: a day with a photo still
+         came out 496 tall against 408 for a day with two lines, so turning a
+         page changed the size of the thing being read and the book jumped
+         under the hand turning it. It is a fixed height now and the page
+         scrolls inside when there is more than fits, which is what a book
+         does: the covers do not grow for a longer chapter.
+
+         520 is what the tallest ordinary day needs, MEASURED rather than
+         guessed: species and meaning, the two fields, a two line entry and
+         the 128px photograph come to 322px of page, against 278 at the first
+         attempt of 470, so the picture sat 23px under the fold and had to be
+         scrolled to. Longer days than that do scroll, which is the point of
+         a fixed height; a photograph on an ordinary day should not. */
+      'height:min(86vh,520px);' +
       'background:snow;border-radius:16px;border:1px solid #d9ece9;' +
       'box-shadow:0 22px 60px rgba(29,100,102,0.30);' +
       'font-family:Arial,Helvetica,sans-serif;color:#1d6466;display:flex;flex-direction:column;' +
@@ -275,35 +279,34 @@
     '#gj-panel::after{content:"";position:absolute;left:12px;top:26px;bottom:26px;width:0;' +
       'border-left:2px dashed #c6e2dc;pointer-events:none;z-index:3;}' +
 
-    '#gj-head{padding:16px 18px 12px 38px;border-bottom:1px solid #eaf4f2;position:relative;' +
+    '#gj-head{padding:14px 14px 10px 38px;border-bottom:1px solid #eaf4f2;position:relative;' +
       'flex:0 0 auto;}' +
-    '#gj-head h2{font-family:Fraunces,Georgia,serif;font-size:13px;font-weight:700;' +
-      'letter-spacing:.12em;text-transform:uppercase;color:#8aa9a7;margin:0 0 8px;}' +
+    /* The month is the one date the header spells out, so it carries the
+       page's heading weight rather than the small grey label a panel title
+       would have taken. */
+    '.gj-month{font-family:Fraunces,Georgia,serif;font-size:17px;font-weight:600;' +
+      "font-variation-settings:'SOFT' 50,'WONK' 0;color:#0f5132;letter-spacing:0;}" +
     '#gj-close{position:absolute;top:12px;right:12px;width:30px;height:30px;border-radius:50%;' +
       'border:1.5px solid #b7e4e7;background:rgba(255,249,227,0.92);color:#1d6466;cursor:pointer;' +
       'padding:0;display:flex;align-items:center;justify-content:center;z-index:4;}' +
     '#gj-close:hover{background:#e1f7f7;}' +
-    /* The DATE row, with the two arrows that turn to the previous and next
-       day you actually planted. They sit beside the date because the date is
-       what they change; the week arrows sit beside the strip for the same
-       reason. Two pairs of chevrons in one panel only works if each one is
-       touching the thing it moves. */
-    '.gj-turn{display:flex;align-items:center;gap:10px;padding-right:34px;}' +
-    '.gj-turn .gj-date{flex:1 1 auto;margin:0;}' +
-    '.gj-nav{display:flex;align-items:center;justify-content:space-between;gap:8px;}' +
-    '.gj-nav span{font-size:12px;color:#2c7a7b;font-weight:700;}' +
+    '.gj-nav{display:flex;align-items:center;justify-content:space-between;gap:8px;' +
+      'padding-right:34px;}' +
     '.gj-arrow{width:28px;height:28px;border-radius:50%;border:1.5px solid #d9ece9;' +
       'background:none;color:#1d6466;cursor:pointer;padding:0;flex:0 0 auto;' +
       'display:flex;align-items:center;justify-content:center;}' +
     '.gj-arrow:hover:not(:disabled){background:#e1f7f7;}' +
     '.gj-arrow:disabled{opacity:.35;cursor:not-allowed;}' +
 
-    /* THE WEEK STRIP MOVED TO THE FOOT. It is the ribbon along the bottom of
-       a diary: an index you glance at rather than the first thing you read,
-       and the page itself is what you came for. */
     '#gj-foot{flex:0 0 auto;border-top:1px solid #eaf4f2;background:#fbfefd;' +
-      'padding:10px 14px 12px 38px;}' +
-    '#gj-strip{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;padding:6px 0 0;}' +
+      'padding:8px 12px 8px 38px;display:flex;align-items:center;' +
+      'justify-content:space-between;gap:8px;}' +
+    '.gj-turn-btn{display:flex;align-items:center;gap:6px;border:0;background:none;' +
+      'font-family:inherit;font-size:12.5px;font-weight:700;color:#2c7a7b;' +
+      'padding:7px 9px;border-radius:9px;cursor:pointer;}' +
+    '.gj-turn-btn:hover:not(:disabled){background:#e9f7f5;}' +
+    '.gj-turn-btn:disabled{opacity:.32;cursor:not-allowed;}' +
+    '#gj-strip{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;padding:8px 0 0;}' +
     '.gj-day{display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 1px 7px;' +
       'border:1.5px solid transparent;border-radius:12px;background:none;cursor:pointer;' +
       'font-family:inherit;}' +
@@ -318,17 +321,7 @@
     '.gj-day:disabled{cursor:default;}' +
     '.gj-day:disabled:hover{background:none;}' +
 
-    /* A NARROW BOOK HAS TO KEEP ITS DATE ON ONE LINE. "Sunday, September 13"
-       at 19px is about 185px and the row between the two page arrows is
-       about 181 on a 375 screen, so it wrapped and dragged the arrows out of
-       line with it. Measured, not guessed. */
-    '@media (max-width:560px){.gj-date{font-size:16.5px;}' +
-      '#gj-head{padding-left:34px;}#gj-body{padding-left:34px;}' +
-      '#gj-foot{padding-left:30px;}}' +
     '#gj-body{flex:1 1 auto;overflow-y:auto;padding:14px 18px 18px 38px;}' +
-    '.gj-date{font-family:Fraunces,Georgia,serif;font-size:19px;font-weight:600;' +
-      "font-variation-settings:'SOFT' 50,'WONK' 0;color:#0f5132;margin:0 0 10px;" +
-      'line-height:1.2;}' +
     '.gj-species{font-size:14px;font-weight:700;color:#0f5132;margin:0 0 2px;}' +
     '.gj-meaning{font-size:13px;color:#5a8f8d;margin:0 0 12px;}' +
     '.gj-field{font-size:13.5px;color:#2f6260;line-height:1.55;margin:0 0 7px;}' +
@@ -345,10 +338,15 @@
        wide box would have letterboxed a phone photo into a sliver with a
        field of empty ground either side of it. The whole picture is one tap
        away, so nothing is lost by keeping it small here. */
-    '.gj-shot{height:100px;width:auto;max-width:100%;border-radius:10px;' +
-      'overflow:hidden;background:#e4efed;margin:0 0 12px;position:relative;' +
-      'display:inline-block;padding:0;border:0;vertical-align:top;}' +
-    '.gj-shot img{height:100px;width:auto;max-width:100%;object-fit:contain;display:block;}' +
+    /* A SQUARE, and `cover` rather than `contain` inside it. A square that
+       letterboxes is a square with a picture floating in the middle of it,
+       which is worse than either shape; a square that fills is a thumbnail,
+       which is what this is. Cropping costs nothing here only because the
+       whole picture is one tap away. */
+    '.gj-shot{width:128px;height:128px;border-radius:10px;' +
+      'overflow:hidden;background:#e4efed;margin:2px 0 4px;position:relative;' +
+      'display:block;padding:0;border:0;}' +
+    '.gj-shot img{width:100%;height:100%;object-fit:cover;display:block;}' +
     /* It is a real <button>, so a keyboard reaches it and the project's
        own cursor already treats it as something to press. */
     '.gj-shot:focus-visible{outline:2px solid #2c7a7b;outline-offset:2px;}' +
@@ -389,15 +387,11 @@
     /* LAST IN THE FILE ON PURPOSE. A later rule beats an earlier one at equal
        specificity, so a phone override written above the base declaration it
        overrides does nothing at all, silently. This block sat higher up first
-       and the date stayed at 19px and went on wrapping; the project has now
-       hit that same trap on four stylesheets.
-
-       "Sunday, September 13" at 19px measures about 185px and the row between
-       the two page arrows is about 181 on a 375 screen, so it wrapped to two
-       lines and dragged the arrows out of line with it. */
-    '@media (max-width:560px){.gj-date{font-size:16.5px;}' +
-      '#gj-head{padding-left:34px;}#gj-body{padding-left:34px;}' +
-      '#gj-foot{padding-left:30px;}}';
+       and did exactly that; the project has now hit that trap on four
+       stylesheets. */
+    '@media (max-width:560px){#gj-head{padding-left:34px;}' +
+      '#gj-body{padding-left:34px;}#gj-foot{padding-left:30px;}' +
+      '.gj-month{font-size:16px;}}';
 
   var BOOK =
     '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" ' +
@@ -418,7 +412,7 @@
 
   /* --------------------------------------------------------------- the panel */
   var cfg = null;               /* { garden, entries(), meaning(), paint() } */
-  var panel, strip, body, navLabel, prevBtn, nextBtn, btn, veil, turnPrev, turnNext, dateLine;
+  var panel, strip, body, navLabel, prevBtn, nextBtn, btn, veil, turnPrev, turnNext;
   var weekStart = null;         /* Date of the Sunday shown */
   var chosen = null;            /* the day open below the strip */
   var byDay = {};               /* every day we know about */
@@ -454,37 +448,18 @@
     panel.setAttribute("data-open", "0");
     panel.setAttribute("aria-hidden", "true");
 
+    /* THE CALENDAR IS THE HEADER. There is no date heading under it and no
+       panel title above it: the strip already names the day, in the cell it
+       highlights, and printing "Sunday, September 13" over a calendar with
+       the 13th ringed is the same fact twice in one square inch. The month
+       carries the part the strip cannot show. */
     var head = el("div"); head.id = "gj-head";
     var x = el("button"); x.id = "gj-close"; x.type = "button";
     x.setAttribute("aria-label", "Close");
     x.innerHTML = X_ICON;
     x.addEventListener("click", close);
     head.appendChild(x);
-    head.appendChild(el("h2", null, "History"));
 
-    /* The page turn. These skip to the previous and next day that HAS an
-       entry rather than stepping through the calendar, since a diary of one
-       flower a day is mostly empty days and turning through those is turning
-       through nothing. The week strip below is where the calendar lives. */
-    var turn = el("div", "gj-turn");
-    turnPrev = el("button", "gj-arrow"); turnPrev.type = "button";
-    turnPrev.innerHTML = CHEV_L;
-    turnPrev.setAttribute("aria-label", "The entry before this one");
-    turnPrev.addEventListener("click", function () { turnPage(-1); });
-    turnNext = el("button", "gj-arrow"); turnNext.type = "button";
-    turnNext.innerHTML = CHEV_R;
-    turnNext.setAttribute("aria-label", "The entry after this one");
-    turnNext.addEventListener("click", function () { turnPage(1); });
-    dateLine = el("p", "gj-date");
-    turn.appendChild(turnPrev);
-    turn.appendChild(dateLine);
-    turn.appendChild(turnNext);
-    head.appendChild(turn);
-
-    body = el("div"); body.id = "gj-body";
-
-    /* The week, along the foot. */
-    var foot = el("div"); foot.id = "gj-foot";
     var nav = el("div", "gj-nav");
     prevBtn = el("button", "gj-arrow"); prevBtn.type = "button";
     prevBtn.innerHTML = CHEV_L;
@@ -494,11 +469,29 @@
     nextBtn.innerHTML = CHEV_R;
     nextBtn.setAttribute("aria-label", "Later week");
     nextBtn.addEventListener("click", function () { shiftWeek(7); });
-    navLabel = el("span");
+    navLabel = el("span", "gj-month");
     nav.appendChild(prevBtn); nav.appendChild(navLabel); nav.appendChild(nextBtn);
     strip = el("div"); strip.id = "gj-strip";
-    foot.appendChild(nav);
-    foot.appendChild(strip);
+    head.appendChild(nav);
+    head.appendChild(strip);
+
+    body = el("div"); body.id = "gj-body";
+
+    /* THE PAGE TURN, along the foot. These skip to the previous and next day
+       that HAS an entry rather than stepping through the calendar, since a
+       diary of one flower a day is mostly empty days and turning through
+       those is turning through nothing. They are worded rather than bare
+       chevrons because the header already has a pair, and two unlabelled
+       pairs in one panel is a guess about which moves what. */
+    var foot = el("div"); foot.id = "gj-foot";
+    turnPrev = el("button", "gj-turn-btn"); turnPrev.type = "button";
+    turnPrev.innerHTML = CHEV_L + "<span>Earlier entry</span>";
+    turnPrev.addEventListener("click", function () { turnPage(-1); });
+    turnNext = el("button", "gj-turn-btn"); turnNext.type = "button";
+    turnNext.innerHTML = "<span>Later entry</span>" + CHEV_R;
+    turnNext.addEventListener("click", function () { turnPage(1); });
+    foot.appendChild(turnPrev);
+    foot.appendChild(turnNext);
 
     panel.appendChild(head);
     panel.appendChild(body);
@@ -642,8 +635,13 @@
     }
 
     var endOfWeek = new Date(weekStart.getFullYear(), weekStart.getMonth(), weekStart.getDate() + 6);
-    navLabel.textContent = weekStart.toLocaleDateString(undefined, { day: "numeric", month: "short" }) +
-      " to " + endOfWeek.toLocaleDateString(undefined, { day: "numeric", month: "short" });
+    /* The month in FULL, since it is the only date the header spells out and
+       an abbreviation saves nothing when it is the one word on the row. A
+       week that straddles two months names both, or it would claim to be a
+       September the second half of it is not in. */
+    var mA = weekStart.toLocaleDateString(undefined, { month: "long" });
+    var mB = endOfWeek.toLocaleDateString(undefined, { month: "long" });
+    navLabel.textContent = (mA === mB) ? mA : (mA + " to " + mB);
     nextBtn.disabled = iso(endOfWeek) >= today();
 
     /* The page turn is greyed at the ends of what there is, so the book
@@ -652,7 +650,6 @@
     turnPrev.disabled = !days.some(function (d) { return d < chosen; });
     turnNext.disabled = !days.some(function (d) { return d > chosen; });
 
-    dateLine.textContent = prettyDay(chosen);
     drawDetail();
   }
 
@@ -672,9 +669,17 @@
       if (m) body.appendChild(el("p", "gj-meaning", m));
 
       if (cfg.garden === "personal") {
+        /* THE ORDER IS THE ANSWERS IN THE ORDER THEY WERE ASKED FOR, then
+           what was written, then the picture. The two one word facts read
+           as labels on the day and belong with the species above them; the
+           sentence is the day itself, so it wants a clear run rather than
+           being wedged between a photograph and a pair of fields. */
+        if (e.mood) body.appendChild(field("Mood", e.mood));
+        if (e.shaper) body.appendChild(field("Shaped by", e.shaper));
+        if (e.note) body.appendChild(el("p", "gj-quote", e.note));
         if (e.photo) {
           /* The frame goes in straight away at the right size and the picture
-             arrives into it, so the panel does not jump when the signed URL
+             arrives into it, so the page does not jump when the signed URL
              comes back. */
           var shot = document.createElement("button");
           shot.className = "gj-shot";
@@ -696,9 +701,6 @@
             shot.addEventListener("click", function () { openShot(u); });
           });
         }
-        if (e.note) body.appendChild(el("p", "gj-quote", e.note));
-        if (e.mood) body.appendChild(field("Mood", e.mood));
-        if (e.shaper) body.appendChild(field("Shaped by", e.shaper));
       } else {
         if (e.note) body.appendChild(el("p", "gj-quote", e.note));
         if (e.word) body.appendChild(field("Planted as", e.word));
