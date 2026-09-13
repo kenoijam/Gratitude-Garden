@@ -42,7 +42,14 @@ const NOTE_PX = 13;
 /* 13, not 15: a 30 character name at 15px is still 356px, which is wider
    than a 380px layout leaves. Only the longest names on the narrowest layouts
    ever reach the floor. */
-const NAME_PX_MIN = 13;
+/* 16 ON A PHONE, 13 anywhere else, and the 16 is not a design choice. iOS
+   zooms the page in when a focused input is under 16px and does not zoom back
+   out, and the garden's name IS an input. The phone block's blanket 16px floor
+   on text fields was doing that job and getting it wrong in the process: it
+   raised the INPUT and not the "'s Gratitude Garden" beside it, so the title
+   came out in two different sizes. Setting the floor here instead keeps
+   `fitTitle` the one thing that decides, and it sizes both halves together. */
+const NAME_PX_MIN = (typeof window !== "undefined" && window.innerWidth <= 768) ? 16 : 13;
 let titlePx = NAME_PX;
 
 let prompt1Wrap, prompt2Wrap, prompt3Wrap, flowerPreviewWrap, gardenWrap;
@@ -2588,6 +2595,10 @@ saveBtn.mousePressed(() => {
   nameWrap.style("white-space", "nowrap");
 
   const nameField = createElement("input").parent(nameWrap);
+  /* An id so the phone stylesheet's 16px floor on text fields can leave this
+     one alone. It is an input only by accident of being editable; it is the
+     page's title, and `fitTitle` is the one thing that may size it. */
+  nameField.id("gg-name");
   nameField.attribute("type", "text");
   nameField.attribute("placeholder", "Your name");
   nameField.attribute("maxlength", "30");

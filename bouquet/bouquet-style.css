@@ -1248,7 +1248,13 @@ button, a, [role="button"], summary, input[type="range"], label[for] {
   }
 }
 
-/* HOME IS JUST THE CHEVRON ON A PHONE. The word costs about 70px of a 390px
+/* HOME IS JUST THE HOUSE ON A PHONE, and it is a HOUSE rather than a back
+   chevron. A chevron pointing left is "the previous page", which is what the
+   browser's own button underneath already says; this link always goes to one
+   particular place, and the one glyph everybody reads as that place is a
+   house. The word stays in `aria-label`.
+
+   THE OLD NOTE, kept because the sizing argument still holds: The word costs about 70px of a 390px
    row that the garden's own name is trying to centre itself in, and a back
    chevron in the top left corner is the one piece of navigation nobody has
    to be told. The word stays in `aria-label`. Every number carries

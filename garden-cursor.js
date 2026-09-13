@@ -295,8 +295,13 @@
   var TIPS =
     "#tips-card h3{cursor:pointer;}" +
     "@media (max-width: 768px){" +
-      "#tips-card{pointer-events:auto;}" +
-      "#tips-card h3{display:flex;align-items:center;gap:8px;}" +
+      /* `!important`, because the sketch sets `pointer-events: none` on this
+         card INLINE and inline beats a plain rule. That one word is why the
+         tips would not open: the heading never received the tap at all, and
+         nothing about the fold was wrong. The heading also needs a cursor and
+         a touch target of its own. */
+      "#tips-card{pointer-events:auto !important;}" +
+      "#tips-card h3{display:flex;align-items:center;gap:8px;cursor:pointer;pointer-events:auto !important;padding:6px 0;min-height:34px;}" +
       "#tips-card h3::after{content:'';width:8px;height:8px;flex:0 0 auto;" +
         "border-right:2px solid currentColor;border-bottom:2px solid currentColor;" +
         "transform:rotate(45deg) translate(-2px,-2px);opacity:.7;" +

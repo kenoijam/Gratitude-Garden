@@ -107,12 +107,25 @@
     '#ga-panel{position:fixed;top:0;right:0;bottom:0;width:360px;max-width:100%;z-index:560;' +
       'background:snow;border-left:1px solid #d9ece9;box-shadow:-8px 0 28px rgba(29,100,102,0.12);' +
       'font-family:Arial,Helvetica,sans-serif;color:#1d6466;display:flex;flex-direction:column;' +
-      'transform:translateX(102%);transition:transform .28s ease;}' +
-    '#ga-panel[data-open="1"]{transform:none;}' +
+      'transform:translateX(102%);transition:transform .28s ease,visibility .28s;' +
+      /* VISIBILITY AS WELL AS THE TRANSFORM, because 102% of the panel's own
+         height is a two percent margin and on a phone that is about twelve
+         pixels. Anything that moves the sums by more than that, and a phone's
+         address bar sliding in and out moves them by far more, leaves the top
+         of the panel peeking up from the bottom of the page: the word
+         "Friends" and a line of account text under a page it has nothing to
+         do with. `visibility` cannot be got wrong by arithmetic, and it takes
+         the panel out of the tab order while it is shut. */
+      'visibility:hidden;}' +
+    '#ga-panel[data-open="1"]{transform:none;visibility:visible;}' +
     '@media (prefers-reduced-motion:reduce){#ga-panel{transition:none;}}' +
     '@media (max-width:560px){#ga-panel{top:auto;left:0;width:auto;height:76vh;border-left:none;' +
       'border-top:1px solid #d9ece9;border-radius:18px 18px 0 0;' +
-      'box-shadow:0 -8px 28px rgba(29,100,102,0.16);transform:translateY(102%);}}' +
+      /* A fixed 40px past its own height rather than a percentage of it, so
+         the clearance does not shrink with the panel. */
+      'box-shadow:0 -8px 28px rgba(29,100,102,0.16);' +
+      'transform:translateY(calc(100% + 40px));}' +
+      '#ga-panel[data-open="1"]{transform:none;}}' +
     '#ga-head{padding:20px 20px 14px;border-bottom:1px solid #eaf4f2;position:relative;}' +
     '#ga-head h2{font-family:Fraunces,Georgia,serif;font-size:22px;font-weight:600;' +
       "font-variation-settings:'SOFT' 50,'WONK' 0;color:#0f5132;margin:0 0 4px;}" +

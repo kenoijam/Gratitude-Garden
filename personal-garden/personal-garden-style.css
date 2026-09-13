@@ -280,7 +280,13 @@ input[type="text"]:focus {
 #save-btn:hover { background: #e1f7f7; transform: translateY(-1px); }
 #save-btn svg { width: 18px; height: 18px; display: block; }
 @media (max-width: 768px) {
-  #save-btn { top: 16px; right: 138px; width: 34px; height: 34px; }
+  /* `!important` on every one, because the sketch sets `top` and `right`
+     INLINE and inline beats a plain rule. Without it the camera stayed at
+     its desktop 20/154 while the other three moved to 16 and their own
+     phone slots, so it sat four pixels low and sixteen to the left of a
+     row it is supposed to be part of. The slots are 12, 54, 96, 138. */
+  #save-btn { top: 16px !important; right: 138px !important;
+              width: 34px !important; height: 34px !important; }
   #save-btn svg { width: 16px; height: 16px; }
 }
 
@@ -709,7 +715,14 @@ button {
      the friends panel are all built against `document.body` by other modules
      with their own markup, so a selector scoped to a card would miss them
      and the miss would only show on a real iPhone. */
-  input[type="text"], input[type="email"], input[type="password"],
+  /* EXCEPT `#gg-name`, THE GARDEN'S OWN TITLE. It is an input only by
+     accident of being editable, and the floor raised it while leaving the
+     "'s Gratitude Garden" beside it alone, so the title read in two sizes.
+     It cannot be corrected with another `!important` either, since any
+     `!important` beats the inline size `fitTitle` computes; it has to be
+     left out. `fitTitle` carries its own 16px floor on a phone, so iOS
+     still never zooms on it. */
+  input[type="text"]:not(#gg-name), input[type="email"], input[type="password"],
   input[type="search"], input[type="number"], input[type="tel"],
   input[type="date"], textarea, select {
     font-size: 16px !important;
@@ -731,7 +744,13 @@ button, a, [role="button"], summary, input[type="range"], label[for] {
   touch-action: manipulation;
 }
 
-/* HOME IS JUST THE CHEVRON ON A PHONE. The word costs about 70px of a 390px
+/* HOME IS JUST THE HOUSE ON A PHONE, and it is a HOUSE rather than a back
+   chevron. A chevron pointing left is "the previous page", which is what the
+   browser's own button underneath already says; this link always goes to one
+   particular place, and the one glyph everybody reads as that place is a
+   house. The word stays in `aria-label`.
+
+   THE OLD NOTE, kept because the sizing argument still holds: The word costs about 70px of a 390px
    row that the garden's own name is trying to centre itself in, and a back
    chevron in the top left corner is the one piece of navigation nobody has
    to be told. The word stays in `aria-label`. Every number carries
