@@ -148,6 +148,7 @@
      document, since a signed URL expires within the hour and a stale one left
      lying in the markup would be a broken picture waiting to happen. */
   var lightbox = null;
+  function shotOpen() { return !!lightbox; }
   function closeShot() {
     if (!lightbox) return;
     var el = lightbox;
@@ -248,6 +249,12 @@
     '#gj-veil[data-open="1"]{opacity:1;pointer-events:auto;}' +
     '#gj-panel{position:fixed;left:50%;top:50%;z-index:540;' +
       'width:min(92vw,432px);max-height:min(88vh,650px);' +
+      /* A FLOOR, so a one line day and a day with a photo are the same
+         object. Below it the body simply carries empty page under the
+         writing, which is what the bottom of a diary page looks like
+         anyway. It is a minimum and not a fixed height: a long entry still
+         grows to the 88vh cap and then scrolls inside. */
+      'min-height:min(62vh,408px);' +
       'background:snow;border-radius:16px;border:1px solid #d9ece9;' +
       'box-shadow:0 22px 60px rgba(29,100,102,0.30);' +
       'font-family:Arial,Helvetica,sans-serif;color:#1d6466;display:flex;flex-direction:column;' +
@@ -330,16 +337,28 @@
        photo into a strip through its middle, which on a screenshot is
        most of the picture gone and no way to get it back. It letterboxes
        now, so whatever shape the photo is, all of it is there. */
-    '.gj-shot{width:100%;aspect-ratio:4/3;border-radius:12px;overflow:hidden;' +
-      'background:#e4efed;margin:0 0 12px;position:relative;display:block;' +
-      'padding:0;border:0;width:100%;}' +
-    '.gj-shot img{width:100%;height:100%;object-fit:contain;display:block;}' +
+    /* A STAMP, NOT THE PAGE. At a full width 4:3 frame the photo was 320px
+       tall and the largest thing in the book by far, so a day with a picture
+       and a day without were two different objects. It is 100px tall now and
+       its WIDTH FOLLOWS ITS OWN SHAPE rather than the column: a portrait
+       comes out about 56px wide and a landscape about 178, where a fixed
+       wide box would have letterboxed a phone photo into a sliver with a
+       field of empty ground either side of it. The whole picture is one tap
+       away, so nothing is lost by keeping it small here. */
+    '.gj-shot{height:100px;width:auto;max-width:100%;border-radius:10px;' +
+      'overflow:hidden;background:#e4efed;margin:0 0 12px;position:relative;' +
+      'display:inline-block;padding:0;border:0;vertical-align:top;}' +
+    '.gj-shot img{height:100px;width:auto;max-width:100%;object-fit:contain;display:block;}' +
     /* It is a real <button>, so a keyboard reaches it and the project's
        own cursor already treats it as something to press. */
     '.gj-shot:focus-visible{outline:2px solid #2c7a7b;outline-offset:2px;}' +
-    '.gj-shot-hint{position:absolute;right:7px;bottom:7px;background:rgba(15,81,50,0.62);' +
-      'color:#fff9e3;font-size:11px;font-weight:700;letter-spacing:.04em;' +
-      'padding:3px 8px;border-radius:999px;pointer-events:none;}' +
+    /* A BADGE, not a worded chip. "Tap to open" does not fit across a 56px
+       wide portrait stamp, and a label that is cut in half says less than no
+       label at all. The button still carries the words in its aria-label. */
+    '.gj-shot-hint{position:absolute;right:5px;bottom:5px;width:20px;height:20px;' +
+      'border-radius:50%;background:rgba(15,81,50,0.66);color:#fff9e3;' +
+      'display:flex;align-items:center;justify-content:center;pointer-events:none;}' +
+    '.gj-shot-hint svg{width:12px;height:12px;display:block;}' +
     /* The full size view. Fixed and above everything the gardens carry:
        the music button is 260 and the panel itself 240. */
     '.gj-lightbox{position:fixed;inset:0;z-index:9500;display:flex;' +
@@ -387,6 +406,7 @@
     '<path d="M4 17.5A1.5 1.5 0 0 1 5.5 16H19"/></svg>';
   var CHEV_L = '<svg viewBox="0 0 14 14" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 2L4 7l5 5"/></svg>';
   var CHEV_R = '<svg viewBox="0 0 14 14" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 2l5 5-5 5"/></svg>';
+  var ZOOM_ICON = '<svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><circle cx="6" cy="6" r="4"/><path d="M9 9l3.5 3.5M4.4 6h3.2M6 4.4v3.2"/></svg>';
   var X_ICON = '<svg viewBox="0 0 14 14" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 3l8 8M11 3l-8 8"/></svg>';
 
   function el(tag, cls, text) {
@@ -491,7 +511,11 @@
     document.body.appendChild(panel);
 
     document.addEventListener("keydown", function (e) {
-      if (e.key === "Escape" && panel.getAttribute("data-open") === "1") close();
+      if (e.key !== "Escape") return;
+      /* The photo is on TOP of the book, so Escape belongs to it first. Both
+         listeners fire otherwise and one press shut the lot. */
+      if (shotOpen()) return;
+      if (panel.getAttribute("data-open") === "1") close();
     });
 
     /* A tap anywhere else shuts it. `pointerdown` rather than `click`, so it
@@ -500,6 +524,12 @@
     document.addEventListener("pointerdown", function (e) {
       if (panel.getAttribute("data-open") !== "1") return;
       if (panel.contains(e.target) || btn.contains(e.target)) return;
+      /* THE FULL SIZE PHOTO IS NOT "OUTSIDE". It is appended to the body
+         rather than to the panel, because it has to sit above the veil, so
+         this rule counted a tap on its dark surround as a tap away from the
+         book and shut the book as well as the photo. One tap, two things
+         closed, and the entry you were reading gone with it. */
+      if (lightbox && lightbox.contains(e.target)) return;
       close();
     });
   }
@@ -660,7 +690,7 @@
             shot.appendChild(img);
             var hint = document.createElement("span");
             hint.className = "gj-shot-hint";
-            hint.textContent = "Tap to open";
+            hint.innerHTML = ZOOM_ICON;
             shot.appendChild(hint);
             shot.disabled = false;
             shot.addEventListener("click", function () { openShot(u); });
