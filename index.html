@@ -177,7 +177,22 @@
        The flowers' x positions are then squeezed by the same ratio in draw(),
        so the row still spans the full width rather than running off the right
        edge, and `minSpacing` thins out whichever of them end up too close. */
-    var VIEW_W = W < 620 ? 540 : W < 900 ? 980 : 1440;
+    /* THE SLICE IS WHAT DECIDES HOW BIG A BLOOM COMES OUT, and under 900 it
+       is now DERIVED rather than a step. It was 540 under 620 and 980 under
+       900, which meant a 390 wide phone drew at a scale of 0.72 and a radius
+       17 bloom landed at 12 pixels, still a row of specks; and it put a
+       cliff at 620 where the scale fell from 1.15 to 0.63 and every flower
+       halved in size for one pixel of window.
+
+       Holding the scale at a constant 0.95 across the whole range under 900
+       removes both at once: a bloom is 27 to 44 pixels on every phone and
+       every small tablet, which is the size the garden pages draw, and
+       nothing jumps as the window is dragged.
+
+       Clamped at 360 so a very narrow phone does not draw enormous flowers,
+       and at 980 so this never widens past what the desktop shows. */
+    var VIEW_W = W < 900 ? Math.min(980, Math.max(360, Math.round(W / 0.95)))
+                         : 1440;
     var LOGICAL_W = 1440, LOGICAL_H = 310;
     var scale = W / VIEW_W;
     var meadowEl = c.parentElement;
@@ -197,12 +212,20 @@
     /* 1 on a wide screen, less on a narrow one: how far the flowers' x
        positions are squeezed so the row still spans the viewport. */
     var xk = geom.xk || 1;
-    if (c.width !== W || c.height !== H) {
-      c.width = W; c.height = H;
+    /* THE BACKING STORE IS IN DEVICE PIXELS, and this was the one canvas on
+       the page that forgot. It set `c.width` to the CSS width, so on a phone
+       at a device pixel ratio of 3 a 390 wide picture was being stretched
+       over 1170 real pixels: every stem and every petal edge came out soft,
+       which is the blur. Every other canvas here already multiplies by it.
+       Capped at 2, since past that the memory is real and the gain is not. */
+    var hdpr = Math.min(window.devicePixelRatio || 1, 2);
+    if (c.width !== Math.round(W * hdpr) || c.height !== Math.round(H * hdpr)) {
+      c.width = Math.round(W * hdpr); c.height = Math.round(H * hdpr);
       c.style.width = W + 'px';
       c.style.height = H + 'px';
     }
     var ctx = c.getContext('2d');
+    ctx.setTransform(hdpr, 0, 0, hdpr, 0, 0);
     ctx.clearRect(0, 0, W, H);
     ctx.save(); ctx.scale(scale, scale);
     var GY = 245;
@@ -490,7 +513,17 @@
     /* FEWER on a phone, and much further apart, because each one is now twice
        the size it was. Six or seven big flowers read as a meadow; fourteen
        small ones read as a pattern. */
-    var minSpacing = W < 480 ? 74 : W < 768 ? 88 : 0;
+    /* A FRACTION OF THE WIDTH, not a pixel count, because the blooms are now
+       a constant fraction of the width too. At 0.155 a phone keeps six of
+       the eleven, spread from 26px to 349px of a 375 wide screen with 27px
+       of clear ground between the closest pair. Fixed pixel figures were
+       tuned when a phone bloom was 12px across and dropped all but three
+       once the blooms doubled, which left a third of the meadow bare.
+
+       The first and last kept are both daisies and that is fine: they land
+       at opposite ends of the screen, which is the rule the hero already
+       follows for repeats. */
+    var minSpacing = W < 768 ? Math.round(W * 0.155) : 0;
     var lastDrawnX = -9999;
     allFlowers.forEach(function(row){
       var lx = row[0] * xk;
@@ -523,7 +556,7 @@
       GardenLife.meadow(ctx, geom.VIEW_W || LOGICAL_W, logH, {
         fly: [88, 228],
         motes: [186, Math.min(logH - 6, GY + 46)],
-        scale: (geom.VIEW_W && geom.VIEW_W < 700) ? 0.78 : undefined
+        scale: (geom.VIEW_W && geom.VIEW_W < 700) ? 0.62 : undefined
       });
     }
 
@@ -1046,17 +1079,29 @@
       mc.style.width = sz+'px'; mc.style.height = sz+'px';
       const mctx = mc.getContext('2d');
       mctx.scale(dpr,dpr); mctx.clearRect(0,0,sz,sz);
-      const hue = parseInt(mc.dataset.hue||'340');
-      // Get hue from the tile
-      const tile = document.querySelector('[data-flower="'+id+'"]');
+      /* THE COLOUR COMES FROM THE CATALOGUE CANVAS, and the selector has to
+         say so. It was a bare `[data-flower="..."]`, and the flower ring adds
+         a `<button class="fr-bloom" data-flower="...">` for each of the eight
+         that sits EARLIER in the document and carries no `data-hue`. So
+         querySelector returned the ring's button, all three lookups fell back
+         to their defaults, and every one of the eight opened in the same pink
+         at the same saturation: the green lotus, the blue tulip and the purple
+         lavender all came out hue 340. Measured across five species before the
+         fix, every modal read 340 to 342 whatever its tile said.
+
+         Anything else that reads a flower's colour out of the page must be
+         scoped the same way. `canvas.flower-canvas` is the catalogue tile. */
+      const tile = document.querySelector('canvas.flower-canvas[data-flower="'+id+'"]');
       const th = tile ? parseInt(tile.dataset.hue)||340 : 340;
       const ts = tile ? parseInt(tile.dataset.sat)||50 : 50;
       const tl = tile ? parseInt(tile.dataset.light)||65 : 65;
-      var cx = sz*.5, cy = sz*.5, R = sz*.32;
-      if(id === 'lavender')  { cy = sz*.84; R = sz*.28; }
-      else if(id === 'lotus'){ cy = sz*.68; R = sz*.22; }
-      else if(id === 'tulip'){ cy = sz*.60; R = sz*.28; }
-      window._bloomFns[id](mctx, cx, cy, R, th, ts, tl);
+      /* The same measured solver the catalogue tiles use, rather than a
+         second hand-tuned switch that could drift from the first. It is
+         defined in the third script block, so fall back to the old figures
+         if the modal is somehow opened before that block has parsed. */
+      var fit = window._fitBloom ? window._fitBloom(id, sz, sz, 0.84, 0.84)
+                                 : { cx: sz*.5, cy: sz*.5, R: sz*.32 };
+      window._bloomFns[id](mctx, fit.cx, fit.cy, fit.R, th, ts, tl);
     } else if(mc && modalSvgs[id]) {
       // Fallback SVG
       mc.style.display='none';
@@ -1368,12 +1413,23 @@
     ctx.beginPath(); ctx.arc(cx,cy,Rm*.07,0,Math.PI*2); ctx.fill();
   }
 
+  /* EVERY DIMENSION IN HERE SCALES WITH R, and that is the whole fix.
+     `pW`, `xO`, the 10px base offset and the tip were FIXED PIXEL NUMBERS,
+     so only the spike's height followed R: shrink the radius and the thing
+     got shorter while its petals stayed 14px wide. On a phone tile that is
+     a lavender painting 32 by 58 against 32 by 85 on a laptop, which is the
+     same flower a third fatter. The bouquet's own `drawLavender` carries a
+     note about exactly this trap; this was the copy that still had it.
+
+     The ratios are the old numbers over 42, the R the desktop guide tile
+     gave, so the tile that was already right is unchanged and every other
+     size now matches it. CHANGE THEM AS A SET. */
   function drawLavender(ctx,cx,cy,R,hue,sat,light){
     var h=R*1.5, levels=8, sp=(h/levels)*1.15;
     ctx.save(); ctx.translate(cx,cy);
     for(var i=0;i<levels;i++){
-      var t=i/(levels-1), y=-10-i*sp;
-      var pW=14-t*7, pH=pW*1.6, xO=7-t*5, bL=light-10+t*20;
+      var t=i/(levels-1), y=-R*0.2381-i*sp;
+      var pW=R*(0.3333-t*0.1667), pH=pW*1.6, xO=R*(0.1667-t*0.1190), bL=light-10+t*20;
       ctx.save(); ctx.translate(-xO,y); ctx.rotate(-40*Math.PI/180);
       ctx.fillStyle=hsl(hue,sat,bL-5,.9);
       ctx.beginPath(); ctx.ellipse(0,0,pW/2,pH/2,0,0,Math.PI*2); ctx.fill(); ctx.restore();
@@ -1386,7 +1442,7 @@
       }
       if(i===levels-1){
         ctx.fillStyle=hsl(hue,sat+5,light+15,1);
-        ctx.beginPath(); ctx.ellipse(0,y-10,3,5.5,0,0,Math.PI*2); ctx.fill();
+        ctx.beginPath(); ctx.ellipse(0,y-R*0.2381,R*0.0714,R*0.1310,0,0,Math.PI*2); ctx.fill();
       }
     }
     ctx.restore();
@@ -1397,6 +1453,59 @@
                 /* hidden from every picker, drawn anyway. See CLAUDE.md. */
                 orchid:drawOrchid,chrysanth:drawChrysanth};
   window._bloomFns = bloomFns; // expose for modal
+
+  /* ── How much of its box each species actually PAINTS ──────────────────
+     Every one of these ten was rendered alone at R=100 with its origin at a
+     known point and its painted bounding box read back, in multiples of R
+     relative to that origin. `l`, `r`, `t`, `b` are the edges; a negative
+     `t` is how far the bloom reaches ABOVE its own origin.
+
+     THIS IS WHY IT IS MEASURED AND NOT GUESSED. At one radius the set is
+     nowhere near one size: the sunflower spans 2.69 and the tulip 1.60, so
+     a tile row drawn at a uniform R had the tulip filling 45 percent of its
+     box beside a sunflower filling 75. And where a species paints is not
+     where its origin is: the lavender and the lotus grow entirely UPWARD
+     out of theirs (`b` is 0), which is what the old hand-tuned `cy` switch
+     underneath was compensating for, badly and per species.
+
+     Re-measure any species whose drawing changes. */
+  var BLOOM_METRICS = {
+    rose:      { l:-1.01, r:1.00, t:-1.01, b:1.00 },
+    sunflower: { l:-1.33, r:1.32, t:-1.35, b:1.34 },
+    lotus:     { l:-1.15, r:1.14, t:-2.00, b:0.01 },
+    lavender:  { l:-0.38, r:0.37, t:-2.12, b:-0.01 },
+    tulip:     { l:-0.61, r:0.60, t:-0.69, b:0.91 },
+    daisy:     { l:-1.00, r:0.99, t:-1.00, b:0.99 },
+    lily:      { l:-0.94, r:0.93, t:-1.08, b:1.07 },
+    sakura:    { l:-1.05, r:1.04, t:-1.11, b:0.99 },
+    /* hidden from every picker, measured anyway. See CLAUDE.md. */
+    orchid:    { l:-1.04, r:1.03, t:-1.28, b:0.83 },
+    chrysanth: { l:-1.20, r:1.19, t:-1.21, b:1.20 }
+  };
+
+  /* Solve for the radius and the origin that put a species' PAINTED box at
+     one size, centred in the space given.
+
+     The size every species is held to is its BOUNDING SQUARE, the larger of
+     its width and height, not its height alone. Equalising on height would
+     draw the lavender's thin spike as tall as the sunflower's whole disc,
+     and a spike at full height beside a disc at full height reads as the
+     lavender being the larger flower. One square each is what an icon set
+     does and it is what makes eight different shapes read as one size. */
+  function fitBloom(flower, W, H, fillH, fillW) {
+    var m = BLOOM_METRICS[flower] || { l:-1, r:1, t:-1, b:1 };
+    var bw = m.r - m.l, bh = m.b - m.t;
+    var span = Math.max(bw, bh);
+    var R = Math.min(H * fillH, W * fillW) / span;
+    return {
+      R: R,
+      /* Centre the PAINTED box, not the origin. */
+      cx: W * 0.5 - ((m.l + m.r) * 0.5) * R,
+      cy: H * 0.5 - ((m.t + m.b) * 0.5) * R
+    };
+  }
+
+  window._fitBloom = fitBloom;   /* exposed for the modal, like _bloomFns */
 
   /* ── Catalogue blooms ── */
   function renderFlowerCanvas(canvas){
@@ -1422,26 +1531,8 @@
     canvas.style.width=W+'px'; canvas.style.height=H+'px';
     var ctx=canvas.getContext('2d');
     ctx.scale(dpr,dpr); ctx.clearRect(0,0,W,H);
-    var cx=W*.5, cy, R;
-    // H=150, give each bloom type room to breathe
-    // All flowers tuned so visual diameter ≈ 80px in 150px tall tile
-    // Lavender grows upward from cy, so cy must be near bottom
-    // Lotus petals reach cy-R*2, so cy must be well below center
-    // Uniform R matching sunflower, all flowers same apparent size
-    R = Math.min(W*.30, H*.28);
-    switch(flower){
-      case 'lavender':   cy=H*.92; break;  // grows upward from cy
-      case 'tulip':      cy=H*.60; break;  // cup shape rises above cy
-      case 'lotus':      cy=H*.76; break;  // petals reach cy-R*2 upward
-      case 'sunflower':  cy=H*.52; break;
-      case 'chrysanth':  cy=H*.52; break;
-      case 'orchid':     cy=H*.52; break;   // centred bloom, unlike the lotus it replaced
-      case 'rose':       cy=H*.52; break;
-      case 'lily':       cy=H*.52; break;
-      case 'daisy':      cy=H*.52; break;
-      default:           cy=H*.52;
-    }
-    bloomFns[flower](ctx,cx,cy,R,hue,sat,light);
+    var fit=fitBloom(flower,W,H,0.80,0.86);
+    bloomFns[flower](ctx,fit.cx,fit.cy,fit.R,hue,sat,light);
   }
 
   function renderAllFlowers(){

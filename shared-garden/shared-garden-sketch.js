@@ -1137,6 +1137,13 @@ function growEase(t) { return 1 - Math.pow(1 - t, 3); }
    `colorMode` is set INSIDE, because the growth pass runs in RGB (the stems
    are `stroke(40, 120, 90)`) while a flower's own colour is HSL, and lerping
    between the two needs them in one space. p5's push saves the mode. */
+/* The shorter of the two ways round a 360 degree wheel. See the note in
+   `drawBudShape`. Identical in both gardens. */
+function shortHue(from, to, t) {
+  const d = ((to - from + 540) % 360) - 180;
+  return (from + d * t + 360) % 360;
+}
+
 function drawBudShape(f, r, ripe) {
   const w = r * 0.60;
   push();
@@ -1146,7 +1153,16 @@ function drawBudShape(f, r, ripe) {
   fill(122, 34, 38);
   ellipse(-w * 0.62, r * 0.42, w * 1.0, r * 0.62);
   ellipse(w * 0.62, r * 0.42, w * 1.0, r * 0.62);
-  const skin = lerpColor(color(112, 36, 50), color(f.hue, f.sat, f.light), ripe);
+  /* A BUD RIPENS THE SHORT WAY ROUND THE WHEEL, and `lerpColor` does not.
+     It moves every component in a straight line, so a green bud at hue 112
+     ripening into a rose at 350 was walked through 231 on the way: the bud
+     came out PURPLE on every warm flower, which is the one thing a red rose
+     bud must not be. Taking the shorter arc sends it 112 to 51 to 350, down
+     through yellow green and orange, which is how a bud actually colours up.
+     Saturation and lightness are straight lines; only hue is an angle. */
+  const skin = color(shortHue(112, f.hue, ripe),
+                     lerp(36, f.sat, ripe),
+                     lerp(50, f.light, ripe));
   fill(skin);
   beginShape();
   vertex(0, -r);

@@ -520,40 +520,94 @@ One picture a day, kept with the entry and shown beside that day's flower in
 the History panel. It is for signed in people only, because a photo has to
 live somewhere that follows you between devices and this browser is not that.
 
-Run this in the SQL editor, the same place as Steps 6 and 7.
+**This is ONE paste.** Open your project, click SQL Editor in the left
+sidebar, click New query, paste everything in the box below, and press Run.
+It creates the column, the bucket and all four rules together. You do not need
+to touch the Storage screen at all.
+
+**It is safe to run more than once.** Every statement either says
+`if not exists` or drops what it is about to create first, so if you are not
+sure whether you already ran it, run it again. A plain `create policy` is the
+one thing in this file that errors on a second run, which is why each one has
+a `drop policy if exists` above it.
 
 ```sql
--- The column the path is written to.
+-- 1. The column the photo's path is written to.
 alter table public.garden_entries
   add column if not exists photo text default '';
 
--- A PRIVATE bucket. Private matters: the page fetches a picture through a
--- signed URL that expires within the hour, so a link copied out of it stops
--- working rather than being readable by anybody for ever.
+-- 2. A PRIVATE bucket. Private matters: the page fetches a picture through a
+--    signed URL that expires within the hour, so a link copied out of it
+--    stops working rather than being readable by anybody for ever.
 insert into storage.buckets (id, name, public)
 values ('entries', 'entries', false)
 on conflict (id) do nothing;
 
--- Every path is `<your user id>/<the day>.<ext>`, and these four policies are
--- what make that folder yours. The check is on the FIRST path segment, so a
--- path that does not begin with your own id is refused by the database rather
--- than by the page, which is the only place a refusal is worth anything.
+-- 3. Every path is `<your user id>/<the day>.<ext>`, and these four rules are
+--    what make that folder yours. The check is on the FIRST path segment, so
+--    a path that does not begin with your own id is refused by the database
+--    rather than by the page, which is the only place a refusal counts.
+drop policy if exists "own entry photos: read" on storage.objects;
 create policy "own entry photos: read"
   on storage.objects for select to authenticated
   using (bucket_id = 'entries' and auth.uid()::text = (storage.foldername(name))[1]);
 
+drop policy if exists "own entry photos: write" on storage.objects;
 create policy "own entry photos: write"
   on storage.objects for insert to authenticated
   with check (bucket_id = 'entries' and auth.uid()::text = (storage.foldername(name))[1]);
 
+drop policy if exists "own entry photos: replace" on storage.objects;
 create policy "own entry photos: replace"
   on storage.objects for update to authenticated
   using (bucket_id = 'entries' and auth.uid()::text = (storage.foldername(name))[1]);
 
+drop policy if exists "own entry photos: remove" on storage.objects;
 create policy "own entry photos: remove"
   on storage.objects for delete to authenticated
   using (bucket_id = 'entries' and auth.uid()::text = (storage.foldername(name))[1]);
 ```
+
+### Check that Step 8 worked
+
+Paste this as a second query and run it. It should return **three** rows, and
+every `ok` should say true.
+
+```sql
+select 'photo column' as thing,
+       count(*) = 1 as ok
+  from information_schema.columns
+ where table_schema = 'public'
+   and table_name  = 'garden_entries'
+   and column_name = 'photo'
+union all
+select 'private entries bucket',
+       count(*) = 1
+  from storage.buckets
+ where id = 'entries' and public = false
+union all
+select 'four storage rules',
+       count(*) = 4
+  from pg_policies
+ where schemaname = 'storage'
+   and tablename  = 'objects'
+   and policyname like 'own entry photos%';
+```
+
+If the bucket row says false, check the Storage screen: a bucket called
+`entries` that is marked Public was made by hand at some point, and the
+`on conflict do nothing` above left it alone rather than changing it. Delete
+it there and run the block again.
+
+### Then try it
+
+1. Open the personal garden and sign in.
+2. Answer the three prompts. On the third, the one with the journal box, there
+   is an **Add a photo** row under it. Signed out it is greyed; signed in it
+   opens your files.
+3. Pick a picture and plant the flower.
+4. Open the History panel, the third icon in the top right corner, and tap
+   today. The picture is under the entry.
 
 Until this is run, the Add a photo button still appears for somebody signed
 in and the upload quietly fails, which costs the entry nothing: the flower and
