@@ -1443,12 +1443,28 @@
   var LEAD = 20;        /* the radial run of the leader line */
   var TICK = 10;        /* the horizontal turn at its far end */
   var ringBuilt = false;
+  var guide = null;         /* the dashed circle the eight blooms stand on */
 
   function buildRing(){
     var host = document.getElementById('flowerRing');
     if(!host || ringBuilt) return;
     ringBuilt = true;
     var svg = document.getElementById('frLines');
+
+    /* The circle the eight stand on, added FIRST so every leader line and
+       every bloom paints over it. Without it they read as eight flowers that
+       happen to be scattered; with it the arrangement is plainly a diagram,
+       which is what a botanical plate does and what the labels are already
+       pretending to be. Dashed and faint on purpose: it is the ruling on the
+       page, not a thing to look at. */
+    guide = document.createElementNS('http://www.w3.org/2000/svg','circle');
+    guide.setAttribute('fill','none');
+    guide.setAttribute('stroke','rgba(66,146,136,0.30)');
+    guide.setAttribute('stroke-width','1');
+    guide.setAttribute('stroke-dasharray','2 7');
+    guide.setAttribute('stroke-linecap','round');
+    svg.appendChild(guide);
+
     RING.forEach(function(item){
       var d = flowerData[item.id];
 
@@ -1552,6 +1568,11 @@
     host.style.height = H + 'px';
     var svg = document.getElementById('frLines');
     svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
+    if (guide) {
+      guide.setAttribute('cx', (W/2).toFixed(1));
+      guide.setAttribute('cy', (H/2).toFixed(1));
+      guide.setAttribute('r', Rr.toFixed(1));
+    }
 
     var dpr = window.devicePixelRatio || 1;
     pts.forEach(function(p){

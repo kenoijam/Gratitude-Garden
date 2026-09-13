@@ -1114,14 +1114,17 @@ section { padding: 2.2rem 3.4rem; }
   display: none;                     /* the media query below turns it on */
   margin: 0 auto;
   width: 100%;
-  /* 1160. The ring's width sets its radius, the radius sets the empty circle
-     in the middle, and the middle has to hold the section's title AT THE SAME
-     SIZE AS EVERY OTHER SECTION'S. At 1020 the clearance was 215 and the
-     title had to be shrunk to 35px against the other four at 55, which read
-     as the flower guide being a lesser section. This buys 71px of clearance
-     and the title keeps its size. It costs height: the section runs about
-     1.24 screens, against the gardens section's 1.31. */
-  max-width: 1160px;
+  /* 900. It was 1160 while the title lived in the middle, and 1020 before
+     that. With the title back on top the section carries the header's height
+     as well as the ring's, so the ring has to give some back: at 1020 the
+     section ran 1.35 screens against the page's rule of not much past one.
+     The middle now only has to clear a one line hint.
+
+     860 is where the ring stops SPENDING width on nothing. The bloom is
+     capped at 184, so past this point the extra width buys only a longer
+     radius, which spreads the eight further apart and makes the section
+     taller without making a single flower bigger. */
+  max-width: 860px;
 }
 .flower-ring .fr-lines {
   position: absolute;
@@ -1237,64 +1240,22 @@ section { padding: 2.2rem 3.4rem; }
   .catalogue-header { margin: 0 auto 1.4rem; text-align: center; max-width: 620px; }
 }
 
-/* THE HEADING GOES IN THE MIDDLE OF THE RING.
+/* THE HEADING STAYS ON TOP, and this is settled rather than open.
 
-   The inside of the ring is empty by construction: the leader lines run
-   outward, so nothing is ever drawn there. Putting the title in it turns the
-   dead space into the composition's centre and makes the whole thing one
-   object rather than a heading with a diagram beside it.
+   It was in the middle of the ring for a while, which was distinctive and
+   wrong. Every other section on this page opens the same way, an eyebrow and
+   a title near the top, and all five land within 75px of each other; the
+   flower guide hiding its title inside its content was the one section that
+   announced itself differently, and it read as belonging to another site.
 
-   The geometry is a real constraint. `layoutRing` leaves the nearest bloom's
-   inner edge at `Rr - size*0.42` from the middle, and the heading block has
-   to fit inside a circle of that radius: at 1440 that is about 286, and a 430
-   wide block of three or four lines corners well inside it. **Check that clearance after changing the ring's
-   size, the label width or the leader lines**, because all three move the
-   radius and the heading does not know about any of them.
+   It also cost. Type in the middle needs a wide empty circle, a wide circle
+   needs a big radius, and a big radius made the section a screen and a
+   quarter. On top, the middle only has to hold the hover hint, which is a
+   caption and is meant to be small.
 
-   Below this width the ring is too small to hold it and the heading goes back
-   above, which is what the block above does. */
-@media (min-width: 1340px) {
-  .catalogue-split { position: relative; }
-  /* Centred by FLEX, never by a transform. `.catalogue-header` carries the
-     `reveal` class, and `.reveal.visible` sets `transform: none` to undo its
-     entrance animation, which silently wiped a `translate(-50%, -50%)` and
-     left the heading a half width to the right, sitting on the daisy. An
-     overlay that centres its child needs no transform of its own.
-
-     `pointer-events` is off on the overlay and back on for the block inside
-     it, so the empty half of the ring never swallows a hover meant for a
-     bloom, while the wiggling word in the title still answers the pointer. */
-  .catalogue-header {
-    position: absolute;
-    inset: 0;
-    max-width: none;
-    margin: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    pointer-events: none;
-    /* Above the leader lines at 1 and below the labels at 3, so a label that
-       reaches in never goes behind it. */
-    z-index: 2;
-  }
-  .catalogue-header > div {
-    width: 430px;
-    text-align: center;
-    pointer-events: auto;
-  }
-  /* NO font-size override. There was one, at 2.05rem, on the reasoning that a
-     heading inside a diagram is a caption rather than a banner. It is not:
-     this is the section's own title and every other section sets it at
-     `clamp(2.2rem, 3.8vw, 3.4rem)`, so at 1440 the other four measured 55px
-     and this one 35, and the flower guide read as a lesser section. The ring
-     was widened to make room for it instead. `line-height` is tightened only
-     because a centred block of three or four lines in a circle wants to be
-     compact. */
-  .catalogue-header .section-title { line-height: 1.08; margin-bottom: 0.7rem; }
-  .catalogue-header .section-desc { margin-top: 0.5rem; }
-  /* The title IS the middle now. */
-  .fr-centre { display: none; }
-}
+   The layout that went with it is deleted: `.catalogue-header` as an absolute
+   overlay, the 430px block inside it, and the 1340px breakpoint. **Do not
+   reinstate it without re-reading that first paragraph.** */
 
 /* A ring has no hover, so on a touch screen the grid is the one that works.
    This sits after the rule above so it wins at any width. */
