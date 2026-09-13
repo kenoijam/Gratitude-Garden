@@ -673,6 +673,30 @@ button {
   /* The line that says the day is done. */
   #daily-note { font-size: 14px !important; }
 
+  /* THE TITLE STARTS BELOW THE ICON ROW. Both are positioned from the top of
+     the same screen: the four round controls sit at top 16 and are 34 tall,
+     so they own everything down to 50, and the garden's name was placed at 18
+     and ran straight underneath them. On a laptop there is width enough that
+     they never meet; on a phone the name is centred across the whole screen
+     and the icons are in it.
+
+     It costs about 50px of sky, which is the one thing this scene has to
+     spare. The numbers carry `!important` because `buildUI()` sets the same
+     `top` inline. */
+  #name-wrap {
+    top: 62px !important;
+    max-width: 94vw !important;
+  }
+  #daily-note {
+    top: 106px !important;
+    /* WIDTH, not just a cap. The sketch sets a width inline off a formula
+       that reserves 200px either side for the Home pill and the icon row,
+       which on a 390 screen leaves 195 and wraps a sentence to four lines.
+       Below the icons there is nothing either side to reserve for. */
+    width: min(92vw, 420px) !important;
+    max-width: 92vw !important;
+  }
+
   /* THE 16px FLOOR ON ANYTHING YOU TYPE INTO, and it is not a style choice.
      iOS zooms the whole page in when a focused field is under 16px and does
      not zoom back out, which leaves somebody stranded at 1.3x with the rest

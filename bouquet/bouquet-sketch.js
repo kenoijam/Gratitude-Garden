@@ -2654,6 +2654,14 @@ function markSwatch(gridId, id, btnId) {
   if (btn) btn.disabled = false;
 }
 
+/* WHETHER THE LETTER WAS REACHED BY PICKING A TEMPLATE. A template is a
+   SHORTCUT, so Back has to undo the shortcut: walking backwards out of one
+   dropped you into the wrap step of a bouquet you never built, which reads
+   as the template having been a starting point you are now editing rather
+   than a thing you chose. Cleared the moment the builder is entered by hand,
+   so a hand built bouquet's Back still walks the steps. */
+let cameFromTemplate = false;
+
 function applyTemplate(t) {
   Object.assign(state, {
     flowers: t.s.flowers.slice(), hues: {}, foliages: t.s.foliages.slice(), legacyWrap: null,
@@ -2684,9 +2692,10 @@ function initTemplateStep() {
     tile.appendChild(body);
     const pick = () => {
       applyTemplate(t);
+      cameFromTemplate = true;
       /* Straight to the letter, which is the one thing no template can
-         fill in. Every other step is already answered and reachable by
-         walking back, so this is a shortcut rather than a lock. */
+         fill in. Back from there returns to these six rather than into the
+         builder; "Build your own" is how you get the builder. */
       goToStep("letter");
     };
     tile.addEventListener("click", pick);
@@ -2719,7 +2728,9 @@ function initTemplateStep() {
       '<span class="bq-template-name">Build your own</span>' +
       '<span class="bq-template-blurb">Every stem, wrap and colour, chosen by you</span>' +
     '</div>';
-  const ownPick = () => { state.legacyWrap = null; goToStep("flowers"); };
+  /* Entering the builder by hand clears the flag, so a bouquet built stem by
+     stem still walks its steps backwards. */
+  const ownPick = () => { state.legacyWrap = null; cameFromTemplate = false; goToStep("flowers"); };
   own.addEventListener("click", ownPick);
   own.addEventListener("keydown", e => {
     if (e.key === "Enter" || e.key === " ") { e.preventDefault(); ownPick(); }
@@ -3206,6 +3217,14 @@ function initSwatchGrid(gridId, stateKey, set, nextBtnId, kind) {
 function syncStickyBar(name) {
   var bar = document.getElementById("bqStickyBar");
   if (!bar) return;
+  /* ASK THE PAGE WHICH STEP IS ON SCREEN rather than trusting the name it was
+     called with. The mode chooser and the template gallery are shown by
+     routes that do not always go through `goToStep`, so a bar left visible by
+     an earlier step stayed up over both of them: a Back and a Continue across
+     the bottom of a screen that has neither. */
+  var live = [].slice.call(document.querySelectorAll("#bqBuilder .bq-step"))
+    .filter(function (el) { return el.offsetParent !== null; })[0];
+  if (live && live.dataset && live.dataset.step) name = live.dataset.step;
   var step = document.querySelector('#bqBuilder .bq-step[data-step="' + name + '"]');
   var nav = step ? step.querySelector(".bq-nav") : null;
   /* The reveal and the chooser screens have no nav, and the reveal is not part
@@ -3246,6 +3265,12 @@ function syncStickyBar(name) {
   bar._back = backBtn;
   bar._next = nextBtn;
 
+  /* The peek only means something once there is a bouquet to look at, which
+     from the foliage step on is always, and on the flowers step is once
+     enough stems are picked. */
+  var peekBtn = document.getElementById("bqPeekBtn");
+  if (peekBtn) peekBtn.disabled = !(state.flowers && state.flowers.length);
+
   /* The step's own Continue can be enabled or its count rewritten at any
      moment by whatever the picker does, and none of that knows about this bar.
      Watching the step is what keeps the two in step without touching any of
@@ -3258,6 +3283,55 @@ function syncStickyBar(name) {
   bar._watch.observe(step, { subtree: true, childList: true, characterData: true,
                              attributes: true, attributeFilter: ["disabled"] });
 }
+
+/* ── THE PEEK ────────────────────────────────────────────────────────────
+   The bouquet, full size, over everything, from a button in the foot bar.
+
+   It exists because a 375px column cannot hold the options and the picture
+   at once. Pinned and full sized the preview covered the options; pinned and
+   short it still sat over whatever scrolled under it; left in the flow it
+   went off the top and every change meant scrolling back. Taking the picture
+   out of the column and putting it behind a button costs one tap and gives
+   the whole width back to the thing being chosen.
+
+   It paints on OPEN rather than staying live, since a canvas inside a hidden
+   box measures zero and would come back blank, and since there is no point
+   rebuilding an arrangement nobody is looking at. */
+/* The bar starts hidden in the markup, but the builder can show a step by a
+   route that never calls `goToStep`, so it is asked once at boot as well. */
+(function settleBarAtBoot() {
+  function go() { try { syncStickyBar(""); } catch (e) {} }
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", go);
+  else setTimeout(go, 60);
+})();
+
+(function wirePeek() {
+  function wire() {
+    var btn = document.getElementById("bqPeekBtn");
+    var box = document.getElementById("bqPeek");
+    var cv = document.getElementById("bqPeekCanvas");
+    var close = document.getElementById("bqPeekClose");
+    if (!btn || !box || !cv || !close) return false;
+
+    function shut() { box.hidden = true; }
+    function open() {
+      if (!state.flowers || !state.flowers.length) return;
+      box.hidden = false;
+      /* Sized after it is shown, or the measurement is of a hidden box. */
+      var w = Math.min(box.clientWidth - 40, 360);
+      cv.style.width = w + "px";
+      renderBouquetCanvas(cv, state.flowers, currentWrap());
+    }
+    btn.addEventListener("click", open);
+    close.addEventListener("click", shut);
+    box.addEventListener("click", function (e) { if (e.target === box) shut(); });
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "Escape" && !box.hidden) shut();
+    });
+    return true;
+  }
+  if (!wire()) document.addEventListener("DOMContentLoaded", wire);
+})();
 
 (function wireStickyBar() {
   function wire() {
@@ -3512,6 +3586,14 @@ function initSendToFriend() {
     if (box.style.display !== "none") pick.focus();
   });
   cancel.addEventListener("click", () => { box.style.display = "none"; });
+  /* It is a dialog now, so it closes the way a dialog does. */
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && box.style.display !== "none") {
+      box.style.display = "none";
+      showForm(true);
+      say("", "");
+    }
+  });
 
   /* THE CONFIRMATION REPLACES THE FORM. A sent bouquet is finished, and a
      small line under a still filled in form invites sending the same thing
@@ -3520,7 +3602,8 @@ function initSendToFriend() {
   const sentLine = document.getElementById("bqSentLine");
   const sentDone = document.getElementById("bqSentDone");
   const formRows = [pick, note, document.querySelector(".bq-send-actions"),
-                    document.querySelector(".bq-send-label")];
+                    document.querySelector(".bq-send-label"),
+                    document.querySelector(".bq-send-lede")];
   function showForm(on) {
     formRows.forEach(el => { if (el) el.hidden = !on; });
     if (sent) sent.hidden = on;
@@ -3628,7 +3711,10 @@ function initNav() {
   document.getElementById("toCardBtn").addEventListener("click", () => goToStep("card"));
   document.getElementById("backToWrap").addEventListener("click", () => goToStep("wrap"));
   document.getElementById("toLetterBtn").addEventListener("click", () => goToStep("letter"));
-  document.getElementById("backToCard").addEventListener("click", () => goToStep("card"));
+  document.getElementById("backToCard").addEventListener("click", () => {
+    if (cameFromTemplate) { cameFromTemplate = false; goToStep("template"); }
+    else goToStep("card");
+  });
   document.getElementById("toBgBtn").addEventListener("click", () => goToStep("bg"));
   document.getElementById("backToLetter").addEventListener("click", () => goToStep("letter"));
   document.getElementById("toRevealBtn").addEventListener("click", () => goToStep("reveal"));

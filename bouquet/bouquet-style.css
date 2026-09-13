@@ -214,11 +214,19 @@ body {
     flex: 1 1 auto;
     min-width: 0;
     font-family: Arial, Helvetica, sans-serif;
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 700;
     line-height: 1.3;
     color: #2f6260;
+    /* ONE LINE. The bar gained the peek button, and "12 stems" then wrapped
+       to two lines and made the whole bar taller than its buttons. It is a
+       count, so if it will not fit it should be cut rather than stacked. */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
+  .bq-sticky-bar .bq-btn,
+  .bq-sticky-bar .bq-btn-outline { flex: 0 0 auto; white-space: nowrap; }
   .bq-sticky-bar button { flex: 0 0 auto; }
   .bq-sticky-bar .bq-btn { padding: 11px 20px; font-size: 14px; }
   .bq-sticky-bar .bq-btn-outline { padding: 11px 16px; font-size: 14px; }
@@ -953,15 +961,44 @@ body {
    works for anybody who is not on the garden, and the sent bouquet carries
    the very same encoded state, so the two are the same object.
    --------------------------------------------------------------------------- */
+/* SENDING IS A DIALOG IN THE MIDDLE, not a panel at the foot of the page.
+   It sat under the row of share buttons, which on a phone put it below the
+   fold: you pressed "Send to a friend", nothing appeared to happen, and the
+   thing that had happened was off the bottom of the screen. Choosing who a
+   bouquet goes to is the most consequential press on the page and it was the
+   easiest one to miss.
+
+   Centred and over a veil it cannot be scrolled past, and it also stops the
+   share buttons being pressable while a send is half filled in. */
 .bq-send {
-  max-width: 420px;
-  margin: 14px auto 0;
+  position: fixed;
+  left: 50%; top: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 70;
+  width: min(92vw, 420px);
+  max-height: 86vh;
+  overflow-y: auto;
   text-align: left;
   background: #fffdf6;
   border: 1.5px solid #eadfc4;
-  border-radius: 14px;
-  padding: 15px 16px 14px;
+  border-radius: 16px;
+  padding: 20px 18px 18px;
+  box-shadow: 0 22px 60px rgba(29,100,102,0.34);
 }
+/* The veil is the panel's own backdrop, so nothing else has to be built or
+   remembered to take it away again. */
+.bq-send::before {
+  content: "";
+  position: fixed; inset: 0;
+  z-index: -1;
+  background: rgba(12, 58, 54, 0.5);
+}
+.bq-send-title {
+  font-family: 'Fraunces', 'Georgia', serif; font-weight: 600;
+  font-variation-settings: 'SOFT' 50, 'WONK' 0;
+  font-size: 1.25rem; color: #0f5132; margin: 0 0 4px;
+}
+.bq-send-lede { font-size: 0.86rem; color: #5a8f8d; margin: 0 0 14px; line-height: 1.5; }
 .bq-send-label {
   display: block;
   font-size: 0.78rem;
@@ -1047,37 +1084,57 @@ body {
    equal specificity the later rule wins: the overrides were being written and
    then quietly undone a hundred lines later. */
 @media (max-width: 780px) {
-  /* A SHORT PREVIEW PINNED TO THE TOP, and the height is the whole argument.
-     It was sticky and full sized first, which pinned most of a screen of
-     bouquet over the options and meant picking a flower was scrolling past a
-     picture that would not move. It was then unpinned, which sent it up the
-     page out of sight and left you scrolling back and forth to see what a
-     change had done. A 118px strip is the middle: it never leaves, and it
-     costs about a seventh of a phone screen rather than half of it.
-
-     It has to come FIRST in the column, hence the order, because sticking to
-     the top of the viewport is no use to something laid out below the thing
-     it is describing. */
-  .bq-preview-col {
-    position: sticky; top: 0; z-index: 12; order: -1;
-    background: rgba(255, 249, 227, 0.97);
-    padding: 6px 0 8px;
-    border-bottom: 1.5px solid rgba(29,100,102,0.14);
-    margin-bottom: 4px;
-  }
-  .bq-pick-layout { display: flex; flex-direction: column; }
-  .bq-preview-holder { max-height: 118px; min-height: 0; }
-  .bq-preview-holder canvas { max-height: 118px; width: auto; margin: 0 auto; }
-  /* Its own label costs a row of a strip this short, and the picture is not
-     something anybody needs told is a preview. */
-  .bq-preview-col > .bq-control-label { display: none; }
-  .bq-drag-hint { font-size: 11px; }
+  /* NO PREVIEW IN THE COLUMN AT ALL. Three arrangements were tried here and
+     each failed in its own way: pinned and full sized covered the options,
+     pinned and short still sat over whatever scrolled under it, and left in
+     the flow it went off the top and you scrolled back and forth to see what
+     a change had done. The answer is that a 375px column cannot hold two
+     things at once, so the picture moved OUT of it and onto a button in the
+     bar, which opens it over everything. See `.bq-peek` below. */
+  .bq-preview-col { display: none; }
 
   /* The step's own nav gives way to the bar at the foot, which carries the
      same two buttons where a thumb is. */
   .bq-nav { display: none; }
-  .bq-card { padding-bottom: 88px; }
+  /* 104, not 88. The bar is about 62 tall before the phone's own home
+     indicator is added under it, and at 88 the last row of tiles on the
+     template and material grids sat behind it. */
+  .bq-card { padding-bottom: 104px; }
+
+  /* THE PEEK BUTTON, first thing in the bar, so the picture is a thumb's
+     width from where the picking happens. */
+  .bq-peek-btn {
+    flex: 0 0 auto;
+    width: 42px; height: 42px; border-radius: 50%;
+    border: 1.5px solid rgba(29,100,102,0.28);
+    background: #fff; color: #1d6466;
+    display: flex; align-items: center; justify-content: center;
+    padding: 0; cursor: pointer;
+  }
+  .bq-peek-btn svg { width: 20px; height: 20px; display: block; }
+  .bq-peek-btn:disabled { opacity: 0.4; }
 }
+
+/* THE BOUQUET, FULL SIZE, OVER EVERYTHING. Wider than a phone too, since a
+   laptop reaching this has the preview column anyway and never opens it. */
+.bq-peek {
+  position: fixed; inset: 0; z-index: 60;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 14px;
+  padding: 20px;
+  background: rgba(12, 58, 54, 0.82);
+}
+.bq-peek[hidden] { display: none; }
+.bq-peek-inner {
+  display: flex; flex-direction: column; align-items: center; gap: 14px;
+  max-width: 100%; max-height: 100%;
+}
+.bq-peek canvas {
+  display: block; max-width: 100%; max-height: 68vh;
+  border-radius: 14px; background: #fff9e3;
+  box-shadow: 0 18px 60px rgba(0,0,0,0.42);
+}
+.bq-peek .bq-btn { width: auto; padding: 11px 26px; font-size: 0.95rem; }
 
 @media (max-width: 768px) {
   /* THE 16px FLOOR ON ANYTHING YOU TYPE INTO, and it is not a style choice.

@@ -521,7 +521,10 @@
 
       <!-- Sending to a friend. Hidden until there is an account behind it, so
            somebody with no Supabase project sees the builder unchanged. -->
-      <div class="bq-send" id="bqSend" style="display:none;">
+      <div class="bq-send" id="bqSend" style="display:none;" role="dialog" aria-modal="true"
+           aria-labelledby="bqSendTitle">
+        <p class="bq-send-title" id="bqSendTitle">Send this bouquet</p>
+        <p class="bq-send-lede">It arrives in their friends panel, with your note.</p>
         <label class="bq-send-label" for="bqFriendPick">Who is it for?</label>
         <select id="bqFriendPick"></select>
         <textarea id="bqSendNote" maxlength="160" rows="2"
@@ -584,7 +587,26 @@
      preview above stops being sticky there, so this carries the part you
      actually need while choosing. It is filled from whichever step is showing,
      so it can never disagree with the buttons it stands in for. -->
+<!-- The bouquet, full size, over everything. Built here rather than in JS so
+     the canvas exists before anything tries to paint into it. -->
+<div class="bq-peek" id="bqPeek" hidden>
+  <div class="bq-peek-inner">
+    <canvas id="bqPeekCanvas" data-no-tooltip></canvas>
+    <button class="bq-btn" id="bqPeekClose" type="button">Back to picking</button>
+  </div>
+</div>
+
 <div class="bq-sticky-bar" id="bqStickyBar" hidden>
+  <!-- A PEEK, not a pinned picture. A preview pinned to the top of the card
+       sat over the options underneath it, and the options are what you came
+       to the step for. This opens the bouquet full size over everything and
+       goes again on a tap, so nothing is given up to it while you pick. -->
+  <button class="bq-peek-btn" id="bqPeekBtn" type="button" aria-label="See the bouquet">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M2 12s3.6-6.5 10-6.5S22 12 22 12s-3.6 6.5-10 6.5S2 12 2 12z"/>
+      <circle cx="12" cy="12" r="2.8"/></svg>
+  </button>
   <span class="bq-sticky-count" id="bqStickyCount"></span>
   <button class="bq-btn-outline" id="bqStickyBack" type="button">Back</button>
   <button class="bq-btn" id="bqStickyNext" type="button">Continue</button>
