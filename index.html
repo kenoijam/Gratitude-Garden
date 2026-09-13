@@ -177,7 +177,7 @@
        The flowers' x positions are then squeezed by the same ratio in draw(),
        so the row still spans the full width rather than running off the right
        edge, and `minSpacing` thins out whichever of them end up too close. */
-    var VIEW_W = W < 620 ? 700 : W < 900 ? 1050 : 1440;
+    var VIEW_W = W < 620 ? 540 : W < 900 ? 980 : 1440;
     var LOGICAL_W = 1440, LOGICAL_H = 310;
     var scale = W / VIEW_W;
     var meadowEl = c.parentElement;
@@ -487,7 +487,10 @@
     });
     // 2. Flowers in front of back hills, fewer on smaller screens
     // Space flowers evenly: on small screens use only every Nth flower
-    var minSpacing = W < 480 ? 40 : W < 768 ? 60 : 0;
+    /* FEWER on a phone, and much further apart, because each one is now twice
+       the size it was. Six or seven big flowers read as a meadow; fourteen
+       small ones read as a pattern. */
+    var minSpacing = W < 480 ? 74 : W < 768 ? 88 : 0;
     var lastDrawnX = -9999;
     allFlowers.forEach(function(row){
       var lx = row[0] * xk;
@@ -512,8 +515,16 @@
        tops out just under the tallest stem, so nothing flies off into the
        copy above the canvas. */
     if (window.GardenLife) {
-      GardenLife.meadow(ctx, geom.VIEW_W || LOGICAL_W, logH,
-        { fly: [88, 228], motes: [186, Math.min(logH - 6, GY + 46)] });
+      /* `unitFor` sizes a butterfly off the scene's own width, which after the
+         narrowing above is 540 on a phone, so they came out smaller still on
+         top of a canvas already scaled up. The explicit `scale` overrides
+         that: 0.78 in logical units against a 0.72 canvas scale is roughly
+         the size they are on a desktop, where both are 1. */
+      GardenLife.meadow(ctx, geom.VIEW_W || LOGICAL_W, logH, {
+        fly: [88, 228],
+        motes: [186, Math.min(logH - 6, GY + 46)],
+        scale: (geom.VIEW_W && geom.VIEW_W < 700) ? 0.78 : undefined
+      });
     }
 
     ctx.restore();
@@ -2357,6 +2368,9 @@
         entries.forEach(function (e) {
           var rec = live.filter(function (r) { return r.el === e.target; })[0];
           if (rec) rec.on = e.isIntersecting;
+          /* Freed only when it leaves. `paint()` decides for itself whether to
+             draw, and sizes the canvas again the moment the section comes
+             back, so zeroing here can no longer strand it. */
           if (rec && !e.isIntersecting) { rec.canvas.width = 0; rec.canvas.height = 0; }
         });
       }, { rootMargin: '40% 0px' });
@@ -2382,7 +2396,20 @@
       if (!bands.length) measure();
       var d = dpr();
       live.forEach(function (rec) {
-        if (!rec.on) return;
+        /* The observer is an OPTIMISATION, not the authority. It frees a
+           canvas when its section is far away by setting it to zero, and if
+           its callback is ever late, missed or never delivered, `rec.on`
+           stays false and that canvas stays zero FOR GOOD: no resize event
+           fires to correct it, and the section carries an empty canvas with
+           nothing in it and no error anywhere. That is how the sparkles
+           vanished from the whole page.
+
+           So whether a section is near enough to draw is decided HERE, from
+           its own box, every frame. The observer's flag is now only a hint
+           that lets it release memory. */
+        var sr = rec.el.getBoundingClientRect();
+        var near = sr.bottom > -vh * 0.4 && sr.top < vh * 1.4;
+        if (!near) return;
         var r = rec.canvas.getBoundingClientRect();
         var w = Math.round(r.width), h = Math.round(r.height);
         if (w <= 0 || h <= 0) return;

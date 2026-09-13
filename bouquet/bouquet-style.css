@@ -189,6 +189,39 @@ body {
   .bq-pick-layout { grid-template-columns: 1fr; }
   .bq-preview-col { order: -1; }
   .bq-card { min-height: 0; }
+
+}
+
+/* THE BAR AT THE FOOT, on a phone only. It holds the step's own count and its
+   Continue and Back buttons, pinned where a thumb is, so the options can have
+   the whole screen. It is filled by `syncStickyBar()` from whichever step is
+   showing, so it never disagrees with the buttons it replaces. */
+.bq-sticky-bar { display: none; }
+@media (max-width: 780px) {
+  .bq-sticky-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    position: fixed;
+    left: 0; right: 0; bottom: 0;
+    z-index: 40;
+    padding: 10px 14px calc(10px + env(safe-area-inset-bottom, 0px));
+    background: rgba(255,249,227,0.96);
+    border-top: 1.5px solid rgba(29,100,102,0.16);
+    box-shadow: 0 -4px 18px rgba(29,100,102,0.10);
+  }
+  .bq-sticky-bar .bq-sticky-count {
+    flex: 1 1 auto;
+    min-width: 0;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 1.3;
+    color: #2f6260;
+  }
+  .bq-sticky-bar button { flex: 0 0 auto; }
+  .bq-sticky-bar .bq-btn { padding: 11px 20px; font-size: 14px; }
+  .bq-sticky-bar .bq-btn-outline { padding: 11px 16px; font-size: 14px; }
 }
 
 /* A column, not a bare box. The preview used to be the one thing on the step
@@ -981,3 +1014,27 @@ body {
 }
 .bq-template-own .bq-own-art svg { width: 34px; height: 34px; }
 .bq-template-own:hover .bq-own-art { opacity: 0.62; }
+
+
+/* ===========================================================================
+   THE BUILDER ON A PHONE
+   ===========================================================================
+   AT THE END OF THE FILE ON PURPOSE. `.bq-preview-col` and `.bq-nav` are both
+   declared further up, after the 780px block that used to hold these, and at
+   equal specificity the later rule wins: the overrides were being written and
+   then quietly undone a hundred lines later. */
+@media (max-width: 780px) {
+  /* NOT STICKY here. Stuck to the top of a single column it pinned a full
+     sized bouquet over the options underneath it, so picking a flower meant
+     scrolling past a picture that would not move. */
+  .bq-preview-col { position: static; top: auto; }
+  /* Shorter too. At full height the preview was most of the first screen, so
+     the flowers began below the fold with nothing to say they were there. */
+  .bq-preview-holder { max-height: 40vh; }
+  .bq-preview-holder canvas { max-height: 40vh; width: auto; margin: 0 auto; }
+
+  /* The step's own nav gives way to the bar at the foot, which carries the
+     same two buttons where a thumb is. */
+  .bq-nav { display: none; }
+  .bq-card { padding-bottom: 88px; }
+}

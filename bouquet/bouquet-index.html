@@ -568,5 +568,15 @@
        One shared engine, synthesised live, no audio files. The mood is the
        only thing that differs per page. -->
   <script src="../garden-music.js" data-mood="romantic"></script>
+<!-- The step's own count and buttons, pinned to the foot on a phone. The
+     preview above stops being sticky there, so this carries the part you
+     actually need while choosing. It is filled from whichever step is showing,
+     so it can never disagree with the buttons it stands in for. -->
+<div class="bq-sticky-bar" id="bqStickyBar" hidden>
+  <span class="bq-sticky-count" id="bqStickyCount"></span>
+  <button class="bq-btn-outline" id="bqStickyBack" type="button">Back</button>
+  <button class="bq-btn" id="bqStickyNext" type="button">Continue</button>
+</div>
+
 </body>
 </html>

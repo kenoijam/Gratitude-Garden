@@ -3171,6 +3171,74 @@ function initSwatchGrid(gridId, stateKey, set, nextBtnId, kind) {
 
 /* ---------------------------------------------------------- navigation ---------------------------------------------------------- */
 
+/* THE FOOT BAR, phone only. On a phone the preview stops being sticky, so the
+   two things a picker needs while it works, how many are chosen and the way
+   forward, would otherwise sit at the bottom of a long scroll.
+
+   It does not duplicate any logic: it finds the step's own Back and Continue
+   buttons and its own count line, copies their words and their disabled state,
+   and clicks them. So a step that gates its Continue still gates it here, and
+   nothing has to be told about a step that is added later. */
+function syncStickyBar(name) {
+  var bar = document.getElementById("bqStickyBar");
+  if (!bar) return;
+  var step = document.querySelector('#bqBuilder .bq-step[data-step="' + name + '"]');
+  var nav = step ? step.querySelector(".bq-nav") : null;
+  /* The reveal and the chooser screens have no nav, and the reveal is not part
+     of the builder at all. */
+  if (!step || !nav || CHROMELESS.indexOf(name) >= 0 || name === "reveal") {
+    bar.hidden = true;
+    return;
+  }
+  bar.hidden = false;
+
+  var backBtn = nav.querySelector(".bq-btn-ghost, .bq-btn-outline");
+  var nextBtn = nav.querySelector(".bq-btn");
+  var count = step.querySelector(".bq-count-note");
+
+  var sBack = document.getElementById("bqStickyBack");
+  var sNext = document.getElementById("bqStickyNext");
+  var sCount = document.getElementById("bqStickyCount");
+
+  sCount.textContent = count ? count.textContent : "";
+  sBack.hidden = !backBtn;
+  sNext.hidden = !nextBtn;
+  if (backBtn) sBack.textContent = backBtn.textContent;
+  if (nextBtn) {
+    sNext.textContent = nextBtn.textContent;
+    sNext.disabled = nextBtn.disabled;
+  }
+  bar._back = backBtn;
+  bar._next = nextBtn;
+
+  /* The step's own Continue can be enabled or its count rewritten at any
+     moment by whatever the picker does, and none of that knows about this bar.
+     Watching the step is what keeps the two in step without touching any of
+     it. */
+  if (bar._watch) bar._watch.disconnect();
+  bar._watch = new MutationObserver(function () {
+    if (count) sCount.textContent = count.textContent;
+    if (nextBtn) { sNext.textContent = nextBtn.textContent; sNext.disabled = nextBtn.disabled; }
+  });
+  bar._watch.observe(step, { subtree: true, childList: true, characterData: true,
+                             attributes: true, attributeFilter: ["disabled"] });
+}
+
+(function wireStickyBar() {
+  function wire() {
+    var bar = document.getElementById("bqStickyBar");
+    if (!bar) return;
+    document.getElementById("bqStickyBack").addEventListener("click", function () {
+      if (bar._back) bar._back.click();
+    });
+    document.getElementById("bqStickyNext").addEventListener("click", function () {
+      if (bar._next) bar._next.click();
+    });
+  }
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", wire);
+  else wire();
+})();
+
 function goToStep(name) {
   currentStep = STEPS.indexOf(name);
   document.querySelectorAll("#bqBuilder .bq-step").forEach(el => el.classList.toggle("active", el.dataset.step === name));
@@ -3183,6 +3251,7 @@ function goToStep(name) {
   document.getElementById("bqWordmark").style.display = isReveal ? "none" : "flex";
   document.getElementById("bqRevealWrap").classList.toggle("active", isReveal);
   updateProgress();
+  syncStickyBar(name);
   window.scrollTo({ top: 0, behavior: "smooth" });
 
   /* Digital track */

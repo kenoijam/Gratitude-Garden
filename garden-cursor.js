@@ -283,6 +283,51 @@
     "@media (hover:none){[data-tip]::after{display:none;}}" +
     "@media (prefers-reduced-motion:reduce){[data-tip]::after{transition:opacity .01s;}}";
 
+  /* ------------------------------------------------- the tips card folds */
+  /* Both gardens build a `#tips-card` in the bottom left corner: a heading and
+     four or five lines. On a desktop it sits in empty grass. On a phone the
+     garden is a strip and that card is a paragraph across the bottom third of
+     it, so it folds to its own heading and opens on a tap.
+
+     It lives here rather than in either sketch because both build the same
+     card, and a copy in each would be a fifth place the same idea is written
+     down in this project. */
+  var TIPS =
+    "#tips-card h3{cursor:pointer;}" +
+    "@media (max-width: 768px){" +
+      "#tips-card{pointer-events:auto;}" +
+      "#tips-card h3{display:flex;align-items:center;gap:8px;}" +
+      "#tips-card h3::after{content:'';width:8px;height:8px;flex:0 0 auto;" +
+        "border-right:2px solid currentColor;border-bottom:2px solid currentColor;" +
+        "transform:rotate(45deg) translate(-2px,-2px);opacity:.7;" +
+        "transition:transform .2s ease;}" +
+      "#tips-card[data-open=\"1\"] h3::after{transform:rotate(-135deg) translate(-3px,-3px);}" +
+      "#tips-card ul{display:none;}" +
+      "#tips-card[data-open=\"1\"] ul{display:block;}}";
+
+  function wireTips() {
+    var card = document.getElementById("tips-card");
+    if (!card || card._folded) return;
+    var head = card.querySelector("h3");
+    if (!head) return;
+    card._folded = true;
+    card.setAttribute("data-open", "0");
+    head.addEventListener("click", function () {
+      card.setAttribute("data-open", card.getAttribute("data-open") === "1" ? "0" : "1");
+    });
+  }
+  /* The gardens build their card from a p5 sketch that starts well after this
+     file runs, so it is looked for a few times rather than once. */
+  function watchTips() {
+    var tries = 0;
+    var t = setInterval(function () {
+      wireTips();
+      if (++tries > 40 || document.getElementById("tips-card")) clearInterval(t);
+    }, 250);
+  }
+  if (document.body) watchTips();
+  else document.addEventListener("DOMContentLoaded", watchTips);
+
   /* ------------------------------------------- the icons get out of the way */
   /* On a PHONE the four round icons are fixed over a page whose copy runs the
      full width, so a section title passes underneath them on the way past and
@@ -343,7 +388,7 @@
         (document.head || document.documentElement).appendChild(tag);
       }
     }
-    tag.textContent = css(hue) + TIP + SCROLL_HIDE;
+    tag.textContent = css(hue) + TIP + SCROLL_HIDE + TIPS;
   }
 
   apply(DEFAULT_HUE);
