@@ -1524,9 +1524,26 @@ function growEase(t) { return 1 - Math.pow(1 - t, 3); }
    instead, the leaves slide up the stem with the tip. */
 const LEAF_T = 0.60;
 const LEAF_FRAC = 0.6336;   /* bezierPoint(0, 0.4, 0.7, 1, LEAF_T) */
-const LEAF_OPEN = 900;      /* ms for the pair to unfold once they appear */
 /* The moment the tip first reaches that height, inverting `growEase`. */
 const LEAF_AT = GROW_RISE * (1 - Math.cbrt(1 - LEAF_FRAC));
+
+/* THE LEAVES FINISH WITH THE BLOOM, not before it. They used to unfold over
+   900ms and then sit at full size for the remaining three seconds, so the
+   one thing still visibly growing while the flower opened was the flower,
+   and the leaves read as having been dropped in and stopped. They now run
+   from the moment they appear all the way to the end of the whole sequence.
+
+   `leafEase` is a smoothstep, NOT the cubic ease-out the stem uses.
+   `growEase` is 0.93 of the way done by the time the bloom starts opening,
+   which over a four second ramp is the same early finish in a slower dress.
+   A smoothstep is 0.63 there, so a third of the growth is still to come
+   while the petals open, and it leaves and arrives gently, which is what
+   lets them start from nothing without reading as a pop. */
+function leafEase(t) { return t * t * (3 - 2 * t); }
+function leafGrowth(elapsed) {
+  const span = GROW_RISE + GROW_OPEN - LEAF_AT;
+  return leafEase(constrain((elapsed - LEAF_AT) / span, 0, 1));
+}
 
 /* Which PARAMETER on the current curve sits at a given fraction of the
    finished stem's height. Bisection, since the cubic has no tidy inverse and
@@ -1612,9 +1629,8 @@ function drawFlowerWithGrowth(f) {
        are placed by HEIGHT, not by parameter, so they stay put while the
        stem carries on past them. */
     if (p >= LEAF_FRAC) {
-      const lk = growEase(constrain((elapsed - LEAF_AT) / LEAF_OPEN, 0, 1));
       drawLeavesOnStem(0, 0, 10 * p, -len * 0.4, -6 * p, -len * 0.7, 0, -len,
-                       lk, stemParamAtFrac(LEAF_FRAC / p));
+                       leafGrowth(elapsed), stemParamAtFrac(LEAF_FRAC / p));
     }
     const r = budR * (0.45 + 0.55 * p);
     push();
@@ -1634,9 +1650,12 @@ function drawFlowerWithGrowth(f) {
   noFill();
   bezier(0, 0, 10, -f.stemLen * 0.4, -6, -f.stemLen * 0.7, 0, -f.stemLen);
   pop();
-  /* Full length by now, and at their finished position, so this hands over
-     to `drawFlowerStemAndLeaves` without a step. */
-  drawLeavesOnStem(0, 0, 10, -f.stemLen * 0.4, -6, -f.stemLen * 0.7, 0, -f.stemLen);
+  /* STILL GROWING, and at their finished position. `leafGrowth` reaches 1
+     exactly when this phase ends, so the handover to
+     `drawFlowerStemAndLeaves`, which always draws them full size, lands on
+     the same number rather than on a step. */
+  drawLeavesOnStem(0, 0, 10, -f.stemLen * 0.4, -6, -f.stemLen * 0.7, 0, -f.stemLen,
+                   leafGrowth(elapsed));
 
   if (q < 0.98) {
     push();

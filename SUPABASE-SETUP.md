@@ -609,6 +609,37 @@ it there and run the block again.
 4. Open the History panel, the third icon in the top right corner, and tap
    today. The picture is under the entry.
 
+### If you have already planted today
+
+The prompts are gone until tomorrow, so there is nothing to attach a photo to.
+The once a day limit lives on your ACCOUNT ROW, not in this browser, which is
+the whole point of it: clearing your browser will not bring the prompts back.
+Run this in the SQL editor, put your own email in, and reload the garden.
+
+```sql
+update public.gardens
+   set last_planted = ''
+ where user_id = (select id from auth.users where email = 'you@example.com');
+```
+
+**Today's flower stays where it is**, so you will end up with two for today.
+To have the second one replace it rather than join it, empty the day instead:
+
+```sql
+update public.gardens
+   set last_planted = '',
+       flowers = (
+         select coalesce(jsonb_agg(fl), '[]'::jsonb)
+           from jsonb_array_elements(flowers) fl
+          where fl->>'date' is distinct from to_char(now(), 'MM/DD/YYYY')
+       )
+ where user_id = (select id from auth.users where email = 'you@example.com');
+```
+
+The date really is stored as `MM/DD/YYYY` on every flower, which is what the
+garden prints on the bloom, so that comparison is against the string the
+garden itself wrote.
+
 Until this is run, the Add a photo button still appears for somebody signed
 in and the upload quietly fails, which costs the entry nothing: the flower and
 the words are written either way. Nothing else on any page depends on it.
