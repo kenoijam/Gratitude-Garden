@@ -513,3 +513,48 @@ step 2, which the database checks on every request against the account you are
 actually signed in as. The `service_role` key is the opposite of that and must
 never be in this repository, in any file a browser loads, or in a message to
 anyone.
+
+## Step 8: photos on a personal garden entry
+
+One picture a day, kept with the entry and shown beside that day's flower in
+the History panel. It is for signed in people only, because a photo has to
+live somewhere that follows you between devices and this browser is not that.
+
+Run this in the SQL editor, the same place as Steps 6 and 7.
+
+```sql
+-- The column the path is written to.
+alter table public.garden_entries
+  add column if not exists photo text default '';
+
+-- A PRIVATE bucket. Private matters: the page fetches a picture through a
+-- signed URL that expires within the hour, so a link copied out of it stops
+-- working rather than being readable by anybody for ever.
+insert into storage.buckets (id, name, public)
+values ('entries', 'entries', false)
+on conflict (id) do nothing;
+
+-- Every path is `<your user id>/<the day>.<ext>`, and these four policies are
+-- what make that folder yours. The check is on the FIRST path segment, so a
+-- path that does not begin with your own id is refused by the database rather
+-- than by the page, which is the only place a refusal is worth anything.
+create policy "own entry photos: read"
+  on storage.objects for select to authenticated
+  using (bucket_id = 'entries' and auth.uid()::text = (storage.foldername(name))[1]);
+
+create policy "own entry photos: write"
+  on storage.objects for insert to authenticated
+  with check (bucket_id = 'entries' and auth.uid()::text = (storage.foldername(name))[1]);
+
+create policy "own entry photos: replace"
+  on storage.objects for update to authenticated
+  using (bucket_id = 'entries' and auth.uid()::text = (storage.foldername(name))[1]);
+
+create policy "own entry photos: remove"
+  on storage.objects for delete to authenticated
+  using (bucket_id = 'entries' and auth.uid()::text = (storage.foldername(name))[1]);
+```
+
+Until this is run, the Add a photo button still appears for somebody signed
+in and the upload quietly fails, which costs the entry nothing: the flower and
+the words are written either way. Nothing else on any page depends on it.

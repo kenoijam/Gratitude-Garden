@@ -2575,30 +2575,43 @@ const TEMPLATES = [
      The two foliages are picked to be UNLIKE each other, since the mixer
      drops each to 0.62 of its usual density and nudges them apart: two
      leafy kinds together read as one denser leafy kind, where a leaf and a
-     filler read as two things. */
+     filler read as two things.
+
+     FIVE SPECIES EACH, not three, and the repeats are SPREAD. Two things make
+     that work and both are about `buildArrangement`, which deals this list
+     round robin into three tiers, back, middle and front:
+
+       - a species' copies are placed at indices whose remainder on three
+         differs, so the three sunflowers in the first template land one in
+         each tier rather than stacking up in the back row;
+       - no two neighbouring entries are the same species, so a pair never
+         ends up side by side in one tier either.
+
+     Written as three species with the same flower every other slot, the
+     templates came out as stripes. **Keep both rules if these are edited.** */
   { id: "t1", name: "Sunlit Thanks", blurb: "For someone who kept you going",
-    s: { flowers: ["sunflower", "daisy", "sunflower", "tulip", "daisy", "sunflower",
-                   "tulip", "daisy", "sunflower", "daisy"],
+    s: { flowers: ["sunflower", "daisy", "tulip", "rose", "sunflower",
+                   "rose", "daisy", "tulip", "sunflower", "lotus"],
          foliages: ["wheat", "eucalyptus"],
          wrapH: 28, wrapS: 38, wrapL: 76, wrapP: "kraft", ribbonH: 200, card: "cream", bg: "sunlit" } },
   { id: "t2", name: "Quiet Comfort", blurb: "For a week that has been heavy",
-    s: { flowers: ["lily", "lavender", "lily", "daisy", "lavender", "lily",
-                   "daisy", "lavender", "lily", "daisy"],
+    s: { flowers: ["lily", "lavender", "daisy", "sakura", "lily",
+                   "sakura", "lavender", "daisy", "lily", "lotus"],
          foliages: ["eucalyptus", "gyp"],
          wrapH: 120, wrapS: 18, wrapL: 82, wrapP: "linen", ribbonH: 20, card: "mist", bg: "meadow" } },
   { id: "t3", name: "Love Letter", blurb: "For a love you want to say out loud",
-    s: { flowers: ["rose", "rose", "lotus", "rose", "rose", "sakura",
-                   "rose", "lotus", "rose", "sakura"],
+    s: { flowers: ["rose", "sakura", "lotus", "tulip", "rose",
+                   "tulip", "sakura", "lotus", "rose", "lavender"],
          foliages: ["gyp", "leaves"],
          wrapH: 350, wrapS: 45, wrapL: 28, wrapP: "plain", ribbonH: 38, card: "rose", bg: "dawn" } },
   { id: "t4", name: "New Beginnings", blurb: "For a fresh start worth marking",
-    s: { flowers: ["tulip", "daisy", "tulip", "sakura", "tulip", "daisy",
-                   "sakura", "tulip", "daisy", "tulip"],
+    s: { flowers: ["tulip", "daisy", "sakura", "lily", "tulip",
+                   "lily", "daisy", "sakura", "tulip", "sunflower"],
          foliages: ["fern", "beargrass"],
          wrapH: 40, wrapS: 10, wrapL: 97, wrapP: "plain", ribbonH: 140, card: "mint", bg: "sky" } },
   { id: "t5", name: "Get Well Soon", blurb: "For someone who needs a calm week",
-    s: { flowers: ["daisy", "lily", "daisy", "sunflower", "lily", "daisy",
-                   "sunflower", "lily", "daisy", "lily"],
+    s: { flowers: ["daisy", "lily", "sunflower", "lavender", "daisy",
+                   "lavender", "lily", "sunflower", "daisy", "sakura"],
          foliages: ["eucalyptus", "berries"],
          wrapH: 210, wrapS: 4, wrapL: 88, wrapP: "news", ribbonH: 350, card: "snow", bg: "linen" } }
 ];

@@ -1038,3 +1038,23 @@ body {
   .bq-nav { display: none; }
   .bq-card { padding-bottom: 88px; }
 }
+
+@media (max-width: 768px) {
+  /* THE 16px FLOOR ON ANYTHING YOU TYPE INTO, and it is not a style choice.
+     iOS zooms the whole page in when a focused field is under 16px and does
+     not zoom back out, which leaves somebody stranded at 1.3x with the rest
+     of the interface off the side of the screen. The garden pages used to
+     block that with `maximum-scale=1` in their viewport meta, which also
+     takes pinch zoom away from anyone who needs to magnify the page; the
+     floor does the same job and costs nobody anything.
+
+     It is written WIDE on purpose. The account overlay, the claim screen and
+     the friends panel are all built against `document.body` by other modules
+     with their own markup, so a selector scoped to a card would miss them
+     and the miss would only show on a real iPhone. */
+  input[type="text"], input[type="email"], input[type="password"],
+  input[type="search"], input[type="number"], input[type="tel"],
+  input[type="date"], textarea, select {
+    font-size: 16px !important;
+  }
+}

@@ -1105,65 +1105,112 @@ f.growthStage = GROWTH_STAGES.BLOOM;
 return;
 }
 const elapsed = millis() - f.growthStartTime;
-if (elapsed < 2000) f.growthStage = GROWTH_STAGES.BUD;
-else if (elapsed < 5000) f.growthStage = GROWTH_STAGES.STEM;
+/* The same two figures the drawing uses, or a flower would be handed to the
+   bloom pass while it is still opening and jump to full size. */
+if (elapsed < GROW_RISE) f.growthStage = GROWTH_STAGES.BUD;
+else if (elapsed < GROW_RISE + GROW_OPEN) f.growthStage = GROWTH_STAGES.STEM;
 else f.growthStage = GROWTH_STAGES.BLOOM;
 }
 
-function drawBud(f) {
-push();
-const scaleFactor = (width < 720 ? gardenScale : 1);
-const budH = max(24, f.size * 0.65 * scaleFactor);
+/* GROWING, in two stages that lead into each other rather than cutting.
 
-stroke(40, 120, 90);
-strokeWeight(max(2, (f.size / 40) * 3) * scaleFactor);
-line(0, 0, 0, -budH);
+   It was a green ellipse on a stub for two seconds, then a longer stem with a
+   slightly bigger green ellipse for three, and then the finished bloom at full
+   size in a single frame: three pictures rather than one thing growing.
 
-noStroke();
-fill(120, 160, 80);
-ellipse(0, -budH, f.size * 0.3 * scaleFactor, f.size * 0.4 * scaleFactor);
+   Now the stem rises the whole way with a real BUD riding its tip, the bud
+   ripens from leaf green to the flower's own colour as it climbs, and then it
+   OPENS, the bloom scaling up out of it while the bud shrinks away behind.
 
-pop();
-}
+   THE TIMINGS AND THE SHAPES ARE THE SAME IN BOTH GARDENS, and they are
+   written out in each rather than shared, like the seven copies of the flower
+   maths, because the drawing goes through p5's globals. **Edit one and edit
+   the other.** */
+const GROW_RISE = 3400;   /* stem from nothing to full, bud on the tip */
+const GROW_OPEN = 1700;   /* the bud opens into the bloom */
 
-function drawGrowingStem(f, progress) {
-push();
-const scaleFactor = (width < 720 ? gardenScale : 1);
-const currentStemLen = f.stemLen * progress;
+function growEase(t) { return 1 - Math.pow(1 - t, 3); }
 
-stroke(40, 120, 90);
-strokeWeight(max(2, (f.size / 40) * 3) * scaleFactor);
-noFill();
+/* A closed bud: a teardrop with two sepals at its foot and one seam down it,
+   drawn around the origin so the caller only has to stand at the stem's tip.
 
-const c1x = 10;
-const c1y = -currentStemLen * 0.4;
-const c2x = -6;
-const c2y = -currentStemLen * 0.7;
-const x3 = 0;
-const y3 = -currentStemLen;
-
-bezier(0, 0, c1x, c1y, c2x, c2y, x3, y3);
-
-noStroke();
-fill(100, 150, 70);
-ellipse(x3, y3, f.size * 0.38 * scaleFactor, f.size * 0.48 * scaleFactor);
-
-pop();
+   `colorMode` is set INSIDE, because the growth pass runs in RGB (the stems
+   are `stroke(40, 120, 90)`) while a flower's own colour is HSL, and lerping
+   between the two needs them in one space. p5's push saves the mode. */
+function drawBudShape(f, r, ripe) {
+  const w = r * 0.60;
+  push();
+  colorMode(HSL, 360, 100, 100, 1);
+  noStroke();
+  /* Sepals first, so the bud sits in front of them. */
+  fill(122, 34, 38);
+  ellipse(-w * 0.62, r * 0.42, w * 1.0, r * 0.62);
+  ellipse(w * 0.62, r * 0.42, w * 1.0, r * 0.62);
+  const skin = lerpColor(color(112, 36, 50), color(f.hue, f.sat, f.light), ripe);
+  fill(skin);
+  beginShape();
+  vertex(0, -r);
+  bezierVertex(w * 1.06, -r * 0.44, w * 0.94, r * 0.52, 0, r * 0.64);
+  bezierVertex(-w * 0.94, r * 0.52, -w * 1.06, -r * 0.44, 0, -r);
+  endShape(CLOSE);
+  /* One seam, so it reads as wrapped rather than as a leaf. */
+  noFill();
+  stroke(hue(skin), saturation(skin), max(0, lightness(skin) - 14), 0.65);
+  strokeWeight(max(1, r * 0.1));
+  bezier(0, -r * 0.82, w * 0.42, -r * 0.3, w * 0.34, r * 0.2, 0, r * 0.5);
+  pop();
 }
 
 function drawFlowerWithGrowth(f) {
-const elapsed = millis() - f.growthStartTime;
-const budDuration = 2000;
-const stemDuration = 3000;
+  const elapsed = millis() - f.growthStartTime;
+  const scaleFactor = (width < 720 ? gardenScale : 1);
+  if (elapsed >= GROW_RISE + GROW_OPEN) { drawFlowerStemAndLeaves(f); return; }
 
-if (elapsed < budDuration) {
-drawBud(f);
-} else if (elapsed < budDuration + stemDuration) {
-const stemProgress = (elapsed - budDuration) / stemDuration;
-drawGrowingStem(f, stemProgress);
-} else {
-drawFlowerStemAndLeaves(f);
-}
+  const budR = max(7, f.size * 0.34 * scaleFactor);
+  const weight = max(2, (f.size / 40) * 3) * scaleFactor;
+
+  if (elapsed < GROW_RISE) {
+    /* RISING. The stem EASES OUT, so it leaves the ground quickly and slows as
+       it arrives, which is what reads as growing rather than as a line being
+       extended at a constant rate. */
+    const p = growEase(elapsed / GROW_RISE);
+    const len = f.stemLen * p;
+    push();
+    stroke(40, 120, 90);
+    strokeWeight(weight);
+    noFill();
+    bezier(0, 0, 10 * p, -len * 0.4, -6 * p, -len * 0.7, 0, -len);
+    pop();
+    const r = budR * (0.45 + 0.55 * p);
+    push();
+    translate(0, -len - r * 0.5);
+    /* Green for the first half of the climb, then ripening. */
+    drawBudShape(f, r, constrain((p - 0.55) / 0.45, 0, 1));
+    pop();
+    return;
+  }
+
+  /* OPENING. The stem is done, so the bloom scales up out of the bud while the
+     bud shrinks behind it: one becomes the other rather than swapping. */
+  const q = growEase((elapsed - GROW_RISE) / GROW_OPEN);
+  push();
+  stroke(40, 120, 90);
+  strokeWeight(weight);
+  noFill();
+  bezier(0, 0, 10, -f.stemLen * 0.4, -6, -f.stemLen * 0.7, 0, -f.stemLen);
+  pop();
+
+  if (q < 0.98) {
+    push();
+    translate(0, -f.stemLen - budR * 0.5 * (1 - q));
+    drawBudShape(f, budR * (1 - q * 0.72), 1);
+    pop();
+  }
+  push();
+  translate(0, -f.stemLen);
+  scale(0.18 + 0.82 * q);
+  drawBloom(f);
+  pop();
 }
 
 // ---------------------------- SPARKLE FUNCTION ----------------------------
@@ -1969,10 +2016,18 @@ baseY = groundY - height * 0.10;
 
 f.baseY = baseY;
 }
+/* This cap runs over `flowers`, NOT over a stray `f`. It used to sit outside
+   the for...of above and reference that loop's variable, so it threw a
+   ReferenceError on every resize under 720px and took the two calls below it
+   down with it: on a narrow screen the rows were never rebalanced and the
+   flowers never spread out. The personal sketch carried the identical bug and
+   was fixed the identical way. It stayed invisible for as long as it did
+   because this page had no viewport meta, so a phone reported 980 and the
+   branch never ran at all. */
 if (width < 720) {
   const maxStemForWidth = width * 0.45;
-  if (f.stemLen > maxStemForWidth) {
-    f.stemLen = maxStemForWidth;
+  for (const f of flowers) {
+    if (f.stemLen > maxStemForWidth) f.stemLen = maxStemForWidth;
   }
 }
 

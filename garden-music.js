@@ -39,11 +39,30 @@
 
      Each mood then carries its own `trim` against this, because four patches
      built from different waveforms do NOT come out at the same loudness on
-     their own: measured at the master output they ran calm 0.0426, whimsy
+     their own: untrimmed at the master output they ran calm 0.0426, whimsy
      0.0270, bright 0.0193 and romantic 0.0187 RMS, a spread of about 7dB,
      which is plainly audible as a jump when you walk from one page to the
-     next. The trims pull all four onto roughly 0.028. Re-measure and reset
-     them if a mood's waveform, gain or note density changes. */
+     next. The trims pull all four onto roughly 0.028.
+
+     RE-MEASURED, and the numbers moved, so they are not a set-and-forget.
+     The first pass matched the four over a long window only, and a page is
+     judged on the first few seconds of it. Measured two ways, over 32
+     seconds of a seeded offline render and again over just the eight
+     seconds after the fade-in: at the old trims the spread was 1.85dB
+     across the whole piece and 2.25dB across the opening, with the shared
+     garden loudest and the bouquet quietest. Trimming against the MEAN of
+     the two windows rather than the long one alone brings it to 0.60dB and
+     0.71dB, which is under what anyone hears as a step.
+
+     Equalising the opening matters more than equalising the whole, because
+     the four differ in how fast they fill up: the shared garden's notes
+     come every half second and the bouquet's every 1.3, so the bouquet is
+     still arriving while the shared garden is already at full density.
+
+     Re-measure and reset them if a mood's waveform, gain or note density
+     changes. The harness renders each mood through an OfflineAudioContext
+     with `Math.random` seeded identically, pulling this table and every
+     voice function out of this file as text so it cannot drift. */
   var MAX_GAIN = 0.34;
   var FADE_IN = 2.6;    /* seconds, long enough to read as arriving rather than starting */
   var FADE_OUT = 1.1;
@@ -83,7 +102,7 @@
       melody: "wander", melodyOct: 24, melodyRange: 12,
       padWave: "triangle", padCut: 1500, padGain: 0.30, padDetune: 7,
       bellWave: "sine", bellGain: 0.22, bellDecay: 2.4, bellShimmer: 0.30,
-      bass: false, reverbSecs: 3.4, reverbMix: 0.34, trim: 1.00
+      bass: false, reverbSecs: 3.4, reverbMix: 0.34, trim: 0.98
     },
 
     /* Personal garden. The slowest of the four and the lowest, because this
@@ -103,7 +122,7 @@
       melody: "wander", melodyOct: 24, melodyRange: 9,
       padWave: "sine", padCut: 1100, padGain: 0.36, padDetune: 5,
       bellWave: "sine", bellGain: 0.20, bellDecay: 3.4, bellShimmer: 0.22,
-      bass: true, reverbSecs: 4.6, reverbMix: 0.42, trim: 0.66
+      bass: true, reverbSecs: 4.6, reverbMix: 0.42, trim: 0.64
     },
 
     /* Shared garden. Excited, but the excitement is DENSITY and direction,
@@ -124,7 +143,7 @@
       melody: "arp", melodyOct: 24, melodyRange: 14,
       padWave: "triangle", padCut: 2000, padGain: 0.26, padDetune: 9,
       bellWave: "triangle", bellGain: 0.17, bellDecay: 1.5, bellShimmer: 0.34,
-      bass: false, reverbSecs: 2.6, reverbMix: 0.28, trim: 1.45
+      bass: false, reverbSecs: 2.6, reverbMix: 0.28, trim: 1.27
     },
 
     /* Bouquet builder. Romantic is the warm end of the spectrum, so this is
@@ -146,7 +165,7 @@
       melody: "wander", melodyOct: 24, melodyRange: 10,
       padWave: "sawtooth", padCut: 520, padGain: 0.20, padDetune: 8,
       bellWave: "sine", bellGain: 0.20, bellDecay: 3.0, bellShimmer: 0.20,
-      bass: true, vibrato: true, reverbSecs: 5.0, reverbMix: 0.40, trim: 1.50
+      bass: true, vibrato: true, reverbSecs: 5.0, reverbMix: 0.40, trim: 1.66
     }
   };
 

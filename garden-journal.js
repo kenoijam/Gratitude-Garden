@@ -97,10 +97,49 @@
       sat: Math.round(entry.sat || 60),
       light: Math.round(entry.light || 65),
       word: String(entry.word || ""),
-      note: String(entry.note || "")
+      note: String(entry.note || ""),
+      photo: String(entry.photo || "")
     }, { onConflict: "user_id,garden,day" })
       .then(function () {})
       .catch(function () {});
+  }
+
+  /* ------------------------------------------------------------- photos */
+  /* One picture a day, in a PRIVATE bucket under a folder named for the
+     account, which is what the storage policy in Step 8 keys on: a path that
+     does not start with your own id is refused by the database, not by this
+     file. Step 8 also adds the `photo` column to `garden_entries`.
+
+     A private bucket means the picture is fetched through a SIGNED URL rather
+     than a public one, so a link copied out of the page stops working within
+     the hour instead of being readable by anybody for ever. */
+  var BUCKET = "entries";
+
+  function uploadPhoto(day, file) {
+    if (!live() || !uid() || !file || !day) return Promise.resolve("");
+    /* The extension is kept so the browser gets the right type back. */
+    var ext = (String(file.name || "").split(".").pop() || "jpg").toLowerCase();
+    if (ext.length > 5 || !/^[a-z0-9]+$/.test(ext)) ext = "jpg";
+    var path = uid() + "/" + day + "." + ext;
+    return sb().storage.from(BUCKET)
+      .upload(path, file, { upsert: true, contentType: file.type || "image/jpeg" })
+      .then(function (res) { return res && res.error ? "" : path; })
+      .catch(function () { return ""; });
+  }
+
+  /* Signed on demand and cached for the life of the panel, since the same day
+     is often opened more than once while somebody is reading back. */
+  var signed = {};
+  function photoUrl(path) {
+    if (!path || !live()) return Promise.resolve("");
+    if (signed[path]) return Promise.resolve(signed[path]);
+    return sb().storage.from(BUCKET).createSignedUrl(path, 3600)
+      .then(function (res) {
+        var u = (res && res.data && res.data.signedUrl) || "";
+        if (u) signed[path] = u;
+        return u;
+      })
+      .catch(function () { return ""; });
   }
 
   function cloudEntries(garden) {
@@ -207,6 +246,9 @@
     '.gj-meaning{font-size:13px;color:#5a8f8d;margin:0 0 12px;}' +
     '.gj-field{font-size:13.5px;color:#2f6260;line-height:1.55;margin:0 0 7px;}' +
     '.gj-field b{color:#0f5132;}' +
+    '.gj-shot{width:100%;aspect-ratio:4/3;border-radius:12px;overflow:hidden;' +
+      'background:#eef6f4;margin:0 0 12px;}' +
+    '.gj-shot img{width:100%;height:100%;object-fit:cover;display:block;}' +
     '.gj-quote{font-size:14px;color:#2f6260;line-height:1.6;margin:0 0 12px;' +
       'padding-left:11px;border-left:2.5px solid #bde0d6;overflow-wrap:anywhere;}' +
     '.gj-none{font-size:13.5px;color:#8aa9a7;line-height:1.6;margin:0;}' +
@@ -405,6 +447,20 @@
       if (m) body.appendChild(el("p", "gj-meaning", m));
 
       if (cfg.garden === "personal") {
+        if (e.photo) {
+          /* The frame goes in straight away at the right size and the picture
+             arrives into it, so the panel does not jump when the signed URL
+             comes back. */
+          var shot = el("div", "gj-shot");
+          body.appendChild(shot);
+          photoUrl(e.photo).then(function (u) {
+            if (!u) { shot.remove(); return; }
+            var img = document.createElement("img");
+            img.alt = "";
+            img.src = u;
+            shot.appendChild(img);
+          });
+        }
         if (e.note) body.appendChild(el("p", "gj-quote", e.note));
         if (e.mood) body.appendChild(field("Mood", e.mood));
         if (e.shaper) body.appendChild(field("Shaped by", e.shaper));
@@ -475,6 +531,8 @@
   window.GardenJournal = {
     mount: mount,
     record: record,
+    uploadPhoto: uploadPhoto,
+    photoUrl: photoUrl,
     snapshot: snapshot,
     today: today,
     iso: iso,
