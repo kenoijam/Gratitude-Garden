@@ -1453,3 +1453,51 @@ section { padding: 2.2rem 3.4rem; }
 @media (prefers-reduced-motion: reduce) {
   .footer-fold > summary::after { transition: none; }
 }
+
+
+/* ===========================================================================
+   PHONE: LESS TO READ
+   ===========================================================================
+   The page is read on a phone as one long column, and everything that is a
+   comfortable paragraph beside a picture becomes a screenful on its own. None
+   of this removes information; it moves it behind a tap or swaps it for a
+   shorter version of the same sentence. */
+
+/* Two versions of the hero's line, one shown at a time. */
+.phone-only { display: none; }
+@media (max-width: 768px) {
+  .wide-only { display: none; }
+  .phone-only { display: inline; }
+
+  /* The card's paragraph goes. What is left is the badge, the title, the
+     small print and the picture, and the picture says more than the four
+     lines did. The `min-height` that reserves those lines goes with it, or
+     the card keeps their height and shows nothing in it. */
+  .garden-card-desc { display: none; }
+
+  /* The whole card is a link here, so it has to look like one. */
+  .garden-card-inner { cursor: pointer; }
+}
+
+/* About's Read more. Open on a wide screen and closed on a phone, by the same
+   script that handles the footer; the summary is only ever visible where it
+   does something. */
+.about-more { margin: 0; }
+.about-more > summary { display: none; }
+.about-more > .section-desc { margin-top: 1rem; }
+@media (max-width: 768px) {
+  .about-more > summary {
+    display: inline-block;
+    list-style: none;
+    cursor: pointer;
+    margin-top: 0.4rem;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--teal);
+    border-bottom: 1.5px solid rgba(66,146,136,0.45);
+    padding-bottom: 1px;
+  }
+  .about-more > summary::-webkit-details-marker { display: none; }
+  .about-more[open] > summary { margin-bottom: 0.2rem; }
+}

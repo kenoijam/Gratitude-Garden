@@ -494,7 +494,17 @@ Note that `html` sets `scroll-behavior: smooth`, so anything that scrolls the pa
 
 **The guide's tiles are SQUARE on a phone**, `aspect-ratio: 1` with the pair centred. The mood line and the chip are already hidden at that width, so a tile is a flower and a name, and left to size itself it came out 130 by 209: a tall box round a round thing.
 
-**The footer's two blocks are `<details open>` that CLOSE on a phone.** The `open` attribute is in the markup on purpose: a details element with no `open` arrives shut before any stylesheet can say otherwise, which would hide the page's only navigation at the foot of a desktop view. A small script closes them under 768 and reopens them above it, and **stops doing either the moment somebody opens or closes one by hand**, so a rotation cannot undo a reader's choice. They also need `width: 100%` there, since as flex items they were shrink to fit and the chevron sat against the heading instead of out at the edge.
+**The whole CARD is a link on a phone.** A folded card was two taps from the garden it describes, one on the chevron and one on the button at its foot. Tapping the card goes straight there now, and the chevron keeps its own job. Three things are excluded and each for its own reason: the chevron, because that is the fold; the picture, because tapping a bloom in it already pops what that flower meant; and any real link inside, which needs no help. **The `<a>` stays in the markup**, so a keyboard still has a proper link to land on.
+
+**Three things shorten on a phone, and none of them is deleted.** The page is read there as one long column, so anything that is a comfortable paragraph beside a picture becomes a screenful on its own.
+
+- **The hero's subtitle has two versions**, `.wide-only` and `.phone-only`, one shown at a time. Three lines of subtitle is most of a phone screen before anything has happened.
+- **About opens on one paragraph** with the other three behind a Read more, using the same `data-fold-phone` hook as the footer. It is the longest unbroken run of prose on the page and it sits second, before anybody has seen anything.
+- **Each card's paragraph is hidden**, leaving the badge, the title, the small print and the picture. The picture says more than the four lines did, and the `min-height` reserving those lines goes with them or the card keeps their height and shows nothing in it.
+
+**`renderFlowerCanvas` MEASURES the picture box, it does not dictate it.** It used to set the wrap to the tile's full `offsetWidth` and a hard coded 150 tall, INLINE, which beat the stylesheet: once the tiles went square on a phone the CSS asked for a 68px picture and got a 150px one anyway, so the canvas covered the name printed under it. **The wrap's size is the stylesheet's business.**
+
+**The footer's two blocks are `<details open>` that CLOSE on a phone.** The `open` attribute is in the markup on purpose: a details element with no `open` arrives shut before any stylesheet can say otherwise, which would hide the page's only navigation at the foot of a desktop view. A small script closes everything carrying `data-fold-phone` under 768 and reopens it above, and **stops doing either the moment somebody opens or closes one by hand**, so a rotation cannot undo a reader's choice. They also need `width: 100%` there, since as flex items they were shrink to fit and the chevron sat against the heading instead of out at the edge.
 
 ## The controls all live in one corner
 

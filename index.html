@@ -142,8 +142,11 @@
     <h1 class="hero-title">
       Grow your <em class="wig" data-wiggle>Gratitude,</em> one <span class="wig" data-wiggle>bloom</span> at a time.
     </h1>
+    <!-- Two versions, one shown at a time. Three lines of subtitle is most of
+         a phone screen before anything has happened. -->
     <p class="hero-subtitle">
-      A gentle digital space for your thoughts. Reflect by yourself, share them with the community, or gather a few into a bouquet to give to someone else.
+      <span class="wide-only">A gentle digital space for your thoughts. Reflect by yourself, share them with the community, or gather a few into a bouquet to give to someone else.</span>
+      <span class="phone-only">A gentle space for your thoughts.</span>
     </p>
   </div>
 
@@ -555,14 +558,23 @@
     <p class="section-desc">
       One practice, three ways, grown from the same eight flowers.
     </p>
-    <p class="section-desc">
-      The Personal Garden is private, and your words choose the flower. The Shared Garden is a public meadow, refreshed daily. The Bouquet Builder wraps a few stems and a note for one person.
+    <!-- The remaining three paragraphs FOLD ON A PHONE. This is the longest
+         unbroken run of text on the page and it sits second, before anybody
+         has seen anything, so on a small screen it opens on one line and the
+         rest waits behind Read more. `data-fold-phone` is the shared hook,
+         the same one the footer's two blocks use. -->
+    <details class="about-more" data-fold-phone open>
+      <summary>Read more</summary>
       <p class="section-desc">
-      Two you keep. One you give away. Reflect, share, give.
-    </p>
-    <p class="section-desc">
-      One account joins them up: a username, your garden on any device, and the friends you send bouquets to. Skip it and all three still work here.
-    </p>
+        The Personal Garden is private, and your words choose the flower. The Shared Garden is a public meadow, refreshed daily. The Bouquet Builder wraps a few stems and a note for one person.
+      </p>
+      <p class="section-desc">
+        Two you keep. One you give away. Reflect, share, give.
+      </p>
+      <p class="section-desc">
+        One account joins them up: a username, your garden on any device, and the friends you send bouquets to. Skip it and all three still work here.
+      </p>
+    </details>
   </div>
 
   <div class="about-right reveal">
@@ -932,11 +944,11 @@
        screen too, before any CSS could say otherwise, and there the two sit
        side by side with room to spare. -->
   <div class="footer-top" style="align-items:flex-start;">
-    <details class="footer-col footer-fold" open>
+    <details class="footer-col footer-fold" data-fold-phone open>
       <summary><span class="footer-brand-logo">Gratitude Garden</span></summary>
       <p class="footer-desc">Turn what you're grateful for into a flower. Keep it, share it in a meadow, or wrap it up for someone else.</p>
     </details>
-    <details class="footer-col footer-fold" open>
+    <details class="footer-col footer-fold" data-fold-phone open>
       <summary><h4>Explore</h4></summary>
       <ul>
         <li><a href="personal-garden/personal-garden-index.html" target="_self" rel="noopener">The Personal Garden</a></li>
@@ -1385,11 +1397,15 @@
       if(el.classList&&el.classList.contains('flower-tile')){ tile=el; break; }
       el=el.parentElement;
     }
-    var W=tile?tile.offsetWidth:220;
-    var H=150; // matches .flower-svg-wrap height: 150px
-    // Set wrap dimensions explicitly so absolute canvas has a real container
+    /* MEASURE the picture box, do not dictate it. This used to set the wrap to
+       the tile's full offsetWidth and a hard coded 150 tall, inline, which
+       beat the stylesheet: once the tiles went square on a phone the CSS asked
+       for a 68px picture and got a 150px one anyway, so the canvas covered the
+       name printed under it. The wrap's size is the stylesheet's business. */
     var wrap=canvas.parentElement;
-    wrap.style.width=W+'px'; wrap.style.height=H+'px';
+    var wr=wrap.getBoundingClientRect();
+    var W=Math.round(wr.width)||(tile?tile.clientWidth:220);
+    var H=Math.round(wr.height)||150;
     var dpr=window.devicePixelRatio||1;
     canvas.width=Math.round(W*dpr); canvas.height=Math.round(H*dpr);
     canvas.style.width=W+'px'; canvas.style.height=H+'px';
@@ -2028,6 +2044,30 @@
     applyFolding();
   }
 
+  /* ON A PHONE THE WHOLE CARD IS THE LINK. A folded card was two taps from
+     the garden it describes: one on the chevron to open it, one on the button
+     at the foot. Tapping the card itself now goes straight there, and the
+     chevron keeps its own job, which is showing the description and the
+     picture to anybody who wants them first.
+
+     Three things are excluded, and each for its own reason: the chevron,
+     because that is the fold; the picture, because tapping a bloom in it
+     already pops what that flower meant; and any real link inside, which
+     needs no help. The `<a>` stays in the markup, so a keyboard still has a
+     proper link to land on. */
+  function initCardTap() {
+    [].forEach.call(document.querySelectorAll('.garden-card-inner'), function (inner) {
+      if (inner._tapWired) return;
+      inner._tapWired = true;
+      inner.addEventListener('click', function (e) {
+        if (!foldQuery.matches) return;
+        if (e.target.closest('.card-fold, .card-art-slot, a')) return;
+        var link = inner.querySelector('a[href]');
+        if (link) window.location.href = link.href;
+      });
+    });
+  }
+
   function applyFolding() {
     var small = foldQuery.matches;
     [].forEach.call(document.querySelectorAll('.garden-card-inner'), function (inner) {
@@ -2047,7 +2087,7 @@
   function renderAll(){
     setTimeout(renderAllFlowers, 120);
     setTimeout(renderRing, 140);
-    setTimeout(function(){ renderCardShows(); initFolding(); }, 200);
+    setTimeout(function(){ renderCardShows(); initFolding(); initCardTap(); }, 200);
   }
 
   if(document.readyState==='loading'){ document.addEventListener('DOMContentLoaded',renderAll); }
@@ -2456,13 +2496,14 @@
   })();
   </script>
 
-  <!-- The footer's two blocks arrive open, which is right on a wide screen and
-       wrong on a phone, where the footer is a screen of stacked text after
-       everything else. CSS cannot close a `details`, so this does, and it
-       reopens them if the window grows back. -->
+  <!-- Everything carrying `data-fold-phone` arrives OPEN, which is right on a
+       wide screen and wrong on a phone: the footer is a screen of stacked text
+       after everything else, and About is the longest run of prose on the page.
+       CSS cannot close a `details`, so this does, and it reopens them if the
+       window grows back. -->
   <script>
   (function () {
-    var folds = document.querySelectorAll('.footer-fold');
+    var folds = document.querySelectorAll('[data-fold-phone]');
     if (!folds.length) return;
     var phone = window.matchMedia('(max-width: 768px)');
     /* Whether the reader has taken them over. Once somebody opens or closes
