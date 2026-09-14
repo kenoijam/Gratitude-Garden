@@ -569,27 +569,42 @@ function drawGround() {
   rect(0, groundTop, width + 20, height - groundTop);
 }
 
+/* ONE CONNECTED TULIP. It used to be three overlapping pieces, a notched
+   crown on top, a round bowl under it and a pale oval over the middle, all
+   slightly see through, so a darker band showed where the crown overlapped the
+   bowl, the crown's sides stepped in from the bowl's, and the oval floated. It
+   read as a flower in parts. Now: the back petals as one solid silhouette
+   rising from the base to two outer tips, the front petal rising unbroken from
+   the same base to the centre tip, and a soft highlight that follows the front
+   petal. The same shapes in all seven copies. Extents barely moved (the centre
+   tip is 0.06 Rt taller), and BLOOM_BOX and BLOOM_METRICS were re-measured. */
 function drawTulipBloom(R, hue, sat, light) {
   noStroke();
   const Rt = R * 1.15;
-  fill(hue, sat, light, 0.95);
-
-  ellipse(0, Rt * 0.25, Rt * 1.05, Rt * 1.1);
-
+  fill(hue, sat, light - 7, 1);
   beginShape();
-  vertex(-Rt * 0.52, Rt * 0.10);
-  bezierVertex(-Rt * 0.52, -Rt * 0.10,
-               -Rt * 0.40, -Rt * 0.40,
-               -Rt * 0.22, -Rt * 0.60);
-  vertex(0, -Rt * 0.40);
-  vertex(Rt * 0.22, -Rt * 0.60);
-  bezierVertex(Rt * 0.40, -Rt * 0.40,
-               Rt * 0.52, -Rt * 0.10,
-               Rt * 0.52, Rt * 0.10);
+  vertex(Rt * 0, Rt * 0.8);
+  bezierVertex(Rt * -0.34, Rt * 0.8, Rt * -0.54, Rt * 0.58, Rt * -0.53, Rt * 0.24);
+  bezierVertex(Rt * -0.52, Rt * -0.08, Rt * -0.44, Rt * -0.4, Rt * -0.3, Rt * -0.62);
+  bezierVertex(Rt * -0.24, Rt * -0.5, Rt * -0.14, Rt * -0.4, Rt * 0, Rt * -0.36);
+  bezierVertex(Rt * 0.14, Rt * -0.4, Rt * 0.24, Rt * -0.5, Rt * 0.3, Rt * -0.62);
+  bezierVertex(Rt * 0.44, Rt * -0.4, Rt * 0.52, Rt * -0.08, Rt * 0.53, Rt * 0.24);
+  bezierVertex(Rt * 0.54, Rt * 0.58, Rt * 0.34, Rt * 0.8, Rt * 0, Rt * 0.8);
   endShape(CLOSE);
-
-  fill(hue, sat * 0.8, light + 12, 0.4);
-  ellipse(0, Rt * 0.05, Rt * 0.7, Rt * 0.9);
+  fill(hue, sat, light, 1);
+  beginShape();
+  vertex(Rt * 0, Rt * 0.8);
+  bezierVertex(Rt * -0.26, Rt * 0.78, Rt * -0.4, Rt * 0.5, Rt * -0.38, Rt * 0.14);
+  bezierVertex(Rt * -0.36, Rt * -0.2, Rt * -0.2, Rt * -0.48, Rt * 0, Rt * -0.66);
+  bezierVertex(Rt * 0.2, Rt * -0.48, Rt * 0.36, Rt * -0.2, Rt * 0.38, Rt * 0.14);
+  bezierVertex(Rt * 0.4, Rt * 0.5, Rt * 0.26, Rt * 0.78, Rt * 0, Rt * 0.8);
+  endShape(CLOSE);
+  fill(hue, sat * 0.8, light + 14, 0.32);
+  beginShape();
+  vertex(Rt * -0.1, Rt * 0.62);
+  bezierVertex(Rt * -0.26, Rt * 0.4, Rt * -0.26, Rt * -0.1, Rt * -0.08, Rt * -0.44);
+  bezierVertex(Rt * -0.14, Rt * -0.08, Rt * -0.16, Rt * 0.32, Rt * -0.1, Rt * 0.62);
+  endShape(CLOSE);
 }
 
 function drawRoseBloom(R, hue, sat, light) {
@@ -926,7 +941,7 @@ var BLOOM_BOX = {
      and 0.08 R wider, and the lavender was recorded at 0.48 R wide for a spike
      that paints 0.26, so it wore a halo nearly twice its own width. Re-measure
      if any species' drawing changes. */
-  tulip:     [ 0.11, 0.60, 0.80],
+  tulip:     [ 0.08, 0.61, 0.84],   /* re-measured for the connected tulip */
   rose:      [ 0.00, 1.00, 1.00],
   sunflower: [ 0.00, 1.32, 1.35],
   sakura:    [-0.06, 1.05, 1.05],
@@ -1074,17 +1089,30 @@ function drawPreviewFlower(pg, species, hue) {
 function drawTulipBloomOnGraphics(pg, R, hue, sat, light) {
   pg.noStroke();
   const Rt = R * 1.15;
-  pg.fill(hue, sat, light, 0.95);
-  pg.ellipse(0, Rt * 0.25, Rt * 1.05, Rt * 1.1);
+  pg.fill(hue, sat, light - 7, 1);
   pg.beginShape();
-  pg.vertex(-Rt * 0.52, Rt * 0.10);
-  pg.bezierVertex(-Rt * 0.52, -Rt * 0.10, -Rt * 0.40, -Rt * 0.40, -Rt * 0.22, -Rt * 0.60);
-  pg.vertex(0, -Rt * 0.40);
-  pg.vertex(Rt * 0.22, -Rt * 0.60);
-  pg.bezierVertex(Rt * 0.40, -Rt * 0.40, Rt * 0.52, -Rt * 0.10, Rt * 0.52, Rt * 0.10);
+  pg.vertex(Rt * 0, Rt * 0.8);
+  pg.bezierVertex(Rt * -0.34, Rt * 0.8, Rt * -0.54, Rt * 0.58, Rt * -0.53, Rt * 0.24);
+  pg.bezierVertex(Rt * -0.52, Rt * -0.08, Rt * -0.44, Rt * -0.4, Rt * -0.3, Rt * -0.62);
+  pg.bezierVertex(Rt * -0.24, Rt * -0.5, Rt * -0.14, Rt * -0.4, Rt * 0, Rt * -0.36);
+  pg.bezierVertex(Rt * 0.14, Rt * -0.4, Rt * 0.24, Rt * -0.5, Rt * 0.3, Rt * -0.62);
+  pg.bezierVertex(Rt * 0.44, Rt * -0.4, Rt * 0.52, Rt * -0.08, Rt * 0.53, Rt * 0.24);
+  pg.bezierVertex(Rt * 0.54, Rt * 0.58, Rt * 0.34, Rt * 0.8, Rt * 0, Rt * 0.8);
   pg.endShape(pg.CLOSE);
-  pg.fill(hue, sat * 0.8, light + 12, 0.4);
-  pg.ellipse(0, Rt * 0.05, Rt * 0.7, Rt * 0.9);
+  pg.fill(hue, sat, light, 1);
+  pg.beginShape();
+  pg.vertex(Rt * 0, Rt * 0.8);
+  pg.bezierVertex(Rt * -0.26, Rt * 0.78, Rt * -0.4, Rt * 0.5, Rt * -0.38, Rt * 0.14);
+  pg.bezierVertex(Rt * -0.36, Rt * -0.2, Rt * -0.2, Rt * -0.48, Rt * 0, Rt * -0.66);
+  pg.bezierVertex(Rt * 0.2, Rt * -0.48, Rt * 0.36, Rt * -0.2, Rt * 0.38, Rt * 0.14);
+  pg.bezierVertex(Rt * 0.4, Rt * 0.5, Rt * 0.26, Rt * 0.78, Rt * 0, Rt * 0.8);
+  pg.endShape(pg.CLOSE);
+  pg.fill(hue, sat * 0.8, light + 14, 0.32);
+  pg.beginShape();
+  pg.vertex(Rt * -0.1, Rt * 0.62);
+  pg.bezierVertex(Rt * -0.26, Rt * 0.4, Rt * -0.26, Rt * -0.1, Rt * -0.08, Rt * -0.44);
+  pg.bezierVertex(Rt * -0.14, Rt * -0.08, Rt * -0.16, Rt * 0.32, Rt * -0.1, Rt * 0.62);
+  pg.endShape(pg.CLOSE);
 }
 
 function drawRoseBloomOnGraphics(pg, R, hue, sat, light) {

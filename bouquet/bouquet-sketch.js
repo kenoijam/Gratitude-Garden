@@ -446,19 +446,41 @@ function qTan(p0, p1, p2, t) { const u = 1 - t; return 2 * u * (p1 - p0) + 2 * t
    lightness and alpha vary between petal layers. That is what keeps a
    bouquet reading as a single colour family at any slider position. */
 
+/* ONE CONNECTED TULIP. It used to be three overlapping pieces, a notched
+   crown on top, a round bowl under it and a pale oval over the middle, all
+   slightly see through, so a darker band showed where the crown overlapped the
+   bowl, the crown's sides stepped in from the bowl's, and the oval floated. It
+   read as a flower in parts. Now: the back petals as one solid silhouette
+   rising from the base to two outer tips, the front petal rising unbroken from
+   the same base to the centre tip, and a soft highlight that follows the front
+   petal. The same shapes in all seven copies. Extents barely moved (the centre
+   tip is 0.06 Rt taller), and BLOOM_BOX and BLOOM_METRICS were re-measured. */
 function drawTulip(ctx, R, hue, sat, light) {
   const Rt = R * 1.15;
-  ctx.fillStyle = hsla(hue, sat, light, 0.95);
-  ellipseC(ctx, 0, Rt * 0.25, Rt * 1.05, Rt * 1.1);
+  ctx.fillStyle = hsla(hue, sat, light - 7, 1);
   ctx.beginPath();
-  ctx.moveTo(-Rt * 0.52, Rt * 0.10);
-  ctx.bezierCurveTo(-Rt * 0.52, -Rt * 0.10, -Rt * 0.40, -Rt * 0.40, -Rt * 0.22, -Rt * 0.60);
-  ctx.lineTo(0, -Rt * 0.40);
-  ctx.lineTo(Rt * 0.22, -Rt * 0.60);
-  ctx.bezierCurveTo(Rt * 0.40, -Rt * 0.40, Rt * 0.52, -Rt * 0.10, Rt * 0.52, Rt * 0.10);
+  ctx.moveTo(Rt * 0, Rt * 0.8);
+  ctx.bezierCurveTo(Rt * -0.34, Rt * 0.8, Rt * -0.54, Rt * 0.58, Rt * -0.53, Rt * 0.24);
+  ctx.bezierCurveTo(Rt * -0.52, Rt * -0.08, Rt * -0.44, Rt * -0.4, Rt * -0.3, Rt * -0.62);
+  ctx.bezierCurveTo(Rt * -0.24, Rt * -0.5, Rt * -0.14, Rt * -0.4, Rt * 0, Rt * -0.36);
+  ctx.bezierCurveTo(Rt * 0.14, Rt * -0.4, Rt * 0.24, Rt * -0.5, Rt * 0.3, Rt * -0.62);
+  ctx.bezierCurveTo(Rt * 0.44, Rt * -0.4, Rt * 0.52, Rt * -0.08, Rt * 0.53, Rt * 0.24);
+  ctx.bezierCurveTo(Rt * 0.54, Rt * 0.58, Rt * 0.34, Rt * 0.8, Rt * 0, Rt * 0.8);
   ctx.closePath(); ctx.fill();
-  ctx.fillStyle = hsla(hue, sat * 0.8, light + 12, 0.4);
-  ellipseC(ctx, 0, Rt * 0.05, Rt * 0.7, Rt * 0.9);
+  ctx.fillStyle = hsla(hue, sat, light, 1);
+  ctx.beginPath();
+  ctx.moveTo(Rt * 0, Rt * 0.8);
+  ctx.bezierCurveTo(Rt * -0.26, Rt * 0.78, Rt * -0.4, Rt * 0.5, Rt * -0.38, Rt * 0.14);
+  ctx.bezierCurveTo(Rt * -0.36, Rt * -0.2, Rt * -0.2, Rt * -0.48, Rt * 0, Rt * -0.66);
+  ctx.bezierCurveTo(Rt * 0.2, Rt * -0.48, Rt * 0.36, Rt * -0.2, Rt * 0.38, Rt * 0.14);
+  ctx.bezierCurveTo(Rt * 0.4, Rt * 0.5, Rt * 0.26, Rt * 0.78, Rt * 0, Rt * 0.8);
+  ctx.closePath(); ctx.fill();
+  ctx.fillStyle = hsla(hue, sat * 0.8, light + 14, 0.32);
+  ctx.beginPath();
+  ctx.moveTo(Rt * -0.1, Rt * 0.62);
+  ctx.bezierCurveTo(Rt * -0.26, Rt * 0.4, Rt * -0.26, Rt * -0.1, Rt * -0.08, Rt * -0.44);
+  ctx.bezierCurveTo(Rt * -0.14, Rt * -0.08, Rt * -0.16, Rt * 0.32, Rt * -0.1, Rt * 0.62);
+  ctx.closePath(); ctx.fill();
 }
 
 function drawRose(ctx, R, hue, sat, light) {
@@ -2809,7 +2831,7 @@ function initTemplateStep() {
     '</div>';
   /* Entering the builder by hand clears the flag, so a bouquet built stem by
      stem still walks its steps backwards. */
-  const ownPick = () => { state.legacyWrap = null; cameFromTemplate = false; goToStep("wrap"); };
+  const ownPick = () => { state.legacyWrap = null; cameFromTemplate = false; bgPicked = false; goToStep("wrap"); };
   own.addEventListener("click", ownPick);
   own.addEventListener("keydown", e => {
     if (e.key === "Enter" || e.key === " ") { e.preventDefault(); ownPick(); }
@@ -2821,7 +2843,68 @@ function initTemplateStep() {
   grid.insertBefore(own, grid.firstChild);
 }
 
+/* ── THE FIRST SCREEN: TWO PICTURES, NOT TWO PARAGRAPHS ──────────────────
+   The fork between a real bouquet and a digital one was a heading, a
+   paragraph, and two cards each carrying a line icon, a title, a sentence and
+   a grey line of steps. Most of a laptop's card was empty space under all of
+   that text, and on a phone the two cards side by side crowded four sentences
+   into 170px columns.
+
+   Each choice is now a picture drawn by the real bouquet renderer, a title and
+   one short line. The real one is a bouquet in kraft with a florist's tag; the
+   digital one is a bouquet inside a phone. Side by side and tall on a laptop,
+   two compact rows on a phone. The pictures are painted on arrival, since a
+   canvas on a hidden step measures zero. */
+const MODE_SHOWCASE = {
+  physical: { flowers: ["rose", "sunflower", "daisy", "tulip", "lily", "rose", "sakura"],
+              wrap: [28, 38, 76, "kraft", 200] },
+  digital:  { flowers: ["tulip", "lavender", "sakura", "daisy", "rose", "lotus", "tulip"],
+              wrap: [222, 45, 28, "grid", 34] }
+};
+const MODE_BADGE = {
+  physical: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7h11v9H3z"/><path d="M14 10h4l3 3v3h-7"/><circle cx="7" cy="17.5" r="1.8"/><circle cx="17" cy="17.5" r="1.8"/></svg>',
+  digital:  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 14a4.5 4.5 0 0 0 6.4 0l3-3a4.5 4.5 0 0 0-6.4-6.4l-1.2 1.2"/><path d="M14 10a4.5 4.5 0 0 0-6.4 0l-3 3a4.5 4.5 0 0 0 6.4 6.4l1.2-1.2"/></svg>'
+};
+
+function buildModeCards() {
+  const step = document.querySelector('#bqBuilder .bq-step[data-step="mode"]');
+  if (!step || step.dataset.pictured) return;
+  step.dataset.pictured = "1";
+  const title = step.querySelector(".bq-title");
+  if (title) title.textContent = "How should it arrive?";
+  const sub = step.querySelector(".bq-sub");
+  if (sub) sub.remove();
+  [["modePhysical", "physical", "A real bouquet", "Delivered by a local florist"],
+   ["modeDigital", "digital", "A digital bouquet", "Sent as a link, free"]].forEach(([id, kind, name, line]) => {
+    const tile = document.getElementById(id);
+    if (!tile) return;
+    tile.dataset.kind = kind;
+    tile.innerHTML =
+      '<span class="bq-mode-pic" aria-hidden="true">' +
+        '<span class="bq-mode-frame"><canvas class="bq-mode-canvas" data-no-tooltip></canvas></span>' +
+        '<span class="bq-mode-badge">' + MODE_BADGE[kind] + '</span>' +
+      '</span>' +
+      '<span class="bq-mode-text">' +
+        '<span class="bq-mode-name"></span><span class="bq-mode-blurb"></span>' +
+      '</span>';
+    tile.querySelector(".bq-mode-name").textContent = name;
+    tile.querySelector(".bq-mode-blurb").textContent = line;
+    tile.setAttribute("aria-label", name + ", " + line);
+  });
+}
+
+function paintModeCards() {
+  document.querySelectorAll(".bq-mode-tile[data-kind]").forEach(tile => {
+    const cv = tile.querySelector(".bq-mode-canvas");
+    const show = MODE_SHOWCASE[tile.dataset.kind];
+    if (!cv || !show || !cv.clientWidth) return;
+    const w = show.wrap;
+    renderBouquetCanvas(cv, show.flowers, buildWrap(w[0], w[1], w[2], w[3], w[4]));
+  });
+}
+
 function initModeStep() {
+  buildModeCards();
   const phy = document.getElementById("modePhysical");
   const dig = document.getElementById("modeDigital");
   if (phy) phy.addEventListener("click", () => { setTrack("physical"); goToStep("city"); });
@@ -3482,6 +3565,7 @@ function goToStep(name) {
      is still `display: none` measures zero, so they are drawn on arrival
      rather than at boot. Same rule the note previews already follow. */
   else if (name === "template") initTemplateStep();
+  else if (name === "mode") { buildModeCards(); requestAnimationFrame(paintModeCards); setTimeout(paintModeCards, 60); }
 
   /* Physical track */
   else if (name === "city") renderCityGrid();
@@ -4245,7 +4329,15 @@ function buildStudio() {
   });
 
   const pBg = pane("bg", "Backdrop", "The scene your bouquet is revealed against.");
-  pBg.appendChild(document.getElementById("bgGrid"));
+  const bgGrid = document.getElementById("bgGrid");
+  pBg.appendChild(bgGrid);
+  /* A backdrop counts as CHOSEN only when somebody picks one. The studio sets
+     Cream by default so a link can never be broken, but a default is not a
+     choice, and Done waits for the choice. */
+  const markBg = e => { if (e.target.closest(".bq-swatch")) { bgPicked = true; syncStudio(); } };
+  bgGrid.addEventListener("click", markBg);
+  bgGrid.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") markBg(e); });
+  letterBox.addEventListener("input", () => setTimeout(syncStudio, 0));
 
   const foot = studioEl("div", "bq-opt-foot");
   /* PREVIOUS AND NEXT ARROWS, phone only. The tabs are small there and sit
@@ -4275,11 +4367,23 @@ function buildStudio() {
     }
     window.scrollTo({ top: 0, behavior: "smooth" });
   });
+  /* ONE BUTTON THAT ALWAYS SAYS WHAT COMES NEXT. It is Done only once the
+     bouquet is ready: five stems and a backdrop somebody picked, or, from a
+     template, the card written, since a template has chosen everything else.
+     Until then it names the next thing to do and goes there. */
   foot.querySelector("#bqDone").addEventListener("click", () => {
-    if (state.flowers.length < MIN_FLOWERS) { showStudio("flowers"); return; }
-    if (!state.card) state.card = "snow";
-    if (!state.bg) state.bg = "cream";
-    goToStep("reveal");
+    const next = studioNext();
+    if (next.action === "reveal") {
+      if (!state.card) state.card = "snow";
+      if (!state.bg) state.bg = "cream";
+      goToStep("reveal");
+    } else if (next.tab) {
+      showStudio(next.tab);
+      if (next.tab === "card" && cameFromTemplate) {
+        const to = document.getElementById("letterTo");
+        if (to && !state.to) to.focus();
+      }
+    }
   });
 
   opts.appendChild(body);
@@ -4370,6 +4474,29 @@ function showStudio(tab) {
   syncStudio();
 }
 
+/* Whether a backdrop has been picked by hand this visit. */
+let bgPicked = false;
+
+/* What the studio's one button should do right now. */
+function studioNext() {
+  const order = STUDIO_TABS.map(t => t.id);
+  const short = MIN_FLOWERS - state.flowers.length;
+  /* On the Paper tab, before anybody has reached the flowers, "Add 5 more"
+     is an odd thing to be told; the next step is simply Flowers. */
+  if (short > 0) return { label: studioTab === "wrap" ? "Next: Flowers" : "Add " + short + " more", tab: "flowers" };
+  if (cameFromTemplate) {
+    if (state.to && state.msg) return { label: "Done", action: "reveal" };
+    return { label: "Write your card", tab: studioTab === "card" ? null : "card" };
+  }
+  if (bgPicked) return { label: "Done", action: "reveal" };
+  const at = order.indexOf(studioTab);
+  if (at < order.length - 1) {
+    const t = STUDIO_TABS[at + 1];
+    return { label: "Next: " + t.label, tab: t.id };
+  }
+  return { label: "Pick a backdrop", tab: null };
+}
+
 function removeSpecies(id) {
   state.flowers = state.flowers.filter(f => f !== id);
   syncFlowerGrid();
@@ -4450,10 +4577,15 @@ function syncStudio() {
   }
   const done = document.getElementById("bqDone");
   if (done) {
-    const short = total < MIN_FLOWERS;
-    done.classList.toggle("is-short", short);
-    done.setAttribute("aria-disabled", short ? "true" : "false");
-    done.textContent = short ? "Add " + (MIN_FLOWERS - total) + " more" : "Done";
+    const next = studioNext();
+    const ready = next.action === "reveal";
+    done.textContent = next.label;
+    done.classList.toggle("is-ready", ready);
+    /* dimmed when it leads nowhere from here, which is only the last step of
+       a hand built bouquet before a backdrop is picked, or the card tab of a
+       template before the card is written */
+    done.classList.toggle("is-short", !ready && !next.tab);
+    done.setAttribute("aria-disabled", !ready && !next.tab ? "true" : "false");
   }
 }
 
@@ -4511,6 +4643,7 @@ function initResize() {
     }
     /* The studio's stage is sized from the viewport, so a phone's address
        bar sliding away changes the width it should be painted at. */
+    if (document.body.dataset.step === "mode") paintModeCards();
     if (document.body.dataset.step === "studio") {
       if (studioTab === "card" || studioTab === "bg") refreshNotePreviews(true);
       else renderLivePreview();

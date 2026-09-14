@@ -1758,7 +1758,8 @@ body[data-step="studio"] #bqBuilder { padding: 0 20px 24px; }
 @media (max-width: 860px) {
   /* DONE ON THE LAST TAB ONLY. Before that the bar is Previous, the summary
      and Next, so the way forward on every other step is the next step. */
-  .bq-studio[data-last="0"] .bq-opt-foot .bq-done { display: none; }
+  /* DONE ONLY WHEN THE BOUQUET IS READY. Until then the Next arrow is the way on. */
+  .bq-opt-foot .bq-done:not(.is-ready) { display: none; }
   .bq-studio .bq-flower-tile { height: 66px; padding: 7px 8px 7px 8px; column-gap: 9px; grid-template-columns: 40px minmax(0, 1fr); }
   .bq-studio .bq-flower-tile canvas { width: 40px; height: 40px; }
   .bq-studio .bq-flower-tile .fmeaning,
@@ -1807,31 +1808,32 @@ body[data-step="studio"] #bqBuilder { padding: 0 20px 24px; }
    The studio was built in mint whites and cool pale greens (#f6faf9, #eef7f4,
    #edf6f3) that appear on no other page, so the bouquet builder read as a
    different product from the two gardens beside it. It now takes the
-   gardens' own card language: snow panels with the #e6efed hairline, cream
-   tiles ringed in #bde0d6 that turn #26a69a when chosen, the sky blue ring
+   gardens' own card language, in CREAM with WHITE ACCENTS: cream panels with a
+   warm #efe6c8 hairline, white tiles and chosen-stem chips ringed in #bde0d6
+   that turn #26a69a when chosen, the sky blue ring
    and cream ground of the round corner icons, a sky to cream stage, and the
    project's dark teal for text and the main action. Nothing here moves
    anything; it is colour only, and it sits last so it wins at equal
    specificity. */
-.bq-card { background: snow; border-color: #e6efed; }
+.bq-card { background: #fff9e3; border-color: #efe6c8; }
 
-.bq-studio { background: snow; border: 1px solid #e6efed; box-shadow: 0 18px 50px rgba(29,100,102,0.14); }
-.bq-rail { background: snow; border-right-color: #eaf2f0; }
+.bq-studio { background: #fff9e3; border: 1px solid #efe6c8; box-shadow: 0 18px 50px rgba(29,100,102,0.14); }
+.bq-rail { background: #fff9e3; border-right-color: #efe6c8; }
 .bq-rail-tab { color: #2c7a7b; }
-.bq-rail-ic { background: rgba(255,249,227,0.92); border-color: #b7e4e7; color: #1d6466; }
+.bq-rail-ic { background: #ffffff; border-color: #b7e4e7; color: #1d6466; }
 .bq-rail-tab.on { color: #0f5132; }
 .bq-rail-tab.on .bq-rail-ic { background: #1d6466; border-color: #1d6466; color: #fff9e3; }
-@media (hover: hover) { .bq-rail-tab:not(.on):hover { background: #fff9e3; } }
+@media (hover: hover) { .bq-rail-tab:not(.on):hover { background: rgba(255,255,255,0.7); } }
 
 /* the stage is a window onto the gardens' own sky */
 .bq-studio-stage { background: linear-gradient(180deg, #e1f7f7 0%, #f1fbf8 62%, #fff9e3 100%); }
 
-.bq-options { background: #fffdf6; border-left-color: #eaf2f0; }
+.bq-options { background: #fff9e3; border-left-color: #efe6c8; }
 .bq-pane .bq-title { color: #0f5132; }
 .bq-pane .bq-sub { color: #2c7a7b; }
 
-.bq-studio .bq-flower-tile { background: #fff9e3; border-color: #bde0d6; }
-.bq-studio .bq-flower-tile.picked { background: #fff9e3; border-color: #bde0d6; }
+.bq-studio .bq-flower-tile { background: #ffffff; border-color: #bde0d6; }
+.bq-studio .bq-flower-tile.picked { background: #ffffff; border-color: #bde0d6; }
 .bq-studio .bq-flower-tile.selected,
 .bq-studio .bq-foliage-tile.picked { background: #ffffff; border-color: #26a69a; box-shadow: 0 0 0 1px #26a69a; }
 .bq-studio .bq-flower-tile canvas { background: #e1f7f7; }
@@ -1841,30 +1843,82 @@ body[data-step="studio"] #bqBuilder { padding: 0 20px 24px; }
 .bq-studio .bq-swatch.picked { border-color: #26a69a; }
 .bq-studio .bq-check { background: #26a69a; }
 .bq-ribbon-sw.picked { box-shadow: inset 0 0 0 1px rgba(29,100,102,0.22), 0 0 0 2.5px #fffdf6, 0 0 0 4.5px #26a69a; }
-.bq-custom-toggle { background: #fff9e3; border-color: #bde0d6; }
-.bq-custom-paper { background: #fff9e3; border-color: #bde0d6; }
+.bq-custom-toggle { background: #ffffff; border-color: #bde0d6; }
+.bq-custom-paper { background: #ffffff; border-color: #bde0d6; }
 
-.bq-adjust { background: snow; border-color: #bde0d6; }
+.bq-adjust { background: #ffffff; border-color: #bde0d6; }
 .bq-adjust-art { background: #e1f7f7; }
 .bq-studio .bq-step-btn { border-color: #26a69a; background: snow; }
 
-.bq-picked-chip { background: #fff9e3; border-color: #bde0d6; }
+.bq-picked-chip { background: #ffffff; border-color: #bde0d6; }
 .bq-picked-chip.selected { border-color: #26a69a; }
 .bq-picked-art { background: #e1f7f7; }
 .bq-picked-x { border-color: #26a69a; color: #26a69a; background: snow; }
 
-.bq-opt-foot { background: #fff9e3; border-top-color: #efe6c8; }
+.bq-opt-foot { background: #fdf3d3; border-top-color: #efe6c8; }
 .bq-sum strong { color: #0f5132; }
-.bq-studio-arrow { background: rgba(255,249,227,0.92); border-color: #b7e4e7; }
+.bq-studio-arrow { background: #ffffff; border-color: #b7e4e7; }
 
 .bq-studio .bq-field input[type="text"],
-.bq-studio .bq-field textarea { background: snow; border-color: #bde0d6; }
+.bq-studio .bq-field textarea { background: #ffffff; border-color: #bde0d6; }
 
 @media (max-width: 860px) {
   .bq-studio { background: transparent; border: 0; box-shadow: none; }
-  .bq-studio-stage { background: linear-gradient(180deg, #e1f7f7 0%, #f1fbf8 70%, #fffdf6 100%); }
-  .bq-rail { background: rgba(255,253,246,0.97); border: 0; }
+  .bq-studio-stage { background: linear-gradient(180deg, #e1f7f7 0%, #f1fbf8 70%, #fff9e3 100%); }
+  .bq-rail { background: rgba(255,249,227,0.97); border: 0; }
   .bq-options { background: transparent; }
   .bq-opt-foot { background: rgba(255,249,227,0.97); border-top-color: #efe6c8; }
-  .bq-adjust.on { background: snow; }
+  .bq-adjust.on { background: #ffffff; }
+}
+
+/* ── The first screen: two pictures ────────────────────────────────────────
+   Laptop: two tall cards side by side, the picture filling the top of each.
+   Phone: two compact rows, picture beside the words. */
+.bq-step[data-step="mode"] .bq-card { min-height: 0; padding-bottom: 34px; }
+.bq-step[data-step="mode"] .bq-title { font-size: 30px; margin-bottom: 0; }
+.bq-mode-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 22px; margin-top: 26px; }
+.bq-mode-tile {
+  align-items: stretch; gap: 0; padding: 0; overflow: hidden;
+  background: #ffffff; border: 2px solid #bde0d6; border-radius: 22px;
+}
+.bq-mode-tile:hover, .bq-mode-tile:focus-visible { border-color: #26a69a; background: #ffffff; }
+.bq-mode-pic {
+  position: relative; display: flex; align-items: center; justify-content: center;
+  /* grows with the window, so a laptop's card is filled by the picture rather
+     than by empty cream under it */
+  height: clamp(300px, calc(100vh - 380px), 460px);
+  background: linear-gradient(180deg, #e1f7f7 0%, #f1fbf8 70%, #fff9e3 100%);
+}
+.bq-mode-frame { display: block; width: min(300px, calc((100vh - 400px) * 0.8)); }
+.bq-mode-canvas { display: block; width: 100%; }
+/* the digital bouquet is in a phone */
+.bq-mode-tile[data-kind="digital"] .bq-mode-frame {
+  width: min(200px, calc((100vh - 420px) * 0.52)); padding: 30px 10px 38px; box-sizing: border-box;
+  background: #ffffff; border: 3px solid #1d6466; border-radius: 30px;
+  box-shadow: 0 10px 24px rgba(29,100,102,0.16);
+}
+.bq-mode-badge {
+  position: absolute; right: 18px; bottom: 18px;
+  width: 44px; height: 44px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  background: #fff9e3; color: #1d6466; border: 2px solid #b7e4e7;
+}
+.bq-mode-badge svg { width: 22px; height: 22px; display: block; }
+.bq-mode-text { display: flex; flex-direction: column; gap: 3px; padding: 18px 22px 20px; text-align: left; }
+.bq-mode-name { font-size: 1.35rem; }
+.bq-mode-blurb { font-size: 0.92rem; color: #2f6260; }
+
+@media (max-width: 780px) {
+  .bq-step[data-step="mode"] .bq-card { padding: 22px 16px 22px; }
+  .bq-step[data-step="mode"] .bq-title { font-size: 24px; }
+  .bq-mode-grid { grid-template-columns: 1fr; gap: 12px; margin-top: 18px; }
+  .bq-mode-tile { flex-direction: row; align-items: center; border-radius: 18px; padding: 0; }
+  .bq-mode-pic { flex: 0 0 116px; width: 116px; height: 124px; }
+  .bq-mode-frame { width: 80px; }
+  .bq-mode-tile[data-kind="digital"] .bq-mode-frame { width: 66px; padding: 10px 5px 12px; border-width: 2px; border-radius: 14px; }
+  .bq-mode-badge { width: 28px; height: 28px; right: 6px; bottom: 6px; border-width: 1.5px; }
+  .bq-mode-badge svg { width: 15px; height: 15px; }
+  .bq-mode-text { padding: 12px 14px; }
+  .bq-mode-name { font-size: 1.1rem; }
+  .bq-mode-blurb { font-size: 0.86rem; }
 }
