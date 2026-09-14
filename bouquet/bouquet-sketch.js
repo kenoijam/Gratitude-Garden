@@ -951,6 +951,55 @@ function renderFlowerTile(canvas, species, hue) {
   ctx.restore();
 }
 
+/* ── THUMBNAILS AT ONE SIZE ──────────────────────────────────────────────
+   The studio's tiles show each flower in a small circle, and the pictures
+   came out at eight different sizes: every species paints a different share
+   of its 100 by 84 box, so a sunflower filled its tile and spilled into its
+   own name while a tulip sat small in the middle of empty space. A larger
+   canvas pushed out into the padding only moved the problem.
+
+   So the picture is drawn by the real renderer into a spare canvas, the
+   painted pixels are measured, and exactly that bounding box is drawn into
+   the thumbnail, scaled so its longer side is the same 78 percent of the
+   circle for every flower and every foliage. The same idea as the landing
+   page's `fitBloom`, done by measuring the pixels rather than keeping a
+   table, so a species that changes its drawing needs nothing re-measured. */
+function fitThumb(target, paint) {
+  const src = document.createElement("canvas");
+  paint(src);
+  if (!src.width || !src.height) return;
+  const w = src.width, h = src.height;
+  const data = src.getContext("2d").getImageData(0, 0, w, h).data;
+  let minX = w, minY = h, maxX = -1, maxY = -1;
+  for (let y = 0; y < h; y++) {
+    for (let x = 0; x < w; x++) {
+      if (data[(y * w + x) * 4 + 3] > 16) {
+        if (x < minX) minX = x; if (x > maxX) maxX = x;
+        if (y < minY) minY = y; if (y > maxY) maxY = y;
+      }
+    }
+  }
+  const dpr = Math.min(window.devicePixelRatio || 1, 3);
+  const css = target.clientWidth || 44;
+  target.width = target.height = Math.round(css * dpr);
+  const t = target.getContext("2d");
+  t.setTransform(1, 0, 0, 1, 0, 0);
+  t.clearRect(0, 0, target.width, target.height);
+  if (maxX < 0) return;
+  const bw = maxX - minX + 1, bh = maxY - minY + 1;
+  const k = (target.width * 0.78) / Math.max(bw, bh);
+  t.imageSmoothingEnabled = true;
+  t.imageSmoothingQuality = "high";
+  t.drawImage(src, minX, minY, bw, bh,
+    (target.width - bw * k) / 2, (target.height - bh * k) / 2, bw * k, bh * k);
+}
+function renderFlowerThumb(canvas, species, hue) {
+  fitThumb(canvas, c => renderFlowerTile(c, species, hue));
+}
+function renderFoliageThumb(canvas, kind) {
+  fitThumb(canvas, c => renderFoliageTile(c, kind));
+}
+
 function renderFoliageTile(canvas, kind) {
   const dpr = window.devicePixelRatio || 1;
   const w = 100, h = 84;
@@ -1925,9 +1974,26 @@ function attachBloomDrag(canvas) {
     if (had) renderBouquetCanvas(canvas, state.flowers, currentWrap());
   };
 
+  /* iOS SCROLLS THE PAGE UNDER A DRAG unless the touch itself is cancelled.
+     `touch-action: none` should be enough and is set above, but Safari still
+     starts a scroll from a touch that begins on a sticky element, which the
+     phone's pinned stage is. So a touch that lands on a bloom, and any move
+     while a drag is live, is cancelled directly; a touch on empty paper is
+     left alone so the page can still be scrolled from there. */
+  const touchSlack = 16;
+  canvas.addEventListener("touchstart", e => {
+    const t = e.touches && e.touches[0];
+    if (!t) return;
+    const r = canvas.getBoundingClientRect();
+    if (bloomAt(canvas, t.clientX - r.left, t.clientY - r.top, touchSlack)) e.preventDefault();
+  }, { passive: false });
+  canvas.addEventListener("touchmove", e => {
+    if (canvas._dragFrom != null) e.preventDefault();
+  }, { passive: false });
+
   canvas.addEventListener("pointerdown", e => {
     const [px, py] = at(e);
-    const b = bloomAt(canvas, px, py);
+    const b = bloomAt(canvas, px, py, e.pointerType === "mouse" ? 0 : touchSlack);
     if (!b) return;
     e.preventDefault();
     canvas._dragFrom = b.idx;
@@ -1939,7 +2005,7 @@ function attachBloomDrag(canvas) {
 
   canvas.addEventListener("pointermove", e => {
     const [px, py] = at(e);
-    const b = bloomAt(canvas, px, py);
+    const b = bloomAt(canvas, px, py, e.pointerType === "mouse" ? 0 : touchSlack);
     if (canvas._dragFrom == null) {
       canvas.style.cursor = b ? "grab" : "";
       return;
@@ -1954,7 +2020,7 @@ function attachBloomDrag(canvas) {
     const from = canvas._dragFrom;
     if (from == null) return;
     const [px, py] = at(e);
-    const b = bloomAt(canvas, px, py);
+    const b = bloomAt(canvas, px, py, e.pointerType === "mouse" ? 0 : touchSlack);
     if (b && b.idx !== from) {
       const t = state.flowers[from];
       state.flowers[from] = state.flowers[b.idx];
@@ -1977,14 +2043,24 @@ function attachBloomDrag(canvas) {
    handler serves both: pointer events report their own type, so one code path
    covers a mouse hovering and a finger tapping. */
 
-function bloomAt(canvas, px, py) {
+function bloomAt(canvas, px, py, slack) {
   const list = canvas._blooms || [];
   for (let i = list.length - 1; i >= 0; i--) {      /* frontmost bloom first */
     const b = list[i];
     const dx = px - b.x, dy = py - b.y;
     if (dx * dx + dy * dy <= b.r * b.r) return b;
   }
-  return null;
+  /* A FINGER GETS SLACK. On a phone the pinned bouquet is small and a bloom
+     can be 8px across, which a fingertip covers several times over and still
+     misses. With slack, the nearest bloom within that many pixels of its edge
+     counts as touched. */
+  if (!slack) return null;
+  let best = null, bestD = Infinity;
+  list.forEach(b => {
+    const d = Math.hypot(px - b.x, py - b.y) - b.r;
+    if (d <= slack && d < bestD) { bestD = d; best = b; }
+  });
+  return best;
 }
 
 function attachBloomTooltip(canvas) {
@@ -2031,6 +2107,9 @@ function attachBloomTooltip(canvas) {
   canvas.addEventListener("pointerleave", hide);
 
   canvas.addEventListener("pointerdown", e => {
+    /* On a canvas you can drag blooms around, a press is the start of a drag,
+       not a request for the tooltip; there the tooltip is hover only. */
+    if (canvas.hasAttribute("data-drag-swap")) return;
     const [px, py] = at(e);
     const b = bloomAt(canvas, px, py);
     if (!b) return hide();
@@ -2889,7 +2968,7 @@ function initFlowerGrid() {
     });
 
     grid.appendChild(tile);
-    renderFlowerTile(tile.querySelector("canvas"), sp.id, hueFor(sp.id));
+    renderFlowerThumb(tile.querySelector("canvas"), sp.id, hueFor(sp.id));
   });
   syncFlowerGrid();
 }
@@ -2940,7 +3019,7 @@ function syncFlowerGrid() {
 
 function refreshFlowerTiles() {
   document.querySelectorAll("#flowerGrid .bq-flower-tile").forEach(tile => {
-    renderFlowerTile(tile.querySelector("canvas"), tile.dataset.species, hueFor(tile.dataset.species));
+    renderFlowerThumb(tile.querySelector("canvas"), tile.dataset.species, hueFor(tile.dataset.species));
   });
 }
 
@@ -3001,7 +3080,7 @@ function initFoliageGrid() {
       if (e.key === "Enter" || e.key === " ") { e.preventDefault(); pick(); }
     });
     grid.appendChild(tile);
-    renderFoliageTile(tile.querySelector("canvas"), f.id);
+    renderFoliageThumb(tile.querySelector("canvas"), f.id);
   });
   syncFoliageGrid();
 }
@@ -3841,16 +3920,25 @@ function buildShareMenu() {
      size as Share, which put "go back" level with the thing the page is for.
      It is the same element moved to the body, so `renderFinal` still hides it
      from somebody who received the bouquet. */
+  /* EDIT BOUQUET IS A QUIET LINK DIRECTLY UNDER THE BOUQUET, and the ways to
+     send it sit lower, at their own width. It was a corner button fixed to
+     the bottom left, which on a phone put it below everything else and made
+     going back the last thing on the screen. Start over becomes a text link
+     too, since it throws the bouquet away and should never look like the main
+     action. The elements are moved, not rebuilt, so `renderFinal` still
+     hides Edit from somebody who received the bouquet. */
   const backNav = document.getElementById("bqBackNav");
   const backBtn = document.getElementById("backToBg");
   if (backNav && backBtn) {
     backNav.className = "bq-reveal-back";
     backBtn.className = "bq-reveal-back-btn";
-    backBtn.innerHTML = '<svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" ' +
+    backBtn.innerHTML = '<svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" ' +
       'stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
       '<path d="M12.5 4 6.5 10l6 6"/></svg><span>Edit bouquet</span>';
-    document.body.appendChild(backNav);
+    panel.parentNode.insertBefore(backNav, panel);
   }
+  const over = document.getElementById("startOverBtn");
+  if (over) over.className = "bq-link-btn";
 }
 
 /* Every button is looked up defensively, because the two tracks share this
@@ -4043,7 +4131,7 @@ function buildStudio() {
     if (!studioPick) return;
     state.hues[studioPick] = parseInt(e.target.value, 10);
     const tile = document.querySelector('#flowerGrid .bq-flower-tile[data-species="' + studioPick + '"]');
-    if (tile) renderFlowerTile(tile.querySelector("canvas"), studioPick, hueFor(studioPick));
+    if (tile) renderFlowerThumb(tile.querySelector("canvas"), studioPick, hueFor(studioPick));
     renderLivePreview();
     syncStudio();
   });
@@ -4315,7 +4403,7 @@ function syncStudio() {
       const hue = adjust.querySelector("input");
       if (document.activeElement !== hue) hue.value = hueFor(studioPick);
       hue.setAttribute("aria-label", meta.name + " colour");
-      renderFlowerTile(adjust.querySelector(".bq-adjust-art"), studioPick, hueFor(studioPick));
+      renderFlowerThumb(adjust.querySelector(".bq-adjust-art"), studioPick, hueFor(studioPick));
     }
   }
 
@@ -4346,7 +4434,7 @@ function syncStudio() {
       x.setAttribute("aria-label", "Take every " + meta.name + " out");
       chip.appendChild(x);
       row.appendChild(chip);
-      renderFlowerTile(cv, id, hueFor(id));
+      renderFlowerThumb(cv, id, hueFor(id));
     });
     const n = document.getElementById("bqPickedN");
     if (n) n.textContent = "(" + state.flowers.length + ")";

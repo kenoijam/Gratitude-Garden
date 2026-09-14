@@ -1410,7 +1410,7 @@ body[data-step="studio"] #bqBuilder { padding: 0 20px 24px; }
 }
 .bq-picked-chip.selected { border-color: var(--teal); }
 .bq-picked-chip:focus-visible { outline: 3px solid var(--darkteal); outline-offset: 2px; }
-.bq-picked-art { width: 52px; height: 44px; display: block; border-radius: 10px; background: #f1f8f6; }
+.bq-picked-art { width: 40px; height: 40px; display: block; border-radius: 50%; background: #eef7f4; }
 .bq-picked-txt { display: flex; flex-direction: column; gap: 1px; font-family: Arial, Helvetica, sans-serif; }
 .bq-picked-txt strong { font-size: 13px; color: var(--darkteal); }
 .bq-picked-txt span { font-size: 11.5px; color: #2f6260; }
@@ -1468,7 +1468,7 @@ body[data-step="studio"] #bqBuilder { padding: 0 20px 24px; }
   border: 1.5px solid #e1ece9; border-radius: 16px;
 }
 .bq-adjust-top { display: flex; align-items: center; gap: 10px; }
-.bq-adjust-art { width: 50px; height: 42px; flex: 0 0 auto; display: block; border-radius: 10px; background: #f1f8f6; }
+.bq-adjust-art { width: 42px; height: 42px; flex: 0 0 auto; display: block; border-radius: 50%; background: #eef7f4; }
 .bq-adjust-name { display: flex; flex-direction: column; gap: 1px; min-width: 0; font-family: Arial, Helvetica, sans-serif; }
 .bq-adjust-name strong { font-size: 14px; color: var(--darkteal); }
 .bq-adjust-name span { font-size: 11px; color: #2f6260; text-transform: uppercase; letter-spacing: 0.03em; }
@@ -1687,7 +1687,7 @@ body[data-step="studio"] #bqBuilder { padding: 0 20px 24px; }
 .bq-studio .bq-flower-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
 .bq-studio .bq-flower-tile {
   display: grid;
-  grid-template-columns: 42px minmax(0, 1fr);
+  grid-template-columns: 44px minmax(0, 1fr);
   grid-template-rows: auto auto;
   column-gap: 8px; row-gap: 1px;
   align-items: center; align-content: center;
@@ -1696,18 +1696,17 @@ body[data-step="studio"] #bqBuilder { padding: 0 20px 24px; }
      to three lines where "Round red clusters" took two, so the rows came out
      70, 82 and 96 tall. The name is held to one line and the note to two. */
   height: 70px;
-  padding: 8px 10px 8px 8px;
+  padding: 8px 10px 8px 9px;
+  column-gap: 10px;
   text-align: left;
 }
-/* The picture is drawn in a 100 by 84 box with a lot of clear margin round the
-   bloom, so shown at the 42px its column has, the flower itself came out about
-   25px across. The canvas is drawn 62px wide and allowed to spill 10px either
-   side into the tile's padding and the gap, more of it on the text side so a
-   wide bloom does not sit on the tile's own border; that margin is transparent, so the
-   bloom is half as large again in exactly the same column. */
+/* ONE CIRCLE, ONE SIZE. The picture is fitted by `fitThumb`, so every flower
+   and foliage fills the same share of the same 44px circle and nothing spills
+   into the words beside it. */
 .bq-studio .bq-flower-tile canvas {
   grid-column: 1; grid-row: 1 / 3;
-  width: 62px; max-width: none; height: auto; margin: 0 -14px 0 -6px;
+  width: 44px; height: 44px; max-width: none; margin: 0;
+  border-radius: 50%; background: #eef7f4;
   pointer-events: none;
 }
 /* 13px, not 13.5, measured: "Baby's breath" is the longest name and at 13.5 it
@@ -1760,52 +1759,44 @@ body[data-step="studio"] #bqBuilder { padding: 0 20px 24px; }
   /* DONE ON THE LAST TAB ONLY. Before that the bar is Previous, the summary
      and Next, so the way forward on every other step is the next step. */
   .bq-studio[data-last="0"] .bq-opt-foot .bq-done { display: none; }
-  .bq-studio .bq-flower-tile { height: 66px; padding: 7px 8px 7px 7px; column-gap: 7px; }
-  .bq-studio .bq-flower-tile canvas { width: 60px; margin: 0 -13px 0 -5px; }
+  .bq-studio .bq-flower-tile { height: 66px; padding: 7px 8px 7px 8px; column-gap: 9px; grid-template-columns: 40px minmax(0, 1fr); }
+  .bq-studio .bq-flower-tile canvas { width: 40px; height: 40px; }
   .bq-studio .bq-flower-tile .fmeaning,
   .bq-studio .bq-foliage-tile .fblurb { font-size: 10.5px; }
 }
 
-@media (max-width: 560px) {
-  /* Four buttons do not fit one row on a phone, so they make two even rows:
-     the two ways of sending on top, Back and Start over under them. */
-  /* `renderFinal` sets `display` on this panel INLINE, flex for the sender and
-     none for somebody who received the bouquet. So the grid is applied with
-     `!important` only while it is not set to none, or a recipient would be
-     shown the sender's Share and Start over buttons. */
-  .bq-share-panel:not([style*="none"]) { display: grid !important; grid-template-columns: 1fr 1fr; gap: 8px; width: 100%; }
-  .bq-share-panel .bq-share-wrap { order: 1; }
-  .bq-share-panel .bq-friend-btn { order: 2; }
-  .bq-share-panel #startOverBtn { order: 3; grid-column: 1 / -1; }
-  .bq-share-panel .bq-share-wrap,
-  .bq-share-panel .bq-share-btn,
-  .bq-share-panel .bq-btn,
-  .bq-share-panel .bq-btn-outline { width: 100%; justify-content: center; }
-  .bq-share-panel .bq-btn,
-  .bq-share-panel .bq-btn-outline,
-  .bq-share-panel .bq-btn-ghost { padding: 0 10px; font-size: 0.88rem; }
-}
 
-/* ── The reveal's way back: a corner button, bottom left ──────────────────
-   Opposite Home at the top left, the same cream ground and ring as the round
-   icons, and a label that says where it goes. `renderFinal` sets `display`
-   on it inline, flex for the sender and none for a recipient. */
-.bq-reveal-back {
-  position: fixed; left: 16px; bottom: calc(16px + env(safe-area-inset-bottom, 0px));
-  z-index: 60; margin: 0; padding: 0; max-width: none;
-}
-body:not([data-step="reveal"]) .bq-reveal-back { display: none !important; }
+
+/* ── The reveal: Edit, then the ways to send it, then Start over ──────────
+   Nothing stretches across the screen. Edit bouquet is a quiet link under the
+   bouquet; Share and Send to a friend sit lower, side by side at their own
+   width and centred; Start over is a text link under them. */
+.bq-reveal-back { display: flex; justify-content: center; margin: 14px 0 0; padding: 0; max-width: none; }
 .bq-reveal-back-btn {
-  display: inline-flex; align-items: center; gap: 6px;
-  height: 44px; padding: 0 18px 0 12px; box-sizing: border-box;
-  border-radius: 999px; border: 1.5px solid #b7e4e7;
-  background: rgba(255,249,227,0.95); color: var(--darkteal);
-  box-shadow: 0 4px 14px rgba(29,100,102,0.16);
+  display: inline-flex; align-items: center; gap: 4px;
+  height: 36px; padding: 0 12px 0 8px; border: 0; border-radius: 999px;
+  background: none; color: var(--darkteal); cursor: pointer;
   font-family: Arial, Helvetica, sans-serif; font-size: 14px; font-weight: 700;
-  cursor: pointer;
 }
 .bq-reveal-back-btn svg { display: block; flex: 0 0 auto; }
-@media (hover: hover) { .bq-reveal-back-btn:hover { background: var(--lightsky); } }
+@media (hover: hover) { .bq-reveal-back-btn:hover { background: rgba(29,100,102,0.08); } }
 .bq-reveal-back-btn:focus-visible { outline: 3px solid var(--darkteal); outline-offset: 2px; }
-/* room at the foot of the reveal so the corner button never sits on the row */
-@media (max-width: 860px) { #bqRevealWrap { padding-bottom: 96px; } }
+
+.bq-share-panel {
+  margin-top: 40px; display: flex; flex-wrap: wrap; justify-content: center; align-items: center;
+  gap: 10px; row-gap: 14px;
+}
+.bq-share-panel .bq-share-btn,
+.bq-share-panel .bq-friend-btn { flex: 0 0 auto; width: auto; height: 44px; padding: 0 20px; font-size: 0.9rem; }
+.bq-link-btn {
+  flex: 0 0 100%; order: 9;
+  background: none; border: 0; padding: 6px; cursor: pointer;
+  font-family: Arial, Helvetica, sans-serif; font-size: 13px; font-weight: 700;
+  color: #2f6260; text-decoration: underline; text-underline-offset: 3px;
+}
+.bq-link-btn:focus-visible { outline: 3px solid var(--darkteal); outline-offset: 2px; }
+@media (max-width: 560px) {
+  .bq-share-panel { margin-top: 32px; gap: 8px; }
+  .bq-share-panel .bq-share-btn,
+  .bq-share-panel .bq-friend-btn { height: 42px; padding: 0 16px; font-size: 0.86rem; }
+}

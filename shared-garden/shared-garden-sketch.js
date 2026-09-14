@@ -307,7 +307,7 @@ const tapped = findFlowerAt(px, py);
 
 if (!tapped) {
 hoveredFlower = null;
-} else if (hoveredFlower && hoveredFlower.createdIndex === tapped.createdIndex) {
+} else if (hoveredFlower && hoveredFlower.createdIndex === tapped.createdIndex && !(window.GardenSocial && GardenSocial.peekOpen && GardenSocial.peekOpen())) {
 hoveredFlower = null;
 } else {
 hoveredFlower = tapped;
@@ -894,16 +894,23 @@ pop();
    why a shadow centred on the origin would have sat below the flower.
 */
 var BLOOM_BOX = {
-  tulip:     [ 0.19, 0.70, 0.88],
-  rose:      [ 0.05, 1.10, 1.10],
-  sunflower: [ 0.05, 1.40, 1.43],
-  sakura:    [ 0.00, 1.13, 1.13],
-  lily:      [ 0.05, 1.00, 1.13],
-  daisy:     [ 0.05, 1.08, 1.08],
-  lotus:     [-0.92, 1.23, 1.09],
-  lavender:  [-1.02, 0.48, 1.14],
-  orchid:    [-0.15, 1.13, 1.13],
-  chrysanth: [ 0.05, 1.27, 1.29]
+  /* RE-MEASURED, by painting each species alone through `drawBloom` at R 60
+     and reading back its bounding box, in both gardens, which agree exactly.
+     The old figures ran about 8 percent large and 0.05 R low across the set,
+     and two were plainly wrong: the lotus sat 0.08 R lower than its petals
+     and 0.08 R wider, and the lavender was recorded at 0.48 R wide for a spike
+     that paints 0.26, so it wore a halo nearly twice its own width. Re-measure
+     if any species' drawing changes. */
+  tulip:     [ 0.11, 0.60, 0.80],
+  rose:      [ 0.00, 1.00, 1.00],
+  sunflower: [ 0.00, 1.32, 1.35],
+  sakura:    [-0.06, 1.05, 1.05],
+  lily:      [ 0.00, 0.94, 1.08],
+  daisy:     [ 0.00, 1.00, 1.00],
+  lotus:     [-1.00, 1.15, 1.00],
+  lavender:  [-0.97, 0.26, 0.96],
+  orchid:    [-0.23, 1.04, 1.05],
+  chrysanth: [ 0.00, 1.19, 1.21]
 };
 
 /* A little smaller than the bloom, so the flower overhangs its own shadow
@@ -933,9 +940,12 @@ function bloomShadow(f, R, alphaK) {
      same 0.9 fit, and a soft edge a third of the radius wide. The edge is now
      tied to the radius alone. It had a 6px floor, which on the small blooms a
      phone draws made the soft edge nearly as wide as the flower. */
-  var blur = R * 0.32;
+  /* Lighter and tighter than the first gradient, 0.14 and a quarter of the
+     radius, after it still read as a smudge round every bloom on a phone.
+     It only has to lift the bloom's edge off the grass. */
+  var blur = R * 0.24;
   var outer = rx + blur;
-  var a = 0.18 * k;
+  var a = 0.14 * k;
   var ink = "rgba(18,62,56,";
   ctx.save();
   ctx.translate(0, box[0] * R);
@@ -2161,6 +2171,23 @@ if (width < 720) {
 
 rebalanceRowsForNarrowScreens();
 spreadFlowersHorizontallyForNarrowScreens();
+keepFlowersOnScreen();
+}
+
+/* Nothing planted may hang off the edge: a flower's drawn x is held in far
+   enough for its whole name label and bloom. See the personal garden's copy. */
+function keepFlowersOnScreen() {
+if (!flowers || !flowers.length || !width) return;
+push();
+textSize(max(11, 16 * (width < 720 ? gardenScale : 1)));
+const maxChars = width < 720 ? 9 : 11;
+for (const f of flowers) {
+  const w = String(f.word || "");
+  const shown = w.length > maxChars ? w.slice(0, maxChars - 1) + "\u2026" : w;
+  const half = Math.max(textWidth(shown) / 2 + 10, (f.size || 20) * 1.4 + 6);
+  if (half * 2 < width) f.x = constrain(f.x, half, width - half);
+}
+pop();
 }
 
 function resizeGardenCanvas() {
@@ -2317,12 +2344,11 @@ return;
 if (step === "garden") {
 drawOverlayControls();
 
+/* No hover box: a click or a tap opens the flower's card, the same card on
+   every device. Hovering only marks the cursor as over something to press. */
 if (!isTouchDevice) {
 checkHover();
-}
-
-if (hoveredFlower) {
-drawHoverTooltip();
+if (canvas && canvas.elt) canvas.elt.setAttribute("data-gg-hot", hoveredFlower ? "1" : "0");
 }
 }
 }
@@ -2570,7 +2596,7 @@ landingWrap.style("pointer-events", "auto");
 
 const card = createDiv().addClass("gg-card").parent(landingWrap);
 createElement("h1", "The Shared Garden").addClass("gg-title").parent(card);
-createP("Type one thing you are grateful for, plant it, and see your flower bloom!")
+createP("Plant one thing you're grateful for.")
 .addClass("gg-sub")
 .parent(card);
 
@@ -2715,7 +2741,7 @@ selectTitle.style("margin", "0 auto 4px auto");
 selectTitle.style("margin", "0 0 8px 0");
 }
 
-const selectSub = createP("Pick a flower. Each one means something.")
+const selectSub = createP("Pick today's flower.")
 .addClass("gg-sub")
 .parent(selectCard);
 selectSub.style("margin", "4px 0 16px 0");

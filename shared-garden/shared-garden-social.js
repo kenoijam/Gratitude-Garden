@@ -676,22 +676,30 @@
   function buildPeek() {
     if (peekEl) return peekEl;
     var css = document.createElement("style");
+    /* THE SAME CARD AS THE PERSONAL GARDEN'S, to the pixel: its width, ground,
+       corner, shadow, the species as a small serif heading with a dot of the
+       flower's own colour, and one full width action. Only what it says
+       differs. Two gardens drawing the same eight flowers should not answer a
+       tap with two different kinds of card. */
     css.textContent =
-      '#gs-peek{position:fixed;z-index:490;width:236px;box-sizing:border-box;padding:14px 16px 12px;' +
-        'background:snow;border:1px solid rgba(29,100,102,0.14);border-radius:16px;' +
+      '#gs-peek{position:fixed;z-index:490;width:224px;box-sizing:border-box;padding:14px 16px 14px;' +
+        'background:#fffdf7;border:1px solid rgba(29,100,102,0.14);border-radius:16px;' +
         'box-shadow:0 14px 36px rgba(29,100,102,0.22);font-family:Arial,Helvetica,sans-serif;' +
         'color:#1d6466;text-align:left;}' +
       '#gs-peek[hidden]{display:none !important;}' +
-      '#gs-peek .pk-word{margin:0 30px 6px 0;font-family:Fraunces,Georgia,serif;font-style:italic;' +
-        'font-size:16px;line-height:1.35;color:#0f5132;word-break:break-word;}' +
-      '#gs-peek .pk-by{margin:0;font-size:12px;color:#5a8683;}' +
-      '#gs-peek .pk-row{display:flex;gap:8px;margin-top:12px;}' +
+      '#gs-peek .pk-name{display:flex;align-items:center;gap:8px;margin:0 30px 2px 0;' +
+        "font-family:'Fraunces',Georgia,serif;font-weight:600;font-variation-settings:'SOFT' 50,'WONK' 0;" +
+        'font-size:18px;color:#0f5132;}' +
+      '#gs-peek .pk-dot{width:11px;height:11px;border-radius:50%;flex:0 0 auto;' +
+        'box-shadow:inset 0 0 0 1px rgba(0,0,0,0.12);}' +
+      '#gs-peek .pk-word{margin:0 0 6px;font-size:13px;line-height:1.4;color:#2f6260;word-break:break-word;}' +
+      '#gs-peek .pk-by{margin:0 0 12px;font-size:12px;color:#5a8683;}' +
+      '#gs-peek .pk-row{display:flex;gap:8px;}' +
       '#gs-peek .pk-row[hidden]{display:none !important;}' +
-      '#gs-peek .pk-btn{display:inline-flex;align-items:center;gap:6px;height:36px;padding:0 14px;' +
-        'border-radius:999px;border:1.5px solid rgba(29,100,102,0.22);background:#fff;color:#1d6466;' +
-        'font:700 13px Arial,Helvetica,sans-serif;cursor:pointer;}' +
+      '#gs-peek .pk-btn{flex:1 1 0;display:inline-flex;align-items:center;justify-content:center;gap:6px;' +
+        'height:40px;padding:0 12px;border-radius:999px;border:0;background:#1d6466;color:#fff9e3;' +
+        'font:700 14px Arial,Helvetica,sans-serif;cursor:pointer;}' +
       '#gs-peek .pk-btn svg{width:17px;height:17px;display:block;}' +
-      '#gs-peek .pk-like[data-mine="1"]{color:#c2185b;border-color:rgba(194,24,91,0.35);background:#fff5f8;}' +
       '#gs-peek .pk-like[data-mine="1"] svg path{fill:currentColor;}' +
       '#gs-peek .pk-x{position:absolute;top:8px;right:8px;width:28px;height:28px;border:0;' +
         'border-radius:50%;background:transparent;color:#5a8683;cursor:pointer;padding:0;' +
@@ -707,6 +715,7 @@
       '<button type="button" class="pk-x" aria-label="Close">' +
         '<svg viewBox="0 0 14 14" width="12" height="12" fill="none" stroke="currentColor" ' +
         'stroke-width="2" stroke-linecap="round"><path d="M3 3l8 8M11 3l-8 8"/></svg></button>' +
+      '<p class="pk-name"><span class="pk-dot"></span><span class="pk-species"></span></p>' +
       '<p class="pk-word"></p><p class="pk-by"></p>' +
       '<div class="pk-row">' +
         '<button type="button" class="pk-btn pk-like" data-mine="0" aria-label="Like">' + HEART +
@@ -794,10 +803,11 @@
     peekFlower = flower;
     peekCtx = ctx || {};
     if (peekCtx.day) ctxDay = peekCtx.day;
+    peekEl.querySelector(".pk-species").textContent = flower.species ? titleCase(flower.species) : "Flower";
+    peekEl.querySelector(".pk-dot").style.background = hsl(flower);
     peekEl.querySelector(".pk-word").textContent = flower.gratitude || "";
-    var sp = flower.species ? titleCase(flower.species) : "";
-    peekEl.querySelector(".pk-by").textContent =
-      "Planted by " + (flower.word || "someone") + (sp ? " \u00b7 " + sp : "");
+    peekEl.querySelector(".pk-by").textContent = "Planted by " + (flower.word || "someone");
+    peekEl.querySelector(".pk-by").style.marginBottom = live ? "" : "0";
     peekEl.querySelector(".pk-row").hidden = !live;
     setPeekCounts(0, false, 0);
     peekEl.hidden = false;

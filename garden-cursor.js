@@ -204,6 +204,10 @@
     ".bq-shop-tile", ".bq-pay-tile", ".bq-pay-chip", ".bq-step-dot",
     /* the gardens, built by p5.dom with their own classes */
     ".gg-btn", ".gg-back", ".gg-tile", ".gg-card-btn",
+    /* the garden canvas while the pointer is over a flower: the sketch sets
+       this attribute, since a flower is clicked for its card and there is no
+       hover box any more to say so */
+    "canvas[data-gg-hot=\"1\"]",
     /* the landing page */
     ".btn-primary", ".btn-outline", ".btn-on-dark", ".btn-card-light",
     ".side-nav-item", ".card-fold-toggle",
@@ -302,7 +306,11 @@
   var HOME =
     /* Laptop: the pill keeps its word, but stands 38 tall like the icons and
        draws its house at their 18px, which is their 1.5px line exactly. */
-    "html body a#back-to-home{height:38px !important;box-sizing:border-box !important;" +
+    /* THE COLOUR IS PINNED TOO. The personal garden's phone stylesheet sets
+       every link to `color: inherit !important`, and Home is a link, so on a
+       phone it took the page's near black while the icons opposite it stayed
+       dark teal. */
+    "html body a#back-to-home{color:#1d6466 !important;height:38px !important;box-sizing:border-box !important;" +
       "padding-top:0 !important;padding-bottom:0 !important;}" +
     "html body a#back-to-home svg{width:18px !important;height:18px !important;}" +
     "@media (max-width: 768px){" +
@@ -359,6 +367,14 @@
         "transform:rotate(45deg) translate(-2px,-2px);opacity:.7;" +
         "transition:transform .2s ease;}" +
       "#tips-card[data-open=\"1\"] h3::after{transform:rotate(-135deg) translate(-3px,-3px);}" +
+      /* OPEN, IT IS A CARD. Closed it is a heading on the grass; opened, the
+         list ran straight across the flowers and the hills with nothing behind
+         it and could not be read. The panel only appears while it is open. */
+      "#tips-card[data-open=\"1\"]{background:rgba(255,253,247,0.97) !important;" +
+        "border-radius:16px !important;padding:8px 14px 12px !important;" +
+        "box-shadow:0 12px 32px rgba(29,100,102,0.22) !important;" +
+        "left:10px !important;width:auto !important;right:10px !important;max-width:360px !important;z-index:60 !important;}" +
+      "#tips-card[data-open=\"1\"] ul{margin:4px 0 0 !important;padding-left:18px !important;}" +
       "#tips-card ul{display:none;}" +
       "#tips-card[data-open=\"1\"] ul{display:block;}}";
 
@@ -429,7 +445,22 @@
       "html[data-gg-scrolling=\"1\"] #ga-friends-btn," +
       "html[data-gg-scrolling=\"1\"] #gj-btn," +
       "html[data-gg-scrolling=\"1\"] #save-btn{" +
-        "opacity:0;pointer-events:none;}}" +
+        "opacity:0;pointer-events:none;}" +
+      /* A FROSTED STRIP BEHIND THE ICONS ONCE THE PAGE HAS SCROLLED. Fading
+         the icons while the page moves was not enough: when scrolling stops
+         they come back, and whatever title had stopped under them was covered
+         until the next scroll. The strip gives the icons their own ground, so
+         copy passes under a band rather than under four circles. It is not
+         there at the top of a page, where nothing is underneath them, and the
+         gardens never set the flag because they do not scroll. */
+      "html[data-gg-scrolled=\"1\"] body::before{content:'';position:fixed;left:0;right:0;top:0;" +
+        "height:62px;z-index:195;pointer-events:none;background:rgba(255,253,247,0.8);" +
+        "-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);" +
+        "box-shadow:0 1px 0 rgba(29,100,102,0.08);}" +
+      /* The gardens' step screens scroll inside their own fixed wrap, so they
+         start below the icon row instead: a card taller than the screen then
+         scrolls in the space under the icons, never beneath them. */
+      "html body .gg-wrap{top:58px !important;}}" +
     "@media (prefers-reduced-motion:reduce){" +
       "html[data-gg-scrolling=\"1\"] #gg-music," +
       "html[data-gg-scrolling=\"1\"] #ga-friends-btn," +
@@ -443,6 +474,7 @@
       /* Only where the rule above can fire. A garden does not scroll at all,
          so this costs those pages nothing either way. */
       if (window.innerWidth > 768) return;
+      root.setAttribute("data-gg-scrolled", window.scrollY > 8 ? "1" : "0");
       root.setAttribute("data-gg-scrolling", "1");
       clearTimeout(scrollTimer);
       scrollTimer = setTimeout(function () {

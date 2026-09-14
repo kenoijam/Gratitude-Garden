@@ -919,16 +919,23 @@ function drawLavenderBloom(h, hue, sat, light) {
    why a shadow centred on the origin would have sat below the flower.
 */
 var BLOOM_BOX = {
-  tulip:     [ 0.19, 0.70, 0.88],
-  rose:      [ 0.05, 1.10, 1.10],
-  sunflower: [ 0.05, 1.40, 1.43],
-  sakura:    [ 0.00, 1.13, 1.13],
-  lily:      [ 0.05, 1.00, 1.13],
-  daisy:     [ 0.05, 1.08, 1.08],
-  lotus:     [-0.92, 1.23, 1.09],
-  lavender:  [-1.02, 0.48, 1.14],
-  orchid:    [-0.15, 1.13, 1.13],
-  chrysanth: [ 0.05, 1.27, 1.29]
+  /* RE-MEASURED, by painting each species alone through `drawBloom` at R 60
+     and reading back its bounding box, in both gardens, which agree exactly.
+     The old figures ran about 8 percent large and 0.05 R low across the set,
+     and two were plainly wrong: the lotus sat 0.08 R lower than its petals
+     and 0.08 R wider, and the lavender was recorded at 0.48 R wide for a spike
+     that paints 0.26, so it wore a halo nearly twice its own width. Re-measure
+     if any species' drawing changes. */
+  tulip:     [ 0.11, 0.60, 0.80],
+  rose:      [ 0.00, 1.00, 1.00],
+  sunflower: [ 0.00, 1.32, 1.35],
+  sakura:    [-0.06, 1.05, 1.05],
+  lily:      [ 0.00, 0.94, 1.08],
+  daisy:     [ 0.00, 1.00, 1.00],
+  lotus:     [-1.00, 1.15, 1.00],
+  lavender:  [-0.97, 0.26, 0.96],
+  orchid:    [-0.23, 1.04, 1.05],
+  chrysanth: [ 0.00, 1.19, 1.21]
 };
 
 /* A little smaller than the bloom, so the flower overhangs its own shadow
@@ -962,9 +969,12 @@ function bloomShadow(f, R, alphaK) {
      same 0.9 fit, and a soft edge a third of the radius wide. The edge is now
      tied to the radius alone. It had a 6px floor, which on the small blooms a
      phone draws made the soft edge nearly as wide as the flower. */
-  var blur = R * 0.32;
+  /* Lighter and tighter than the first gradient, 0.14 and a quarter of the
+     radius, after it still read as a smudge round every bloom on a phone.
+     It only has to lift the bloom's edge off the grass. */
+  var blur = R * 0.24;
   var outer = rx + blur;
-  var a = 0.18 * k;
+  var a = 0.14 * k;
   var ink = "rgba(18,62,56,";
   ctx.save();
   ctx.translate(0, box[0] * R);
@@ -2115,6 +2125,7 @@ function updateResponsiveFlowerLayout() {
       f.sizeNorm = f.size    / height;
     }
   }
+  keepFlowersOnScreen();
   /* Cap stem height relative to width on narrow screens.
      This used to reference `f` outside the `for...of` that declared it, so it
      threw a ReferenceError on every resize under 720px and took the rest of
@@ -2126,6 +2137,22 @@ function updateResponsiveFlowerLayout() {
       if (f.stemLen > maxStemForWidth) f.stemLen = maxStemForWidth;
     }
   }
+}
+
+/* NOTHING PLANTED MAY HANG OFF THE EDGE. A flower's x is a fraction of the
+   width it was planted at, so one planted near the edge of a wide window
+   landed with half its bloom and half its date off the side of a phone. Its
+   drawn x is held far enough in for the whole date label and the bloom; its
+   stored `xNorm` is left alone, so the laptop layout does not move. */
+function keepFlowersOnScreen() {
+  if (!flowers || !flowers.length || !width) return;
+  push();
+  textSize(max(10, 13 * (width < 720 ? gardenScale : 1)));
+  for (const f of flowers) {
+    const half = Math.max(textWidth(f.date || "") / 2 + 8, (f.size || 20) * 1.4 + 6);
+    if (half * 2 < width) f.x = constrain(f.x, half, width - half);
+  }
+  pop();
 }
 
 function buildLogo() {
@@ -3044,12 +3071,12 @@ function draw() {
   }
 
   if (step === "garden") {
+    /* NO HOVER BOX. A flower is read from the card a click or a tap opens,
+       one look on every device; hovering only tells the cursor there is
+       something to press. */
     if (!isTouchDevice) {
       checkHover();
-    }
-
-    if (hoveredFlower) {
-      drawHoverTooltip();
+      if (canvas && canvas.elt) canvas.elt.setAttribute("data-gg-hot", hoveredFlower ? "1" : "0");
     }
   }
 }
