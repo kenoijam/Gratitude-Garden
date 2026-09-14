@@ -2730,7 +2730,7 @@ function initTemplateStep() {
     '</div>';
   /* Entering the builder by hand clears the flag, so a bouquet built stem by
      stem still walks its steps backwards. */
-  const ownPick = () => { state.legacyWrap = null; cameFromTemplate = false; goToStep("flowers"); };
+  const ownPick = () => { state.legacyWrap = null; cameFromTemplate = false; goToStep("wrap"); };
   own.addEventListener("click", ownPick);
   own.addEventListener("keydown", e => {
     if (e.key === "Enter" || e.key === " ") { e.preventDefault(); ownPick(); }
@@ -2872,13 +2872,15 @@ function initFlowerGrid() {
       <span class="bq-count-badge" aria-hidden="true">0</span>
       <canvas></canvas>
       <span class="fname">${sp.name}</span>
+      <span class="fmeaning">${sp.meaning}</span>
     `;
-    /* The first tap on a flower with no stems puts one in AND selects it. A
-       tap on a flower already in the bunch only selects it, so choosing a
-       rose to recolour never quietly adds another rose. */
+    /* EVERY TAP ADDS A STEM, and selects that flower for the colour and count
+       panel. Three taps on a rose is three roses, which is what somebody
+       tapping a flower three times means. The panel's minus is the way back
+       down. At the twelve stem limit a tap only selects. */
     const pick = () => {
       studioPick = sp.id;
-      if (countOf(sp.id) === 0) changeFlower(sp.id, 1);
+      if (state.flowers.length < MAX_FLOWERS) changeFlower(sp.id, 1);
       else syncStudio();
     };
     tile.addEventListener("click", pick);
@@ -2945,7 +2947,11 @@ function refreshFlowerTiles() {
 /* the live preview is what makes the colour sliders meaningful. Without it the
    arrangement is never seen until the final step */
 function renderLivePreview() {
-  const has = state.flowers.length > 0;
+  /* In the studio the paper comes first, so the stage has to show the empty
+     paper before a single stem is in it. Elsewhere an empty preview still
+     waits for flowers. */
+  const flowersIn = state.flowers.length > 0;
+  const has = flowersIn || !!document.getElementById("bqStudio");
   document.querySelectorAll(".bq-live-preview").forEach(canvas => {
     const holder = canvas.closest(".bq-preview-holder");
     const empty = holder ? holder.querySelector(".bq-preview-empty") : null;
@@ -2954,7 +2960,7 @@ function renderLivePreview() {
     canvas.style.display = has ? "block" : "none";
     if (has) renderBouquetCanvas(canvas, state.flowers, currentWrap());
   });
-  document.querySelectorAll(".bq-drag-hint").forEach(h => h.classList.toggle("on", has));
+  document.querySelectorAll(".bq-drag-hint").forEach(h => h.classList.toggle("on", flowersIn && state.flowers.length > 1));
 }
 
 function initFoliageGrid() {
@@ -3694,10 +3700,120 @@ function initShareActions() {
   });
 
   initSendToFriend();
+  buildShareMenu();
 
   document.getElementById("startOverBtn").addEventListener("click", () => {
     window.location.href = window.location.pathname;
   });
+}
+
+/* ── ONE SHARE BUTTON ─────────────────────────────────────────────────────
+   There was a row of three bare icons, copy, WhatsApp and email, plus a
+   separate Send to a friend button, and the WhatsApp icon was drawn as a
+   stroked outline that did not read as WhatsApp at all.
+
+   It is ONE Share button now. On a phone it opens the phone's own share
+   sheet, which already lists WhatsApp, Messages, Instagram and everything
+   else installed, so it reaches apps this page could never list. On a laptop,
+   or anywhere that sheet is not offered, it opens a small menu of four.
+
+   The four menu rows ARE the old buttons, moved, so their listeners, and the
+   account code that decides whether Send to a friend is shown at all, run
+   exactly as before. */
+function buildShareMenu() {
+  const panel = document.getElementById("bqSharePanel");
+  const icons = panel ? panel.querySelector(".bq-share-icons") : null;
+  if (!panel || !icons || document.getElementById("bqShareBtn")) return;
+
+  const wrap = document.createElement("div");
+  wrap.className = "bq-share-wrap";
+  const btn = document.createElement("button");
+  btn.type = "button";
+  btn.className = "bq-btn bq-share-btn";
+  btn.id = "bqShareBtn";
+  btn.setAttribute("aria-haspopup", "true");
+  btn.setAttribute("aria-expanded", "false");
+  btn.innerHTML = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" ' +
+    'stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+    '<path d="M12 3v12"/><path d="M7.5 7.5 12 3l4.5 4.5"/><path d="M5 12.5V19a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6.5"/>' +
+    '</svg><span>Share</span>';
+
+  const menu = document.createElement("div");
+  menu.className = "bq-share-menu";
+  menu.id = "bqShareMenu";
+  menu.setAttribute("role", "menu");
+  menu.hidden = true;
+
+  /* A real WhatsApp mark: the speech bubble outlined, the handset FILLED.
+     Stroked, the handset was a tangle of lines at 22px. */
+  const wa = document.getElementById("waShareBtn");
+  if (wa) wa.innerHTML =
+    '<svg viewBox="0 0 24 24" aria-hidden="true">' +
+    '<path d="M12 3.1a8.9 8.9 0 0 0-7.7 13.4L3.1 20.9l4.5-1.2A8.9 8.9 0 1 0 12 3.1z" fill="none" ' +
+    'stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/>' +
+    '<path fill="currentColor" d="M9.3 7.7c-.2 0-.5 0-.8.4-.3.3-1 1-1 2.4s1 2.8 1.2 3c.1.2 2 3.1 4.9 ' +
+    '4.2 2.4.9 2.9.8 3.4.7.5-.1 1.7-.7 1.9-1.4.2-.7.2-1.3.2-1.4-.1-.1-.3-.2-.6-.3l-1.9-.9c-.3-.1-.4-.2' +
+    '-.6.1l-.9 1c-.2.2-.3.2-.6.1-.3-.1-1.2-.4-2.2-1.4-.8-.7-1.4-1.6-1.5-1.9-.2-.3 0-.4.1-.6l.5-.5c.1-.2' +
+    '.2-.3.3-.5.1-.2 0-.3 0-.5l-.9-2c-.2-.5-.4-.5-.6-.5h-.4z"/></svg>';
+
+  const rows = [
+    ["copyLinkBtn", "Copy link"],
+    ["waShareBtn", "WhatsApp"],
+    ["emailShareBtn", "Email"],
+    ["sendFriendBtn", "Send to a friend"]
+  ];
+  rows.forEach(([id, label]) => {
+    const item = document.getElementById(id);
+    if (!item) return;
+    item.removeAttribute("data-tip");
+    item.setAttribute("role", "menuitem");
+    if (id === "sendFriendBtn") {
+      item.className = "bq-share-icon";
+      item.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" ' +
+        'stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.4"/>' +
+        '<path d="M3 20c.6-3.4 3-5.4 6-5.4s5.4 2 6 5.4"/><path d="M18 8v6M15 11h6"/></svg>';
+    }
+    const text = document.createElement("span");
+    text.className = "bq-share-label";
+    text.textContent = label;
+    item.appendChild(text);
+    menu.appendChild(item);
+    /* choosing anything closes the menu; its own listener still does the work */
+    item.addEventListener("click", () => close());
+  });
+  icons.remove();
+
+  function open() { menu.hidden = false; btn.setAttribute("aria-expanded", "true"); }
+  function close() { menu.hidden = true; btn.setAttribute("aria-expanded", "false"); }
+
+  btn.addEventListener("click", async () => {
+    if (!menu.hidden) { close(); return; }
+    /* The phone's own sheet only where there is no hover, so a laptop that
+       happens to support it still gets the menu, which carries Send to a
+       friend and a plain Copy link. */
+    const touch = window.matchMedia && window.matchMedia("(hover: none)").matches;
+    if (touch && navigator.share) {
+      try {
+        await navigator.share({ title: "A bouquet for you",
+          text: "I made you a little bouquet.", url: buildShareUrl() });
+        return;
+      } catch (e) {
+        /* dismissing the sheet is not a failure, and must not pop a menu */
+        if (e && e.name === "AbortError") return;
+      }
+    }
+    open();
+  });
+  document.addEventListener("pointerdown", e => {
+    if (!menu.hidden && !wrap.contains(e.target)) close();
+  });
+  document.addEventListener("keydown", e => {
+    if (e.key === "Escape" && !menu.hidden) { close(); btn.focus(); }
+  });
+
+  wrap.appendChild(btn);
+  wrap.appendChild(menu);
+  panel.insertBefore(wrap, panel.firstChild);
 }
 
 /* Every button is looked up defensively, because the two tracks share this
@@ -3738,23 +3854,45 @@ function onClick(id, fn) {
    turns it into the right tab, so nothing that calls it had to change.
    ═══════════════════════════════════════════════════════════════════════════ */
 
+/* PAPER FIRST. The paper is the thing the bouquet is built into, so it is
+   chosen before anything goes in it, the way a florist lays the sheet out
+   before the first stem. An empty paper draws as a clean cone with its
+   ribbon, so there is always something on the stage to choose against. */
 const STUDIO_TABS = [
+  { id: "wrap", label: "Paper",
+    icon: '<path d="M4.5 6.5 12 21l7.5-14.5"/><path d="M4.5 6.5c2.5 1.6 12.5 1.6 15 0"/><path d="M8.3 13.8h7.4"/>' },
   { id: "flowers", label: "Flowers",
     icon: '<circle cx="12" cy="12" r="2.4"/><path d="M12 9.6c-1.6-2.9-.9-5.6 0-6.6.9 1 1.6 3.7 0 6.6zM14.3 11.3c2.3-2.4 5.1-2.5 6.3-1.9-.5 1.3-2.7 3.1-6.3 1.9zM13.4 14.2c3.2.8 4.6 3.2 4.6 4.6-1.4.2-3.9-.9-4.6-4.6zM10.6 14.2c-.7 3.7-3.2 4.8-4.6 4.6 0-1.4 1.4-3.8 4.6-4.6zM9.7 11.3C6.1 12.5 3.9 10.7 3.4 9.4c1.2-.6 4-.5 6.3 1.9z"/>' },
   { id: "foliage", label: "Foliage",
     icon: '<path d="M5 19C5 10 11 4.5 19.5 4.5 19.5 13 14 19 5 19z"/><path d="M5 19l9-9"/>' },
-  { id: "wrap", label: "Paper",
-    icon: '<path d="M4.5 6.5 12 21l7.5-14.5"/><path d="M4.5 6.5c2.5 1.6 12.5 1.6 15 0"/><path d="M8.3 13.8h7.4"/>' },
   { id: "card", label: "Card",
     icon: '<rect x="3.5" y="6" width="17" height="12.5" rx="2"/><path d="M4 7l8 6 8-6"/>' },
   { id: "bg", label: "Backdrop",
     icon: '<rect x="3.5" y="4.5" width="17" height="15" rx="2.2"/><circle cx="9" cy="9.6" r="1.8"/><path d="M4 17l5.2-4.6 3.4 3 2.6-2.2L20 17.2"/>' }
 ];
+/* Eight ribbons, all at the ribbon's own muted saturation and lightness
+   (46 and 72, see `buildWrap`), so a picked swatch is exactly the colour that
+   gets drawn. Spread round the wheel so no two read as the same ribbon. */
+const RIBBONS = [
+  { name: "Pink", h: 350 }, { name: "Coral", h: 16 }, { name: "Gold", h: 40 },
+  { name: "Sage", h: 140 }, { name: "Teal", h: 180 }, { name: "Sky", h: 205 },
+  { name: "Lilac", h: 270 }, { name: "Plum", h: 310 }
+];
+
+function syncRibbons() {
+  const h = currentWrap().ribbon.h;
+  document.querySelectorAll("#bqRibbonRow .bq-ribbon-sw").forEach(b => {
+    const on = parseInt(b.dataset.h, 10) === Math.round(h);
+    b.classList.toggle("picked", on);
+    b.setAttribute("aria-pressed", on ? "true" : "false");
+  });
+}
+
 /* Every old step name, and the tab it now lives on. */
 const STUDIO_OF = { flowers: "flowers", foliage: "foliage", wrap: "wrap",
                     card: "card", letter: "card", bg: "bg" };
 
-let studioTab = "flowers";
+let studioTab = "wrap";
 /* The species whose colour and quantity the panel under the grid is showing.
    Picking a tile selects it; only a species with no stems yet is also put in
    the bunch by that tap, so choosing a rose to recolour it never quietly adds
@@ -3798,7 +3936,6 @@ function buildStudio() {
   /* ── the stage ── */
   const stage = studioEl("div", "bq-studio-stage");
   const art = studioEl("div", "bq-stage-art");
-  art.appendChild(studioEl("span", "bq-stage-mark", "Bouquet")).setAttribute("aria-hidden", "true");
   const holder = document.getElementById("bqPreviewHolder");
   const canvas = document.getElementById("previewCanvas");
   if (holder) { holder.classList.add("bq-stage-live"); art.appendChild(holder); }
@@ -3810,8 +3947,10 @@ function buildStudio() {
   const note = cardSec ? cardSec.querySelector("[data-note-preview]") : null;
   if (note) { note.classList.add("bq-stage-note"); art.appendChild(note); }
 
+  /* No full size button. The bouquet is on screen at every width, so a
+     control offering to show it again was one more thing on the picture. */
   const peek = document.getElementById("bqPeekBtn");
-  if (peek) { peek.classList.add("bq-stage-peek"); art.appendChild(peek); }
+  if (peek) peek.remove();
   stage.appendChild(art);
 
   const picked = studioEl("div", "bq-picked");
@@ -3827,11 +3966,6 @@ function buildStudio() {
 
   /* ── the options ── */
   const opts = studioEl("aside", "bq-options");
-  const back = studioEl("button", "bq-opt-back",
-    '<svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.9" ' +
-    'stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 3 5 8l5 5"/></svg>Templates');
-  back.type = "button";
-  back.addEventListener("click", () => { cameFromTemplate = false; goToStep("template"); });
   const body = studioEl("div", "bq-opt-body");
   body.id = "bqOptBody";
 
@@ -3847,7 +3981,7 @@ function buildStudio() {
   };
 
   const pFlowers = pane("flowers", "Flowers",
-    "Tap a flower to add it, then set its colour and how many underneath. Five stems at least.");
+    "Every flower carries a meaning. Tap one to add a stem, tap again for another. Five stems at least.");
   pFlowers.appendChild(document.getElementById("flowerGrid"));
   const adjust = studioEl("div", "bq-adjust");
   adjust.id = "bqAdjust";
@@ -3887,9 +4021,81 @@ function buildStudio() {
   if (folCount) pFol.appendChild(folCount);
 
   const wrapSec = sec("wrap");
-  const pWrap = pane("wrap", "Paper", "The sleeve your flowers sit inside. Choose a paper and a material, or mix your own colour.");
+  const pWrap = pane("wrap", "Paper", "Choose a paper and a ribbon, or open Custom to make your own.");
   const wrapCtl = wrapSec ? wrapSec.querySelector(".bq-wrap-controls") : null;
-  if (wrapCtl) pWrap.appendChild(wrapCtl);
+  const paperGrid = document.getElementById("paperGrid");
+  const wrapCheck = document.getElementById("wrapCheck");
+
+  pWrap.appendChild(studioEl("span", "bq-control-label", "Paper"));
+  if (paperGrid) pWrap.appendChild(paperGrid);
+  if (wrapCheck) pWrap.appendChild(wrapCheck);
+
+  /* THE RIBBON IS A CHOICE ON SIGHT, not a slider inside a custom section.
+     It is one of the most noticeable things on the bouquet and it was the
+     easiest control on the page to miss. Each paper still brings a ribbon
+     that suits it, so these only matter to somebody who wants a different
+     one. */
+  pWrap.appendChild(studioEl("span", "bq-control-label", "Ribbon"));
+  const ribbons = studioEl("div", "bq-ribbon-row");
+  ribbons.id = "bqRibbonRow";
+  ribbons.setAttribute("role", "group");
+  ribbons.setAttribute("aria-label", "Ribbon colour");
+  RIBBONS.forEach(r => {
+    const b = studioEl("button", "bq-ribbon-sw");
+    b.type = "button";
+    b.dataset.h = r.h;
+    b.style.background = hsla(r.h, 46, 72, 1);
+    b.setAttribute("aria-label", r.name + " ribbon");
+    b.addEventListener("click", () => {
+      state.legacyWrap = null;
+      state.ribbonH = r.h;
+      refreshWrapStep();
+      renderLivePreview();
+      syncRibbons();
+    });
+    ribbons.appendChild(b);
+  });
+  pWrap.appendChild(ribbons);
+
+  /* CUSTOM drops down underneath the presets rather than sitting beside them.
+     The twelve papers are what most people want and they read at a glance;
+     materials and three sliders are for the few who want something else, and
+     laid out together the step looked like a form. */
+  const customBtn = studioEl("button", "bq-custom-toggle",
+    '<span>Custom paper</span><svg viewBox="0 0 16 16" width="14" height="14" fill="none" ' +
+    'stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ' +
+    'aria-hidden="true"><path d="M4 6l4 4 4-4"/></svg>');
+  customBtn.type = "button";
+  customBtn.setAttribute("aria-expanded", "false");
+  customBtn.setAttribute("aria-controls", "bqCustomPaper");
+  const custom = studioEl("div", "bq-custom-paper");
+  custom.id = "bqCustomPaper";
+  custom.hidden = true;
+  customBtn.addEventListener("click", () => {
+    custom.hidden = !custom.hidden;
+    customBtn.setAttribute("aria-expanded", custom.hidden ? "false" : "true");
+    if (!custom.hidden) refreshWrapStep();
+  });
+
+  const wrapGrid = document.getElementById("wrapGrid");
+  custom.appendChild(studioEl("span", "bq-control-label", "Material"));
+  if (wrapGrid) custom.appendChild(wrapGrid);
+  const sliders = [["wrapHue", "Paper colour"], ["wrapLight", "How light"], ["ribbonHue", "Ribbon colour"]];
+  sliders.forEach(([id, label]) => {
+    const input = document.getElementById(id);
+    if (!input) return;
+    const row = studioEl("label", "bq-control");
+    row.appendChild(studioEl("span", "bq-control-sub", label));
+    row.appendChild(input);
+    custom.appendChild(row);
+  });
+  const ribbonSlider = document.getElementById("ribbonHue");
+  if (ribbonSlider) ribbonSlider.addEventListener("input", syncRibbons);
+  if (paperGrid) paperGrid.addEventListener("click", () => setTimeout(syncRibbons, 0));
+
+  pWrap.appendChild(customBtn);
+  pWrap.appendChild(custom);
+  if (wrapCtl) wrapCtl.remove();
 
   const pCard = pane("card", "Card", "The note tucked into the bouquet. Choose its colour, then write what it says.");
   const cardLabel = studioEl("span", "bq-control-label", "Card colour");
@@ -3913,15 +4119,38 @@ function buildStudio() {
   pBg.appendChild(document.getElementById("bgGrid"));
 
   const foot = studioEl("div", "bq-opt-foot");
+  /* PREVIOUS AND NEXT ARROWS, phone only. The tabs are small there and sit
+     under the bouquet, and a person working down the list wants the next step
+     where their thumb already is. Previous on the first tab goes back to the
+     template screen, which is now the only way there, since the Templates
+     link is gone. On a laptop the rail is always in view and they are hidden. */
+  const arrow = (dir, label, path) =>
+    '<button type="button" class="bq-studio-arrow" data-dir="' + dir + '" aria-label="' + label + '">' +
+    '<svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" ' +
+    'stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="' + path + '"/></svg></button>';
   foot.innerHTML =
+    arrow("prev", "Previous step", "M12.5 4 6.5 10l6 6") +
     '<div class="bq-sum"><strong>Your bouquet</strong><span id="bqSumLine"></span></div>' +
+    arrow("next", "Next step", "M7.5 4l6 6-6 6") +
     '<button type="button" class="bq-btn bq-done" id="bqDone">Done</button>';
+  foot.addEventListener("click", e => {
+    const b = e.target.closest(".bq-studio-arrow");
+    if (!b) return;
+    const order = STUDIO_TABS.map(t => t.id);
+    const at = order.indexOf(studioTab);
+    if (b.dataset.dir === "prev") {
+      if (at <= 0) { cameFromTemplate = false; goToStep("template"); return; }
+      showStudio(order[at - 1]);
+    } else if (at < order.length - 1) {
+      showStudio(order[at + 1]);
+    }
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  });
   foot.querySelector("#bqDone").addEventListener("click", () => {
     if (state.flowers.length < MIN_FLOWERS) { showStudio("flowers"); return; }
     goToStep("reveal");
   });
 
-  opts.appendChild(back);
   opts.appendChild(body);
   opts.appendChild(foot);
 
@@ -3969,6 +4198,9 @@ function showStudio(tab) {
     b.setAttribute("aria-selected", on ? "true" : "false");
   });
   studio.querySelectorAll(".bq-pane").forEach(p => { p.hidden = p.dataset.pane !== tab; });
+  /* No Next on the last tab; Done is beside it. */
+  const nextArrow = studio.querySelector('.bq-studio-arrow[data-dir="next"]');
+  if (nextArrow) nextArrow.hidden = tab === STUDIO_TABS[STUDIO_TABS.length - 1].id;
 
   const noteStage = tab === "card" || tab === "bg";
   studio.dataset.stage = noteStage ? "note" : "live";
@@ -3976,7 +4208,19 @@ function showStudio(tab) {
   if (body) body.scrollTop = 0;
 
   syncStickyBar("studio");
-  if (tab === "wrap") refreshWrapStep();
+  if (tab === "wrap") {
+    refreshWrapStep();
+    syncRibbons();
+    /* A paper that is none of the twelve can only have come from Custom, so
+       Custom is open when it arrives rather than hiding the controls that
+       made it. */
+    const custom = document.getElementById("bqCustomPaper");
+    const toggle = studio.querySelector(".bq-custom-toggle");
+    if (custom && !document.querySelector("#paperGrid .bq-swatch.picked")) {
+      custom.hidden = false;
+      if (toggle) toggle.setAttribute("aria-expanded", "true");
+    }
+  }
   if (noteStage) refreshNotePreviews(true);
   else renderLivePreview();
   syncStudio();
@@ -4053,8 +4297,6 @@ function syncStudio() {
   }
 
   const total = state.flowers.length;
-  const peek = document.getElementById("bqPeekBtn");
-  if (peek) { peek.hidden = false; peek.disabled = total === 0; }
   const sum = document.getElementById("bqSumLine");
   if (sum) {
     const fol = (state.foliages || []).filter(f => f !== "none");

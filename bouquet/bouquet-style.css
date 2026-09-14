@@ -586,7 +586,9 @@ body {
 @media (hover: hover) { .bq-share-icon:hover { background: #e1f7f7; } }
 .bq-copied-msg { font-size: 0.78rem; color: var(--teal); font-weight: 700; margin-top: 8px; height: 16px; }
 
-#bqBackNav { max-width: 340px; margin: 20px auto 0; }
+/* centred with the bouquet above it; left aligned it hung off to one side of
+   a centred column */
+#bqBackNav { max-width: 340px; margin: 20px auto 0; justify-content: center; padding-top: 0; }
 
 .bq-recipient-cta { margin-top: 34px; }
 .bq-recipient-cta p { font-size: 0.9rem; color: rgba(29,100,102,0.75); margin-bottom: 10px; }
@@ -1358,20 +1360,6 @@ body[data-step="studio"] #bqBuilder { padding: 0 20px 24px; }
   flex: 1 1 auto; min-height: 0;
   display: flex; align-items: center; justify-content: center;
 }
-/* The florist reference sets its own name enormous and faint behind the
-   bouquet. It is the one piece of pure decoration here, and it is decoration
-   the page is already made of: the wordmark's own word, in the page's own
-   serif, at 7 percent. */
-.bq-stage-mark {
-  position: absolute; right: 3%; top: 50%;
-  transform: translateY(-50%);
-  writing-mode: vertical-rl;
-  font-family: 'Fraunces', 'Georgia', serif; font-weight: 600;
-  font-variation-settings: 'SOFT' 50, 'WONK' 0;
-  font-size: clamp(90px, 14vh, 150px); line-height: 1;
-  color: rgba(66,146,136,0.08);
-  pointer-events: none; user-select: none;
-}
 .bq-studio .bq-stage-live {
   position: relative; z-index: 1;
   width: 100%; height: 100%;
@@ -1398,19 +1386,6 @@ body[data-step="studio"] #bqBuilder { padding: 0 20px 24px; }
    centred line otherwise ran underneath. */
 .bq-studio .bq-drag-hint { top: 10px; left: 50px; right: 50px; }
 
-.bq-studio .bq-stage-peek {
-  position: absolute; top: 0; right: 0; z-index: 4;
-  width: 40px; height: 40px; border-radius: 50%; padding: 0;
-  border: 1.5px solid rgba(29,100,102,0.22);
-  background: var(--white); color: var(--darkteal);
-  display: flex; align-items: center; justify-content: center;
-  cursor: pointer; box-shadow: 0 2px 8px rgba(29,100,102,0.12);
-}
-/* `hidden` loses to the `display: flex` above, the same trap as the foot bar. */
-.bq-studio .bq-stage-peek[hidden] { display: none !important; }
-.bq-studio .bq-stage-peek svg { width: 19px; height: 19px; display: block; }
-.bq-studio .bq-stage-peek:disabled { opacity: 0.35; cursor: not-allowed; }
-.bq-studio[data-stage="note"] .bq-stage-peek { display: none; }
 
 /* ── The chosen stems ── */
 .bq-picked { flex: 0 0 auto; padding-top: 10px; }
@@ -1454,15 +1429,7 @@ body[data-step="studio"] #bqBuilder { padding: 0 20px 24px; }
   background: #f6faf9;
   border-left: 1px solid #edf3f1;
 }
-.bq-opt-back {
-  align-self: flex-start;
-  display: inline-flex; align-items: center; gap: 4px;
-  margin: 14px 18px 0; padding: 6px 6px 6px 2px;
-  border: 0; background: none; cursor: pointer;
-  font-family: Arial, Helvetica, sans-serif; font-size: 12.5px; font-weight: 700;
-  color: #2f6260;
-}
-.bq-opt-body { flex: 1 1 auto; min-height: 0; overflow-y: auto; padding: 4px 22px 20px; }
+.bq-opt-body { flex: 1 1 auto; min-height: 0; overflow-y: auto; padding: 20px 22px 20px; }
 .bq-pane .bq-title { text-align: left; font-size: 25px; margin: 2px 0 4px; }
 .bq-pane .bq-sub { text-align: left; font-size: 13px; color: #2f6260; margin: 0 0 16px; }
 .bq-pane .bq-control-label { display: block; margin: 0 0 8px; }
@@ -1478,6 +1445,16 @@ body[data-step="studio"] #bqBuilder { padding: 0 20px 24px; }
 .bq-studio .bq-flower-tile canvas { width: 100%; max-width: 84px; height: auto; }
 .bq-studio .bq-flower-tile .fname { font-size: 12.5px; line-height: 1.2; }
 .bq-studio .bq-flower-tile .fblurb { display: none; }
+/* THE MEANING UNDER EVERY NAME. Every flower here stands for something, and
+   that is half the reason to pick it, so it is read at the moment of choosing
+   rather than found afterwards. Two lines are reserved so a short meaning does
+   not leave its tile shorter than the rest of the row. */
+.bq-studio .bq-flower-tile .fmeaning {
+  display: flex; align-items: flex-start; justify-content: center;
+  min-height: 2.5em; margin-top: 1px;
+  font-size: 10.5px; line-height: 1.25; letter-spacing: 0.02em;
+  text-transform: none; color: #2f6260;
+}
 .bq-studio .bq-flower-tile.picked { background: var(--white); border-color: #cfe3de; }
 .bq-studio .bq-flower-tile.selected,
 .bq-studio .bq-foliage-tile.picked { border-color: var(--darkteal); background: #f3faf8; }
@@ -1555,9 +1532,6 @@ body[data-step="studio"] #bqBuilder { padding: 0 20px 24px; }
     box-shadow: 0 8px 22px rgba(29,100,102,0.12);
   }
   .bq-picked { display: none; }
-  /* No lettering behind the bouquet on a phone: at this width it ran under
-     the full size button and read as clutter rather than as a watermark. */
-  .bq-stage-mark { display: none; }
   .bq-studio .bq-stage-live canvas { max-width: calc((var(--stage-h) - 72px) * 0.8); }
   .bq-studio .bq-stage-note { width: min(100%, 320px); border-radius: 18px; }
   .bq-studio .bq-stage-note .bq-note-stage { max-width: calc((var(--stage-h) - 90px) * 0.72); }
@@ -1580,9 +1554,8 @@ body[data-step="studio"] #bqBuilder { padding: 0 20px 24px; }
   .bq-rail-ic svg { width: 16px; height: 16px; }
 
   .bq-options { order: 3; background: transparent; border: 0; }
-  .bq-opt-back { margin: 12px 12px 0; }
   /* 180 at the foot clears the fixed Done bar and the colour panel over it */
-  .bq-opt-body { overflow: visible; padding: 4px 16px 180px; }
+  .bq-opt-body { overflow: visible; padding: 16px 16px 180px; }
   .bq-pane .bq-title { font-size: 22px; }
   .bq-pane .bq-sub { font-size: 12.5px; }
 
@@ -1621,4 +1594,87 @@ body[data-step="studio"] #bqBuilder { padding: 0 20px 24px; }
   .bq-adjust.on .bq-adjust-name { grid-column: 1; grid-row: 1; }
   .bq-adjust.on .bq-adjust-hue { grid-column: 2; grid-row: 1; margin: 0; }
   .bq-adjust.on .bq-stepper { grid-column: 3; grid-row: 1; margin: 0; gap: 8px; }
+}
+
+/* ── Paper: the ribbon row, and Custom ──────────────────────────────────── */
+.bq-pane .bq-wrap-check { margin: 10px 0 18px; }
+.bq-ribbon-row { display: flex; flex-wrap: wrap; gap: 9px; margin-bottom: 18px; }
+.bq-ribbon-sw {
+  position: relative;
+  width: 32px; height: 32px; padding: 0; border-radius: 50%;
+  border: 0; cursor: pointer;
+  box-shadow: inset 0 0 0 1px rgba(29,100,102,0.22);
+  transition: transform 0.15s;
+}
+.bq-ribbon-sw.picked { box-shadow: inset 0 0 0 1px rgba(29,100,102,0.22), 0 0 0 2.5px var(--white), 0 0 0 4.5px var(--darkteal); }
+.bq-ribbon-sw:focus-visible { outline: 3px solid var(--darkteal); outline-offset: 3px; }
+@media (hover: hover) { .bq-ribbon-sw:not(.picked):hover { transform: scale(1.08); } }
+
+.bq-custom-toggle {
+  display: flex; align-items: center; justify-content: space-between;
+  width: 100%; padding: 12px 14px;
+  border: 1.5px solid #dcebe7; border-radius: 14px;
+  background: var(--white); cursor: pointer;
+  font-family: Arial, Helvetica, sans-serif; font-size: 13.5px; font-weight: 700;
+  color: var(--darkteal);
+}
+.bq-custom-toggle svg { transition: transform 0.2s; }
+.bq-custom-toggle[aria-expanded="true"] { border-radius: 14px 14px 0 0; border-bottom-color: transparent; }
+.bq-custom-toggle[aria-expanded="true"] svg { transform: rotate(180deg); }
+.bq-custom-paper {
+  display: flex; flex-direction: column; gap: 12px;
+  padding: 4px 14px 16px;
+  border: 1.5px solid #dcebe7; border-top: 0; border-radius: 0 0 14px 14px;
+  background: var(--white);
+}
+/* `hidden` loses to the `display: flex` above, the same trap as ever. */
+.bq-custom-paper[hidden] { display: none !important; }
+.bq-custom-paper .bq-swatch-grid { grid-template-columns: repeat(3, 1fr); }
+
+/* ── The step arrows: a phone thing ─────────────────────────────────────── */
+.bq-studio-arrow {
+  flex: 0 0 auto;
+  width: 42px; height: 42px; padding: 0; border-radius: 50%;
+  border: 1.5px solid rgba(29,100,102,0.28);
+  background: var(--white); color: var(--darkteal);
+  display: none; align-items: center; justify-content: center; cursor: pointer;
+}
+.bq-studio-arrow[hidden] { display: none !important; }
+
+/* ── The share button and its menu ──────────────────────────────────────── */
+.bq-share-wrap { position: relative; display: inline-flex; }
+.bq-share-btn { gap: 8px; flex: 0 0 auto; padding: 12px 26px; }
+.bq-share-btn svg { display: block; }
+.bq-share-menu {
+  position: absolute; left: 50%; bottom: calc(100% + 10px);
+  transform: translateX(-50%);
+  z-index: 50;
+  width: 230px; padding: 6px;
+  background: var(--white);
+  border: 1px solid rgba(29,100,102,0.14); border-radius: 16px;
+  box-shadow: 0 16px 40px rgba(29,100,102,0.22);
+  display: flex; flex-direction: column; gap: 2px;
+  text-align: left;
+}
+.bq-share-menu[hidden] { display: none !important; }
+.bq-share-menu .bq-share-icon {
+  width: 100%; height: auto; border-radius: 11px; border: 0;
+  justify-content: flex-start; gap: 12px;
+  padding: 10px 12px; background: none; box-shadow: none;
+  font-family: Arial, Helvetica, sans-serif; font-size: 14px; font-weight: 700;
+  color: var(--darkteal); text-decoration: none; cursor: pointer;
+}
+.bq-share-menu .bq-share-icon svg { width: 20px; height: 20px; flex: 0 0 auto; }
+@media (hover: hover) { .bq-share-menu .bq-share-icon:hover { background: #eef7f5; } }
+.bq-share-menu .bq-share-icon:focus-visible { outline: 3px solid var(--darkteal); outline-offset: -3px; }
+
+@media (max-width: 860px) {
+  .bq-studio-arrow { display: flex; }
+  .bq-opt-foot { gap: 8px; padding-left: 12px; padding-right: 12px; }
+  .bq-opt-foot .bq-done { margin-left: 0; padding: 11px 20px; }
+  .bq-sum { flex: 1 1 auto; }
+  .bq-sum strong { font-size: 14px; }
+  .bq-sum span { font-size: 12px; }
+  .bq-studio .bq-flower-tile .fmeaning { font-size: 10px; }
+  .bq-ribbon-row { gap: 8px; }
 }
