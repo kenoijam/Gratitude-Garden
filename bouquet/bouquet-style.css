@@ -1268,3 +1268,357 @@ button, a, [role="button"], summary, input[type="range"], label[for] {
   }
   #back-to-home svg { width: 16px !important; height: 16px !important; }
 }
+
+
+/* ===========================================================================
+   THE STUDIO
+   ===========================================================================
+   One screen for the whole digital bouquet, after two references: a florist's
+   bouquet builder on a laptop (a rail of tabs, the bouquet in the middle, the
+   options on the right, the chosen stems along the foot) and a character
+   customiser on a phone (the picture pinned across the top, the tabs under
+   it, a grid of plain tiles scrolling beneath). See THE STUDIO in
+   `bouquet-sketch.js` for how the old six steps became its five tabs.
+
+   AT THE END OF THE FILE, because the tiles, the grids, the buttons and the
+   preview boxes are all declared further up and at equal specificity the
+   later rule wins.
+
+   THE STUDIO FADES IN ON OPACITY ALONE, never a transform. Every other step
+   rises 10px as it arrives, and `animation-fill-mode: both` leaves a
+   `transform` applied afterwards, which makes the element the containing
+   block for anything `position: fixed` inside it. On a phone the Done bar and
+   the colour panel are fixed inside the studio, and under a transform they
+   would sit at the foot of the studio instead of the foot of the screen.
+   =========================================================================== */
+@keyframes bqFadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+body[data-step="studio"] #bqBuilder { padding: 0 20px 24px; }
+
+.bq-studio {
+  max-width: 1240px;
+  width: 100%;
+  margin: 70px auto 0;
+  grid-template-columns: 150px minmax(0, 1fr) 380px;
+  /* The whole studio is one screen tall and nothing in it scrolls the page:
+     the options panel scrolls inside itself. That is what keeps the bouquet
+     and the Done button on screen while a long list of papers is browsed. */
+  height: clamp(600px, calc(100vh - 94px), 880px);
+  background: var(--white);
+  border-radius: 28px;
+  box-shadow: 0 18px 50px rgba(29,100,102,0.16);
+  overflow: hidden;
+  animation: bqFadeIn 0.35s ease both;
+}
+.bq-studio.active { display: grid; }
+
+/* ── The rail ── */
+.bq-rail {
+  display: flex; flex-direction: column; justify-content: center; gap: 8px;
+  padding: 28px 12px;
+  border-right: 1px solid #edf3f1;
+}
+.bq-rail-tab {
+  display: flex; align-items: center; gap: 11px;
+  width: 100%; padding: 7px 8px; border: 0; border-radius: 16px;
+  background: none; cursor: pointer; text-align: left;
+  font-family: Arial, Helvetica, sans-serif; font-size: 13.5px; font-weight: 700;
+  color: #5b8784;
+  transition: color 0.15s, background 0.15s;
+}
+.bq-rail-ic {
+  flex: 0 0 auto;
+  width: 44px; height: 44px; border-radius: 50%;
+  border: 1.5px solid rgba(29,100,102,0.26);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--darkteal);
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+.bq-rail-ic svg { width: 22px; height: 22px; display: block; }
+.bq-rail-tab.on { color: var(--darkteal); }
+.bq-rail-tab.on .bq-rail-ic { background: var(--teal); border-color: var(--teal); color: var(--white); }
+@media (hover: hover) {
+  .bq-rail-tab:not(.on):hover { background: #f1f8f6; }
+}
+.bq-rail-tab:focus-visible { outline: 3px solid var(--darkteal); outline-offset: 2px; }
+
+/* ── The stage ──
+   `.bq-studio-stage`, never `.bq-stage`: that name already belongs to the
+   REVEAL, which caps it at 400px and at 240 on a phone, and borrowing it
+   shrank this band to 240 wide on a 375 screen. */
+.bq-studio-stage {
+  position: relative;
+  display: flex; flex-direction: column;
+  min-width: 0; min-height: 0;
+  padding: 18px 26px 16px;
+  background: linear-gradient(180deg, #f8fcfb 0%, #eef7f4 100%);
+}
+.bq-stage-art {
+  position: relative;
+  flex: 1 1 auto; min-height: 0;
+  display: flex; align-items: center; justify-content: center;
+}
+/* The florist reference sets its own name enormous and faint behind the
+   bouquet. It is the one piece of pure decoration here, and it is decoration
+   the page is already made of: the wordmark's own word, in the page's own
+   serif, at 7 percent. */
+.bq-stage-mark {
+  position: absolute; right: 3%; top: 50%;
+  transform: translateY(-50%);
+  writing-mode: vertical-rl;
+  font-family: 'Fraunces', 'Georgia', serif; font-weight: 600;
+  font-variation-settings: 'SOFT' 50, 'WONK' 0;
+  font-size: clamp(90px, 14vh, 150px); line-height: 1;
+  color: rgba(66,146,136,0.08);
+  pointer-events: none; user-select: none;
+}
+.bq-studio .bq-stage-live {
+  position: relative; z-index: 1;
+  width: 100%; height: 100%;
+  min-height: 0; padding: 0;
+  background: none; border: 0; border-radius: 0;
+}
+/* The bouquet is painted at a fixed 5:4, so its WIDTH is what has to be
+   capped to keep it inside the stage. The studio's height, less the stage's
+   padding and the chosen stems strip under it, times 0.8. */
+.bq-studio .bq-stage-live canvas {
+  max-width: min(430px, calc((clamp(600px, calc(100vh - 94px), 880px) - 190px) * 0.8));
+}
+.bq-studio .bq-stage-note {
+  position: relative; z-index: 1;
+  width: min(100%, 440px); height: 100%;
+  border-radius: 22px; border: 0;
+}
+.bq-studio .bq-stage-note .bq-note-stage {
+  max-width: min(320px, calc((clamp(600px, calc(100vh - 94px), 880px) - 230px) * 0.72));
+}
+.bq-studio[data-stage="note"] .bq-stage-live { display: none; }
+.bq-studio[data-stage="live"] .bq-stage-note { display: none; }
+/* Clear of the full size button in the stage's top right corner, which the
+   centred line otherwise ran underneath. */
+.bq-studio .bq-drag-hint { top: 10px; left: 50px; right: 50px; }
+
+.bq-studio .bq-stage-peek {
+  position: absolute; top: 0; right: 0; z-index: 4;
+  width: 40px; height: 40px; border-radius: 50%; padding: 0;
+  border: 1.5px solid rgba(29,100,102,0.22);
+  background: var(--white); color: var(--darkteal);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; box-shadow: 0 2px 8px rgba(29,100,102,0.12);
+}
+/* `hidden` loses to the `display: flex` above, the same trap as the foot bar. */
+.bq-studio .bq-stage-peek[hidden] { display: none !important; }
+.bq-studio .bq-stage-peek svg { width: 19px; height: 19px; display: block; }
+.bq-studio .bq-stage-peek:disabled { opacity: 0.35; cursor: not-allowed; }
+.bq-studio[data-stage="note"] .bq-stage-peek { display: none; }
+
+/* ── The chosen stems ── */
+.bq-picked { flex: 0 0 auto; padding-top: 10px; }
+.bq-picked-head {
+  font-family: Arial, Helvetica, sans-serif; font-size: 13px; font-weight: 700;
+  color: var(--darkteal); margin-bottom: 6px;
+}
+.bq-picked-head span { color: var(--teal); font-weight: 700; }
+.bq-picked-row {
+  display: flex; gap: 12px;
+  overflow-x: auto; scrollbar-width: thin;
+  padding: 8px 8px 6px 2px;
+}
+.bq-picked-chip {
+  position: relative; flex: 0 0 auto;
+  display: flex; align-items: center; gap: 9px;
+  padding: 5px 14px 5px 5px;
+  background: var(--white);
+  border: 1.5px solid #e1ece9; border-radius: 14px;
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+.bq-picked-chip.selected { border-color: var(--teal); }
+.bq-picked-chip:focus-visible { outline: 3px solid var(--darkteal); outline-offset: 2px; }
+.bq-picked-art { width: 52px; height: 44px; display: block; border-radius: 10px; background: #f1f8f6; }
+.bq-picked-txt { display: flex; flex-direction: column; gap: 1px; font-family: Arial, Helvetica, sans-serif; }
+.bq-picked-txt strong { font-size: 13px; color: var(--darkteal); }
+.bq-picked-txt span { font-size: 11.5px; color: #2f6260; }
+.bq-picked-x {
+  position: absolute; top: -7px; right: -7px;
+  width: 21px; height: 21px; border-radius: 50%; padding: 0;
+  border: 1.5px solid var(--teal); background: var(--white); color: var(--teal);
+  display: flex; align-items: center; justify-content: center; cursor: pointer;
+}
+.bq-picked-empty { margin: 8px 0; font-size: 0.82rem; color: #2f6260; }
+
+/* ── The options ── */
+.bq-options {
+  display: flex; flex-direction: column;
+  min-width: 0; min-height: 0;
+  background: #f6faf9;
+  border-left: 1px solid #edf3f1;
+}
+.bq-opt-back {
+  align-self: flex-start;
+  display: inline-flex; align-items: center; gap: 4px;
+  margin: 14px 18px 0; padding: 6px 6px 6px 2px;
+  border: 0; background: none; cursor: pointer;
+  font-family: Arial, Helvetica, sans-serif; font-size: 12.5px; font-weight: 700;
+  color: #2f6260;
+}
+.bq-opt-body { flex: 1 1 auto; min-height: 0; overflow-y: auto; padding: 4px 22px 20px; }
+.bq-pane .bq-title { text-align: left; font-size: 25px; margin: 2px 0 4px; }
+.bq-pane .bq-sub { text-align: left; font-size: 13px; color: #2f6260; margin: 0 0 16px; }
+.bq-pane .bq-control-label { display: block; margin: 0 0 8px; }
+
+/* THREE ACROSS, PLAIN TILES, the customiser's grid. A picture and a name and
+   nothing else; a chosen tile carries a dark outline and a stem count. */
+.bq-studio .bq-flower-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.bq-studio .bq-flower-tile {
+  background: var(--white);
+  border: 2px solid #e4eeeb; border-radius: 16px;
+  padding: 10px 4px 9px; gap: 3px;
+}
+.bq-studio .bq-flower-tile canvas { width: 100%; max-width: 84px; height: auto; }
+.bq-studio .bq-flower-tile .fname { font-size: 12.5px; line-height: 1.2; }
+.bq-studio .bq-flower-tile .fblurb { display: none; }
+.bq-studio .bq-flower-tile.picked { background: var(--white); border-color: #cfe3de; }
+.bq-studio .bq-flower-tile.selected,
+.bq-studio .bq-foliage-tile.picked { border-color: var(--darkteal); background: #f3faf8; }
+.bq-studio .bq-count-badge { top: 6px; right: 6px; width: 20px; height: 20px; font-size: 11px; }
+.bq-studio .bq-count-note { text-align: left; font-size: 0.8rem; margin-top: 12px; }
+
+/* ── The panel under the grid: one flower's colour and how many ── */
+.bq-adjust {
+  margin-top: 14px; padding: 12px 14px 14px;
+  background: var(--white);
+  border: 1.5px solid #e1ece9; border-radius: 16px;
+}
+.bq-adjust-top { display: flex; align-items: center; gap: 10px; }
+.bq-adjust-art { width: 50px; height: 42px; flex: 0 0 auto; display: block; border-radius: 10px; background: #f1f8f6; }
+.bq-adjust-name { display: flex; flex-direction: column; gap: 1px; min-width: 0; font-family: Arial, Helvetica, sans-serif; }
+.bq-adjust-name strong { font-size: 14px; color: var(--darkteal); }
+.bq-adjust-name span { font-size: 11px; color: #2f6260; text-transform: uppercase; letter-spacing: 0.03em; }
+.bq-adjust .bq-stepper { margin: 0 0 0 auto; }
+.bq-adjust-hue { display: flex; flex-direction: column; gap: 6px; margin-top: 12px; }
+.bq-adjust-empty { margin: 0; font-size: 0.82rem; color: #2f6260; }
+.bq-adjust:not(.on) .bq-adjust-top,
+.bq-adjust:not(.on) .bq-adjust-hue { display: none; }
+.bq-adjust.on .bq-adjust-empty { display: none; }
+
+.bq-pane .bq-wrap-controls { grid-template-columns: 1fr; gap: 16px; margin: 0; }
+.bq-pane .bq-swatch-grid { grid-template-columns: repeat(4, 1fr); gap: 10px; }
+.bq-letter-fields { margin-top: 20px; }
+
+/* ── The foot: what you have, and Done ── */
+.bq-opt-foot {
+  display: flex; align-items: center; gap: 12px;
+  padding: 14px 20px 16px;
+  border-top: 1px solid #e3eeeb;
+  background: #edf6f3;
+}
+.bq-sum { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.bq-sum strong {
+  font-family: 'Fraunces', 'Georgia', serif; font-weight: 600;
+  font-variation-settings: 'SOFT' 50, 'WONK' 0;
+  font-size: 17px; color: var(--darkteal);
+}
+.bq-sum span { font-size: 12.5px; color: #2f6260; }
+.bq-opt-foot .bq-done { flex: 0 0 auto; margin-left: auto; padding: 12px 28px; }
+/* Short of five stems Done is still pressable, and pressing it goes to the
+   flowers tab, so it reads as the next thing to do rather than as a locked
+   door. It is only dimmed. */
+.bq-opt-foot .bq-done.is-short { opacity: 0.62; box-shadow: none; }
+
+/* ── Phone: the customiser shape ─────────────────────────────────────────
+   The bouquet pinned across the top, the tabs pinned under it, the options
+   scrolling under both, and Done at the foot. Nothing scrolls inside
+   anything here: the page scrolls and the top two bands stay put. */
+@media (max-width: 860px) {
+  body[data-step="studio"] #bqBuilder { padding: 0; }
+  .bq-studio {
+    --stage-h: clamp(240px, 38vh, 330px);
+    max-width: none; height: auto; margin: 0;
+    border-radius: 0; box-shadow: none; background: transparent; overflow: visible;
+  }
+  /* `stretch` and a width on every band, said outright. Left to the flex
+     column the stage shrank to the bouquet inside it, 240 wide on a 375
+     screen, and read as a card floating at the top rather than a band. */
+  .bq-studio.active { display: flex; flex-direction: column; align-items: stretch; }
+  .bq-studio-stage, .bq-rail, .bq-options { width: 100%; }
+
+  .bq-studio-stage {
+    order: 1;
+    position: sticky; top: 0; z-index: 20;
+    height: var(--stage-h);
+    /* 58 at the top, because Home and the two corner icons are fixed over
+       the first 53px of the screen and would otherwise sit on the bouquet */
+    padding: 58px 16px 10px;
+    background: var(--white);
+    border-radius: 0 0 26px 26px;
+    box-shadow: 0 8px 22px rgba(29,100,102,0.12);
+  }
+  .bq-picked { display: none; }
+  /* No lettering behind the bouquet on a phone: at this width it ran under
+     the full size button and read as clutter rather than as a watermark. */
+  .bq-stage-mark { display: none; }
+  .bq-studio .bq-stage-live canvas { max-width: calc((var(--stage-h) - 72px) * 0.8); }
+  .bq-studio .bq-stage-note { width: min(100%, 320px); border-radius: 18px; }
+  .bq-studio .bq-stage-note .bq-note-stage { max-width: calc((var(--stage-h) - 90px) * 0.72); }
+  .bq-studio .bq-drag-hint { display: none; }
+
+  .bq-rail {
+    order: 2;
+    position: sticky; top: var(--stage-h); z-index: 19;
+    flex-direction: row; justify-content: space-between; gap: 0;
+    padding: 6px 8px 4px;
+    border: 0;
+    background: rgba(240,249,248,0.97);
+  }
+  .bq-rail-tab {
+    flex: 1 1 0; flex-direction: column; gap: 3px;
+    padding: 4px 2px; border-radius: 12px;
+    font-size: 11px; text-align: center;
+  }
+  .bq-rail-ic { width: 30px; height: 30px; }
+  .bq-rail-ic svg { width: 16px; height: 16px; }
+
+  .bq-options { order: 3; background: transparent; border: 0; }
+  .bq-opt-back { margin: 12px 12px 0; }
+  /* 180 at the foot clears the fixed Done bar and the colour panel over it */
+  .bq-opt-body { overflow: visible; padding: 4px 16px 180px; }
+  .bq-pane .bq-title { font-size: 22px; }
+  .bq-pane .bq-sub { font-size: 12.5px; }
+
+  .bq-opt-foot {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 40;
+    padding: 10px 16px calc(10px + env(safe-area-inset-bottom, 0px));
+    background: rgba(255,249,227,0.97);
+    border-top: 1.5px solid rgba(29,100,102,0.14);
+    box-shadow: 0 -4px 18px rgba(29,100,102,0.10);
+  }
+  .bq-sum strong { font-size: 15px; }
+
+  /* THE COLOUR AND THE COUNT RIDE ABOVE THE DONE BAR on a phone, once a flower
+     is selected. Under the grid they were a screen away from the tile that
+     had just been tapped, so picking a flower and then changing it meant
+     scrolling down and back up again for every flower. */
+  .bq-adjust.on {
+    position: fixed; left: 10px; right: 10px;
+    bottom: calc(68px + env(safe-area-inset-bottom, 0px));
+    z-index: 39; margin: 0;
+    padding: 9px 12px 11px;
+    box-shadow: 0 6px 24px rgba(29,100,102,0.20);
+  }
+  /* ONE ROW: the name, the colour slider, the count. At two rows with a
+     thumbnail and the meaning it stood 80px tall, and between it and the
+     pinned bouquet only a row and a half of tiles was left on screen. */
+  .bq-adjust.on {
+    display: grid; grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center; column-gap: 12px;
+    padding: 8px 10px 8px 14px;
+  }
+  .bq-adjust.on .bq-adjust-top { display: contents; }
+  .bq-adjust.on .bq-adjust-art,
+  .bq-adjust.on .bq-adjust-name span,
+  .bq-adjust.on .bq-adjust-hue .bq-control-sub { display: none; }
+  .bq-adjust.on .bq-adjust-name { grid-column: 1; grid-row: 1; }
+  .bq-adjust.on .bq-adjust-hue { grid-column: 2; grid-row: 1; margin: 0; }
+  .bq-adjust.on .bq-stepper { grid-column: 3; grid-row: 1; margin: 0; gap: 8px; }
+}

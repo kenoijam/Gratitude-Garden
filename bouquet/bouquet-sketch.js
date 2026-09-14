@@ -2117,7 +2117,7 @@ const TRACK_LABELS = {
 };
 /* Screens with no progress bar. The reveal hides its own chrome anyway;
    these are the ones that are not part of a track at all. */
-const CHROMELESS = ["mode", "template", "reveal"];
+const CHROMELESS = ["mode", "template", "reveal", "studio"];
 
 let track = "digital";
 let STEPS = TRACKS.digital;
@@ -2860,36 +2860,31 @@ function initFlowerGrid() {
     const tile = document.createElement("div");
     tile.className = "bq-flower-tile";
     tile.dataset.species = sp.id;
+    /* A PICTURE AND A NAME, like the customiser's grid. The stepper and the
+       colour slider used to sit on every one of the eight tiles, which made
+       each tile three times the height of its flower and held the grid to
+       two across on a phone. They are one panel under the grid now, for the
+       flower that is selected. */
+    tile.setAttribute("role", "button");
+    tile.setAttribute("tabindex", "0");
+    tile.setAttribute("aria-label", sp.name + ", " + sp.meaning);
     tile.innerHTML = `
       <span class="bq-count-badge" aria-hidden="true">0</span>
       <canvas></canvas>
       <span class="fname">${sp.name}</span>
-      <span class="fmeaning">${sp.meaning}</span>
-      <div class="bq-stepper">
-        <button type="button" class="bq-step-btn" data-act="minus" aria-label="Remove one ${sp.name}">&minus;</button>
-        <span class="bq-step-n">0</span>
-        <button type="button" class="bq-step-btn" data-act="plus" aria-label="Add one ${sp.name}">+</button>
-      </div>
-      <label class="bq-tile-hue">
-        <span class="bq-visually-hidden">${sp.name} colour</span>
-        <input type="range" class="gg-hue-slider" min="0" max="360" value="${sp.hue}"
-               aria-label="${sp.name} colour" />
-      </label>
     `;
-    tile.addEventListener("click", (e) => {
-      if (e.target.closest(".bq-tile-hue")) return;
-      const btn = e.target.closest(".bq-step-btn");
-      if (btn) { e.stopPropagation(); changeFlower(sp.id, btn.dataset.act === "plus" ? 1 : -1); return; }
-      changeFlower(sp.id, 1);
+    /* The first tap on a flower with no stems puts one in AND selects it. A
+       tap on a flower already in the bunch only selects it, so choosing a
+       rose to recolour never quietly adds another rose. */
+    const pick = () => {
+      studioPick = sp.id;
+      if (countOf(sp.id) === 0) changeFlower(sp.id, 1);
+      else syncStudio();
+    };
+    tile.addEventListener("click", pick);
+    tile.addEventListener("keydown", e => {
+      if (e.key === "Enter" || e.key === " ") { e.preventDefault(); pick(); }
     });
-
-    const slider = tile.querySelector(".bq-tile-hue input");
-    slider.addEventListener("input", () => {
-      state.hues[sp.id] = parseInt(slider.value, 10);
-      renderFlowerTile(tile.querySelector("canvas"), sp.id, hueFor(sp.id));
-      renderLivePreview();
-    });
-    slider.addEventListener("click", e => e.stopPropagation());
 
     grid.appendChild(tile);
     renderFlowerTile(tile.querySelector("canvas"), sp.id, hueFor(sp.id));
@@ -2917,14 +2912,9 @@ function syncFlowerGrid() {
   document.querySelectorAll("#flowerGrid .bq-flower-tile").forEach(tile => {
     const n = countOf(tile.dataset.species);
     tile.classList.toggle("picked", n > 0);
-    const hueWrap = tile.querySelector(".bq-tile-hue");
-    if (hueWrap) hueWrap.classList.toggle("on", n > 0);
-    tile.querySelector(".bq-step-n").textContent = n;
     const badge = tile.querySelector(".bq-count-badge");
     badge.textContent = n;
     badge.style.display = n > 0 ? "flex" : "none";
-    tile.querySelector('[data-act="plus"]').disabled = total >= MAX_FLOWERS;
-    tile.querySelector('[data-act="minus"]').disabled = n === 0;
   });
 
   const note = document.getElementById("selCount");
@@ -2943,6 +2933,7 @@ function syncFlowerGrid() {
     : `${total} stem${total === 1 ? "" : "s"}`);
   note.classList.toggle("ok", remaining <= 0);
   document.getElementById("toFoliageBtn").disabled = remaining > 0;
+  syncStudio();
 }
 
 function refreshFlowerTiles() {
@@ -3371,6 +3362,14 @@ function syncStickyBar(name) {
 })();
 
 function goToStep(name) {
+  /* The six digital building steps are tabs of one screen now. Every caller
+     that still names one, a template landing on "letter", the reveal's Back
+     naming "bg", is sent to the right tab rather than having to know. */
+  if (STUDIO_OF[name] && document.getElementById("bqStudio")) {
+    showStudio(STUDIO_OF[name]);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    return;
+  }
   currentStep = STEPS.indexOf(name);
   document.querySelectorAll("#bqBuilder .bq-step").forEach(el => el.classList.toggle("active", el.dataset.step === name));
   const isReveal = name === "reveal";
@@ -3708,6 +3707,370 @@ function onClick(id, fn) {
   if (el) el.addEventListener("click", fn);
 }
 
+/* ═══════════════════════════════════════════════════════════════════════════
+   THE STUDIO
+   ═══════════════════════════════════════════════════════════════════════════
+   The digital bouquet used to be six screens in a row, each a card holding a
+   picker beside a 280px preview. It is ONE screen now, laid out after two
+   references: a florist's bouquet builder on a laptop, and a character
+   customiser on a phone.
+
+     laptop   a rail of five tabs down the left, the bouquet large in the
+              middle with the chosen stems along its foot, and the options
+              for the current tab in a panel on the right ending in Done.
+     phone    the bouquet pinned across the top of the screen, the five tabs
+              under it, the options scrolling beneath, Done at the foot.
+
+   THE PICTURE IS NEVER OUT OF SIGHT, which is the point of the whole thing.
+   Before this, seeing what a change did meant scrolling back up, or on a
+   phone pressing an eye button, looking and dismissing, which is three
+   actions to answer a question that comes up on every pick.
+
+   IT IS BUILT BY MOVING THE EXISTING CONTROLS, not by rewriting them. Every
+   grid, slider, field, canvas and hidden Continue button keeps its id, its
+   listeners and its gating, so templates, share links, dragging, the paper
+   check and the reveal all run exactly the code they ran before. The six old
+   sections are removed once they are empty.
+
+   FIVE TABS, SEVEN OLD STEPS. The card colour and the letter share one tab,
+   since the letter is written ON the card, and the reveal stops being a step
+   and becomes the Done button. `goToStep` still accepts every old name and
+   turns it into the right tab, so nothing that calls it had to change.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+const STUDIO_TABS = [
+  { id: "flowers", label: "Flowers",
+    icon: '<circle cx="12" cy="12" r="2.4"/><path d="M12 9.6c-1.6-2.9-.9-5.6 0-6.6.9 1 1.6 3.7 0 6.6zM14.3 11.3c2.3-2.4 5.1-2.5 6.3-1.9-.5 1.3-2.7 3.1-6.3 1.9zM13.4 14.2c3.2.8 4.6 3.2 4.6 4.6-1.4.2-3.9-.9-4.6-4.6zM10.6 14.2c-.7 3.7-3.2 4.8-4.6 4.6 0-1.4 1.4-3.8 4.6-4.6zM9.7 11.3C6.1 12.5 3.9 10.7 3.4 9.4c1.2-.6 4-.5 6.3 1.9z"/>' },
+  { id: "foliage", label: "Foliage",
+    icon: '<path d="M5 19C5 10 11 4.5 19.5 4.5 19.5 13 14 19 5 19z"/><path d="M5 19l9-9"/>' },
+  { id: "wrap", label: "Paper",
+    icon: '<path d="M4.5 6.5 12 21l7.5-14.5"/><path d="M4.5 6.5c2.5 1.6 12.5 1.6 15 0"/><path d="M8.3 13.8h7.4"/>' },
+  { id: "card", label: "Card",
+    icon: '<rect x="3.5" y="6" width="17" height="12.5" rx="2"/><path d="M4 7l8 6 8-6"/>' },
+  { id: "bg", label: "Backdrop",
+    icon: '<rect x="3.5" y="4.5" width="17" height="15" rx="2.2"/><circle cx="9" cy="9.6" r="1.8"/><path d="M4 17l5.2-4.6 3.4 3 2.6-2.2L20 17.2"/>' }
+];
+/* Every old step name, and the tab it now lives on. */
+const STUDIO_OF = { flowers: "flowers", foliage: "foliage", wrap: "wrap",
+                    card: "card", letter: "card", bg: "bg" };
+
+let studioTab = "flowers";
+/* The species whose colour and quantity the panel under the grid is showing.
+   Picking a tile selects it; only a species with no stems yet is also put in
+   the bunch by that tap, so choosing a rose to recolour it never quietly adds
+   a third rose. */
+let studioPick = null;
+
+/* A tiny element maker for the studio. Named for it, because the bouquet page
+   also loads the shared account and journal scripts. */
+function studioEl(tag, cls, html) {
+  const n = document.createElement(tag);
+  if (cls) n.className = cls;
+  if (html != null) n.innerHTML = html;
+  return n;
+}
+
+function buildStudio() {
+  const builder = document.getElementById("bqBuilder");
+  if (!builder || document.getElementById("bqStudio")) return;
+  const sec = name => builder.querySelector('.bq-step[data-step="' + name + '"]');
+
+  const studio = studioEl("section", "bq-step bq-studio");
+  studio.id = "bqStudio";
+  studio.dataset.step = "studio";
+
+  /* ── the rail ── */
+  const rail = studioEl("nav", "bq-rail");
+  rail.setAttribute("aria-label", "Parts of the bouquet");
+  rail.setAttribute("role", "tablist");
+  STUDIO_TABS.forEach(t => {
+    const b = studioEl("button", "bq-rail-tab",
+      '<span class="bq-rail-ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" ' +
+      'stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">' +
+      t.icon + '</svg></span><span class="bq-rail-lb">' + t.label + '</span>');
+    b.type = "button";
+    b.dataset.tab = t.id;
+    b.setAttribute("role", "tab");
+    b.addEventListener("click", () => showStudio(t.id));
+    rail.appendChild(b);
+  });
+
+  /* ── the stage ── */
+  const stage = studioEl("div", "bq-studio-stage");
+  const art = studioEl("div", "bq-stage-art");
+  art.appendChild(studioEl("span", "bq-stage-mark", "Bouquet")).setAttribute("aria-hidden", "true");
+  const holder = document.getElementById("bqPreviewHolder");
+  const canvas = document.getElementById("previewCanvas");
+  if (holder) { holder.classList.add("bq-stage-live"); art.appendChild(holder); }
+
+  /* The card and backdrop tabs show the reveal in miniature: the bouquet,
+     its card tucked in, on the backdrop. That box already exists on the card
+     step and `refreshNotePreviews` already keeps it current. */
+  const cardSec = sec("card");
+  const note = cardSec ? cardSec.querySelector("[data-note-preview]") : null;
+  if (note) { note.classList.add("bq-stage-note"); art.appendChild(note); }
+
+  const peek = document.getElementById("bqPeekBtn");
+  if (peek) { peek.classList.add("bq-stage-peek"); art.appendChild(peek); }
+  stage.appendChild(art);
+
+  const picked = studioEl("div", "bq-picked");
+  picked.innerHTML = '<div class="bq-picked-head">Chosen stems <span id="bqPickedN">0</span></div>' +
+                     '<div class="bq-picked-row" id="bqPickedRow"></div>';
+  picked.addEventListener("click", e => {
+    const x = e.target.closest(".bq-picked-x");
+    const chip = e.target.closest(".bq-picked-chip");
+    if (x && chip) { removeSpecies(chip.dataset.species); return; }
+    if (chip) { studioPick = chip.dataset.species; showStudio("flowers"); syncStudio(); }
+  });
+  stage.appendChild(picked);
+
+  /* ── the options ── */
+  const opts = studioEl("aside", "bq-options");
+  const back = studioEl("button", "bq-opt-back",
+    '<svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.9" ' +
+    'stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 3 5 8l5 5"/></svg>Templates');
+  back.type = "button";
+  back.addEventListener("click", () => { cameFromTemplate = false; goToStep("template"); });
+  const body = studioEl("div", "bq-opt-body");
+  body.id = "bqOptBody";
+
+  const pane = (id, title, sub) => {
+    const p = studioEl("div", "bq-pane");
+    p.dataset.pane = id;
+    p.setAttribute("role", "tabpanel");
+    const h = studioEl("h1", "bq-title"); h.textContent = title;
+    const s = studioEl("p", "bq-sub"); s.textContent = sub;
+    p.appendChild(h); p.appendChild(s);
+    body.appendChild(p);
+    return p;
+  };
+
+  const pFlowers = pane("flowers", "Flowers",
+    "Tap a flower to add it, then set its colour and how many underneath. Five stems at least.");
+  pFlowers.appendChild(document.getElementById("flowerGrid"));
+  const adjust = studioEl("div", "bq-adjust");
+  adjust.id = "bqAdjust";
+  adjust.innerHTML =
+    '<div class="bq-adjust-top">' +
+      '<canvas class="bq-adjust-art" aria-hidden="true"></canvas>' +
+      '<div class="bq-adjust-name"><strong></strong><span></span></div>' +
+      '<div class="bq-stepper" role="group" aria-label="How many">' +
+        '<button type="button" class="bq-step-btn" data-act="minus" aria-label="One fewer">&minus;</button>' +
+        '<span class="bq-step-n">0</span>' +
+        '<button type="button" class="bq-step-btn" data-act="plus" aria-label="One more">+</button>' +
+      '</div>' +
+    '</div>' +
+    '<label class="bq-adjust-hue"><span class="bq-control-sub">Colour</span>' +
+      '<input type="range" class="gg-hue-slider" min="0" max="360" step="1"></label>' +
+    '<p class="bq-adjust-empty">Tap a flower above to choose its colour and how many.</p>';
+  adjust.addEventListener("click", e => {
+    const b = e.target.closest(".bq-step-btn");
+    if (b && studioPick) changeFlower(studioPick, b.dataset.act === "plus" ? 1 : -1);
+  });
+  adjust.querySelector("input").addEventListener("input", e => {
+    if (!studioPick) return;
+    state.hues[studioPick] = parseInt(e.target.value, 10);
+    const tile = document.querySelector('#flowerGrid .bq-flower-tile[data-species="' + studioPick + '"]');
+    if (tile) renderFlowerTile(tile.querySelector("canvas"), studioPick, hueFor(studioPick));
+    renderLivePreview();
+    syncStudio();
+  });
+  pFlowers.appendChild(adjust);
+  const selCount = document.getElementById("selCount");
+  if (selCount) pFlowers.appendChild(selCount);
+
+  const fol = sec("foliage");
+  const pFol = pane("foliage", "Foliage", "The green your flowers sit among. Pick one, or two to mix them.");
+  pFol.appendChild(document.getElementById("foliageGrid"));
+  const folCount = document.getElementById("foliageCount");
+  if (folCount) pFol.appendChild(folCount);
+
+  const wrapSec = sec("wrap");
+  const pWrap = pane("wrap", "Paper", "The sleeve your flowers sit inside. Choose a paper and a material, or mix your own colour.");
+  const wrapCtl = wrapSec ? wrapSec.querySelector(".bq-wrap-controls") : null;
+  if (wrapCtl) pWrap.appendChild(wrapCtl);
+
+  const pCard = pane("card", "Card", "The note tucked into the bouquet. Choose its colour, then write what it says.");
+  const cardLabel = studioEl("span", "bq-control-label", "Card colour");
+  pCard.appendChild(cardLabel);
+  pCard.appendChild(document.getElementById("cardGrid"));
+  const letterSec = sec("letter");
+  const fields = letterSec ? letterSec.querySelectorAll(".bq-field") : [];
+  const letterBox = studioEl("div", "bq-letter-fields");
+  fields.forEach(f => letterBox.appendChild(f));
+  pCard.appendChild(letterBox);
+  /* The card on the stage opens while the letter is being typed, so the words
+     can be read as they go down, and folds shut again once you leave it. */
+  letterBox.addEventListener("focusin", () => { if (note) note.dataset.noteMode = "open"; refreshNotePreviews(false); });
+  letterBox.addEventListener("focusout", () => {
+    setTimeout(() => {
+      if (note && !letterBox.contains(document.activeElement)) note.dataset.noteMode = "closed";
+    }, 0);
+  });
+
+  const pBg = pane("bg", "Backdrop", "The scene your bouquet is revealed against.");
+  pBg.appendChild(document.getElementById("bgGrid"));
+
+  const foot = studioEl("div", "bq-opt-foot");
+  foot.innerHTML =
+    '<div class="bq-sum"><strong>Your bouquet</strong><span id="bqSumLine"></span></div>' +
+    '<button type="button" class="bq-btn bq-done" id="bqDone">Done</button>';
+  foot.querySelector("#bqDone").addEventListener("click", () => {
+    if (state.flowers.length < MIN_FLOWERS) { showStudio("flowers"); return; }
+    goToStep("reveal");
+  });
+
+  opts.appendChild(back);
+  opts.appendChild(body);
+  opts.appendChild(foot);
+
+  studio.appendChild(rail);
+  studio.appendChild(stage);
+  studio.appendChild(opts);
+
+  /* The old Continue and Back buttons are still read and gated by the code
+     that ran them, so they are kept, out of sight, rather than deleted. */
+  const legacy = studioEl("div", "bq-legacy-nav");
+  legacy.hidden = true;
+  ["flowers", "foliage", "wrap", "card", "letter", "bg"].forEach(n => {
+    const s = sec(n);
+    if (!s) return;
+    s.querySelectorAll(".bq-nav").forEach(nav => legacy.appendChild(nav));
+    s.remove();
+  });
+  studio.appendChild(legacy);
+
+  const tpl = sec("template");
+  if (tpl && tpl.nextSibling) builder.insertBefore(studio, tpl.nextSibling);
+  else builder.appendChild(studio);
+
+  if (canvas) attachBloomDrag(canvas);
+}
+
+function showStudio(tab) {
+  if (!STUDIO_OF[tab] && !STUDIO_TABS.some(t => t.id === tab)) tab = "flowers";
+  studioTab = tab;
+  const studio = document.getElementById("bqStudio");
+  if (!studio) return;
+
+  document.querySelectorAll("#bqBuilder .bq-step").forEach(s => s.classList.toggle("active", s === studio));
+  document.getElementById("bqBuilder").style.display = "flex";
+  document.getElementById("bqProgress").style.display = "none";
+  document.getElementById("bqWordmark").style.display = "none";
+  document.getElementById("bqRevealWrap").classList.remove("active");
+  document.body.dataset.step = "studio";
+  document.body.dataset.tab = tab;
+  currentStep = 0;
+
+  studio.querySelectorAll(".bq-rail-tab").forEach(b => {
+    const on = b.dataset.tab === tab;
+    b.classList.toggle("on", on);
+    b.setAttribute("aria-selected", on ? "true" : "false");
+  });
+  studio.querySelectorAll(".bq-pane").forEach(p => { p.hidden = p.dataset.pane !== tab; });
+
+  const noteStage = tab === "card" || tab === "bg";
+  studio.dataset.stage = noteStage ? "note" : "live";
+  const body = document.getElementById("bqOptBody");
+  if (body) body.scrollTop = 0;
+
+  syncStickyBar("studio");
+  if (tab === "wrap") refreshWrapStep();
+  if (noteStage) refreshNotePreviews(true);
+  else renderLivePreview();
+  syncStudio();
+}
+
+function removeSpecies(id) {
+  state.flowers = state.flowers.filter(f => f !== id);
+  syncFlowerGrid();
+  renderLivePreview();
+}
+
+/* Everything on the studio that describes the bouquet as a whole: which tile
+   is selected, the panel under the grid, the chosen stems, the summary and
+   whether Done can be pressed. Called whenever the flowers change. */
+function syncStudio() {
+  if (!document.getElementById("bqStudio")) return;
+  /* After a template nothing has been tapped yet, so the panel under the grid
+     starts on the first flower in the bunch rather than blank. A flower taken
+     down to none STAYS selected, so a plus can bring it straight back. */
+  if (!studioPick && state.flowers.length) studioPick = state.flowers[0];
+
+  document.querySelectorAll("#flowerGrid .bq-flower-tile").forEach(t =>
+    t.classList.toggle("selected", t.dataset.species === studioPick));
+
+  const adjust = document.getElementById("bqAdjust");
+  if (adjust) {
+    const meta = studioPick ? SPECIES_MAP[studioPick] : null;
+    adjust.classList.toggle("on", !!meta);
+    if (meta) {
+      adjust.querySelector(".bq-adjust-name strong").textContent = meta.name;
+      adjust.querySelector(".bq-adjust-name span").textContent = meta.meaning;
+      const n = countOf(studioPick);
+      adjust.querySelector(".bq-step-n").textContent = n;
+      adjust.querySelector('[data-act="minus"]').disabled = n === 0;
+      adjust.querySelector('[data-act="plus"]').disabled = state.flowers.length >= MAX_FLOWERS;
+      const hue = adjust.querySelector("input");
+      if (document.activeElement !== hue) hue.value = hueFor(studioPick);
+      hue.setAttribute("aria-label", meta.name + " colour");
+      renderFlowerTile(adjust.querySelector(".bq-adjust-art"), studioPick, hueFor(studioPick));
+    }
+  }
+
+  const row = document.getElementById("bqPickedRow");
+  if (row) {
+    const order = [];
+    state.flowers.forEach(id => { if (order.indexOf(id) < 0) order.push(id); });
+    row.innerHTML = "";
+    if (!order.length) row.appendChild(studioEl("p", "bq-picked-empty", "Nothing chosen yet."));
+    order.forEach(id => {
+      const meta = SPECIES_MAP[id];
+      if (!meta) return;
+      const chip = studioEl("div", "bq-picked-chip" + (id === studioPick ? " selected" : ""));
+      chip.dataset.species = id;
+      chip.setAttribute("role", "button");
+      chip.setAttribute("tabindex", "0");
+      chip.setAttribute("aria-label", meta.name + ", " + countOf(id));
+      const cv = studioEl("canvas", "bq-picked-art");
+      chip.appendChild(cv);
+      const txt = studioEl("div", "bq-picked-txt");
+      txt.appendChild(studioEl("strong")).textContent = meta.name;
+      txt.appendChild(studioEl("span")).textContent = "Qty " + countOf(id);
+      chip.appendChild(txt);
+      const x = studioEl("button", "bq-picked-x",
+        '<svg viewBox="0 0 12 12" width="10" height="10" aria-hidden="true"><path d="M3 3l6 6M9 3l-6 6" ' +
+        'stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>');
+      x.type = "button";
+      x.setAttribute("aria-label", "Take every " + meta.name + " out");
+      chip.appendChild(x);
+      row.appendChild(chip);
+      renderFlowerTile(cv, id, hueFor(id));
+    });
+    const n = document.getElementById("bqPickedN");
+    if (n) n.textContent = "(" + state.flowers.length + ")";
+  }
+
+  const total = state.flowers.length;
+  const peek = document.getElementById("bqPeekBtn");
+  if (peek) { peek.hidden = false; peek.disabled = total === 0; }
+  const sum = document.getElementById("bqSumLine");
+  if (sum) {
+    const fol = (state.foliages || []).filter(f => f !== "none");
+    sum.textContent = total < MIN_FLOWERS
+      ? total + " of " + MIN_FLOWERS + " stems"
+      : total + " stems" + (fol.length ? ", " + fol.length + " foliage" : "");
+  }
+  const done = document.getElementById("bqDone");
+  if (done) {
+    const short = total < MIN_FLOWERS;
+    done.classList.toggle("is-short", short);
+    done.setAttribute("aria-disabled", short ? "true" : "false");
+    done.textContent = short ? "Add " + (MIN_FLOWERS - total) + " more" : "Done";
+  }
+}
+
 function initNav() {
   /* the fork, and the way back to it */
   onClick("backToModeFromTemplate", () => goToStep("mode"));
@@ -3759,8 +4122,12 @@ function initResize() {
     if (document.getElementById("bqRevealWrap").classList.contains("active")) {
       drawFinalBouquet();
     }
-    if (STEPS[currentStep] === "flowers") renderLivePreview();
-    if (["card", "letter", "bg"].includes(STEPS[currentStep])) refreshNotePreviews(true);
+    /* The studio's stage is sized from the viewport, so a phone's address
+       bar sliding away changes the width it should be painted at. */
+    if (document.body.dataset.step === "studio") {
+      if (studioTab === "card" || studioTab === "bg") refreshNotePreviews(true);
+      else renderLivePreview();
+    }
   };
   const debounced = () => { clearTimeout(resizeTimer); resizeTimer = setTimeout(rerender, 150); };
   window.addEventListener("resize", debounced);
@@ -3794,6 +4161,10 @@ function boot() {
     return;
   }
 
+  /* Before any grid is filled or any canvas measured: it moves the controls
+     into their tabs, and a canvas painted in one box and moved into a box of
+     a different width would have to be painted again. */
+  buildStudio();
   initFlowerGrid();
   initFoliageGrid();
   initWrapStep();

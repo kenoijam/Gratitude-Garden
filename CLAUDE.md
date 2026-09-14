@@ -339,6 +339,20 @@ The first screen is a fork, not a step. `TRACKS` holds two step lists and `STEPS
 - **The template canvas is capped at 140px wide, and that is arithmetic not taste.** `renderBouquetCanvas` takes its height from `clientWidth` at a fixed 5:4, so a 300px column paints a 375px tall bouquet and three rows of those run the card past 1300px.
 - **They are painted on ARRIVAL, not at boot.** A canvas inside a step that is still `display: none` measures zero, the same rule the note previews already follow.
 
+#### The digital builder is ONE SCREEN: the studio
+
+**Much of the bouquet section above describes six separate step screens with a 280px preview column. That structure is gone from the running page.** The markup still carries the six sections, and `buildStudio()` in `bouquet-sketch.js` MOVES their controls into one `#bqStudio` screen at boot and then removes the empty sections. The notes above about each control (the paper check, the swatch hairline, foliage mixing, the note preview modes) all still hold; only where they sit changed.
+
+- **Laptop is the Floret reference**: a rail of five tabs on the left, the bouquet large in the middle with the chosen stems along its foot, the options for that tab on the right ending in a Done button. The studio is one screen tall and the options panel scrolls inside itself.
+- **Phone is the Humation customiser reference**: the bouquet pinned across the top (`--stage-h`, 38vh), the tabs pinned under it, the options scrolling beneath, Done fixed at the foot, and the selected flower's colour and count in a one row panel fixed just above Done.
+- **Five tabs for seven old steps.** Card colour and the letter share the Card tab; the reveal is the Done button. `goToStep` still accepts every old name and `STUDIO_OF` maps it to a tab, so a template landing on `"letter"` and the reveal's Back naming `"bg"` work unchanged.
+- **Everything was MOVED, nothing rewritten.** Every grid, field and canvas keeps its id and listeners. The old Continue and Back buttons are kept inside a hidden `.bq-legacy-nav`, because the gating code still reads and sets their `disabled`. Delete them and several `getElementById(...).addEventListener` calls in `initNav` throw.
+- **A flower tile is a picture and a name.** The stepper and per tile colour slider moved to one `#bqAdjust` panel for the selected flower (`studioPick`). The first tap on a flower with no stems adds one and selects it; a tap on a flower already in the bunch only selects it, so choosing a rose to recolour never adds a rose.
+- **The studio stage is `.bq-studio-stage`, never `.bq-stage`.** That name belongs to the reveal, which caps it at 400px and at 240 on a phone; borrowing it shrank the phone band to 240 wide.
+- **The studio fades in on OPACITY ONLY.** Every other step uses `bqFadeUp`, whose fill mode leaves a `transform` applied, and a transformed ancestor becomes the containing block for `position: fixed`. The phone's Done bar and colour panel are fixed inside the studio and would land at the foot of the studio instead of the screen.
+- **The physical track is untouched** and still uses its section cards and numbered progress dots. `#bqProgress` is hidden on the studio (`CHROMELESS` includes `"studio"`).
+- **The blob shapes and flat colour per step from the skincare and honey references were tried and taken out.** Those references are for the LANDING PAGE, later. The builder follows the florist and customiser references only.
+
 #### The garden cursor
 
 A flat blue five petalled flower at rest, shrinking to a sparkle over anything clickable. It is an inline SVG data URI so no image file is added. The full account is under "`garden-cursor.js` owns the chrome every page shares" below; the thing to know here is that every rule it writes carries `!important`, so a `cursor: pointer` added anywhere in this page's stylesheet will simply not take.
