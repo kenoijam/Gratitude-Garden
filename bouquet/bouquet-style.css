@@ -1597,7 +1597,6 @@ body[data-step="studio"] #bqBuilder { padding: 0 20px 24px; }
 }
 
 /* ── Paper: the ribbon row, and Custom ──────────────────────────────────── */
-.bq-pane .bq-wrap-check { margin: 10px 0 18px; }
 .bq-ribbon-row { display: flex; flex-wrap: wrap; gap: 9px; margin-bottom: 18px; }
 .bq-ribbon-sw {
   position: relative;
@@ -1677,4 +1676,116 @@ body[data-step="studio"] #bqBuilder { padding: 0 20px 24px; }
   .bq-sum span { font-size: 12px; }
   .bq-studio .bq-flower-tile .fmeaning { font-size: 10px; }
   .bq-ribbon-row { gap: 8px; }
+}
+
+/* ── Two columns of wide tiles: flowers and foliage ─────────────────────────
+   Eight tiles three across left a gap at the end of the last row. Two across
+   they fill four rows exactly, and laid out WIDE, the picture beside the
+   words, a row stays short enough that a phone still shows about three of
+   them under the pinned bouquet. The meaning, or the foliage's own note, gets
+   the width to sit on one or two lines. */
+.bq-studio .bq-flower-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.bq-studio .bq-flower-tile {
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr);
+  grid-template-rows: auto auto;
+  column-gap: 8px; row-gap: 1px;
+  align-items: center; align-content: center;
+  /* ONE HEIGHT FOR EVERY TILE, set rather than left to the words. Left to
+     size itself a tile followed its note, and "Simple pointed leaves" wrapped
+     to three lines where "Round red clusters" took two, so the rows came out
+     70, 82 and 96 tall. The name is held to one line and the note to two. */
+  height: 70px;
+  padding: 8px 10px 8px 8px;
+  text-align: left;
+}
+/* The picture is drawn in a 100 by 84 box with a lot of clear margin round the
+   bloom, so shown at the 42px its column has, the flower itself came out about
+   25px across. The canvas is drawn 62px wide and allowed to spill 10px either
+   side into the tile's padding and the gap, more of it on the text side so a
+   wide bloom does not sit on the tile's own border; that margin is transparent, so the
+   bloom is half as large again in exactly the same column. */
+.bq-studio .bq-flower-tile canvas {
+  grid-column: 1; grid-row: 1 / 3;
+  width: 62px; max-width: none; height: auto; margin: 0 -14px 0 -6px;
+  pointer-events: none;
+}
+/* 13px, not 13.5, measured: "Baby's breath" is the longest name and at 13.5 it
+   ran four pixels past the 91px the words have and was cut to "Baby's br". */
+.bq-studio .bq-flower-tile .fname {
+  grid-column: 2; grid-row: 1; align-self: end;
+  font-size: 13px; line-height: 1.2;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.bq-studio .bq-flower-tile .fmeaning,
+.bq-studio .bq-foliage-tile .fblurb {
+  grid-column: 2; grid-row: 2; align-self: start;
+  display: block; min-height: 0; margin: 0;
+  font-size: 11px; line-height: 1.3; letter-spacing: 0;
+  text-transform: none; text-align: left; color: #2f6260;
+  overflow: hidden;
+  display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2;
+}
+/* The count sits ON the corner rather than inside it, so it takes no width
+   from the words. */
+.bq-studio .bq-count-badge { top: -7px; right: -7px; box-shadow: 0 0 0 2px var(--white); }
+.bq-studio .bq-flower-grid { padding: 7px 7px 0 0; margin-right: -7px; }
+
+/* THE SAME TILE EVERYWHERE. Papers, materials, cards and backdrops already
+   fill their rows with no gap, so they keep their counts, but they take the
+   same corner, the same border weight and the same dark outline when chosen
+   as the flower tiles, so the five tabs read as one set of controls. */
+.bq-studio .bq-swatch { border-radius: 14px; border-width: 2px; }
+.bq-studio .bq-swatch.picked { border-color: var(--darkteal); }
+.bq-studio .bq-flower-tile { border-radius: 14px; }
+
+/* ── The reveal: one row of buttons ─────────────────────────────────────── */
+.bq-share-panel { gap: 10px; }
+.bq-share-panel #bqBackNav { margin: 0; padding: 0; max-width: none; display: inline-flex; }
+/* The reveal's column is 480 wide, which four buttons in a row do not fit;
+   they wrapped to two rows on a laptop. The column widens and the bouquet
+   inside it keeps its own 400px cap. */
+.bq-reveal-inner { max-width: 660px; }
+/* ONE HEIGHT. The outlined buttons carry a 2px border the filled ones do not,
+   so with the same padding they stood 4px taller in the same row. */
+.bq-share-panel .bq-btn,
+.bq-share-panel .bq-btn-outline,
+.bq-share-panel .bq-btn-ghost {
+  flex: 0 0 auto; box-sizing: border-box;
+  height: 46px; padding: 0 22px;
+}
+.bq-friend-btn { gap: 8px; }
+.bq-friend-btn svg { display: block; flex: 0 0 auto; }
+
+@media (max-width: 860px) {
+  /* DONE ON THE LAST TAB ONLY. Before that the bar is Previous, the summary
+     and Next, so the way forward on every other step is the next step. */
+  .bq-studio[data-last="0"] .bq-opt-foot .bq-done { display: none; }
+  .bq-studio .bq-flower-tile { height: 66px; padding: 7px 8px 7px 7px; column-gap: 7px; }
+  .bq-studio .bq-flower-tile canvas { width: 60px; margin: 0 -13px 0 -5px; }
+  .bq-studio .bq-flower-tile .fmeaning,
+  .bq-studio .bq-foliage-tile .fblurb { font-size: 10.5px; }
+}
+
+@media (max-width: 560px) {
+  /* Four buttons do not fit one row on a phone, so they make two even rows:
+     the two ways of sending on top, Back and Start over under them. */
+  /* `renderFinal` sets `display` on this panel INLINE, flex for the sender and
+     none for somebody who received the bouquet. So the grid is applied with
+     `!important` only while it is not set to none, or a recipient would be
+     shown the sender's Share and Start over buttons. */
+  .bq-share-panel:not([style*="none"]) { display: grid !important; grid-template-columns: 1fr 1fr; gap: 8px; width: 100%; }
+  .bq-share-panel .bq-share-wrap { order: 1; }
+  .bq-share-panel .bq-friend-btn { order: 2; }
+  .bq-share-panel #bqBackNav { order: 3; }
+  .bq-share-panel #startOverBtn { order: 4; }
+  .bq-share-panel .bq-share-wrap,
+  .bq-share-panel .bq-share-btn,
+  .bq-share-panel #bqBackNav,
+  .bq-share-panel #bqBackNav .bq-btn-ghost,
+  .bq-share-panel .bq-btn,
+  .bq-share-panel .bq-btn-outline { width: 100%; justify-content: center; }
+  .bq-share-panel .bq-btn,
+  .bq-share-panel .bq-btn-outline,
+  .bq-share-panel .bq-btn-ghost { padding: 0 10px; font-size: 0.88rem; }
 }

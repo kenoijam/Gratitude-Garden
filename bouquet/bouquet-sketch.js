@@ -3589,13 +3589,23 @@ function initSendToFriend() {
     msg.textContent = text;
   }
 
+  /* SEND TO A FRIEND IS ITS OWN BUTTON AND IT IS ALWAYS THERE, whenever the
+     site has accounts at all. It used to hide unless you were signed in AND
+     had a friend, which meant nobody could discover the feature existed. Now
+     the button decides what a press means: signed out opens sign in, no
+     friends yet opens the friends panel to add one, and only then the send
+     dialog. The phone's own share sheet cannot reach friends on this site,
+     which is why this is not a row inside Share. */
+  let friendCount = 0;
   function refresh() {
     const acc = window.GardenAccount;
-    if (!acc.isLive() || !acc.user()) { btn.style.display = "none"; box.style.display = "none"; return; }
+    if (!acc.isLive()) { btn.style.display = "none"; box.style.display = "none"; return; }
+    btn.style.display = "";
+    if (!acc.user()) { friendCount = 0; return; }
     acc.friends().then(data => {
       const list = data.friends || [];
-      if (!list.length) { btn.style.display = "none"; box.style.display = "none"; return; }
-      btn.style.display = "";
+      friendCount = list.length;
+      if (!list.length) { box.style.display = "none"; return; }
       pick.innerHTML = "";
       list.forEach(f => {
         const o = document.createElement("option");
@@ -3607,6 +3617,9 @@ function initSendToFriend() {
   }
 
   btn.addEventListener("click", () => {
+    const acc = window.GardenAccount;
+    if (!acc.user()) { acc.openSignIn(); return; }
+    if (!friendCount) { acc.openFriends(); return; }
     box.style.display = box.style.display === "none" ? "" : "none";
     say("", "");
     showForm(true);          /* so a second bouquet does not open on the receipt */
@@ -3759,20 +3772,13 @@ function buildShareMenu() {
   const rows = [
     ["copyLinkBtn", "Copy link"],
     ["waShareBtn", "WhatsApp"],
-    ["emailShareBtn", "Email"],
-    ["sendFriendBtn", "Send to a friend"]
+    ["emailShareBtn", "Email"]
   ];
   rows.forEach(([id, label]) => {
     const item = document.getElementById(id);
     if (!item) return;
     item.removeAttribute("data-tip");
     item.setAttribute("role", "menuitem");
-    if (id === "sendFriendBtn") {
-      item.className = "bq-share-icon";
-      item.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" ' +
-        'stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.4"/>' +
-        '<path d="M3 20c.6-3.4 3-5.4 6-5.4s5.4 2 6 5.4"/><path d="M18 8v6M15 11h6"/></svg>';
-    }
     const text = document.createElement("span");
     text.className = "bq-share-label";
     text.textContent = label;
@@ -3814,6 +3820,22 @@ function buildShareMenu() {
   wrap.appendChild(btn);
   wrap.appendChild(menu);
   panel.insertBefore(wrap, panel.firstChild);
+
+  /* ONE ROW OF BUTTONS UNDER THE BOUQUET: Back, Share, Send to a friend, Start
+     over. Back used to sit on a line of its own above the others. It is the
+     same element moved, so `renderFinal` still hides it for somebody who
+     received the bouquet rather than made it. */
+  const friend = document.getElementById("sendFriendBtn");
+  if (friend) {
+    friend.className = "bq-btn-outline bq-friend-btn";
+    friend.innerHTML = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" ' +
+      'stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+      '<circle cx="9" cy="8" r="3.4"/><path d="M3 20c.6-3.4 3-5.4 6-5.4s5.4 2 6 5.4"/>' +
+      '<path d="M18 8v6M15 11h6"/></svg><span>Send to a friend</span>';
+    panel.insertBefore(friend, wrap.nextSibling);
+  }
+  const backNav = document.getElementById("bqBackNav");
+  if (backNav) panel.insertBefore(backNav, panel.firstChild);
 }
 
 /* Every button is looked up defensively, because the two tracks share this
@@ -4028,7 +4050,11 @@ function buildStudio() {
 
   pWrap.appendChild(studioEl("span", "bq-control-label", "Paper"));
   if (paperGrid) pWrap.appendChild(paperGrid);
-  if (wrapCheck) pWrap.appendChild(wrapCheck);
+  /* NO CONTRAST LINE. It measured the paper against the flowers in the
+     bouquet, and the paper is chosen first now, before there are any, so it
+     either said nothing or judged a paper against an empty sheet. Removed
+     outright; `initWrapStep` already skips the check when it is missing. */
+  if (wrapCheck) wrapCheck.remove();
 
   /* THE RIBBON IS A CHOICE ON SIGHT, not a slider inside a custom section.
      It is one of the most noticeable things on the bouquet and it was the
@@ -4148,6 +4174,8 @@ function buildStudio() {
   });
   foot.querySelector("#bqDone").addEventListener("click", () => {
     if (state.flowers.length < MIN_FLOWERS) { showStudio("flowers"); return; }
+    if (!state.card) state.card = "snow";
+    if (!state.bg) state.bg = "cream";
     goToStep("reveal");
   });
 
@@ -4199,8 +4227,21 @@ function showStudio(tab) {
   });
   studio.querySelectorAll(".bq-pane").forEach(p => { p.hidden = p.dataset.pane !== tab; });
   /* No Next on the last tab; Done is beside it. */
+  /* A CARD AND A BACKDROP ARE ALWAYS CHOSEN, even by somebody who never opens
+     those tabs. The old wizard made you pick both before it would go on; the
+     studio lets Done through on five flowers alone, and a bouquet saved with
+     no card or backdrop encodes a link that `decodeState` rejects, so the
+     person it was sent to got "this link looks incomplete". The defaults are
+     what the previews were already showing, Snow and Cream, and they are
+     marked in their grids so the choice is visible and changeable. */
+  if (!state.card) { state.card = "snow"; markSwatch("cardGrid", "snow", "toLetterBtn"); }
+  if (!state.bg) { state.bg = "cream"; markSwatch("bgGrid", "cream", "toRevealBtn"); }
+
+  const isLast = tab === STUDIO_TABS[STUDIO_TABS.length - 1].id;
   const nextArrow = studio.querySelector('.bq-studio-arrow[data-dir="next"]');
-  if (nextArrow) nextArrow.hidden = tab === STUDIO_TABS[STUDIO_TABS.length - 1].id;
+  if (nextArrow) nextArrow.hidden = isLast;
+  /* read by the phone stylesheet, which shows Done on the last tab only */
+  studio.dataset.last = isLast ? "1" : "0";
 
   const noteStage = tab === "card" || tab === "bg";
   studio.dataset.stage = noteStage ? "note" : "live";
