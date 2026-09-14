@@ -1826,7 +1826,11 @@ body[data-step="studio"] #bqBuilder { padding: 0 20px 24px; }
 @media (hover: hover) { .bq-rail-tab:not(.on):hover { background: rgba(255,255,255,0.7); } }
 
 /* the stage is a window onto the gardens' own sky */
-.bq-studio-stage { background: linear-gradient(180deg, #e1f7f7 0%, #f1fbf8 62%, #fff9e3 100%); }
+/* PALE SKY TO WHITE, not to cream. Faded into cream, the stage wrapped a kraft
+   bouquet in warm yellow on every side and the brown paper went muddy; a cool,
+   light ground behind the bouquet lets the paper and the blooms stand out,
+   while the panels around it stay cream. */
+.bq-studio-stage { background: linear-gradient(180deg, #e1f7f7 0%, #f2fbfb 58%, #ffffff 100%); }
 
 .bq-options { background: #fff9e3; border-left-color: #efe6c8; }
 .bq-pane .bq-title { color: #0f5132; }
@@ -1864,7 +1868,7 @@ body[data-step="studio"] #bqBuilder { padding: 0 20px 24px; }
 
 @media (max-width: 860px) {
   .bq-studio { background: transparent; border: 0; box-shadow: none; }
-  .bq-studio-stage { background: linear-gradient(180deg, #e1f7f7 0%, #f1fbf8 70%, #fff9e3 100%); }
+  .bq-studio-stage { background: linear-gradient(180deg, #e1f7f7 0%, #f2fbfb 62%, #ffffff 100%); }
   .bq-rail { background: rgba(255,249,227,0.97); border: 0; }
   .bq-options { background: transparent; }
   .bq-opt-foot { background: rgba(255,249,227,0.97); border-top-color: #efe6c8; }
@@ -1887,7 +1891,8 @@ body[data-step="studio"] #bqBuilder { padding: 0 20px 24px; }
   /* grows with the window, so a laptop's card is filled by the picture rather
      than by empty cream under it */
   height: clamp(300px, calc(100vh - 380px), 460px);
-  background: linear-gradient(180deg, #e1f7f7 0%, #f1fbf8 70%, #fff9e3 100%);
+  /* the same pale sky to white as the studio's stage */
+  background: linear-gradient(180deg, #e1f7f7 0%, #f2fbfb 58%, #ffffff 100%);
 }
 .bq-mode-frame { display: block; width: min(300px, calc((100vh - 400px) * 0.8)); }
 .bq-mode-canvas { display: block; width: 100%; }
