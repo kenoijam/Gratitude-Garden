@@ -1800,3 +1800,71 @@ body[data-step="studio"] #bqBuilder { padding: 0 20px 24px; }
   .bq-share-panel .bq-share-btn,
   .bq-share-panel .bq-friend-btn { height: 42px; padding: 0 16px; font-size: 0.86rem; }
 }
+
+/* ===========================================================================
+   THE GARDENS' PALETTE
+   ===========================================================================
+   The studio was built in mint whites and cool pale greens (#f6faf9, #eef7f4,
+   #edf6f3) that appear on no other page, so the bouquet builder read as a
+   different product from the two gardens beside it. It now takes the
+   gardens' own card language: snow panels with the #e6efed hairline, cream
+   tiles ringed in #bde0d6 that turn #26a69a when chosen, the sky blue ring
+   and cream ground of the round corner icons, a sky to cream stage, and the
+   project's dark teal for text and the main action. Nothing here moves
+   anything; it is colour only, and it sits last so it wins at equal
+   specificity. */
+.bq-card { background: snow; border-color: #e6efed; }
+
+.bq-studio { background: snow; border: 1px solid #e6efed; box-shadow: 0 18px 50px rgba(29,100,102,0.14); }
+.bq-rail { background: snow; border-right-color: #eaf2f0; }
+.bq-rail-tab { color: #2c7a7b; }
+.bq-rail-ic { background: rgba(255,249,227,0.92); border-color: #b7e4e7; color: #1d6466; }
+.bq-rail-tab.on { color: #0f5132; }
+.bq-rail-tab.on .bq-rail-ic { background: #1d6466; border-color: #1d6466; color: #fff9e3; }
+@media (hover: hover) { .bq-rail-tab:not(.on):hover { background: #fff9e3; } }
+
+/* the stage is a window onto the gardens' own sky */
+.bq-studio-stage { background: linear-gradient(180deg, #e1f7f7 0%, #f1fbf8 62%, #fff9e3 100%); }
+
+.bq-options { background: #fffdf6; border-left-color: #eaf2f0; }
+.bq-pane .bq-title { color: #0f5132; }
+.bq-pane .bq-sub { color: #2c7a7b; }
+
+.bq-studio .bq-flower-tile { background: #fff9e3; border-color: #bde0d6; }
+.bq-studio .bq-flower-tile.picked { background: #fff9e3; border-color: #bde0d6; }
+.bq-studio .bq-flower-tile.selected,
+.bq-studio .bq-foliage-tile.picked { background: #ffffff; border-color: #26a69a; box-shadow: 0 0 0 1px #26a69a; }
+.bq-studio .bq-flower-tile canvas { background: #e1f7f7; }
+.bq-studio .bq-count-badge { background: #26a69a; }
+@media (hover: hover) { .bq-studio .bq-flower-tile:hover { border-color: #7fcdcd; } }
+
+.bq-studio .bq-swatch.picked { border-color: #26a69a; }
+.bq-studio .bq-check { background: #26a69a; }
+.bq-ribbon-sw.picked { box-shadow: inset 0 0 0 1px rgba(29,100,102,0.22), 0 0 0 2.5px #fffdf6, 0 0 0 4.5px #26a69a; }
+.bq-custom-toggle { background: #fff9e3; border-color: #bde0d6; }
+.bq-custom-paper { background: #fff9e3; border-color: #bde0d6; }
+
+.bq-adjust { background: snow; border-color: #bde0d6; }
+.bq-adjust-art { background: #e1f7f7; }
+.bq-studio .bq-step-btn { border-color: #26a69a; background: snow; }
+
+.bq-picked-chip { background: #fff9e3; border-color: #bde0d6; }
+.bq-picked-chip.selected { border-color: #26a69a; }
+.bq-picked-art { background: #e1f7f7; }
+.bq-picked-x { border-color: #26a69a; color: #26a69a; background: snow; }
+
+.bq-opt-foot { background: #fff9e3; border-top-color: #efe6c8; }
+.bq-sum strong { color: #0f5132; }
+.bq-studio-arrow { background: rgba(255,249,227,0.92); border-color: #b7e4e7; }
+
+.bq-studio .bq-field input[type="text"],
+.bq-studio .bq-field textarea { background: snow; border-color: #bde0d6; }
+
+@media (max-width: 860px) {
+  .bq-studio { background: transparent; border: 0; box-shadow: none; }
+  .bq-studio-stage { background: linear-gradient(180deg, #e1f7f7 0%, #f1fbf8 70%, #fffdf6 100%); }
+  .bq-rail { background: rgba(255,253,246,0.97); border: 0; }
+  .bq-options { background: transparent; }
+  .bq-opt-foot { background: rgba(255,249,227,0.97); border-top-color: #efe6c8; }
+  .bq-adjust.on { background: snow; }
+}

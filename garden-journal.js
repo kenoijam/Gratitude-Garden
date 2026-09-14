@@ -7,8 +7,10 @@
    day you wrote one. The file keeps its name, since every page loads it by
    that name and renaming it would break four script tags for a word.
 
-   A week strip: seven days across, with the flower planted that day drawn
-   under each one. Tapping a day opens what was planted.
+   A month calendar: seven across, each day showing the flower planted on it,
+   the whole month at a glance. Tapping a day turns to that day's page, and a
+   Month link turns back. A flower's card in the garden opens straight on its
+   day.
 
    The two gardens need very different things from it, and the difference is
    the whole design:
@@ -23,12 +25,12 @@
                 returns objects with no `flowers` in them at all.
 
    So the shared side writes two things as a flower is planted: a row in
-   garden_entries, which is yours alone and draws your icon in the strip, and
+   garden_entries, which is yours alone and draws your icon in the calendar, and
    a snapshot of the whole meadow in shared_days, which is public and is what
    a past day replays from.
 
    Neither needs an account to WORK. Without one, both fall back to this
-   browser's own storage, which means the strip still fills in and only the
+   browser's own storage, which means the calendar still fills in and only the
    whole-meadow replay is missing.
    ========================================================================= */
 (function () {
@@ -290,8 +292,10 @@
       'border:1.5px solid #b7e4e7;background:rgba(255,249,227,0.92);color:#1d6466;cursor:pointer;' +
       'padding:0;display:flex;align-items:center;justify-content:center;z-index:4;}' +
     '#gj-close:hover{background:#e1f7f7;}' +
+    /* 44 on the right, clear of the close button, which is 30 wide at 12 in:
+       at 34 the later arrow and a long date both ran up against it. */
     '.gj-nav{display:flex;align-items:center;justify-content:space-between;gap:8px;' +
-      'padding-right:34px;}' +
+      'padding-right:44px;}' +
     '.gj-arrow{width:28px;height:28px;border-radius:50%;border:1.5px solid #d9ece9;' +
       'background:none;color:#1d6466;cursor:pointer;padding:0;flex:0 0 auto;' +
       'display:flex;align-items:center;justify-content:center;}' +
@@ -306,20 +310,47 @@
       'padding:7px 9px;border-radius:9px;cursor:pointer;}' +
     '.gj-turn-btn:hover:not(:disabled){background:#e9f7f5;}' +
     '.gj-turn-btn:disabled{opacity:.32;cursor:not-allowed;}' +
-    '#gj-strip{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;padding:8px 0 0;}' +
-    '.gj-day{display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 1px 7px;' +
-      'border:1.5px solid transparent;border-radius:12px;background:none;cursor:pointer;' +
-      'font-family:inherit;}' +
-    '.gj-day:hover{background:#f2faf9;}' +
-    '.gj-day[data-on="1"]{border-color:#7fcdcd;background:#eefaf8;}' +
-    '.gj-day[data-today="1"] .gj-num{color:#0f5132;font-weight:700;}' +
-    '.gj-dow{font-size:10.5px;letter-spacing:.04em;color:#8aa9a7;text-transform:uppercase;}' +
-    '.gj-num{font-size:12px;color:#5a8f8d;}' +
-    '.gj-slot{width:38px;height:38px;display:flex;align-items:center;justify-content:center;}' +
-    '.gj-slot canvas{width:38px;height:38px;display:block;}' +
-    '.gj-empty-dot{width:9px;height:9px;border-radius:50%;background:#e6efed;}' +
-    '.gj-day:disabled{cursor:default;}' +
-    '.gj-day:disabled:hover{background:none;}' +
+    /* THE MONTH. Seven across, each day showing the flower planted on it, the
+       way a mood calendar shows a month at a glance. A day with nothing is a
+       pale empty ring, a day still to come a faint filled circle, and today's
+       number sits in a dark pill. Weeks from the months either side are left
+       blank rather than greyed, so the grid is only ever one month. */
+    '.gj-weekdays{display:grid;grid-template-columns:repeat(7,1fr);padding:10px 0 0;}' +
+    '.gj-weekdays span{text-align:center;font-size:10.5px;letter-spacing:.04em;' +
+      'color:#8aa9a7;text-transform:uppercase;}' +
+    '#gj-month{display:grid;grid-template-columns:repeat(7,1fr);row-gap:4px;column-gap:2px;}' +
+    '.gj-cell{display:flex;flex-direction:column;align-items:center;gap:3px;padding:4px 0 4px;' +
+      'border:0;border-radius:12px;background:none;cursor:pointer;font-family:inherit;min-width:0;}' +
+    '.gj-cell .gj-slot{width:40px;height:40px;border-radius:50%;display:flex;' +
+      'align-items:center;justify-content:center;transition:box-shadow .15s;}' +
+    '.gj-cell[data-state="planted"] .gj-slot{background:#f1f8f6;}' +
+    '.gj-cell[data-state="empty"] .gj-slot{box-shadow:inset 0 0 0 1.5px #dcebe7;}' +
+    '.gj-cell[data-state="future"] .gj-slot{background:#eff4f3;}' +
+    '.gj-cell canvas{width:40px;height:40px;display:block;}' +
+    '.gj-cell[data-on="1"] .gj-slot{box-shadow:0 0 0 2px #7fcdcd;}' +
+    '.gj-cell:hover:not(:disabled) .gj-slot{box-shadow:0 0 0 2px #b7e4e7;}' +
+    '.gj-cell[data-on="1"]:hover .gj-slot{box-shadow:0 0 0 2px #7fcdcd;}' +
+    '.gj-cell:focus-visible{outline:2px solid #1d6466;outline-offset:1px;}' +
+    '.gj-cell:disabled{cursor:default;}' +
+    '.gj-cell .gj-num{font-size:11.5px;color:#5a8f8d;min-width:22px;height:17px;' +
+      'line-height:17px;padding:0 5px;border-radius:999px;text-align:center;box-sizing:border-box;}' +
+    '.gj-cell[data-state="future"] .gj-num{color:#b3c7c5;}' +
+    '.gj-cell[data-today="1"] .gj-num{background:#1d6466;color:#fff9e3;font-weight:700;}' +
+    '.gj-month-note{font-size:12.5px;color:#5a8f8d;padding:7px 2px;}' +
+
+    /* TWO VIEWS OF ONE BOOK. The month is the cover you open onto; a day is a
+       page you turn to. Each takes the whole book, so neither is squeezed,
+       and the header and foot show only what belongs to the view on screen. */
+    '#gj-panel[data-view="month"] .gj-back,' +
+      '#gj-panel[data-view="month"] .gj-turn-btn{display:none;}' +
+    '#gj-panel[data-view="day"] .gj-arrow,' +
+      '#gj-panel[data-view="day"] .gj-weekdays,' +
+      '#gj-panel[data-view="day"] .gj-month-note{display:none;}' +
+    '.gj-back{display:flex;align-items:center;gap:5px;border:0;background:none;cursor:pointer;' +
+      'font-family:inherit;font-size:13px;font-weight:700;color:#1d6466;padding:6px 8px 6px 4px;' +
+      'border-radius:9px;flex:0 0 auto;}' +
+    '.gj-back:hover{background:#e9f7f5;}' +
+    '#gj-panel[data-view="day"] .gj-month{font-size:15px;text-align:right;}' +
 
     '#gj-body{flex:1 1 auto;overflow-y:auto;padding:14px 18px 18px 38px;}' +
     '.gj-species{font-size:14px;font-weight:700;color:#0f5132;margin:0 0 2px;}' +
@@ -390,8 +421,11 @@
        and did exactly that; the project has now hit that trap on four
        stylesheets. */
     '@media (max-width:560px){#gj-head{padding-left:34px;}' +
-      '#gj-body{padding-left:34px;}#gj-foot{padding-left:30px;}' +
-      '.gj-month{font-size:16px;}}';
+      '#gj-body{padding-left:30px;padding-right:12px;}#gj-foot{padding-left:30px;}' +
+      '.gj-month{font-size:16px;}' +
+      '.gj-cell .gj-slot,.gj-cell canvas{width:34px;height:34px;}' +
+      '.gj-cell .gj-num{font-size:11px;min-width:20px;}' +
+      '#gj-month{row-gap:2px;}}';
 
   var BOOK =
     '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" ' +
@@ -412,15 +446,49 @@
 
   /* --------------------------------------------------------------- the panel */
   var cfg = null;               /* { garden, entries(), meaning(), paint() } */
-  var panel, strip, body, navLabel, prevBtn, nextBtn, btn, veil, turnPrev, turnNext;
-  var weekStart = null;         /* Date of the Sunday shown */
-  var chosen = null;            /* the day open below the strip */
+  var panel, body, navLabel, prevBtn, nextBtn, btn, veil, turnPrev, turnNext, backBtn, monthNote;
+  var monthStart = null;        /* the 1st of the month on show */
+  var chosen = null;            /* the day whose page is, or was last, open */
+  var view = "month";           /* "month" or "day" */
   var byDay = {};               /* every day we know about */
 
-  function startOfWeek(d) {
-    var x = new Date(d.getFullYear(), d.getMonth(), d.getDate());
-    x.setDate(x.getDate() - x.getDay());
-    return x;
+  function firstOfMonth(d) { return new Date(d.getFullYear(), d.getMonth(), 1); }
+  function dateOf(key) {
+    return new Date(Number(key.slice(0, 4)), Number(key.slice(5, 7)) - 1, Number(key.slice(8, 10)));
+  }
+
+  /* EVERY ICON AT ONE SIZE. Each garden paints its own preview flower, and a
+     species paints a different share of its square: a sunflower fills it and
+     a tulip sits small in the middle, so a month of them read as flowers of
+     different sizes rather than as days. The icon is painted into a spare
+     canvas, its painted pixels measured, and exactly that box drawn at 84
+     percent of the slot, the same way the bouquet's tiles are fitted. */
+  function paintFitted(target, species, hue) {
+    var S = 152;
+    var tmp = document.createElement("canvas");
+    tmp.width = S; tmp.height = S;
+    if (cfg.paint) cfg.paint(tmp, species, hue);
+    var out = 96;
+    target.width = out; target.height = out;
+    var t = target.getContext("2d");
+    t.clearRect(0, 0, out, out);
+    var data;
+    try { data = tmp.getContext("2d").getImageData(0, 0, S, S).data; }
+    catch (e) { t.drawImage(tmp, 0, 0, out, out); return; }
+    var minX = S, minY = S, maxX = -1, maxY = -1;
+    for (var y = 0; y < S; y++) {
+      for (var x = 0; x < S; x++) {
+        if (data[(y * S + x) * 4 + 3] > 16) {
+          if (x < minX) minX = x; if (x > maxX) maxX = x;
+          if (y < minY) minY = y; if (y > maxY) maxY = y;
+        }
+      }
+    }
+    if (maxX < 0) return;
+    var bw = maxX - minX + 1, bh = maxY - minY + 1;
+    var k = (out * 0.84) / Math.max(bw, bh);
+    t.imageSmoothingEnabled = true;
+    t.drawImage(tmp, minX, minY, bw, bh, (out - bw * k) / 2, (out - bh * k) / 2, bw * k, bh * k);
   }
 
   function build() {
@@ -445,14 +513,14 @@
 
     panel = el("div");
     panel.id = "gj-panel";
+    panel.setAttribute("data-view", "month");
     panel.setAttribute("data-open", "0");
     panel.setAttribute("aria-hidden", "true");
 
-    /* THE CALENDAR IS THE HEADER. There is no date heading under it and no
-       panel title above it: the strip already names the day, in the cell it
-       highlights, and printing "Sunday, September 13" over a calendar with
-       the 13th ringed is the same fact twice in one square inch. The month
-       carries the part the strip cannot show. */
+    /* THE HEADER CHANGES WITH THE VIEW. On the month it is the month's name
+       between two arrows, over the days of the week. On a day it is a way
+       back to the month and that day's date, which is the one place the date
+       is written out, since there is no calendar on screen to show it. */
     var head = el("div"); head.id = "gj-head";
     var x = el("button"); x.id = "gj-close"; x.type = "button";
     x.setAttribute("aria-label", "Close");
@@ -461,19 +529,27 @@
     head.appendChild(x);
 
     var nav = el("div", "gj-nav");
+    backBtn = el("button", "gj-back"); backBtn.type = "button";
+    backBtn.innerHTML = CHEV_L + "<span>Month</span>";
+    backBtn.addEventListener("click", function () {
+      if (chosen) monthStart = firstOfMonth(dateOf(chosen));
+      drawMonth();
+    });
     prevBtn = el("button", "gj-arrow"); prevBtn.type = "button";
     prevBtn.innerHTML = CHEV_L;
-    prevBtn.setAttribute("aria-label", "Earlier week");
-    prevBtn.addEventListener("click", function () { shiftWeek(-7); });
+    prevBtn.setAttribute("aria-label", "Earlier month");
+    prevBtn.addEventListener("click", function () { shiftMonth(-1); });
     nextBtn = el("button", "gj-arrow"); nextBtn.type = "button";
     nextBtn.innerHTML = CHEV_R;
-    nextBtn.setAttribute("aria-label", "Later week");
-    nextBtn.addEventListener("click", function () { shiftWeek(7); });
+    nextBtn.setAttribute("aria-label", "Later month");
+    nextBtn.addEventListener("click", function () { shiftMonth(1); });
     navLabel = el("span", "gj-month");
-    nav.appendChild(prevBtn); nav.appendChild(navLabel); nav.appendChild(nextBtn);
-    strip = el("div"); strip.id = "gj-strip";
+    nav.appendChild(backBtn); nav.appendChild(prevBtn); nav.appendChild(navLabel); nav.appendChild(nextBtn);
     head.appendChild(nav);
-    head.appendChild(strip);
+
+    var weekdays = el("div", "gj-weekdays");
+    WEEKDAY.forEach(function (w) { weekdays.appendChild(el("span", null, w)); });
+    head.appendChild(weekdays);
 
     body = el("div"); body.id = "gj-body";
 
@@ -484,6 +560,8 @@
        chevrons because the header already has a pair, and two unlabelled
        pairs in one panel is a guess about which moves what. */
     var foot = el("div"); foot.id = "gj-foot";
+    monthNote = el("span", "gj-month-note");
+    foot.appendChild(monthNote);
     turnPrev = el("button", "gj-turn-btn"); turnPrev.type = "button";
     turnPrev.innerHTML = CHEV_L + "<span>Earlier entry</span>";
     turnPrev.addEventListener("click", function () { turnPage(-1); });
@@ -552,31 +630,33 @@
     }
     if (!next) return;
     chosen = next;
-    weekStart = startOfWeek(new Date(
-      Number(next.slice(0, 4)), Number(next.slice(5, 7)) - 1, Number(next.slice(8, 10))));
-    drawStrip();
+    showDay();
   }
 
-  function shiftWeek(n) {
-    weekStart = new Date(weekStart.getFullYear(), weekStart.getMonth(), weekStart.getDate() + n);
-    drawStrip();
+  function shiftMonth(n) {
+    monthStart = new Date(monthStart.getFullYear(), monthStart.getMonth() + n, 1);
+    drawMonth();
   }
 
-  function open() {
+  function show() {
     panel.setAttribute("data-open", "1");
     panel.setAttribute("aria-hidden", "false");
     veil.setAttribute("data-open", "1");
     refresh();
   }
-  /* Open the book AT a day. This is what a tapped flower calls, and it is the
-     whole reason the panel moved to the middle. */
+  /* The History icon opens onto this month. */
+  function open() {
+    view = "month";
+    monthStart = firstOfMonth(new Date());
+    show();
+  }
+  /* A flower's card opens the book straight on that flower's day. */
   function openAt(day) {
-    if (day) {
-      chosen = day;
-      weekStart = startOfWeek(new Date(
-        Number(day.slice(0, 4)), Number(day.slice(5, 7)) - 1, Number(day.slice(8, 10))));
-    }
-    open();
+    if (!day) { open(); return; }
+    chosen = day;
+    monthStart = firstOfMonth(dateOf(day));
+    view = "day";
+    show();
   }
   function close() {
     /* The full size photo is appended to the body, not to the panel, so it
@@ -597,66 +677,86 @@
         Object.keys(local).forEach(function (d) { byDay[d] = local[d]; });
         Object.keys(r[1]).forEach(function (d) { byDay[d] = r[1][d]; });
         Object.keys(r[0] || {}).forEach(function (d) { byDay[d] = r[0][d]; });
-        if (!weekStart) weekStart = startOfWeek(new Date());
+        if (!monthStart) monthStart = firstOfMonth(new Date());
         if (!chosen) chosen = today();
-        drawStrip();
+        if (view === "day") showDay(); else drawMonth();
       });
   }
 
-  function drawStrip() {
-    strip.innerHTML = "";
+  function monthName(d, withYear) {
+    return d.toLocaleDateString(undefined, withYear ? { month: "long", year: "numeric" } : { month: "long" });
+  }
+
+  function drawMonth() {
+    view = "month";
+    panel.setAttribute("data-view", "month");
+    body.innerHTML = "";
+    body.scrollTop = 0;
     var t = today();
-    for (var i = 0; i < 7; i++) {
-      (function (i) {
-        var d = new Date(weekStart.getFullYear(), weekStart.getMonth(), weekStart.getDate() + i);
+    var y = monthStart.getFullYear(), m = monthStart.getMonth();
+    navLabel.textContent = monthName(monthStart, true);
+    nextBtn.disabled = iso(new Date(y, m + 1, 1)) > t;
+
+    var grid = el("div"); grid.id = "gj-month";
+    var lead = monthStart.getDay();
+    var daysIn = new Date(y, m + 1, 0).getDate();
+    var cells = Math.ceil((lead + daysIn) / 7) * 7;
+    var planted = 0;
+    for (var i = 0; i < cells; i++) {
+      var n = i - lead + 1;
+      if (n < 1 || n > daysIn) { grid.appendChild(el("span", "gj-cell gj-pad")); continue; }
+      (function (n) {
+        var d = new Date(y, m, n);
         var key = iso(d);
         var entry = byDay[key];
-        var cell = el("button", "gj-day");
+        var future = key > t;
+        var cell = el("button", "gj-cell");
         cell.type = "button";
-        cell.setAttribute("data-on", key === chosen ? "1" : "0");
-        cell.setAttribute("data-today", key === t ? "1" : "0");
-        cell.appendChild(el("span", "gj-dow", WEEKDAY[d.getDay()]));
+        cell.setAttribute("data-state", entry ? "planted" : (future ? "future" : "empty"));
+        if (key === t) cell.setAttribute("data-today", "1");
+        if (key === chosen && entry) cell.setAttribute("data-on", "1");
+        var label = d.toLocaleDateString(undefined, { weekday: "long", day: "numeric", month: "long" });
+        cell.setAttribute("aria-label", entry ? label + ", " + titleCase(entry.species) : label);
         var slot = el("span", "gj-slot");
         if (entry) {
+          planted++;
           var cv = document.createElement("canvas");
-          cv.width = 76; cv.height = 76;       /* twice the drawn size, for retina */
           slot.appendChild(cv);
-          if (cfg.paint) cfg.paint(cv, entry.species, entry.hue);
-        } else {
-          slot.appendChild(el("span", "gj-empty-dot"));
+          paintFitted(cv, entry.species, entry.hue);
         }
         cell.appendChild(slot);
-        cell.appendChild(el("span", "gj-num", String(d.getDate())));
-        /* A day in the future is not a blank page, it has not happened. */
-        if (key > t) cell.disabled = true;
-        cell.addEventListener("click", function () { chosen = key; drawStrip(); });
-        strip.appendChild(cell);
-      })(i);
+        cell.appendChild(el("span", "gj-num", String(n)));
+        /* A day still to come is not a blank page; it has not happened. */
+        if (future) cell.disabled = true;
+        cell.addEventListener("click", function () { chosen = key; showDay(); });
+        grid.appendChild(cell);
+      })(n);
     }
+    body.appendChild(grid);
+    monthNote.textContent = planted
+      ? planted + (planted === 1 ? " flower" : " flowers") + " in " + monthName(monthStart)
+      : "Nothing planted in " + monthName(monthStart) + " yet";
+  }
 
-    var endOfWeek = new Date(weekStart.getFullYear(), weekStart.getMonth(), weekStart.getDate() + 6);
-    /* The month in FULL, since it is the only date the header spells out and
-       an abbreviation saves nothing when it is the one word on the row. A
-       week that straddles two months names both, or it would claim to be a
-       September the second half of it is not in. */
-    var mA = weekStart.toLocaleDateString(undefined, { month: "long" });
-    var mB = endOfWeek.toLocaleDateString(undefined, { month: "long" });
-    navLabel.textContent = (mA === mB) ? mA : (mA + " to " + mB);
-    nextBtn.disabled = iso(endOfWeek) >= today();
-
+  function showDay() {
+    view = "day";
+    panel.setAttribute("data-view", "day");
+    monthStart = firstOfMonth(dateOf(chosen));
+    navLabel.textContent = dateOf(chosen).toLocaleDateString(undefined,
+      { weekday: "long", day: "numeric", month: "long" });
     /* The page turn is greyed at the ends of what there is, so the book
        cannot be turned to a blank. */
     var days = entryDays();
     turnPrev.disabled = !days.some(function (d) { return d < chosen; });
     turnNext.disabled = !days.some(function (d) { return d > chosen; });
-
+    body.scrollTop = 0;
     drawDetail();
   }
 
   function drawDetail() {
     body.innerHTML = "";
-    /* The date is the page's heading and lives in the head, between the two
-       page turn arrows, so it is NOT repeated here. */
+    /* The date is the page's heading and lives in the head beside the way
+       back to the month, so it is NOT repeated here. */
     var e = byDay[chosen];
 
     if (!e) {

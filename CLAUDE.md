@@ -362,6 +362,7 @@ The first screen is a fork, not a step. `TRACKS` holds two step lists and `STEPS
 - **The studio stage is `.bq-studio-stage`, never `.bq-stage`.** That name belongs to the reveal, which caps it at 400px and at 240 on a phone; borrowing it shrank the phone band to 240 wide.
 - **The studio fades in on OPACITY ONLY.** Every other step uses `bqFadeUp`, whose fill mode leaves a `transform` applied, and a transformed ancestor becomes the containing block for `position: fixed`. The phone's Done bar and colour panel are fixed inside the studio and would land at the foot of the studio instead of the screen.
 - **The physical track is untouched** and still uses its section cards and numbered progress dots. `#bqProgress` is hidden on the studio (`CHROMELESS` includes `"studio"`).
+- **The builder takes THE GARDENS' PALETTE**, set in the last block of `bouquet-style.css`: snow panels with the `#e6efed` hairline, cream tiles ringed `#bde0d6` that turn `#26a69a` when chosen, the corner icons' cream and sky ring on the rail, a sky to cream stage, and dark teal for text and Done. The mint whites it was first built in appeared on no other page.
 - **The blob shapes and flat colour per step from the skincare and honey references were tried and taken out.** Those references are for the LANDING PAGE, later. The builder follows the florist and customiser references only.
 
 #### The garden cursor
@@ -784,6 +785,15 @@ Two things live in this one file, and they are together because both are needed 
   76 is the last size where the widest species still has air around it. Below it the sunflower touches two edges and the lavender runs off the top, and an icon cut off at the edge of its slot reads as broken rather than as large.
 - **Everything works in YYYY-MM-DD** so days sort as strings. The personal garden stores MM/DD/YYYY on every flower, which is what its labels print, so `fromUS` is the one conversion.
 - **A day in the future is disabled, not empty.** It has not happened; it is not a blank page.
+### The book opens on a MONTH, and a day is a page you turn to
+
+**The week strip is gone.** `garden-journal.js` now has two views of one book, set on the panel as `data-view`:
+
+- **month**, what the History icon opens: the month's name between two arrows, the days of the week, and a seven across grid where each day shows the flower planted on it. A day with nothing is a pale empty ring, a day still to come a faint filled circle (and disabled), today's number sits in a dark teal pill, and days from the months either side are blank. The foot counts the month's flowers.
+- **day**, what tapping a day or a flower card's "Read this day" opens: a "Month" link back, the date written out, the entry, and Earlier and Later entry along the foot, which still skip to days that hold something.
+- **Every icon is fitted to one size by `paintFitted`**: the garden's own `paint` draws into a spare canvas, the painted pixels are measured, and exactly that box is drawn at 84 percent of the slot. Without it a month of species read as flowers of different sizes rather than as days.
+- `open()` is this month; `openAt(day)` is that day's page. Several notes below describe the strip, the week and "the calendar is the header"; the month replaces all of that, and the rest (one fixed height, the photo, the lightbox exemptions, the shared meadow replay) is unchanged.
+
 ### The panel is a BOOK in the middle, and there is only one of it
 
 **It is one reading view with two ways in**, and that is the whole design rather than a style choice. It used to slide in from the left. Tapping a flower is what changed that: a flower can be anywhere in the garden and a side panel always arrived in the same corner, so the thing you asked about and the answer were nowhere near each other. Centred, the answer arrives where you are looking, and the garden dims behind a veil rather than being shoved aside.
