@@ -3377,6 +3377,8 @@ function goToStep(name) {
     return;
   }
   currentStep = STEPS.indexOf(name);
+  /* every screen names itself on the body, which the stylesheet reads */
+  document.body.dataset.step = name;
   document.querySelectorAll("#bqBuilder .bq-step").forEach(el => el.classList.toggle("active", el.dataset.step === name));
   const isReveal = name === "reveal";
   document.getElementById("bqBuilder").style.display = isReveal ? "none" : "flex";
@@ -3834,8 +3836,21 @@ function buildShareMenu() {
       '<path d="M18 8v6M15 11h6"/></svg><span>Send to a friend</span>';
     panel.insertBefore(friend, wrap.nextSibling);
   }
+  /* BACK IS A CORNER BUTTON NOW, bottom left, opposite Home at the top left,
+     and it says what it does. In the row it was a fourth button of the same
+     size as Share, which put "go back" level with the thing the page is for.
+     It is the same element moved to the body, so `renderFinal` still hides it
+     from somebody who received the bouquet. */
   const backNav = document.getElementById("bqBackNav");
-  if (backNav) panel.insertBefore(backNav, panel.firstChild);
+  const backBtn = document.getElementById("backToBg");
+  if (backNav && backBtn) {
+    backNav.className = "bq-reveal-back";
+    backBtn.className = "bq-reveal-back-btn";
+    backBtn.innerHTML = '<svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" ' +
+      'stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+      '<path d="M12.5 4 6.5 10l6 6"/></svg><span>Edit bouquet</span>';
+    document.body.appendChild(backNav);
+  }
 }
 
 /* Every button is looked up defensively, because the two tracks share this
@@ -4386,7 +4401,8 @@ function initNav() {
   document.getElementById("toBgBtn").addEventListener("click", () => goToStep("bg"));
   document.getElementById("backToLetter").addEventListener("click", () => goToStep("letter"));
   document.getElementById("toRevealBtn").addEventListener("click", () => goToStep("reveal"));
-  document.getElementById("backToBg").addEventListener("click", () => goToStep("bg"));
+  /* back to whichever tab was open last, not always the backdrop */
+  document.getElementById("backToBg").addEventListener("click", () => goToStep(studioTab || "bg"));
 }
 
 /* ---------------------------------------------------------- boot ---------------------------------------------------------- */

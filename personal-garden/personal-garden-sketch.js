@@ -315,21 +315,21 @@ function addFlower(dayRating, dayShaper, journal, species, hue) {
 const t = frontFlowers.length / ROW_CAPACITY;
 targetLayer = "front";
 targetBaseY = groundLevel;
-const stemScale = width < 720 ? 0.7 : 1;
+/* no narrow-screen shrink here: see stemNorm below */ const stemScale = 1;
 minStem = height * lerp(0.13, 0.19, t) * stemScale;
 maxStem = height * lerp(0.17, 0.23, t) * stemScale;
   } else if (midFlowers.length < ROW_CAPACITY) {
 const t = midFlowers.length / ROW_CAPACITY;
 targetLayer = "mid";
 targetBaseY = groundLevel - height * 0.10;
-const stemScale = width < 720 ? 0.7 : 1;
+/* no narrow-screen shrink here: see stemNorm below */ const stemScale = 1;
 minStem = height * lerp(0.17, 0.23, t) * stemScale;
 maxStem = height * lerp(0.21, 0.27, t) * stemScale;
 } else {
 const t = backFlowers.length / ROW_CAPACITY;
 targetLayer = "back";
 targetBaseY = groundLevel - height * 0.17;
-const stemScale = width < 720 ? 0.7 : 1;
+/* no narrow-screen shrink here: see stemNorm below */ const stemScale = 1;
 minStem = height * lerp(0.11, 0.17, t) * stemScale;
 maxStem = height * lerp(0.15, 0.21, t) * stemScale;
 }
@@ -389,7 +389,14 @@ maxStem = height * lerp(0.15, 0.21, t) * stemScale;
     size,
 
     xNorm: x / width,
-    stemNorm: stemLen / BASE_H,
+    /* STORED AS A FRACTION OF THE HEIGHT IT WAS DRAWN AT, which is what the
+       layout multiplies it back by (`stemNorm * height`). It was divided by
+       BASE_H, the 900 of a design canvas, and planting on a phone also cut the
+       stem to 0.7 first, so a flower planted on a phone was saved short FOR
+       GOOD and then shrunk again by the phone layout. The narrow screen cap in
+       `updateResponsiveFlowerLayout` is the one place a phone shortens stems,
+       and it applies to every flower alike. */
+    stemNorm: stemLen / height,
     sizeNorm: size / BASE_H,
 
     phase: random(360),
@@ -928,45 +935,48 @@ var BLOOM_BOX = {
    rather than sitting inside a dark halo the same size as itself. */
 var SHADOW_FIT = 0.90;
 
+/* The shortest stem each layer can be planted with, from `addFlower`'s own
+   ranges at their lowest. Used to lift flowers that were saved short. */
+const STEM_FLOOR = { front: 0.13, mid: 0.17, back: 0.11 };
+
 function bloomShadow(f, R, alphaK) {
   var k = (alphaK === undefined) ? 1 : alphaK;
   if (k <= 0) return;
   var box = BLOOM_BOX[f.species] || BLOOM_BOX.daisy;
   var ctx = drawingContext;
+  var rx = box[1] * R * SHADOW_FIT;
+  var ry = box[2] * R * SHADOW_FIT;
+  if (!(rx > 0 && ry > 0)) return;
 
-  /* THE OFFSET AND THE BLUR ARE DEVICE PIXELS AND THE TRANSFORM DOES NOT
-     TOUCH THEM, so both have to be converted by hand. It used to multiply by
-     the pixel density alone, which is right only while nothing else has
-     scaled the canvas. It reads the LIVE horizontal scale off the matrix
-     instead, so a bloom drawn inside a `scale()` still gets its shadow in
-     the right place.
+  /* A RADIAL GRADIENT, NOT THE CANVAS SHADOW API. The halo used to be an
+     ellipse drawn 6000 units off to the right and dragged back as its own
+     shadow, with the offset and blur converted by hand from the transform.
+     That arithmetic was right, and it still came out wrong on an iPhone:
+     WebKit handles canvas shadow offsets and blur differently from Chrome
+     under a scaled context, and an offset of 18000 device pixels at a pixel
+     density of 3 is exactly where engines disagree. A gradient is drawn in
+     the current transform like any other shape, so it lands in the same
+     place, at the same softness, in every browser, and it costs less.
 
-     What went wrong without it is worth keeping: the shape is drawn 6000
-     units off to the right and dragged back purely as its own shadow, so an
-     unaccounted scale of k left the shadow at 6000*(k-1) device pixels from
-     where it belongs. Growing a bloom from 0.18 to 1 therefore slid its
-     shadow in from somewhere off the left of the screen and snapped it into
-     place at the last frame, which is the pop that was visible. */
-  var m = (ctx.getTransform ? ctx.getTransform() : null);
-  var sx = m ? Math.sqrt(m.a * m.a + m.b * m.b) : 1;
-  if (!(sx > 0)) sx = 1;
-  var FAR = 6000;                       /* far outside any canvas */
-
-  /* CENTRED on the bloom, not dropped below it, and light. A shadow cast down
-     and to the side says the light is low and hard, which is the wrong
-     weather for a pastel garden: it read as a heavy smudge under every
-     flower. Centred and soft it is a halo that separates the bloom from the
-     grass and says nothing about the sun at all, which is what this needed to
-     do in the first place. */
+     Same look as before: centred on the bloom, the same 0.18 darkness, the
+     same 0.9 fit, and a soft edge a third of the radius wide. The edge is now
+     tied to the radius alone. It had a 6px floor, which on the small blooms a
+     phone draws made the soft edge nearly as wide as the flower. */
+  var blur = R * 0.32;
+  var outer = rx + blur;
+  var a = 0.18 * k;
+  var ink = "rgba(18,62,56,";
   ctx.save();
-  ctx.shadowColor = "rgba(18,62,56," + (0.18 * k).toFixed(3) + ")";
-  ctx.shadowBlur = Math.max(6, R * 0.32) * sx;
-  ctx.shadowOffsetX = -FAR * sx;
-  ctx.shadowOffsetY = 0;
-  ctx.fillStyle = "#000";
+  ctx.translate(0, box[0] * R);
+  ctx.scale(1, ry / rx);
+  var g = ctx.createRadialGradient(0, 0, 0, 0, 0, outer);
+  g.addColorStop(0, ink + a.toFixed(3) + ")");
+  g.addColorStop(Math.max(0, (rx - blur) / outer), ink + a.toFixed(3) + ")");
+  g.addColorStop(rx / outer, ink + (a * 0.5).toFixed(3) + ")");
+  g.addColorStop(1, ink + "0)");
+  ctx.fillStyle = g;
   ctx.beginPath();
-  ctx.ellipse(FAR, box[0] * R, box[1] * R * SHADOW_FIT, box[2] * R * SHADOW_FIT,
-              0, 0, Math.PI * 2);
+  ctx.arc(0, 0, outer, 0, Math.PI * 2);
   ctx.fill();
   ctx.restore();
 }
@@ -1797,11 +1807,116 @@ function mousePressed(event) {
   if (step !== "garden") return;
   var t = event && event.target;
   if (!t || String(t.tagName).toUpperCase() !== "CANVAS") return;
-  if (!window.GardenJournal || !GardenJournal.openAt) return;
   checkHover(mouseX, mouseY);
-  if (!hoveredFlower || !hoveredFlower.date) return;
-  var day = GardenJournal.fromUS(hoveredFlower.date);
-  if (day) GardenJournal.openAt(day);
+  /* A TAP SHOWS A SMALL CARD, not the book. Going straight to the whole entry
+     was a lot to put in front of somebody who only wanted to know which day a
+     flower was; the card answers that, and its button opens the book for
+     anyone who wants more. A tap on empty ground puts the card away. */
+  if (!hoveredFlower || !hoveredFlower.date) { hideFlowerCard(); return; }
+  showFlowerCard(hoveredFlower);
+}
+
+/* ── THE FLOWER CARD ─────────────────────────────────────────────────────
+   Species, meaning, the date written out, and one button that opens that day
+   in the book. Plain DOM against `document.body` rather than p5.dom, because
+   it has to sit over the canvas at a position worked out from the flower, and
+   nothing about it is part of `buildUI()`'s screens. */
+let flowerCardEl = null;
+let flowerCardFor = null;
+
+function flowerCardOpen() { return !!(flowerCardEl && !flowerCardEl.hidden); }
+
+function hideFlowerCard() {
+  if (flowerCardEl) flowerCardEl.hidden = true;
+  flowerCardFor = null;
+}
+
+function buildFlowerCard() {
+  if (flowerCardEl) return flowerCardEl;
+  const css = document.createElement("style");
+  css.textContent =
+    "#gg-flower-card{position:fixed;z-index:520;width:224px;box-sizing:border-box;" +
+      "padding:14px 16px 14px;background:#fffdf7;border:1px solid rgba(29,100,102,0.14);" +
+      "border-radius:16px;box-shadow:0 14px 36px rgba(29,100,102,0.22);" +
+      "font-family:Arial,Helvetica,sans-serif;color:#1d6466;text-align:left;}" +
+    "#gg-flower-card[hidden]{display:none !important;}" +
+    "#gg-flower-card .fc-name{display:flex;align-items:center;gap:8px;margin:0 0 2px;" +
+      "font-family:'Fraunces',Georgia,serif;font-weight:600;font-variation-settings:'SOFT' 50,'WONK' 0;" +
+      "font-size:18px;color:#0f5132;}" +
+    "#gg-flower-card .fc-dot{width:11px;height:11px;border-radius:50%;flex:0 0 auto;" +
+      "box-shadow:inset 0 0 0 1px rgba(0,0,0,0.12);}" +
+    "#gg-flower-card .fc-meaning{margin:0 0 6px;font-size:13px;color:#2f6260;}" +
+    "#gg-flower-card .fc-date{margin:0 0 12px;font-size:12px;color:#5a8683;}" +
+    "#gg-flower-card .fc-read{display:flex;align-items:center;justify-content:center;gap:6px;" +
+      "width:100%;height:40px;border:0;border-radius:999px;cursor:pointer;" +
+      "background:#1d6466;color:#fff9e3;font:700 14px Arial,Helvetica,sans-serif;}" +
+    "#gg-flower-card .fc-x{position:absolute;top:8px;right:8px;width:28px;height:28px;" +
+      "border:0;border-radius:50%;background:transparent;color:#5a8683;cursor:pointer;" +
+      "display:flex;align-items:center;justify-content:center;padding:0;}";
+  document.head.appendChild(css);
+
+  const el = document.createElement("div");
+  el.id = "gg-flower-card";
+  el.setAttribute("role", "dialog");
+  el.setAttribute("aria-label", "This flower");
+  el.hidden = true;
+  el.innerHTML =
+    '<button type="button" class="fc-x" aria-label="Close">' +
+      '<svg viewBox="0 0 14 14" width="12" height="12" fill="none" stroke="currentColor" ' +
+      'stroke-width="2" stroke-linecap="round"><path d="M3 3l8 8M11 3l-8 8"/></svg></button>' +
+    '<p class="fc-name"><span class="fc-dot"></span><span class="fc-species"></span></p>' +
+    '<p class="fc-meaning"></p>' +
+    '<p class="fc-date"></p>' +
+    '<button type="button" class="fc-read">Read this day</button>';
+  document.body.appendChild(el);
+
+  el.querySelector(".fc-x").addEventListener("click", hideFlowerCard);
+  el.querySelector(".fc-read").addEventListener("click", () => {
+    const f = flowerCardFor;
+    hideFlowerCard();
+    if (!f || !window.GardenJournal || !GardenJournal.openAt) return;
+    const day = GardenJournal.fromUS(f.date);
+    if (day) GardenJournal.openAt(day);
+  });
+  document.addEventListener("keydown", e => { if (e.key === "Escape") hideFlowerCard(); });
+  window.addEventListener("resize", hideFlowerCard);
+  flowerCardEl = el;
+  return el;
+}
+
+function showFlowerCard(f) {
+  const el = buildFlowerCard();
+  flowerCardFor = f;
+  const meta = flowerMeanings[f.species];
+  el.querySelector(".fc-species").textContent = f.species.charAt(0).toUpperCase() + f.species.slice(1);
+  el.querySelector(".fc-meaning").textContent = meta ? meta.meaning : "";
+  el.querySelector(".fc-dot").style.background =
+    "hsl(" + Math.round(f.hue || 0) + "," + Math.round(f.sat || 60) + "%," + Math.round(f.light || 65) + "%)";
+  let when = f.date;
+  const p = String(f.date || "").split("/");
+  if (p.length === 3) {
+    const d = new Date(+p[2], +p[0] - 1, +p[1]);
+    if (!isNaN(d)) when = d.toLocaleDateString(undefined, { weekday: "long", day: "numeric", month: "long" });
+  }
+  el.querySelector(".fc-date").textContent = when;
+  el.hidden = false;
+
+  /* Over the bloom where there is room, under it where there is not, and
+     always kept inside the screen with a 10px margin. */
+  /* The garden's own canvas, by reference: the page carries other canvases,
+     the loader's and the history strip's, and the first one found need not be
+     this. */
+  const rect = (canvas && canvas.elt ? canvas.elt : document.querySelector("#garden-wrap canvas, canvas")).getBoundingClientRect();
+  const sx = rect.width / width, sy = rect.height / height;
+  const bx = rect.left + f.x * sx;
+  const top = rect.top + (f.baseY - f.stemLen - f.size * 1.3) * sy;
+  const bottom = rect.top + (f.baseY - f.stemLen + f.size * 1.1) * sy;
+  const w = el.offsetWidth, h = el.offsetHeight;
+  let x = Math.max(10, Math.min(window.innerWidth - w - 10, bx - w / 2));
+  let y = top - h - 10;
+  if (y < 64) y = Math.min(window.innerHeight - h - 10, bottom + 10);
+  el.style.left = Math.round(x) + "px";
+  el.style.top = Math.round(Math.max(10, y)) + "px";
 }
 
 function checkHover(px = mouseX, py = mouseY) {
@@ -1834,6 +1949,8 @@ function drawHoverTooltip() {
      underneath: a glance and the full entry on screen at once, which is the
      doubling the book exists to remove. */
   if (window.GardenJournal && GardenJournal.isOpen && GardenJournal.isOpen()) return;
+  /* Nor while the tap card is up: it says everything this box says. */
+  if (flowerCardOpen()) return;
 
   const f = hoveredFlower;
   const t = frameCount * 0.01 + f.phase * 0.001;
@@ -1885,7 +2002,7 @@ function drawHoverTooltip() {
      `Tap` rather than `Click`, since this garden is read on a phone too. */
   lines.push({ text: "---", bold: false, divider: true });
   lines.push({ text: f.date || "", bold: false, muted: true });
-  lines.push({ text: "Tap to read the day", bold: false, muted: true });
+  lines.push({ text: "Click for this day", bold: false, muted: true });
 
   textSize(12);
   const boxWidth = maxWidth;
@@ -1951,6 +2068,13 @@ function updateResponsiveFlowerLayout() {
     }
     if (f.stemNorm == null) f.stemNorm = f.stemLen / BASE_H;
     if (f.sizeNorm == null) f.sizeNorm = f.size / BASE_H;
+    /* THE REPAIR FOR FLOWERS ALREADY SAVED SHORT. Anything planted on a phone
+       before the fix above carries a stem about two thirds the length it
+       should, and nothing in a saved flower says where it was planted. So each
+       layer's shortest possible stem is a floor: a flower under it was cut
+       short, one over it is left exactly as it grew. */
+    const stemFloor = STEM_FLOOR[f.layer] || STEM_FLOOR.front;
+    if (f.stemNorm < stemFloor) f.stemNorm = stemFloor;
 
     f.x       = f.xNorm   * width;
     f.stemLen = f.stemNorm * height;
@@ -2813,7 +2937,7 @@ function showStep(s) {
 
   if (dailyNote) {
     const planted = s === "garden" && hasPlantedToday();
-    dailyNote.html(planted ? "Today's flower is planted. Come back tomorrow for another." : "");
+    dailyNote.html(planted ? "Planted today. See you tomorrow." : "");
     dailyNote.style("display", planted ? "block" : "none");
   }
 

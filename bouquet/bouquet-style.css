@@ -1741,7 +1741,6 @@ body[data-step="studio"] #bqBuilder { padding: 0 20px 24px; }
 
 /* ── The reveal: one row of buttons ─────────────────────────────────────── */
 .bq-share-panel { gap: 10px; }
-.bq-share-panel #bqBackNav { margin: 0; padding: 0; max-width: none; display: inline-flex; }
 /* The reveal's column is 480 wide, which four buttons in a row do not fit;
    they wrapped to two rows on a laptop. The column widens and the bouquet
    inside it keeps its own 400px cap. */
@@ -1777,15 +1776,36 @@ body[data-step="studio"] #bqBuilder { padding: 0 20px 24px; }
   .bq-share-panel:not([style*="none"]) { display: grid !important; grid-template-columns: 1fr 1fr; gap: 8px; width: 100%; }
   .bq-share-panel .bq-share-wrap { order: 1; }
   .bq-share-panel .bq-friend-btn { order: 2; }
-  .bq-share-panel #bqBackNav { order: 3; }
-  .bq-share-panel #startOverBtn { order: 4; }
+  .bq-share-panel #startOverBtn { order: 3; grid-column: 1 / -1; }
   .bq-share-panel .bq-share-wrap,
   .bq-share-panel .bq-share-btn,
-  .bq-share-panel #bqBackNav,
-  .bq-share-panel #bqBackNav .bq-btn-ghost,
   .bq-share-panel .bq-btn,
   .bq-share-panel .bq-btn-outline { width: 100%; justify-content: center; }
   .bq-share-panel .bq-btn,
   .bq-share-panel .bq-btn-outline,
   .bq-share-panel .bq-btn-ghost { padding: 0 10px; font-size: 0.88rem; }
 }
+
+/* ── The reveal's way back: a corner button, bottom left ──────────────────
+   Opposite Home at the top left, the same cream ground and ring as the round
+   icons, and a label that says where it goes. `renderFinal` sets `display`
+   on it inline, flex for the sender and none for a recipient. */
+.bq-reveal-back {
+  position: fixed; left: 16px; bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+  z-index: 60; margin: 0; padding: 0; max-width: none;
+}
+body:not([data-step="reveal"]) .bq-reveal-back { display: none !important; }
+.bq-reveal-back-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  height: 44px; padding: 0 18px 0 12px; box-sizing: border-box;
+  border-radius: 999px; border: 1.5px solid #b7e4e7;
+  background: rgba(255,249,227,0.95); color: var(--darkteal);
+  box-shadow: 0 4px 14px rgba(29,100,102,0.16);
+  font-family: Arial, Helvetica, sans-serif; font-size: 14px; font-weight: 700;
+  cursor: pointer;
+}
+.bq-reveal-back-btn svg { display: block; flex: 0 0 auto; }
+@media (hover: hover) { .bq-reveal-back-btn:hover { background: var(--lightsky); } }
+.bq-reveal-back-btn:focus-visible { outline: 3px solid var(--darkteal); outline-offset: 2px; }
+/* room at the foot of the reveal so the corner button never sits on the row */
+@media (max-width: 860px) { #bqRevealWrap { padding-bottom: 96px; } }

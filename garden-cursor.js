@@ -292,6 +292,52 @@
      It lives here rather than in either sketch because both build the same
      card, and a copy in each would be a fifth place the same idea is written
      down in this project. */
+  /* THE HOME BUTTON MATCHES THE ROW OF ICONS OPPOSITE IT. It was drawn on a
+     16 unit grid at a stroke of 1.8 while every other icon uses a 24 unit
+     grid at 2, so at the same 16px it came out a third heavier; and on a
+     phone it was 39 by 35 at 20px down against their 34 by 34 at 16. The
+     selector carries `html body a` so it outranks the phone rules in each
+     page's own stylesheet, which set the same properties with
+     `!important`, and the pages set it INLINE as well. */
+  var HOME =
+    /* Laptop: the pill keeps its word, but stands 38 tall like the icons and
+       draws its house at their 18px, which is their 1.5px line exactly. */
+    "html body a#back-to-home{height:38px !important;box-sizing:border-box !important;" +
+      "padding-top:0 !important;padding-bottom:0 !important;}" +
+    "html body a#back-to-home svg{width:18px !important;height:18px !important;}" +
+    "@media (max-width: 768px){" +
+      "html body a#back-to-home{top:16px !important;left:12px !important;" +
+        "width:34px !important;height:34px !important;padding:0 !important;gap:0 !important;" +
+        "box-sizing:border-box !important;border-radius:50% !important;" +
+        "justify-content:center !important;font-size:0 !important;line-height:0 !important;}" +
+      "html body a#back-to-home svg{width:16px !important;height:16px !important;}}";
+  function swapHomeIcon() {
+    var a = document.getElementById("back-to-home");
+    var old = a && a.querySelector("svg");
+    if (!old || old.getAttribute("data-gg-home")) return;
+    var NS = "http://www.w3.org/2000/svg";
+    var svg = document.createElementNS(NS, "svg");
+    svg.setAttribute("viewBox", "0 0 24 24");
+    svg.setAttribute("width", old.getAttribute("width") || "16");
+    svg.setAttribute("height", old.getAttribute("height") || "16");
+    svg.setAttribute("fill", "none");
+    svg.setAttribute("stroke", "currentColor");
+    svg.setAttribute("stroke-width", "2");
+    svg.setAttribute("stroke-linecap", "round");
+    svg.setAttribute("stroke-linejoin", "round");
+    svg.setAttribute("aria-hidden", "true");
+    svg.setAttribute("data-gg-home", "1");
+    ["M3.5 10.6 12 3.6l8.5 7", "M5.8 9v10.2a1 1 0 0 0 1 1h3.4v-5.4a1 1 0 0 1 1-1h1.6a1 1 0 0 1 1 1v5.4h3.4a1 1 0 0 0 1-1V9"]
+      .forEach(function (d) {
+        var path = document.createElementNS(NS, "path");
+        path.setAttribute("d", d);
+        svg.appendChild(path);
+      });
+    old.parentNode.replaceChild(svg, old);
+  }
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", swapHomeIcon);
+  else swapHomeIcon();
+
   var TIPS =
     "#tips-card h3{cursor:pointer;}" +
     "@media (max-width: 768px){" +
@@ -300,7 +346,13 @@
          tips would not open: the heading never received the tap at all, and
          nothing about the fold was wrong. The heading also needs a cursor and
          a touch target of its own. */
-      "#tips-card{pointer-events:auto !important;}" +
+      "#tips-card{pointer-events:auto !important;" +
+        /* LIFTED CLEAR OF SAFARI'S BAR. On an iPhone the heading sat about
+           20px above Safari's floating toolbar, and Safari claims taps that
+           close to its bar to bring the toolbar up, so the page never saw
+           them. The tap worked in every desktop emulation and not on the
+           phone, which is the signature of exactly this. */
+        "bottom:calc(64px + env(safe-area-inset-bottom, 0px)) !important;}" +
       "#tips-card h3{display:flex;align-items:center;gap:8px;cursor:pointer;pointer-events:auto !important;padding:6px 0;min-height:34px;}" +
       "#tips-card h3::after{content:'';width:8px;height:8px;flex:0 0 auto;" +
         "border-right:2px solid currentColor;border-bottom:2px solid currentColor;" +
@@ -317,8 +369,31 @@
     if (!head) return;
     card._folded = true;
     card.setAttribute("data-open", "0");
+    /* A BUTTON IN EVERYTHING BUT NAME. A plain heading is not something iOS
+       treats as pressable, and on a phone where `cursor` is switched off it
+       had nothing else to say so. The role and tabindex make it a control,
+       and the toggle answers `touchend` directly as well as `click`, with
+       the synthetic click after a touch ignored so one tap is one toggle. */
+    head.setAttribute("role", "button");
+    head.setAttribute("tabindex", "0");
+    head.setAttribute("aria-expanded", "false");
+    var lastTouch = 0;
+    function toggle() {
+      var open = card.getAttribute("data-open") !== "1";
+      card.setAttribute("data-open", open ? "1" : "0");
+      head.setAttribute("aria-expanded", open ? "true" : "false");
+    }
+    head.addEventListener("touchend", function (e) {
+      lastTouch = Date.now();
+      e.preventDefault();
+      toggle();
+    }, { passive: false });
     head.addEventListener("click", function () {
-      card.setAttribute("data-open", card.getAttribute("data-open") === "1" ? "0" : "1");
+      if (Date.now() - lastTouch < 700) return;
+      toggle();
+    });
+    head.addEventListener("keydown", function (e) {
+      if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggle(); }
     });
   }
   /* The gardens build their card from a p5 sketch that starts well after this
@@ -393,7 +468,7 @@
         (document.head || document.documentElement).appendChild(tag);
       }
     }
-    tag.textContent = css(hue) + TIP + SCROLL_HIDE + TIPS;
+    tag.textContent = css(hue) + TIP + SCROLL_HIDE + TIPS + HOME;
   }
 
   apply(DEFAULT_HUE);

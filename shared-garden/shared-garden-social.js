@@ -654,9 +654,172 @@
       "See the console line above, and SUPABASE-SETUP.md.");
   }
 
+  /* ═════════════════════════════════════════════════════════════════════
+     THE TAP CARD
+     ═════════════════════════════════════════════════════════════════════
+     A tap on a bloom used to open the whole comments panel, which on a phone
+     is a sheet over three quarters of the screen: a lot to put up for
+     somebody who only wanted to see what that person was grateful for. A tap
+     now shows a small card by the flower, with the sentence, who planted it,
+     a heart and a comment count. The heart likes it in place; only the
+     comment button opens the full panel.
+
+     It works WITHOUT accounts too. With no project configured the card is
+     just the sentence and who planted it, which on a phone is the only way
+     to read a flower at all, since there is no hover there. */
+  var peekEl = null, peekFlower = null, peekCtx = null, peekPost = null, peekBusy = false;
+  var BUBBLE =
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" ' +
+      'stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+    '<path d="M20.5 12a8 8 0 0 1-11.6 7.2L4 20.5l1.3-4.4A8 8 0 1 1 20.5 12z"/></svg>';
+
+  function buildPeek() {
+    if (peekEl) return peekEl;
+    var css = document.createElement("style");
+    css.textContent =
+      '#gs-peek{position:fixed;z-index:490;width:236px;box-sizing:border-box;padding:14px 16px 12px;' +
+        'background:snow;border:1px solid rgba(29,100,102,0.14);border-radius:16px;' +
+        'box-shadow:0 14px 36px rgba(29,100,102,0.22);font-family:Arial,Helvetica,sans-serif;' +
+        'color:#1d6466;text-align:left;}' +
+      '#gs-peek[hidden]{display:none !important;}' +
+      '#gs-peek .pk-word{margin:0 30px 6px 0;font-family:Fraunces,Georgia,serif;font-style:italic;' +
+        'font-size:16px;line-height:1.35;color:#0f5132;word-break:break-word;}' +
+      '#gs-peek .pk-by{margin:0;font-size:12px;color:#5a8683;}' +
+      '#gs-peek .pk-row{display:flex;gap:8px;margin-top:12px;}' +
+      '#gs-peek .pk-row[hidden]{display:none !important;}' +
+      '#gs-peek .pk-btn{display:inline-flex;align-items:center;gap:6px;height:36px;padding:0 14px;' +
+        'border-radius:999px;border:1.5px solid rgba(29,100,102,0.22);background:#fff;color:#1d6466;' +
+        'font:700 13px Arial,Helvetica,sans-serif;cursor:pointer;}' +
+      '#gs-peek .pk-btn svg{width:17px;height:17px;display:block;}' +
+      '#gs-peek .pk-like[data-mine="1"]{color:#c2185b;border-color:rgba(194,24,91,0.35);background:#fff5f8;}' +
+      '#gs-peek .pk-like[data-mine="1"] svg path{fill:currentColor;}' +
+      '#gs-peek .pk-x{position:absolute;top:8px;right:8px;width:28px;height:28px;border:0;' +
+        'border-radius:50%;background:transparent;color:#5a8683;cursor:pointer;padding:0;' +
+        'display:flex;align-items:center;justify-content:center;}';
+    document.head.appendChild(css);
+
+    peekEl = el("div");
+    peekEl.id = "gs-peek";
+    peekEl.setAttribute("role", "dialog");
+    peekEl.setAttribute("aria-label", "This flower");
+    peekEl.hidden = true;
+    peekEl.innerHTML =
+      '<button type="button" class="pk-x" aria-label="Close">' +
+        '<svg viewBox="0 0 14 14" width="12" height="12" fill="none" stroke="currentColor" ' +
+        'stroke-width="2" stroke-linecap="round"><path d="M3 3l8 8M11 3l-8 8"/></svg></button>' +
+      '<p class="pk-word"></p><p class="pk-by"></p>' +
+      '<div class="pk-row">' +
+        '<button type="button" class="pk-btn pk-like" data-mine="0" aria-label="Like">' + HEART +
+          '<span class="pk-n">0</span></button>' +
+        '<button type="button" class="pk-btn pk-talk" aria-label="Comments">' + BUBBLE +
+          '<span class="pk-n">0</span></button>' +
+      '</div>';
+    document.body.appendChild(peekEl);
+
+    peekEl.querySelector(".pk-x").addEventListener("click", hidePeek);
+    peekEl.querySelector(".pk-like").addEventListener("click", peekLike);
+    peekEl.querySelector(".pk-talk").addEventListener("click", function () {
+      var f = peekFlower, c = peekCtx;
+      hidePeek();
+      if (live && f) openPanel(f, c);
+    });
+    document.addEventListener("keydown", function (e) { if (e.key === "Escape") hidePeek(); });
+    window.addEventListener("resize", hidePeek);
+    document.addEventListener("pointerdown", function (e) {
+      if (peekEl.hidden || peekEl.contains(e.target)) return;
+      /* the canvas is the sketch's to decide, as it is for the panel */
+      if (e.target && e.target.tagName === "CANVAS") return;
+      hidePeek();
+    });
+    return peekEl;
+  }
+
+  function hidePeek() {
+    if (peekEl) peekEl.hidden = true;
+    peekFlower = null; peekPost = null;
+  }
+
+  function setPeekCounts(likes, mine, comments) {
+    if (!peekEl) return;
+    var like = peekEl.querySelector(".pk-like");
+    like.querySelector(".pk-n").textContent = likes;
+    like.setAttribute("data-mine", mine ? "1" : "0");
+    like.setAttribute("aria-pressed", mine ? "true" : "false");
+    like.setAttribute("aria-label", (mine ? "Unlike" : "Like") + ", " + likes);
+    var talk = peekEl.querySelector(".pk-talk");
+    talk.querySelector(".pk-n").textContent = comments;
+    talk.setAttribute("aria-label", "Comments, " + comments);
+  }
+
+  /* Reads only. The row for a flower is still created lazily, the first time
+     somebody signed in actually likes or comments, so looking costs the
+     database nothing. */
+  function loadPeek(flower) {
+    if (!live) return;
+    findPost(flower).then(function (res) {
+      if (peekFlower !== flower) return null;
+      peekPost = res.data || null;
+      return loadReactions(peekPost);
+    }).then(function (data) {
+      if (!data || peekFlower !== flower) return;
+      setPeekCounts(data.likes, data.mine, data.comments.length);
+    }).catch(function () {});
+  }
+
+  function peekLike() {
+    var flower = peekFlower;
+    if (!flower || peekBusy || !live) return;
+    if (!me) {
+      if (window.GardenAccount && GardenAccount.openSignIn) GardenAccount.openSignIn();
+      return;
+    }
+    peekBusy = true;
+    var like = peekEl.querySelector(".pk-like");
+    var wasMine = like.getAttribute("data-mine") === "1";
+    ensurePost(flower).then(function (post) {
+      if (!post) return null;
+      return wasMine
+        ? sb.from("likes").delete().eq("post_id", post.id).eq("user_id", me.id)
+        : sb.from("likes").insert({ post_id: post.id, user_id: me.id });
+    }).then(function () {
+      peekBusy = false;
+      loadPeek(flower);
+    }).catch(function () { peekBusy = false; loadPeek(flower); });
+  }
+
+  function showPeek(flower, ctx) {
+    if (!flower) return;
+    buildPeek();
+    closePanel();
+    peekFlower = flower;
+    peekCtx = ctx || {};
+    if (peekCtx.day) ctxDay = peekCtx.day;
+    peekEl.querySelector(".pk-word").textContent = flower.gratitude || "";
+    var sp = flower.species ? titleCase(flower.species) : "";
+    peekEl.querySelector(".pk-by").textContent =
+      "Planted by " + (flower.word || "someone") + (sp ? " \u00b7 " + sp : "");
+    peekEl.querySelector(".pk-row").hidden = !live;
+    setPeekCounts(0, false, 0);
+    peekEl.hidden = false;
+
+    /* Over the bloom where there is room, under it where there is not, kept
+       inside the screen. The sketch hands over where the bloom sits on the
+       screen, since only it knows the canvas's scale. */
+    var a = peekCtx.anchor || { x: window.innerWidth / 2, top: window.innerHeight / 2, bottom: window.innerHeight / 2 };
+    var w = peekEl.offsetWidth, h = peekEl.offsetHeight;
+    var x = Math.max(10, Math.min(window.innerWidth - w - 10, a.x - w / 2));
+    var y = a.top - h - 10;
+    if (y < 64) y = Math.min(window.innerHeight - h - 10, a.bottom + 10);
+    peekEl.style.left = Math.round(x) + "px";
+    peekEl.style.top = Math.round(Math.max(10, y)) + "px";
+    loadPeek(flower);
+  }
+
   window.GardenSocial = {
     open: function (f, ctx) { if (live) openPanel(f, ctx); },
-    close: closePanel,
+    peek: showPeek,
+    peekOpen: function () { return !!(peekEl && !peekEl.hidden); },
+    close: function () { hidePeek(); closePanel(); },
     isLive: function () { return live; },
     signedIn: function () { return !!me; }
   };

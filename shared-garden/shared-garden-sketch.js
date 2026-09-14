@@ -322,10 +322,24 @@ hoveredFlower = tapped;
    `roomKey` and `speciesList` are handed over here because the sketch
    declares them with `let` and `const`, so neither is on `window` for the
    social module to find. */
+/* A TAP SHOWS THE SMALL CARD, not the whole panel: the sentence, who planted
+   it, a heart and a comment count. Its comment button is what opens the
+   panel. Where the bloom sits on the SCREEN is handed over, since only the
+   sketch knows how the canvas is scaled. */
 if (window.GardenSocial) {
 if (tapped) {
 const sp = speciesList.find(x => x.id === tapped.species);
-GardenSocial.open(tapped, { day: roomKey, meaning: sp ? sp.meaning : "" });
+const rect = canvas.elt.getBoundingClientRect();
+const sx = rect.width / width, sy = rect.height / height;
+const headY = tapped.baseY - tapped.stemLen;
+const anchor = {
+  x: rect.left + tapped.x * sx,
+  top: rect.top + (headY - tapped.size * 1.3) * sy,
+  bottom: rect.top + (headY + tapped.size * 1.1) * sy
+};
+if (GardenSocial.peek) GardenSocial.peek(tapped, { day: roomKey, meaning: sp ? sp.meaning : "", anchor });
+else GardenSocial.open(tapped, { day: roomKey, meaning: sp ? sp.meaning : "" });
+hoveredFlower = null;
 } else {
 GardenSocial.close();
 }
@@ -901,40 +915,39 @@ function bloomShadow(f, R, alphaK) {
   if (k <= 0) return;
   var box = BLOOM_BOX[f.species] || BLOOM_BOX.daisy;
   var ctx = drawingContext;
+  var rx = box[1] * R * SHADOW_FIT;
+  var ry = box[2] * R * SHADOW_FIT;
+  if (!(rx > 0 && ry > 0)) return;
 
-  /* THE OFFSET AND THE BLUR ARE DEVICE PIXELS AND THE TRANSFORM DOES NOT
-     TOUCH THEM, so both have to be converted by hand. It used to multiply by
-     the pixel density alone, which is right only while nothing else has
-     scaled the canvas. It reads the LIVE horizontal scale off the matrix
-     instead, so a bloom drawn inside a `scale()` still gets its shadow in
-     the right place.
+  /* A RADIAL GRADIENT, NOT THE CANVAS SHADOW API. The halo used to be an
+     ellipse drawn 6000 units off to the right and dragged back as its own
+     shadow, with the offset and blur converted by hand from the transform.
+     That arithmetic was right, and it still came out wrong on an iPhone:
+     WebKit handles canvas shadow offsets and blur differently from Chrome
+     under a scaled context, and an offset of 18000 device pixels at a pixel
+     density of 3 is exactly where engines disagree. A gradient is drawn in
+     the current transform like any other shape, so it lands in the same
+     place, at the same softness, in every browser, and it costs less.
 
-     What went wrong without it is worth keeping: the shape is drawn 6000
-     units off to the right and dragged back purely as its own shadow, so an
-     unaccounted scale of k left the shadow at 6000*(k-1) device pixels from
-     where it belongs. Growing a bloom from 0.18 to 1 therefore slid its
-     shadow in from somewhere off the left of the screen and snapped it into
-     place at the last frame, which is the pop that was visible. */
-  var m = (ctx.getTransform ? ctx.getTransform() : null);
-  var sx = m ? Math.sqrt(m.a * m.a + m.b * m.b) : 1;
-  if (!(sx > 0)) sx = 1;
-  var FAR = 6000;                       /* far outside any canvas */
-
-  /* CENTRED on the bloom, not dropped below it, and light. A shadow cast down
-     and to the side says the light is low and hard, which is the wrong
-     weather for a pastel garden: it read as a heavy smudge under every
-     flower. Centred and soft it is a halo that separates the bloom from the
-     grass and says nothing about the sun at all, which is what this needed to
-     do in the first place. */
+     Same look as before: centred on the bloom, the same 0.18 darkness, the
+     same 0.9 fit, and a soft edge a third of the radius wide. The edge is now
+     tied to the radius alone. It had a 6px floor, which on the small blooms a
+     phone draws made the soft edge nearly as wide as the flower. */
+  var blur = R * 0.32;
+  var outer = rx + blur;
+  var a = 0.18 * k;
+  var ink = "rgba(18,62,56,";
   ctx.save();
-  ctx.shadowColor = "rgba(18,62,56," + (0.18 * k).toFixed(3) + ")";
-  ctx.shadowBlur = Math.max(6, R * 0.32) * sx;
-  ctx.shadowOffsetX = -FAR * sx;
-  ctx.shadowOffsetY = 0;
-  ctx.fillStyle = "#000";
+  ctx.translate(0, box[0] * R);
+  ctx.scale(1, ry / rx);
+  var g = ctx.createRadialGradient(0, 0, 0, 0, 0, outer);
+  g.addColorStop(0, ink + a.toFixed(3) + ")");
+  g.addColorStop(Math.max(0, (rx - blur) / outer), ink + a.toFixed(3) + ")");
+  g.addColorStop(rx / outer, ink + (a * 0.5).toFixed(3) + ")");
+  g.addColorStop(1, ink + "0)");
+  ctx.fillStyle = g;
   ctx.beginPath();
-  ctx.ellipse(FAR, box[0] * R, box[1] * R * SHADOW_FIT, box[2] * R * SHADOW_FIT,
-              0, 0, Math.PI * 2);
+  ctx.arc(0, 0, outer, 0, Math.PI * 2);
   ctx.fill();
   ctx.restore();
 }
@@ -1455,6 +1468,9 @@ pop();
 
 function drawHoverTooltip() {
 if (!hoveredFlower || !hoveredFlower.gratitude) return;
+/* The tap card already shows this sentence; two copies of it on one bloom is
+   the doubling the card replaced. */
+if (window.GardenSocial && GardenSocial.peekOpen && GardenSocial.peekOpen()) return;
 
 const t = frameCount * 0.01 + hoveredFlower.phase * 0.001;
 const swayNoise = swayOn
@@ -1930,17 +1946,21 @@ if (!holder) return;
 
 holder.elt.innerHTML = "";
 
-const pgW = isNarrow ? 70 : 140;
-const pgH = isNarrow ? 76 : 100;
+/* SQUARE, 76, for the compact tiles. 76 is the size the history strip measured
+   as the smallest square that holds every species without clipping, at the
+   preview family's fixed radius. Drawn at twice the density and shown at 56,
+   so it is sharp on a phone. */
+const pgW = 76;
+const pgH = 76;
 const pg = createGraphics(pgW, pgH);
 
 pg.angleMode(DEGREES);
-pg.pixelDensity(1);
+pg.pixelDensity(2);
 pg.colorMode(RGB, 255);
 pg.clear();
 
 pg.push();
-const centerY = isNarrow ? pg.height * 0.52 : pg.height / 2;
+const centerY = pg.height * 0.52;
 pg.translate(pg.width / 2, centerY);
 drawPreviewBloom(pg, sp.id, chosenHue);
 pg.pop();
@@ -1948,9 +1968,9 @@ pg.pop();
 const canvas = pg.canvas;
 if (canvas) {
 canvas.style.display = "block";
-canvas.style.width  = isNarrow ? "64px" : "120px";
-canvas.style.height = isNarrow ? "52px" : "86px";
-canvas.style.margin = "6px auto 4px auto";
+canvas.style.width  = "56px";
+canvas.style.height = "56px";
+canvas.style.margin = "0";
 canvas.style.pointerEvents = "none";
 canvas.style.objectFit = "contain";
 holder.elt.appendChild(canvas);
@@ -2344,6 +2364,27 @@ function markSharedPlanted() {
 
 /* Runs whenever the username step is shown or the name is typed, so somebody
    is told BEFORE they pick a flower rather than after. */
+/* The sentence is written; go to the flowers, skipping the name step that no
+   longer exists as a screen. Signed in, the account's name is the flower's. */
+function goToFlowers() {
+  const acc = window.GardenAccount;
+  const u = (acc && acc.isLive() && acc.username()) || "";
+  if (u) username = u;
+  if (username && sharedPlantedToday(username)) { showStep("garden"); return; }
+  showStep("select");
+  drawSpeciesPreviews();
+  syncSelectName();
+}
+
+/* The name field on the flower screen shows only for somebody signed out. */
+function syncSelectName() {
+  const row = document.getElementById("select-name");
+  if (!row) return;
+  const acc = window.GardenAccount;
+  const signedIn = !!(acc && acc.isLive() && acc.username());
+  row.hidden = signedIn;
+}
+
 function refreshUsernameStep() {
   if (!usernameNote || !usernameContinueBtn) return;
   const why = sharedPlantedToday(username);
@@ -2551,10 +2592,10 @@ charCount.html(`${gratitudeText.length}/100`);
 });
 
 charCount = createP("0/100").style("text-align", "right").parent(card);
-continueBtn = createButton("Continue to Username").addClass("gg-btn").parent(card);
+continueBtn = createButton("Continue").addClass("gg-btn").parent(card);
 continueBtn.mousePressed(() => {
 if (!gratitudeText.trim()) return;
-showStep("username");
+goToFlowers();
 });
 
 /* Username */
@@ -2610,12 +2651,14 @@ usernameField.elt.readOnly = true;
 usernameField.style("background", "#f1f8f7");
 usernameField.style("color", "#5a8f8d");
 usernameNote.html("Signed in as " + u + ", so your flower carries this name.");
+syncSelectName();
 if (typeof sharedPlantedToday === "function" && sharedPlantedToday(u)) refreshUsernameStep();
 } else {
 usernameField.elt.readOnly = false;
 usernameField.style("background", "#ffffff");
 usernameField.style("color", "#1d6466");
 usernameNote.html("");
+syncSelectName();
 }
 };
 if (window.GardenAccount) GardenAccount.onChange(window.applyAccountUsername);
@@ -2657,23 +2700,22 @@ selectCard.style("padding", "34px 22px 28px");
 selectCard.style("padding", "26px 24px 18px");
 }
 
-const titleText = isNarrow ? "Choose Your\nFlower" : "Choose Your Flower";
+const titleText = "Choose Your Flower";
 const selectTitle = createElement("h2", titleText)
 .addClass("gg-title")
 .parent(selectCard);
 
 selectTitle.style("text-align", "center");
 if (isNarrow) {
-selectTitle.style("font-size", "34px");
+selectTitle.style("font-size", "28px");
 selectTitle.style("line-height", "1.2");
 selectTitle.style("text-align", "center");
-selectTitle.style("max-width", "320px");
-selectTitle.style("margin", "0 auto 24px auto");
+selectTitle.style("margin", "0 auto 4px auto");
 } else {
 selectTitle.style("margin", "0 0 8px 0");
 }
 
-const selectSub = createP("Pick a flower and a color. Each one stands for something.")
+const selectSub = createP("Pick a flower. Each one means something.")
 .addClass("gg-sub")
 .parent(selectCard);
 selectSub.style("margin", "4px 0 16px 0");
@@ -2727,6 +2769,12 @@ meaningSpan.style("color", "#2c7a7b");
 meaningSpan.style("line-height", "1.2");
 meaningSpan.style("font-size", isNarrow ? "9px" : "11px");
 tile.mousePressed(() => {
+  if (!username.trim()) {
+    usernameNote.html("Add a name for your flower first.");
+    usernameField.elt.focus();
+    return;
+  }
+  if (sharedPlantedToday(username)) { refreshUsernameStep(); return; }
   chosenSpecies = sp.id;
   showStep("confirm");
 });
@@ -2736,7 +2784,27 @@ speciesButtons[sp.id] = { tile, holder };
 const backBtnSelect = createButton("Back")
 .addClass("gg-back")
 .parent(selectCard);
-backBtnSelect.mousePressed(() => showStep("username"));
+backBtnSelect.mousePressed(() => showStep("landing"));
+
+/* THE NAME IS ASKED FOR HERE, AND ONLY WHEN IT HAS TO BE. It had a whole step
+   of its own between the sentence and the flowers. Signed in, a flower is
+   planted under the account's username and cannot be renamed, so that step
+   asked a question it already knew the answer to. Signed out, the same field
+   is moved to the top of this screen, so there is still one screen fewer. The
+   old step is still built, because its note and its planted-today check are
+   reused, but nothing sends anybody to it. */
+const nameRow = createDiv().id("select-name").parent(selectCard);
+const nameLabel = createElement("label", "Your name on the flower").parent(nameRow);
+nameLabel.attribute("for", "select-name-field");
+usernameField.parent(nameRow);
+usernameField.id("select-name-field");
+usernameField.style("height", "46px");
+usernameField.style("padding", "11px 14px");
+usernameField.style("margin-bottom", "4px");
+usernameNote.parent(nameRow);
+usernameNote.style("margin", "0 0 4px");
+selectCard.elt.insertBefore(nameRow.elt, grid.elt);
+syncSelectName();
 backBtnSelect.style("margin-top", "8px");
 
 /* Confirm / Customize Color */
