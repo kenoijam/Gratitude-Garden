@@ -27,11 +27,8 @@ import { buildAvatar, KEEPSAKES, SLOTS, SKINS, HAIRS, SHAPES, keepsakeOf, DEFAUL
    lotus grows on water, so neither is planted in a row with the rest. */
 const ORDER = ["daisy", "tulip", "lily", "sunflower", "lavender", "rose"];
 
-/* The web version's numbers, unchanged. */
-const GROW_RISE = 3400;
-const GROW_OPEN = 1700;
-const growEase = t => 1 - Math.pow(1 - t, 3);
-const smooth = t => t * t * (3 - 2 * t);
+/* the web version's own sequence, now shared with the other scene */
+import { GROW_RISE, growEase, smooth, growFlower } from "./growth.js";
 
 const VIEWS = { close: 2.0, garden: 7.8, wide: 13 };
 
@@ -216,18 +213,7 @@ function replant() {
   flowers.forEach((f, i) => { f.userData.born = now + i * 220; });
 }
 function growth(now) {
-  flowers.forEach(f => {
-    const born = f.userData.born;
-    const blooms = f.userData.blooms || [];
-    const set = v => blooms.forEach(b => b.scale.setScalar(v));
-    if (born < 0) { f.scale.set(1, 1, 1); set(1); return; }
-    const e = now - born;
-    if (e < 0) { f.scale.set(1, 0.001, 1); set(0.18); return; }
-    const rise = growEase(Math.min(1, e / GROW_RISE));
-    f.scale.set(1, Math.max(0.001, rise), 1);
-    const o = (e - (GROW_RISE - GROW_OPEN)) / GROW_OPEN;
-    set(0.18 + 0.82 * smooth(Math.min(1, Math.max(0, o))));
-  });
+  flowers.forEach(f => growFlower(f, now));
 }
 
 

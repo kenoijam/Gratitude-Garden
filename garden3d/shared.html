@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Today's garden, 3D spike</title>
+  <!-- The web version is untouched. This folder is the exploration. -->
+  <style>
+    @font-face {
+      font-family: 'Fraunces';
+      src: url('../Fraunces.ttf') format('truetype');
+      font-weight: 100 900; font-style: normal; font-display: swap;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; height: 100%; overflow: hidden; background: #cfeef0; }
+    body { font-family: Arial, Helvetica, sans-serif; color: #1d6466; }
+    #stage { position: fixed; inset: 0; }
+    #stage canvas { display: block; }
+
+    .card {
+      position: fixed; background: #fff9e3;
+      border: 1px solid #efe6c8; border-radius: 16px;
+      box-shadow: 0 10px 30px rgba(29,100,102,0.16);
+    }
+    #title { top: 18px; left: 18px; padding: 14px 18px; max-width: 320px; }
+    #title h1 {
+      margin: 0 0 4px; font-family: 'Fraunces', Georgia, serif;
+      font-weight: 600; font-variation-settings: 'SOFT' 50, 'WONK' 0;
+      font-size: 19px; color: #0f5132;
+    }
+    #title p { margin: 0; font-size: 12.5px; line-height: 1.5; color: #2f6260; }
+    #title .ask { margin-top: 8px; font-weight: 700; color: #1d6466; }
+    #title a { color: #1d6466; }
+
+    #bar {
+      left: 50%; transform: translateX(-50%); bottom: 18px;
+      display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+      justify-content: center; padding: 10px 12px; max-width: calc(100vw - 24px);
+    }
+    button {
+      font: 700 13px Arial, Helvetica, sans-serif; color: #1d6466;
+      background: #fff; border: 1.5px solid #bde0d6; border-radius: 999px;
+      padding: 0 14px; height: 38px; cursor: pointer;
+    }
+    button:hover { border-color: #7fcdcd; }
+    button.on { background: #1d6466; border-color: #1d6466; color: #fff9e3; }
+    button[disabled] { opacity: .5; cursor: default; }
+    .sep { width: 1px; height: 24px; background: #e6dcbe; }
+
+    /* THE NAMES ARE HTML, NOT PAINTED INTO THE SCENE. Same rule as every
+       other piece of text here: it keeps the project's own type, it can be
+       read by a screen reader, and it stays crisp at any distance. */
+    #labels { position: fixed; inset: 0; pointer-events: none; }
+    .tag {
+      position: absolute; transform: translate(-50%, -100%);
+      background: #fff9e3; border: 1px solid #efe6c8; border-radius: 999px;
+      padding: 3px 10px; font-size: 12px; font-weight: 700; white-space: nowrap;
+      box-shadow: 0 4px 12px rgba(29,100,102,0.14);
+    }
+    .tag.mine { background: #1d6466; border-color: #1d6466; color: #fff9e3; }
+
+    #peek {
+      width: min(86vw, 260px); padding: 14px 16px 12px; display: none;
+    }
+    #peek.show { display: block; }
+    #peek h2 {
+      margin: 0 0 2px; font-family: 'Fraunces', Georgia, serif; font-weight: 600;
+      font-variation-settings: 'SOFT' 50, 'WONK' 0; font-size: 18px; color: #0f5132;
+    }
+    #peek .when { margin: 0 0 8px; font-size: 11.5px; color: #8aa9a7; }
+    #peek .said { margin: 0 0 12px; font-size: 14px; line-height: 1.45; color: #2f6260; }
+    #peek .social { display: flex; gap: 8px; }
+    #peek .social button { height: 32px; font-size: 12px; padding: 0 12px; }
+    #peek .social button.liked { background: #1d6466; border-color: #1d6466; color: #fff9e3; }
+
+    #plant {
+      left: 50%; top: 50%; transform: translate(-50%, -50%);
+      width: min(92vw, 420px); padding: 22px 24px 20px; display: none;
+    }
+    #plant.show { display: block; }
+    #plant h2 {
+      margin: 0 0 6px; font-family: 'Fraunces', Georgia, serif; font-weight: 600;
+      font-variation-settings: 'SOFT' 50, 'WONK' 0; font-size: 26px; color: #0f5132;
+    }
+    #plant .sub { margin: 0 0 18px; font-size: 15px; color: #2f6260; }
+    .q { margin-bottom: 16px; }
+    .q > b {
+      display: block; font-size: 11px; letter-spacing: .08em; text-transform: uppercase;
+      color: #8aa9a7; margin-bottom: 7px;
+    }
+    .q input {
+      width: 100%; height: 42px; padding: 0 12px; font: 16px Arial, Helvetica, sans-serif;
+      color: #1d6466; background: #fff; border: 1.5px solid #bde0d6; border-radius: 10px;
+    }
+    .q input:focus { outline: none; border-color: #26a69a; }
+    .species { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+    .species button {
+      height: auto; padding: 8px 6px; border-radius: 12px; line-height: 1.25;
+      display: flex; flex-direction: column; align-items: center; gap: 4px;
+    }
+    .species .dot { width: 14px; height: 14px; border-radius: 50%; }
+    .species span { font-size: 11px; font-weight: 700; }
+    .species button.pick { background: #26a69a; border-color: #26a69a; color: #fff; }
+    #go { width: 100%; height: 46px; background: #1d6466; border-color: #1d6466; color: #fff9e3; }
+
+    #hint {
+      left: 50%; transform: translateX(-50%); top: 18px; padding: 10px 16px;
+      font-size: 13.5px; font-weight: 700; display: none;
+    }
+    #hint.show { display: block; }
+    #hint span { font-weight: 400; color: #2f6260; }
+
+    @media (max-width: 720px) {
+      #title { max-width: 64vw; padding: 10px 12px; }
+      #title h1 { font-size: 16px; }
+      #title p { font-size: 11.5px; }
+    }
+  </style>
+</head>
+<body>
+  <div id="stage"></div>
+  <div id="labels"></div>
+
+  <div class="card" id="title">
+    <h1>Today's garden</h1>
+    <p>One garden a day, shared by everyone in it. Flowers land in rings
+       around the tree in the order they were planted, so the outer ring is
+       the end of the day.</p>
+    <p class="ask">Does a garden of other people read as company?</p>
+    <p style="margin-top:8px"><a href="./index.html">Your own plot</a></p>
+  </div>
+
+  <div class="card" id="peek"></div>
+  <div class="card" id="hint"></div>
+
+  <div class="card" id="plant">
+    <h2>Plant today's flower</h2>
+    <p class="sub">One each. It stands here until midnight, when the garden
+       empties and tomorrow's begins.</p>
+    <div class="q">
+      <b>Your name</b>
+      <input id="who" type="text" maxlength="14" placeholder="What shall we call you">
+    </div>
+    <div class="q">
+      <b>What are you grateful for today</b>
+      <input id="said" type="text" maxlength="90" placeholder="One line">
+    </div>
+    <div class="q">
+      <b>Choose your flower</b>
+      <div class="species" id="species"></div>
+    </div>
+    <button id="go" disabled>Plant it</button>
+  </div>
+
+  <div class="card" id="bar">
+    <button data-view="garden" class="on">Garden</button>
+    <button data-view="wide">Wide</button>
+    <span class="sep"></span>
+    <button id="turn">Turn</button>
+    <button id="open">Plant today's flower</button>
+  </div>
+
+  <script type="module" src="./shared-scene.js"></script>
+</body>
+</html>
