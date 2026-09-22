@@ -1100,6 +1100,18 @@ Headings on the garden pages come from two places. `.gg-title` and `#tips-card h
 - **Every petal material is registered with its own lightness offset** (`userData.tint`), so one hue slider moves a rose's five rings together and keeps the depth between them. A single `petalMat` could not have held a bloom built from rings.
 - **The silhouette test passes at garden and wide distance with all eight**, and the two new plant types are the easiest of the lot to name: a tree is a tree, and pads are pads.
 
+**THE LOOP IS IN: reflect, choose a spot, watch it grow.** The species test asks whether you can tell them apart; this asks the question that comes after it, whether PLANTING one feels calm. Three things make it a loop rather than a placement tool, and each earned its place.
+
+- **The same three questions and the same weighted vote.** Rating 4, what shaped the day 3, two per keyword hit in the sentence, `chooseSpecies` in `spike.js`. **The sentence is not optional decoration: without it the rating always wins and the second question is a button that changes nothing**, since 4 beats 3 on its own. Verified in the page: Okay plus People alone gives a sakura, and adding "love my family" turns it into a rose.
+- **WHERE a thing may grow is the rule that makes the plot a place.** `PLOT` gives each species its ground (the bed, the water, open grass), its spacing and how far back the avatar stands. A lotus refused on the soil and a sakura refused on the bed both say WHY in words, at the top of the screen: a marker that simply will not turn green is a puzzle, not an answer.
+- **The spacing rule takes the AVERAGE of the two gaps, never the larger.** A tree asks 1.3 of another tree, a daisy 0.3 of another daisy. Taking the larger made a tree demand its own 1.3 from every daisy in the bed beside it, which left the open grass unplantable for the one species that has to go there.
+- **THE BED MUST NOT BE FULL.** The two specimen rows filled it exactly, so "pick a spot" became a hunt for the one legal pixel. The bed is deeper now and the rows sit back, leaving a free strip along the front. **A garden with no room in it cannot be planted in, which is obvious in hindsight and was not obvious while the bed was a test rig.**
+- **The avatar WALKS there, and stops on the FAR side of the spot from the camera.** Stopping short along the walking line put it between the camera and the flower it had just planted, hiding the one thing the person was waiting to see. It takes the camera's current angle, so this holds at all four turns, and it is pushed out of the pond if the far side of a lotus is water.
+- **The flower is created at the CLICK with its birth set in the FUTURE**, `now + travel`, so it waits in the ground until somebody is there to plant it. `growth()` already drew a flower whose moment had not come, so nothing needed to change for that.
+- **A loop with no end just stops.** The closing line is timed to the frame the bloom finishes opening, at `born + GROW_RISE`, and says the species and its meaning.
+- Measured: 60fps at 1400 by 900 with the plot, the pond, the tree and sixteen plants.
+- **What the loop has NOT answered yet**: a tree grows to full height in the same 3.4 seconds as a daisy, which is the web version's timing used where it does not belong; and the avatar is still the capsule stand in, so "does it feel like you" is untested.
+
 ## Conventions
 
 - Indentation is inconsistent (the shared sketch is largely unindented at top level). Match the surrounding block rather than reformatting; whole-file reformatting would bury real diffs.

@@ -48,6 +48,48 @@
     label { display: flex; align-items: center; gap: 8px; font-size: 12.5px; font-weight: 700; }
     input[type=range] { width: 120px; accent-color: #26a69a; }
 
+    /* the reflection card and the placing hint. Both are ordinary HTML over
+       the canvas, which is the point being tested as much as the loop: the
+       writing has to stay real text in the project's own type. */
+    #reflect {
+      left: 50%; top: 50%; transform: translate(-50%, -50%);
+      width: min(92vw, 420px); padding: 22px 24px 20px; display: none;
+    }
+    #reflect.show { display: block; }
+    #reflect h2 {
+      margin: 0 0 6px; font-family: 'Fraunces', Georgia, serif; font-weight: 600;
+      font-variation-settings: 'SOFT' 50, 'WONK' 0; font-size: 26px; color: #0f5132;
+    }
+    #reflect .sub { margin: 0 0 18px; font-size: 15px; color: #2f6260; }
+    .q { margin-bottom: 16px; }
+    .q > b {
+      display: block; font-size: 11px; letter-spacing: .08em; text-transform: uppercase;
+      color: #8aa9a7; margin-bottom: 7px;
+    }
+    .opts { display: flex; flex-wrap: wrap; gap: 6px; }
+    .opts button { height: 34px; padding: 0 12px; font-size: 12.5px; }
+    .opts button.pick { background: #26a69a; border-color: #26a69a; color: #fff; }
+    #note {
+      width: 100%; height: 42px; padding: 0 12px; font: 16px Arial, Helvetica, sans-serif;
+      color: #1d6466; background: #fff; border: 1.5px solid #bde0d6; border-radius: 10px;
+    }
+    #note:focus { outline: none; border-color: #26a69a; }
+    #go { width: 100%; height: 46px; background: #1d6466; border-color: #1d6466; color: #fff9e3; }
+    #go[disabled] { opacity: .45; cursor: default; }
+    #result { display: none; }
+    #result.show { display: block; }
+    #result .dot {
+      display: inline-block; width: 12px; height: 12px; border-radius: 50%;
+      margin-right: 8px; vertical-align: -1px;
+    }
+
+    #hint {
+      left: 50%; transform: translateX(-50%); top: 18px; padding: 10px 16px;
+      font-size: 13.5px; font-weight: 700; display: none;
+    }
+    #hint.show { display: block; }
+    #hint span { font-weight: 400; color: #2f6260; }
+
     #legend {
       right: 18px; top: 18px; padding: 12px 16px; font-size: 12.5px; line-height: 1.55;
       max-width: 210px;
@@ -70,7 +112,8 @@
     <h1>Low poly spike</h1>
     <p>Eight species built from one kit of primitives, no model files, in the
        colours the web version already uses.</p>
-    <p class="ask">Do they read apart at garden distance?</p>
+    <p class="ask">Do they read apart at garden distance, and does planting
+       one feel calm?</p>
   </div>
 
   <div class="card" id="legend">
@@ -81,10 +124,52 @@
           stands in the bed.</span>
   </div>
 
+  <div class="card" id="reflect">
+    <div id="form">
+      <h2>Today's reflection</h2>
+      <p class="sub">The same three questions the web version asks, and the
+         same weighted vote decides the flower.</p>
+      <div class="q" data-q="rating">
+        <b>How was your day?</b>
+        <div class="opts">
+          <button data-v="1">Hard</button>
+          <button data-v="2">Low</button>
+          <button data-v="3">Okay</button>
+          <button data-v="4">Good</button>
+          <button data-v="5">Great</button>
+        </div>
+      </div>
+      <div class="q" data-q="shaper">
+        <b>What shaped it?</b>
+        <div class="opts">
+          <button data-v="people">People</button>
+          <button data-v="work">Work</button>
+          <button data-v="rest">Rest</button>
+          <button data-v="change">A change</button>
+        </div>
+      </div>
+      <div class="q">
+        <b>One thing you are grateful for</b>
+        <input id="note" type="text" maxlength="90" placeholder="Optional">
+      </div>
+      <button id="go" disabled>Find my flower</button>
+    </div>
+
+    <div id="result">
+      <h2 id="rName">Lily</h2>
+      <p class="sub"><span class="dot" id="rDot"></span><span id="rMeaning"></span></p>
+      <button id="place">Choose where to plant it</button>
+    </div>
+  </div>
+
+  <div class="card" id="hint"></div>
+
   <div class="card" id="bar">
     <button data-view="close">Close</button>
     <button data-view="garden" class="on">Garden</button>
     <button data-view="wide">Wide</button>
+    <span class="sep"></span>
+    <button id="plant">Plant a flower</button>
     <span class="sep"></span>
     <button id="turn">Turn</button>
     <button id="sil">Silhouette</button>
