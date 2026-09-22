@@ -28,14 +28,17 @@ import { buildAvatar, KEEPSAKES, SLOTS, SKINS, HAIRS, SHAPES, keepsakeOf, DEFAUL
 const ORDER = ["daisy", "tulip", "lily", "sunflower", "lavender", "rose"];
 
 /* the web version's own sequence, now shared with the other scene */
-import { GROW_RISE, growEase, smooth, growFlower } from "./growth.js";
+import { growMs, smooth, growFlower } from "./growth.js";
+import { dressScene } from "./world.js";
 
-const VIEWS = { close: 2.0, garden: 7.8, wide: 13 };
+/* the garden view is WIDER than it was, because the plot is no longer the
+   whole world: at 7.8 the frame held nothing but the plot, and the sky, the
+   hills and the land around it were all off the screen */
+const VIEWS = { close: 2.0, garden: 9.8, wide: 15 };
 
 const state = { view: "garden", turn: 0, silhouette: false, hueShift: 0, planted: 0, dress: false };
 
 const scene = new THREE.Scene();
-scene.background = new THREE.Color("#cfeef0");          /* the gardens' sky */
 
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
@@ -45,29 +48,11 @@ document.getElementById("stage").appendChild(renderer.domElement);
 
 const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0.1, 100);
 
-/* Soft and warm, one key light and a sky fill. Nothing here needs a rig. */
-scene.add(new THREE.HemisphereLight(0xdff6f4, 0x8fcfbe, 1.15));
-const sun = new THREE.DirectionalLight(0xfff4d9, 1.55);
-sun.position.set(3.4, 8.2, 3);
-sun.castShadow = true;
-sun.shadow.mapSize.set(2048, 2048);
-sun.shadow.radius = 3;
-sun.shadow.bias = -0.0006;
-const sc = sun.shadow.camera;
-sc.left = -4; sc.right = 4; sc.top = 4; sc.bottom = -4; sc.near = 0.5; sc.far = 20;
-scene.add(sun);
-
-/* ---------------------------------------------------------- the plot */
-const ground = new THREE.Group();
-scene.add(ground);
-
-const grass = new THREE.Mesh(
-  new THREE.CircleGeometry(4.3, 44),
-  new THREE.MeshLambertMaterial({ color: new THREE.Color().setHSL(112 / 360, 0.44, 0.71) })
-);
-grass.rotation.x = -Math.PI / 2;
-grass.receiveShadow = true;
-ground.add(grass);
+/* the light, the sky, the hills, the ground and the life in the air, all
+   from the one module both scenes share */
+const world = dressScene(scene, { radius: 4.3, seed: 7 });
+const grass = world.ground.grass;
+const ground = world.ground.group;
 
 const bed = new THREE.Mesh(
   /* deep enough to hold the specimens AND leave a free strip along the front.
@@ -178,7 +163,7 @@ function frame() {
   /* the wardrobe also drops the camera's PITCH. The garden is read from
      above, where a head is mostly hair, and choosing a face from up there is
      choosing something you cannot see. */
-  camera.position.set(t.x + Math.cos(ang) * d, t.y + d * (state.dress ? 0.34 : 0.82),
+  camera.position.set(t.x + Math.cos(ang) * d, t.y + d * (state.dress ? 0.34 : 0.72),
                       t.z + Math.sin(ang) * d);
   camera.lookAt(t);
   camera.updateProjectionMatrix();
@@ -204,7 +189,14 @@ function setSilhouette(on) {
       o.material = o.userData._mat;
     }
   });
-  scene.background = new THREE.Color(on ? "#f3f8f4" : "#cfeef0");
+  /* the sky, the hills and the life all go while a shape is being read,
+     since the test is the OUTLINE and everything else is in its way */
+  scene.background = on ? new THREE.Color("#f3f8f4") : world.sky;
+  world.hills.visible = !on;
+  world.life.group.visible = !on;
+  world.ground.tufts.visible = !on;
+  world.ground.far.visible = !on;
+  scene.fog = on ? null : world.fog;
 }
 
 /* ---------------------------------------------------------- growth */
@@ -403,7 +395,7 @@ function plantAt(id, point) {
   loop.walk = { from, to: stand, face, t0: now, dur: travel * 1000 };
   /* the closing line, timed to the moment the bloom finishes opening. A loop
      with no end just stops, and this one is meant to feel finished. */
-  loop.finish = { at: f.userData.born + GROW_RISE, id, said: false, kept: earn(id) };
+  loop.finish = { at: f.userData.born + growMs(id), id, said: false, kept: earn(id) };
   stopPicking();
   state.planted++;
 }
@@ -430,6 +422,7 @@ function walk(now) {
 function tick(now) {
   growth(now);
   walk(now);
+  if (!state.silhouette) world.life.update(now);
   const fin = loop.finish;
   if (fin && !fin.said && now > fin.at) {
     fin.said = true;

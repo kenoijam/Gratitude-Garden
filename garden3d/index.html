@@ -120,7 +120,7 @@
     #hint span { font-weight: 400; color: #2f6260; }
 
     #legend {
-      right: 18px; top: 18px; padding: 12px 16px; font-size: 12.5px; line-height: 1.55;
+      right: 18px; top: 70px; padding: 12px 16px; font-size: 12.5px; line-height: 1.55;
       max-width: 210px;
     }
     #legend b { display: block; font-size: 11px; letter-spacing: .08em;
@@ -210,6 +210,10 @@
     <label>Hue <input type="range" id="hue" min="-180" max="180" value="0"></label>
   </div>
 
+  <!-- the project's own engine, one script tag and a mood on it, exactly as
+       the four web pages load it. Nothing is downloaded: every note is
+       synthesised as it plays. -->
+  <script src="../garden-music.js" data-mood="calm"></script>
   <script type="module" src="./spike.js"></script>
 </body>
 </html>

@@ -22,10 +22,11 @@
    ========================================================================= */
 import * as THREE from "./lib/three.module.min.js";
 import { buildFlower, SPECIES3D } from "./flower-kit.js";
-import { GROW_RISE, growFlower } from "./growth.js";
+import { growMs, growFlower } from "./growth.js";
+import { dressScene } from "./world.js";
 
 const state = { view: "garden", turn: 0, planted: false };
-const VIEWS = { garden: 9.6, wide: 12 };
+const VIEWS = { garden: 9.6, wide: 15 };
 
 /* ---------------------------------------------------------- the day
    Fourteen people, in the order they arrived. Names and lines are made up
@@ -49,7 +50,6 @@ const DAY = [
 
 /* ---------------------------------------------------------- the scene */
 const scene = new THREE.Scene();
-scene.background = new THREE.Color("#cfeef0");
 
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
@@ -59,23 +59,9 @@ document.getElementById("stage").appendChild(renderer.domElement);
 
 const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0.1, 100);
 
-scene.add(new THREE.HemisphereLight(0xdff6f4, 0x8fcfbe, 1.15));
-const sun = new THREE.DirectionalLight(0xfff4d9, 1.5);
-sun.position.set(4, 9, 3.4);
-sun.castShadow = true;
-sun.shadow.mapSize.set(2048, 2048);
-sun.shadow.radius = 3;
-sun.shadow.bias = -0.0006;
-Object.assign(sun.shadow.camera, { left: -6, right: 6, top: 6, bottom: -6, near: 0.5, far: 24 });
-scene.add(sun);
-
-const grass = new THREE.Mesh(
-  new THREE.CircleGeometry(4.9, 48),
-  new THREE.MeshLambertMaterial({ color: new THREE.Color().setHSL(112 / 360, 0.44, 0.71) })
-);
-grass.rotation.x = -Math.PI / 2;
-grass.receiveShadow = true;
-scene.add(grass);
+/* the same light, sky, hills, ground and air as the personal plot. Two
+   scenes in one project may not be two looks. */
+const world = dressScene(scene, { radius: 4.9, seed: 21 });
 
 /* bare earth under the tree, which is what says the tree was here first and
    the rings were planted around it */
@@ -95,6 +81,7 @@ scene.add(bare);
 const tree = buildFlower("sakura", { hue: SPECIES3D.sakura.hue });
 tree.scale.setScalar(2.0);
 tree.userData.born = -1;
+tree.userData.species = "sakura";
 scene.add(tree);
 
 /* ---------------------------------------------------------- the rings
@@ -162,6 +149,7 @@ function plant(entry, index, born) {
   f.position.set(spot.x, entry.species === "lotus" ? 0.02 : 0, spot.z);
   f.rotation.y = -spot.a;                 /* every bloom faces out of the ring */
   f.userData.entry = entry;
+  f.userData.species = entry.species;      /* what the growth pace reads */
   f.userData.born = born;
   f.userData.index = index;
   scene.add(f);
@@ -181,7 +169,7 @@ DAY.forEach((e, i) => {
 function fitted() {
   let r = 1.2;
   flowers.forEach(f => { r = Math.max(r, Math.hypot(f.position.x, f.position.z)); });
-  return Math.max(7, Math.min(12, r * 2 + 2.6));
+  return Math.max(8.5, Math.min(15, r * 2 + 3.4));
 }
 function frame() {
   const w = state.view === "garden" ? fitted() : VIEWS.wide;
@@ -190,7 +178,11 @@ function frame() {
   camera.top = w / (2 * a); camera.bottom = -w / (2 * a);
   const ang = Math.PI / 4 + state.turn * (Math.PI / 2);
   const d = 16;
-  camera.position.set(Math.cos(ang) * d, d * 0.8, Math.sin(ang) * d);
+  /* A LOWER PITCH than the first version's. Looking down at 30 degrees the
+     ground fills the frame and there is no horizon in it; at 22 the far rim
+     of the island and the sky behind it are both on screen, which is what
+     the whole sky and hills pass was for. */
+  camera.position.set(Math.cos(ang) * d, d * 0.72, Math.sin(ang) * d);
   camera.lookAt(0, 0.7, 0);
   camera.updateProjectionMatrix();
 }
@@ -402,7 +394,7 @@ go.addEventListener("click", () => {
   hint.innerHTML = "Your flower is in. <span>It stands with the others until midnight.</span>";
   hint.classList.add("show");
   setTimeout(() => hint.classList.remove("show"), 5200);
-  setTimeout(() => { if (mine) openPeek(mine); }, GROW_RISE + 150);
+  setTimeout(() => { if (mine) openPeek(mine); }, growMs(entry.species) + 150);
 });
 
 /* ---------------------------------------------------------- loop */
@@ -417,6 +409,7 @@ function tick(now) {
     f.rotation.z = Math.sin(now / 1500 + i * 1.3) * 0.018;
   });
   growFlower(tree, now);
+  world.life.update(now);
   placeTags();
   placePeek();
   renderer.render(scene, camera);
