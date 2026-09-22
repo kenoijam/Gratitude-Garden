@@ -382,41 +382,7 @@ export function buildFlower(id, { hue = null } = {}) {
     bloom.position.set(hx + bend, h, hz);
     if (sp.tilt) bloom.rotation.x = THREE.MathUtils.degToRad(sp.tilt);
 
-    if (sp.rings) {
-      addRings(bloom, sp, tinted);
-    } else {
-      const petals = [];
-      for (let i = 0; i < sp.petals; i++) {
-        const g = petalGeometry({ len: sp.petalLen, wid: sp.petalWid, curl: sp.curl, cup: sp.cup, tip: sp.tip });
-        g.applyMatrix4(new THREE.Matrix4()
-          .makeRotationY((i / sp.petals) * Math.PI * 2)
-          .multiply(new THREE.Matrix4().makeRotationX(THREE.MathUtils.degToRad(sp.pitch))));
-        petals.push(g);
-      }
-      bloom.add(mesh(mergeGeometries(petals), petalMat));
-    }
-
-    if (sp.centre) {
-      const c = mesh(discGeometry({ r: sp.centre.r, h: sp.centre.h }),
-                     flatMat(sp.centre.hue, sp.centre.sat, sp.centre.light));
-      c.position.y = sp.centre.h * 0.5;
-      bloom.add(c);
-    }
-    if (sp.stamens) {
-      const sticks = [];
-      for (let i = 0; i < sp.stamens; i++) {
-        const ang = (i / sp.stamens) * Math.PI * 2;
-        const stk = stemGeometry({ height: 0.075, rBase: 0.005, rTop: 0.004, bend: 0.02, sides: 4 });
-        stk.applyMatrix4(new THREE.Matrix4().makeRotationY(ang)
-          .multiply(new THREE.Matrix4().makeRotationX(THREE.MathUtils.degToRad(14))));
-        sticks.push(stk);
-        const tipG = new THREE.OctahedronGeometry(0.011, 0);
-        tipG.applyMatrix4(new THREE.Matrix4().makeTranslation(
-          Math.cos(ang) * 0.028, 0.078, Math.sin(ang) * 0.028));
-        sticks.push(tipG);
-      }
-      bloom.add(mesh(mergeGeometries(sticks), flatMat(42, 60, 52)));
-    }
+    dressBloom(bloom, sp, tinted, petalMat);
     group.add(bloom);
     blooms.push(bloom);
   }
@@ -424,6 +390,74 @@ export function buildFlower(id, { hue = null } = {}) {
   group.add(mesh(mergeGeometries(greens), greenMat));
   group.userData.blooms = blooms;
   return group;
+}
+
+/* THE BLOOM ITSELF, so that a flower in the garden and the same flower worn
+   in somebody's hair are one piece of code. The avatar's keepsakes are built
+   from this, which is the whole reason the kit exists: this project already
+   pays for the same flower maths in seven places in the 2D version. */
+function dressBloom(bloom, sp, tinted, petalMat) {
+  if (sp.rings) {
+    addRings(bloom, sp, tinted);
+  } else {
+    const petals = [];
+    for (let i = 0; i < sp.petals; i++) {
+      const g = petalGeometry({ len: sp.petalLen, wid: sp.petalWid, curl: sp.curl, cup: sp.cup, tip: sp.tip });
+      g.applyMatrix4(new THREE.Matrix4()
+        .makeRotationY((i / sp.petals) * Math.PI * 2)
+        .multiply(new THREE.Matrix4().makeRotationX(THREE.MathUtils.degToRad(sp.pitch))));
+      petals.push(g);
+    }
+    bloom.add(mesh(mergeGeometries(petals), petalMat));
+  }
+
+  if (sp.centre) {
+    const c = mesh(discGeometry({ r: sp.centre.r, h: sp.centre.h }),
+                   flatMat(sp.centre.hue, sp.centre.sat, sp.centre.light));
+    c.position.y = sp.centre.h * 0.5;
+    bloom.add(c);
+  }
+  if (sp.stamens) {
+    const sticks = [];
+    for (let i = 0; i < sp.stamens; i++) {
+      const ang = (i / sp.stamens) * Math.PI * 2;
+      const stk = stemGeometry({ height: 0.075, rBase: 0.005, rTop: 0.004, bend: 0.02, sides: 4 });
+      stk.applyMatrix4(new THREE.Matrix4().makeRotationY(ang)
+        .multiply(new THREE.Matrix4().makeRotationX(THREE.MathUtils.degToRad(14))));
+      sticks.push(stk);
+      const tipG = new THREE.OctahedronGeometry(0.011, 0);
+      tipG.applyMatrix4(new THREE.Matrix4().makeTranslation(
+        Math.cos(ang) * 0.028, 0.078, Math.sin(ang) * 0.028));
+      sticks.push(tipG);
+    }
+    bloom.add(mesh(mergeGeometries(sticks), flatMat(42, 60, 52)));
+  }
+}
+
+/* A bloom on its own, with no stem and no plant under it. A tree and a water
+   plant both answer this, because what is worn is the FLOWER, never the
+   habit: a sakura clip is two blossoms, not a small tree on somebody's head. */
+export function buildBloom(id, { hue = null, scale = 1 } = {}) {
+  const sp = SPECIES3D[id];
+  if (!sp) return new THREE.Group();
+  const H = hue === null ? sp.hue : hue;
+  const tint = [];
+  const tinted = (lightOff = 0) => {
+    const m = flatMat(H, sp.sat, sp.light + lightOff);
+    tint.push({ mat: m, sat: sp.sat, light: sp.light + lightOff });
+    return m;
+  };
+  const bloom = new THREE.Group();
+  /* the tree's blossom is not in its species row, since a canopy is not a
+     bloom. A sakura worn is a five petalled flower at the size of one. */
+  const wear = id === "sakura"
+    ? { ...sp, petals: 5, pitch: 62, petalLen: 0.11, petalWid: 0.075, curl: 0.2, cup: 0.3, tip: "round",
+        centre: { r: 0.022, h: 0.012, hue: 48, sat: 72, light: 58 }, rings: null, tree: null }
+    : sp;
+  dressBloom(bloom, wear, tinted, tinted(0));
+  bloom.scale.setScalar(scale);
+  bloom.userData.tint = tint;
+  return bloom;
 }
 
 /* A bloom built as rings of petals, inner rings nearly closed and outer

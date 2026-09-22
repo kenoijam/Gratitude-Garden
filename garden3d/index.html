@@ -83,6 +83,35 @@
       margin-right: 8px; vertical-align: -1px;
     }
 
+    /* the wardrobe, on the right where it does not sit over the avatar */
+    #wardrobe {
+      right: 18px; bottom: 78px; width: min(92vw, 310px); padding: 18px 20px 16px;
+      display: none; max-height: calc(100vh - 210px); overflow: auto;
+    }
+    #wardrobe.show { display: block; }
+    #wardrobe h2 {
+      margin: 0 0 4px; font-family: 'Fraunces', Georgia, serif; font-weight: 600;
+      font-variation-settings: 'SOFT' 50, 'WONK' 0; font-size: 22px; color: #0f5132;
+    }
+    .swatch { width: 30px; height: 30px; padding: 0; border-radius: 50%; }
+    .swatch.pick { border-color: #1d6466; border-width: 3px; }
+    input[type=range].wide { width: 100%; }
+    .opts.tiles { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+    .tile {
+      height: auto; min-height: 48px; padding: 7px 9px; text-align: left;
+      border-radius: 12px; line-height: 1.3;
+    }
+    .tile b { display: block; font-size: 12px; }
+    .tile span { font-size: 10.5px; font-weight: 400; color: #2f6260; }
+    .tile.pick span { color: #e6f6f2; }
+    .tile.locked { opacity: .5; cursor: default; }
+    .linky {
+      display: block; width: 100%; height: 28px; margin: 2px 0 8px; padding: 0;
+      border: 0; background: none; font-size: 11.5px; font-weight: 400;
+      color: #6f9a98; text-decoration: underline;
+    }
+    #dressDone { width: 100%; height: 42px; background: #1d6466; border-color: #1d6466; color: #fff9e3; }
+
     #hint {
       left: 50%; transform: translateX(-50%); top: 18px; padding: 10px 16px;
       font-size: 13.5px; font-weight: 700; display: none;
@@ -163,6 +192,7 @@
   </div>
 
   <div class="card" id="hint"></div>
+  <div class="card" id="wardrobe"></div>
 
   <div class="card" id="bar">
     <button data-view="close">Close</button>
@@ -170,6 +200,7 @@
     <button data-view="wide">Wide</button>
     <span class="sep"></span>
     <button id="plant">Plant a flower</button>
+    <button id="dress">You</button>
     <span class="sep"></span>
     <button id="turn">Turn</button>
     <button id="sil">Silhouette</button>

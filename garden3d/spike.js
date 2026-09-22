@@ -20,6 +20,8 @@
    ========================================================================= */
 import * as THREE from "./lib/three.module.min.js";
 import { buildFlower, SPECIES3D } from "./flower-kit.js";
+import { buildAvatar, KEEPSAKES, SLOTS, SKINS, HAIRS, SHAPES, keepsakeOf, DEFAULT_LOOK }
+  from "./avatar-kit.js";
 
 /* the bed holds the six that grow in soil. The sakura is a tree and the
    lotus grows on water, so neither is planted in a row with the rest. */
@@ -33,7 +35,7 @@ const smooth = t => t * t * (3 - 2 * t);
 
 const VIEWS = { close: 2.0, garden: 7.8, wide: 13 };
 
-const state = { view: "garden", turn: 0, silhouette: false, hueShift: 0, planted: 0 };
+const state = { view: "garden", turn: 0, silhouette: false, hueShift: 0, planted: 0, dress: false };
 
 const scene = new THREE.Scene();
 scene.background = new THREE.Color("#cfeef0");          /* the gardens' sky */
@@ -106,26 +108,22 @@ bank.position.set(POND.x, 0.012, POND.z);
 bank.receiveShadow = true;
 ground.add(bank);
 
-/* An avatar is here only to answer "how big is a flower". It is a stand in:
-   the real one is the next question after this one. */
+/* THE AVATAR IS AN OUTER GROUP WITH A BUILT BODY INSIDE IT, and that split
+   is load bearing: the walk, the bob and the crouch all move the outer group,
+   so changing clothes mid stride cannot interrupt any of them. */
 const avatar = new THREE.Group();
-const skin = new THREE.MeshLambertMaterial({ color: 0xf6e3cd, flatShading: true });
-const cloth = new THREE.MeshLambertMaterial({ color: 0x4a9b8e, flatShading: true });
-const hair = new THREE.MeshLambertMaterial({ color: 0x4a3526, flatShading: true });
-const body = new THREE.Mesh(new THREE.CapsuleGeometry(0.2, 0.42, 3, 8), cloth);
-body.position.y = 0.62;
-const head = new THREE.Mesh(new THREE.SphereGeometry(0.23, 12, 10), skin);
-head.position.y = 1.18;
-const cap = new THREE.Mesh(new THREE.SphereGeometry(0.245, 12, 8, 0, Math.PI * 2, 0, Math.PI * 0.55), hair);
-cap.position.y = 1.19;
-const legs = new THREE.Mesh(new THREE.CapsuleGeometry(0.09, 0.2, 3, 6), skin);
-legs.position.y = 0.2;
-[body, head, cap, legs].forEach(m => { m.castShadow = true; avatar.add(m); });
-/* front left, clear of the panels and clear of the bed, so it is doing the
-   one job it has: saying how tall a flower is */
-avatar.position.set(-1.05, 0, 1.35);
+avatar.position.set(-1.05, 0, 1.55);
 avatar.rotation.y = -0.5;
 scene.add(avatar);
+
+const look = { ...DEFAULT_LOOK };
+let avatarBody = null;
+function redress() {
+  if (avatarBody) { avatar.remove(avatarBody); }
+  avatarBody = buildAvatar(look);
+  avatar.add(avatarBody);
+  if (state.silhouette) setSilhouette(true);   /* a new body needs dressing twice */
+}
 
 /* ---------------------------------------------------------- the flowers */
 const flowers = [];
@@ -162,16 +160,30 @@ function plantOne(id, x, z, y = 0) {
 plantOne("sakura", -2.15, -1.05);
 plantOne("lotus", POND.x - 0.42, POND.z - 0.3, 0.02);
 
+redress();
+
 /* ---------------------------------------------------------- camera */
 function frame() {
-  const w = VIEWS[state.view];
+  /* THE WARDROBE BRINGS THE CAMERA TO THE AVATAR, which is what a customiser
+     does: choosing a hat while the wearer is thirty pixels tall across the
+     garden is choosing blind. The angle never changes, only the target and
+     the width, so it is the same world seen closer rather than a second
+     camera with its own rules. */
+  const w = state.dress ? 2.9 : VIEWS[state.view];
   const a = window.innerWidth / window.innerHeight;
   camera.left = -w / 2; camera.right = w / 2;
   camera.top = w / (2 * a); camera.bottom = -w / (2 * a);
   const ang = Math.PI / 4 + state.turn * (Math.PI / 2);
   const d = 12;
-  camera.position.set(Math.cos(ang) * d, d * 0.82, Math.sin(ang) * d);
-  camera.lookAt(0.3, 0.45, 0.1);
+  const t = state.dress
+    ? new THREE.Vector3(avatar.position.x, 0.86, avatar.position.z)
+    : new THREE.Vector3(0.3, 0.45, 0.1);
+  /* the wardrobe also drops the camera's PITCH. The garden is read from
+     above, where a head is mostly hair, and choosing a face from up there is
+     choosing something you cannot see. */
+  camera.position.set(t.x + Math.cos(ang) * d, t.y + d * (state.dress ? 0.34 : 0.82),
+                      t.z + Math.sin(ang) * d);
+  camera.lookAt(t);
   camera.updateProjectionMatrix();
 }
 function resize() {
@@ -326,6 +338,7 @@ function showHint(text) {
 }
 
 function startPicking(id) {
+  if (state.dress) setDressing(false);
   loop.picking = true;
   loop.species = id;
   marker.visible = false;
@@ -404,7 +417,7 @@ function plantAt(id, point) {
   loop.walk = { from, to: stand, face, t0: now, dur: travel * 1000 };
   /* the closing line, timed to the moment the bloom finishes opening. A loop
      with no end just stops, and this one is meant to feel finished. */
-  loop.finish = { at: f.userData.born + GROW_RISE, id, said: false };
+  loop.finish = { at: f.userData.born + GROW_RISE, id, said: false, kept: earn(id) };
   stopPicking();
   state.planted++;
 }
@@ -435,7 +448,8 @@ function tick(now) {
   if (fin && !fin.said && now > fin.at) {
     fin.said = true;
     const sp = SPECIES3D[fin.id];
-    showHint(sp.name + " planted. <span>" + sp.meaning + "</span>");
+    showHint(sp.name + " planted. <span>" + sp.meaning +
+      (fin.kept ? ". You kept the " + KEEPSAKES[fin.kept].name.toLowerCase() + "." : "") + "</span>");
     setTimeout(() => { if (!loop.picking) showHint(""); }, 4500);
   }
   /* the gardens' sway, kept small and per flower so the row does not lean
@@ -520,3 +534,131 @@ document.getElementById("place").addEventListener("click", () => {
   closeReflect();
   startPicking(loop.species);
 });
+
+/* =========================================================================
+   WHAT REFLECTING GIVES YOU
+
+   The wardrobe is filled by PLANTING. Every keepsake belongs to one species,
+   so the only way to get the sun hat is to have had a day that came out a
+   sunflower. Nothing is bought and nothing expires, which is the difference
+   between a reward and a record: at the end of a month the avatar is wearing
+   an account of what the person noticed.
+   ========================================================================= */
+const earned = new Set();
+function earn(species) {
+  const k = keepsakeOf(species);
+  if (!k || earned.has(k)) return null;
+  earned.add(k);
+  /* worn straight away IF that slot is empty, never over something chosen.
+     A gift that silently takes off what you were wearing is not a gift. */
+  const slot = KEEPSAKES[k].slot;
+  if (!look[slot]) { look[slot] = k; redress(); }
+  paintWardrobe();
+  return k;
+}
+
+const wardrobe = document.getElementById("wardrobe");
+function row(label) {
+  const d = document.createElement("div");
+  d.className = "q";
+  d.innerHTML = "<b>" + label + "</b>";
+  const opts = document.createElement("div");
+  opts.className = "opts";
+  d.appendChild(opts);
+  return { d, opts };
+}
+function dot(colour, on, click) {
+  const b = document.createElement("button");
+  b.className = "swatch" + (on ? " pick" : "");
+  b.style.background = colour;
+  b.addEventListener("click", click);
+  return b;
+}
+function paintWardrobe() {
+  if (!wardrobe.classList.contains("show")) return;
+  wardrobe.innerHTML = "";
+  const h2 = document.createElement("h2");
+  h2.textContent = "You";
+  const sub = document.createElement("p");
+  sub.className = "sub";
+  sub.textContent = "Keepsakes come from planting. There is nothing to buy.";
+  wardrobe.append(h2, sub);
+
+  const skin = row("Skin");
+  SKINS.forEach((c, i) => skin.opts.appendChild(
+    dot("#" + c.toString(16).padStart(6, "0"), look.skin === i,
+        () => { look.skin = i; redress(); paintWardrobe(); })));
+  wardrobe.appendChild(skin.d);
+
+  const hair = row("Hair");
+  SHAPES.forEach((name, i) => {
+    const b = document.createElement("button");
+    b.textContent = name;
+    if (look.hair === i) b.className = "pick";
+    b.addEventListener("click", () => { look.hair = i; redress(); paintWardrobe(); });
+    hair.opts.appendChild(b);
+  });
+  HAIRS.forEach((c, i) => hair.opts.appendChild(
+    dot("#" + c.toString(16).padStart(6, "0"), look.hairCol === i,
+        () => { look.hairCol = i; redress(); paintWardrobe(); })));
+  wardrobe.appendChild(hair.d);
+
+  const top = row("Clothes");
+  const slider = document.createElement("input");
+  slider.type = "range"; slider.min = 0; slider.max = 359; slider.value = look.top;
+  slider.className = "wide";
+  slider.addEventListener("input", e => { look.top = Number(e.target.value); redress(); });
+  top.opts.appendChild(slider);
+  wardrobe.appendChild(top.d);
+
+  const keep = row("Keepsakes");
+  keep.opts.className = "opts tiles";
+  Object.keys(KEEPSAKES).forEach(id => {
+    const k = KEEPSAKES[id];
+    const have = earned.has(id);
+    const worn = look[k.slot] === id;
+    const b = document.createElement("button");
+    b.className = "tile" + (worn ? " pick" : "") + (have ? "" : " locked");
+    b.innerHTML = "<b>" + k.name + "</b><span>" +
+      (have ? k.note : "Plant a " + SPECIES3D[k.from].name.toLowerCase()) + "</span>";
+    b.disabled = !have;
+    /* a worn keepsake takes itself off, so the slot is never a trap */
+    b.addEventListener("click", () => {
+      look[k.slot] = worn ? null : id;
+      redress(); paintWardrobe();
+    });
+    keep.opts.appendChild(b);
+  });
+  wardrobe.appendChild(keep.d);
+
+  /* a TEST control and it says so. The spike keeps nothing between reloads,
+     so without this the wardrobe can only ever be seen by planting eight
+     flowers again. It is not part of the design. */
+  const all = document.createElement("button");
+  all.className = "linky";
+  all.textContent = "Unlock everything (testing only)";
+  all.addEventListener("click", () => {
+    Object.keys(KEEPSAKES).forEach(k => earned.add(k));
+    paintWardrobe();
+  });
+  const done = document.createElement("button");
+  done.id = "dressDone";
+  done.textContent = "Done";
+  done.addEventListener("click", () => setDressing(false));
+  wardrobe.append(all, done);
+}
+function setDressing(on) {
+  state.dress = on;
+  wardrobe.classList.toggle("show", on);
+  document.getElementById("dress").classList.toggle("on", on);
+  /* turned to face the camera while being dressed, and left facing that way
+     afterwards, since the next thing it does is walk somewhere anyway */
+  if (on) {
+    const ang = Math.PI / 4 + state.turn * (Math.PI / 2);
+    avatar.rotation.y = Math.atan2(Math.cos(ang), Math.sin(ang));
+    paintWardrobe();
+  }
+  frame();
+}
+document.getElementById("dress").addEventListener("click",
+  () => setDressing(!state.dress));
