@@ -21,7 +21,9 @@
 import * as THREE from "./lib/three.module.min.js";
 import { buildFlower, SPECIES3D } from "./flower-kit.js";
 
-const ORDER = ["daisy", "tulip", "lily", "sunflower", "lavender"];
+/* the bed holds the six that grow in soil. The sakura is a tree and the
+   lotus grows on water, so neither is planted in a row with the rest. */
+const ORDER = ["daisy", "tulip", "lily", "sunflower", "lavender", "rose"];
 
 /* The web version's numbers, unchanged. */
 const GROW_RISE = 3400;
@@ -29,7 +31,7 @@ const GROW_OPEN = 1700;
 const growEase = t => 1 - Math.pow(1 - t, 3);
 const smooth = t => t * t * (3 - 2 * t);
 
-const VIEWS = { close: 2.0, garden: 4.6, wide: 9.5 };
+const VIEWS = { close: 2.0, garden: 7.0, wide: 12.5 };
 
 const state = { view: "garden", turn: 0, silhouette: false, hueShift: 0, planted: 0 };
 
@@ -61,7 +63,7 @@ const ground = new THREE.Group();
 scene.add(ground);
 
 const grass = new THREE.Mesh(
-  new THREE.CircleGeometry(3.6, 40),
+  new THREE.CircleGeometry(4.3, 44),
   new THREE.MeshLambertMaterial({ color: new THREE.Color().setHSL(112 / 360, 0.44, 0.71) })
 );
 grass.rotation.x = -Math.PI / 2;
@@ -69,13 +71,34 @@ grass.receiveShadow = true;
 ground.add(grass);
 
 const bed = new THREE.Mesh(
-  new THREE.BoxGeometry(2.95, 0.14, 1.35),
+  new THREE.BoxGeometry(3.35, 0.14, 1.35),
   new THREE.MeshLambertMaterial({ color: new THREE.Color().setHSL(26 / 360, 0.33, 0.47), flatShading: true })
 );
 bed.position.y = 0.07;
 bed.castShadow = true;
 bed.receiveShadow = true;
+bed.position.x = -0.4;
 ground.add(bed);
+
+/* A POND, because the lotus needed one. It is a test of the plot as much as
+   of the flower: a garden made only of soil has one kind of place in it. */
+const pond = new THREE.Mesh(
+  new THREE.CircleGeometry(0.92, 34),
+  new THREE.MeshLambertMaterial({ color: new THREE.Color().setHSL(0.53, 0.44, 0.62) })
+);
+pond.rotation.x = -Math.PI / 2;
+pond.position.set(2.15, 0.015, 0.35);
+pond.receiveShadow = true;
+ground.add(pond);
+/* a bank, so the water sits IN the ground rather than on it */
+const bank = new THREE.Mesh(
+  new THREE.RingGeometry(0.9, 1.04, 34),
+  new THREE.MeshLambertMaterial({ color: new THREE.Color().setHSL(0.09, 0.3, 0.5) })
+);
+bank.rotation.x = -Math.PI / 2;
+bank.position.set(2.15, 0.012, 0.35);
+bank.receiveShadow = true;
+ground.add(bank);
 
 /* An avatar is here only to answer "how big is a flower". It is a stand in:
    the real one is the next question after this one. */
@@ -105,7 +128,7 @@ function plantRow(z, hueOffsets) {
     const sp = SPECIES3D[id];
     const hue = (sp.hue + (hueOffsets[i] || 0) + 360) % 360;
     const f = buildFlower(id, { hue });
-    f.position.set(-1.1 + i * 0.55, 0.14, z);
+    f.position.set(-1.8 + i * 0.55, 0.14, z);
     f.userData.baseHue = hue;
     f.userData.species = id;
     f.userData.born = -1;
@@ -115,8 +138,23 @@ function plantRow(z, hueOffsets) {
 }
 /* the front row in each species' own colour, the back row shifted, because
    a species that only reads in its own hue does not really read */
-plantRow(0.3, [0, 0, 0, 0, 0]);
-plantRow(-0.32, [40, -55, 120, 190, -80]);
+plantRow(0.3, [0, 0, 0, 0, 0, 0]);
+plantRow(-0.32, [40, -55, 120, 190, -80, 150]);
+
+/* the two that are not bed flowers, each standing where it belongs */
+function plantOne(id, x, z, y = 0) {
+  const sp = SPECIES3D[id];
+  const f = buildFlower(id, { hue: sp.hue });
+  f.position.set(x, y, z);
+  f.userData.baseHue = sp.hue;
+  f.userData.species = id;
+  f.userData.born = -1;
+  scene.add(f);
+  flowers.push(f);
+  return f;
+}
+plantOne("sakura", -2.15, -1.05);
+plantOne("lotus", 2.15, 0.35, 0.02);
 
 /* ---------------------------------------------------------- camera */
 function frame() {
@@ -127,7 +165,7 @@ function frame() {
   const ang = Math.PI / 4 + state.turn * (Math.PI / 2);
   const d = 12;
   camera.position.set(Math.cos(ang) * d, d * 0.82, Math.sin(ang) * d);
-  camera.lookAt(0, 0.3, 0);
+  camera.lookAt(0.05, 0.45, -0.05);
   camera.updateProjectionMatrix();
 }
 function resize() {
@@ -146,7 +184,7 @@ function setSilhouette(on) {
     if (!o.isMesh) return;
     if (on) {
       if (!o.userData._mat) o.userData._mat = o.material;
-      o.material = (o === grass || o === bed) ? PALE : DARK;
+      o.material = (o === grass || o === bed || o === pond || o === bank) ? PALE : DARK;
     } else if (o.userData._mat) {
       o.material = o.userData._mat;
     }
@@ -210,9 +248,12 @@ silBtn.addEventListener("click", () => {
 document.getElementById("hue").addEventListener("input", e => {
   state.hueShift = Number(e.target.value);
   flowers.forEach(f => {
-    const sp = SPECIES3D[f.userData.species];
     const h = ((f.userData.baseHue + state.hueShift) % 360 + 360) % 360;
-    f.userData.petalMat.color.setHSL(h / 360, sp.sat / 100, sp.light / 100);
+    /* every registered petal material moves together, each keeping its own
+       lightness offset, which is what holds a rose's rings apart */
+    (f.userData.tint || []).forEach(t => {
+      t.mat.color.setHSL(h / 360, t.sat / 100, Math.min(96, Math.max(18, t.light)) / 100);
+    });
   });
 });
 document.getElementById("replant").addEventListener("click", replant);

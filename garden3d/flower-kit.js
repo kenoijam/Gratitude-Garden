@@ -158,6 +158,60 @@ export const SPECIES3D = {
     centre: { r: 0.12, h: 0.05, hue: 28, sat: 45, light: 32 },
     stem: 1.02, tilt: 24, leaves: true
   },
+  /* RINGS, not a ring. A rose is the one species whose petals are mostly
+     hiding each other: pitch climbs from nearly closed at the middle to
+     almost flat at the outside, and the cup is deep throughout, which is
+     what gives the wrapped look. The two inner rings take a lighter tone
+     and the two outer a darker one, so the ball has depth without needing
+     a texture. */
+  rose: {
+    name: "Rose", meaning: "Love and depth",
+    hue: 344, sat: 62, light: 52,
+    rings: [
+      /* each ring sits a little LOWER than the one inside it. Stacked at one
+         height the climbing pitches read as a staircase of frills rather
+         than as a ball, which is the first thing this got wrong. */
+      /* A ROSE PETAL IS ALMOST AS WIDE AS IT IS LONG, and that is what makes
+         the ball. Narrow petals at climbing pitches spiral upward into a
+         cone of frills, which is a hollyhock. Wide ones overlap sideways. */
+      { count: 4, pitch: 14, len: 0.062, wid: 0.072, curl: -0.3,  cup: 0.62, light: 8,  y: 0.03 },
+      { count: 6, pitch: 34, len: 0.072, wid: 0.086, curl: -0.18, cup: 0.58, light: 4,  y: 0.022 },
+      { count: 7, pitch: 52, len: 0.082, wid: 0.096, curl: -0.05, cup: 0.52, light: 0,  y: 0.012 },
+      { count: 8, pitch: 70, len: 0.09,  wid: 0.104, curl: 0.12,  cup: 0.46, light: -5, y: 0.003 },
+      /* the outer ring is pushed PAST flat, to 96, so the ball sits on a
+         flange of splayed petals. In silhouette a plain ball of petals is
+         a tulip bud drawn rounder; the flange is what tells them apart. */
+      { count: 8, pitch: 94, len: 0.098, wid: 0.11,  curl: 0.3,   cup: 0.34, light: -9, y: -0.005 }
+    ],
+    stem: 0.52, heads: 2, leaves: true
+  },
+  /* A TREE, and that is the whole point. As one blossom on a stem the
+     sakura is a five petalled pink flower, which is a daisy in another
+     colour. As a small tree it is the only thing in the garden with a
+     canopy, it gives the plot vertical variety, and it is something you
+     can sit under, which is what "reflection and presence" should be. */
+  sakura: {
+    name: "Sakura", meaning: "Reflection and presence",
+    hue: 335, sat: 58, light: 72,
+    tree: { trunk: 0.7, branches: 5, blobs: 16, spread: 0.34, top: 0.42 },
+    leaves: false
+  },
+  /* ON WATER. Its meaning is rising out of something, so the pad it rises
+     from is not decoration: it is the half of the picture that says it.
+     The pads also make the lotus the one species that cannot be planted
+     just anywhere, which is a rule the 2D version had no way to express. */
+  lotus: {
+    name: "Lotus", meaning: "Strength and rising",
+    hue: 318, sat: 56, light: 70,
+    water: { pads: 4, padR: 0.225 },
+    rings: [
+      { count: 6, pitch: 20, len: 0.17, wid: 0.066, curl: -0.15, cup: 0.5, light: 6 },
+      { count: 7, pitch: 42, len: 0.185, wid: 0.072, curl: 0.05, cup: 0.45, light: 0 },
+      { count: 8, pitch: 64, len: 0.2, wid: 0.078, curl: 0.2, cup: 0.4, light: -6 }
+    ],
+    tip: "point",
+    stem: 0.28, leaves: false
+  },
   lavender: {
     name: "Lavender", meaning: "Calm and safety",
     hue: 275, sat: 42, light: 66,
@@ -183,9 +237,86 @@ export function buildFlower(id, { hue = null } = {}) {
   group.name = id;
 
   const greenMat = flatMat(GREEN.h, GREEN.s, GREEN.l);
-  const petalMat = flatMat(H, sp.sat, sp.light);
+  /* Every petal material is registered here with its own lightness offset,
+     so one hue slider can move a rose's five rings and keep the depth
+     between them. The person picks a hue; the tones are the species'. */
+  const tint = [];
+  const tinted = (lightOff = 0) => {
+    const m = flatMat(H, sp.sat, sp.light + lightOff);
+    tint.push({ mat: m, sat: sp.sat, light: sp.light + lightOff });
+    return m;
+  };
+  const petalMat = tinted(0);
   group.userData.petalMat = petalMat;
   group.userData.greenMat = greenMat;
+  group.userData.tint = tint;
+
+  /* a small tree: trunk, a few branches, and a canopy of blobs */
+  if (sp.tree) {
+    const t = sp.tree;
+    const rnd = mulberry(3);
+    const bark = flatMat(24, 26, 40);
+    const woods = [stemGeometry({ height: t.trunk, rBase: 0.055, rTop: 0.028, bend: 0.06, sides: 5 })];
+    for (let i = 0; i < t.branches; i++) {
+      const a = (i / t.branches) * Math.PI * 2 + rnd() * 0.4;
+      const br = stemGeometry({ height: 0.3 + rnd() * 0.12, rBase: 0.022, rTop: 0.012, bend: 0.12, sides: 4 });
+      br.applyMatrix4(new THREE.Matrix4()
+        .makeTranslation(0.05, t.trunk * 0.78, 0)
+        .multiply(new THREE.Matrix4().makeRotationY(a))
+        .multiply(new THREE.Matrix4().makeRotationZ(THREE.MathUtils.degToRad(28 + rnd() * 14))));
+      woods.push(br);
+    }
+    group.add(mesh(mergeGeometries(woods), bark));
+
+    /* the canopy is a handful of overlapping blobs rather than one sphere:
+       one sphere reads as a lollipop, and a lollipop is not a tree */
+    const canopy = new THREE.Group();
+    canopy.position.y = t.trunk + t.top * 0.42;
+    const light = [], dark = [];
+    for (let i = 0; i < t.blobs; i++) {
+      const a = (i / t.blobs) * Math.PI * 2 + rnd();
+      const rad = t.spread * (0.3 + rnd() * 0.78);
+      const r = 0.095 + rnd() * 0.075;
+      /* every blob at the same detail. Mixing a detail 0 with a detail 1 put
+         three hard crystals in a canopy of soft ones, which reads as a fault
+         rather than as variety; the depth comes from the tone instead. */
+      const g = new THREE.IcosahedronGeometry(r, 1);
+      g.applyMatrix4(new THREE.Matrix4().makeTranslation(
+        Math.cos(a) * rad, (rnd() - 0.4) * t.top * 0.5, Math.sin(a) * rad));
+      (i % 3 === 0 ? dark : light).push(g);
+    }
+    canopy.add(mesh(mergeGeometries(light), tinted(0)));
+    canopy.add(mesh(mergeGeometries(dark), tinted(-9)));
+    group.add(canopy);
+    group.userData.blooms = [canopy];
+    return group;
+  }
+
+  /* on water: pads first, then the bloom rising out of them */
+  if (sp.water) {
+    const rnd = mulberry(5);
+    const padMat = flatMat(128, 32, 42);
+    const pads = [];
+    for (let i = 0; i < sp.water.pads; i++) {
+      const a = (i / sp.water.pads) * Math.PI * 2 + 0.6;
+      const rad = 0.3 + rnd() * 0.14;
+      const pr = sp.water.padR * (0.7 + rnd() * 0.5);
+      /* the notch is what makes a green disc a lily pad */
+      const pad = new THREE.CylinderGeometry(pr, pr * 0.97, 0.012, 14, 1, false, 0, Math.PI * 1.83);
+      pad.applyMatrix4(new THREE.Matrix4()
+        .makeTranslation(Math.cos(a) * rad, 0.006, Math.sin(a) * rad)
+        .multiply(new THREE.Matrix4().makeRotationY(rnd() * Math.PI * 2)));
+      pads.push(pad);
+    }
+    group.add(mesh(mergeGeometries(pads), padMat));
+    group.add(mesh(stemGeometry({ height: sp.stem, rBase: 0.014, rTop: 0.011, bend: 0.01 }), greenMat));
+    const bloom = new THREE.Group();
+    bloom.position.y = sp.stem;
+    addRings(bloom, sp, tinted);
+    group.add(bloom);
+    group.userData.blooms = [bloom];
+    return group;
+  }
 
   /* lavender is a clump of spikes rather than one bloom on one stem, which
      is what stops it reading as "a small purple flower" at distance */
@@ -251,15 +382,19 @@ export function buildFlower(id, { hue = null } = {}) {
     bloom.position.set(hx + bend, h, hz);
     if (sp.tilt) bloom.rotation.x = THREE.MathUtils.degToRad(sp.tilt);
 
-    const petals = [];
-    for (let i = 0; i < sp.petals; i++) {
-      const g = petalGeometry({ len: sp.petalLen, wid: sp.petalWid, curl: sp.curl, cup: sp.cup, tip: sp.tip });
-      g.applyMatrix4(new THREE.Matrix4()
-        .makeRotationY((i / sp.petals) * Math.PI * 2)
-        .multiply(new THREE.Matrix4().makeRotationX(THREE.MathUtils.degToRad(sp.pitch))));
-      petals.push(g);
+    if (sp.rings) {
+      addRings(bloom, sp, tinted);
+    } else {
+      const petals = [];
+      for (let i = 0; i < sp.petals; i++) {
+        const g = petalGeometry({ len: sp.petalLen, wid: sp.petalWid, curl: sp.curl, cup: sp.cup, tip: sp.tip });
+        g.applyMatrix4(new THREE.Matrix4()
+          .makeRotationY((i / sp.petals) * Math.PI * 2)
+          .multiply(new THREE.Matrix4().makeRotationX(THREE.MathUtils.degToRad(sp.pitch))));
+        petals.push(g);
+      }
+      bloom.add(mesh(mergeGeometries(petals), petalMat));
     }
-    bloom.add(mesh(mergeGeometries(petals), petalMat));
 
     if (sp.centre) {
       const c = mesh(discGeometry({ r: sp.centre.r, h: sp.centre.h }),
@@ -289,6 +424,30 @@ export function buildFlower(id, { hue = null } = {}) {
   group.add(mesh(mergeGeometries(greens), greenMat));
   group.userData.blooms = blooms;
   return group;
+}
+
+/* A bloom built as rings of petals, inner rings nearly closed and outer
+   rings nearly flat. The rose and the lotus are the same routine with
+   different numbers, which is the kit doing its job. */
+function addRings(bloom, sp, tinted) {
+  sp.rings.forEach((ring, ri) => {
+    const geoms = [];
+    for (let i = 0; i < ring.count; i++) {
+      const g = petalGeometry({
+        len: ring.len, wid: ring.wid, curl: ring.curl, cup: ring.cup,
+        tip: sp.tip || "round"
+      });
+      /* every ring is turned half a step off the one inside it, so petals
+         sit in the gaps rather than stacking into columns */
+      const off = (ri % 2) * (Math.PI / ring.count);
+      g.applyMatrix4(new THREE.Matrix4()
+        .makeTranslation(0, ring.y || 0, 0)
+        .multiply(new THREE.Matrix4().makeRotationY((i / ring.count) * Math.PI * 2 + off))
+        .multiply(new THREE.Matrix4().makeRotationX(THREE.MathUtils.degToRad(ring.pitch))));
+      geoms.push(g);
+    }
+    bloom.add(mesh(mergeGeometries(geoms), tinted(ring.light || 0)));
+  });
 }
 
 /* ---------------------------------------------------------- helpers */
