@@ -1075,6 +1075,20 @@ The `@font-face` rules are repeated in all four stylesheets, with `../` paths in
 
 Headings on the garden pages come from two places. `.gg-title` and `#tips-card h3` are in the stylesheets; the smaller card headings are built by `buildUI()` with p5.dom and carry inline `font-size` and `font-weight`, so those change in the JS. Inline wins over the stylesheet, so setting a heading's font in CSS alone will not take.
 
+## `garden3d/`, a SEPARATE exploration, not part of the site
+
+**Nothing in `garden3d/` is loaded by the four pages, and nothing in the four pages loads it.** It is a spike for a possible thesis direction: the same garden as a cosy low poly, avatar based, isometric 3D space, after Animal Crossing and Cozy Island. **The web version stays exactly as it is.** If that ever stops being true, this note is wrong.
+
+- **It answers ONE question**: at the distance the game would be played at, does each species read as itself? Everything in it exists to test that and nothing else. There is no avatar system, no persistence, no interaction beyond the controls.
+- **Three.js r169 is VENDORED** at `garden3d/lib/three.module.min.js`, 687KB, imported as a plain ES module. No build step, no CDN at runtime, which is the same rule the rest of the project follows.
+- **No model files, ever.** `flower-kit.js` holds five primitives (petal, stem, spike, disc, and the merge helper) and a parameter row per species. That is what keeps the person's chosen HUE working, exactly as in 2D, and it reuses the hues and petal counts `SPECIES` already carries in `bouquet-sketch.js`.
+- **PITCH is the one parameter the 2D version does not have**: how far a petal leans from vertical. Tulip 8 degrees stays a closed cup, daisy 78 is flat, lily 100 is swept back. Pitch does most of the work of telling them apart.
+- **THE SILHOUETTE TEST EARNED ITS PLACE IMMEDIATELY.** With colour removed, the daisy and the sunflower were the same shape: a ring of petals with a centre, differing only in size. The same failure the chrysanthemum had in 2D. The fix was not petal count, it was HABIT: the daisy is a clump of three low heads, and the sunflower is one tall stem with a big disc that NODS forward 24 degrees. Nodding is also the hook for the behaviour idea, a head that follows the sun.
+- **The growth timings are the web version's, unchanged**: `GROW_RISE` 3400ms, `GROW_OPEN` 1700ms, a cubic ease out on the rise and a smoothstep on the opening, the bloom scaling from 0.18. A flower grows at the same speed in both versions, which is continuity rather than coincidence.
+- **All interface is HTML over the canvas**, and that is the architecture the real thing would use: never build a text field in WebGL, since the reflection writing has to stay accessible and keep the project's own type.
+- Measured: 61fps at 1280 by 800 with ten plants, two draw calls per plant, 704KB on disk including three.js.
+- **Rose, sakura and lotus are NOT in the spike.** They are the three hardest, and two of them change plant type (sakura a tree, lotus a water plant), so they are the next test rather than part of this one.
+
 ## Conventions
 
 - Indentation is inconsistent (the shared sketch is largely unindented at top level). Match the surrounding block rather than reformatting; whole-file reformatting would bury real diffs.
