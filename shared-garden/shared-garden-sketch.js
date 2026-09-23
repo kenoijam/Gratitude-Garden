@@ -576,12 +576,7 @@ bezierVertex(Rt * -0.36, Rt * -0.2, Rt * -0.2, Rt * -0.48, Rt * 0, Rt * -0.66);
 bezierVertex(Rt * 0.2, Rt * -0.48, Rt * 0.36, Rt * -0.2, Rt * 0.38, Rt * 0.14);
 bezierVertex(Rt * 0.4, Rt * 0.5, Rt * 0.26, Rt * 0.78, Rt * 0, Rt * 0.8);
 endShape(CLOSE);
-fill(hue, sat * 0.8, light + 14, 0.32);
-beginShape();
-vertex(Rt * -0.1, Rt * 0.62);
-bezierVertex(Rt * -0.26, Rt * 0.4, Rt * -0.26, Rt * -0.1, Rt * -0.08, Rt * -0.44);
-bezierVertex(Rt * -0.14, Rt * -0.08, Rt * -0.16, Rt * 0.32, Rt * -0.1, Rt * 0.62);
-endShape(CLOSE);
+/* NO HIGHLIGHT on the tulip. It was the set's only translucent fill and its only asymmetric marking; see CLAUDE.md. */
 }
 
 function drawRoseBloom(R, hue, sat, light) {
@@ -1871,12 +1866,7 @@ pg.bezierVertex(Rt * -0.36, Rt * -0.2, Rt * -0.2, Rt * -0.48, Rt * 0, Rt * -0.66
 pg.bezierVertex(Rt * 0.2, Rt * -0.48, Rt * 0.36, Rt * -0.2, Rt * 0.38, Rt * 0.14);
 pg.bezierVertex(Rt * 0.4, Rt * 0.5, Rt * 0.26, Rt * 0.78, Rt * 0, Rt * 0.8);
 pg.endShape(pg.CLOSE);
-pg.fill(hue, sat * 0.8, light + 14, 0.32);
-pg.beginShape();
-pg.vertex(Rt * -0.1, Rt * 0.62);
-pg.bezierVertex(Rt * -0.26, Rt * 0.4, Rt * -0.26, Rt * -0.1, Rt * -0.08, Rt * -0.44);
-pg.bezierVertex(Rt * -0.14, Rt * -0.08, Rt * -0.16, Rt * 0.32, Rt * -0.1, Rt * 0.62);
-pg.endShape(pg.CLOSE);
+/* NO HIGHLIGHT on the tulip. It was the set's only translucent fill and its only asymmetric marking; see CLAUDE.md. */
 }
 
 function drawRosePreview(pg, R, hue, sat, light) {

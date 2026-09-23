@@ -484,12 +484,7 @@ function drawTulip(ctx, R, hue, sat, light) {
   ctx.bezierCurveTo(Rt * 0.2, Rt * -0.48, Rt * 0.36, Rt * -0.2, Rt * 0.38, Rt * 0.14);
   ctx.bezierCurveTo(Rt * 0.4, Rt * 0.5, Rt * 0.26, Rt * 0.78, Rt * 0, Rt * 0.8);
   ctx.closePath(); ctx.fill();
-  ctx.fillStyle = hsla(hue, sat * 0.8, light + 14, 0.32);
-  ctx.beginPath();
-  ctx.moveTo(Rt * -0.1, Rt * 0.62);
-  ctx.bezierCurveTo(Rt * -0.26, Rt * 0.4, Rt * -0.26, Rt * -0.1, Rt * -0.08, Rt * -0.44);
-  ctx.bezierCurveTo(Rt * -0.14, Rt * -0.08, Rt * -0.16, Rt * 0.32, Rt * -0.1, Rt * 0.62);
-  ctx.closePath(); ctx.fill();
+  /* NO HIGHLIGHT on the tulip. It was the set's only translucent fill and its only asymmetric marking; see CLAUDE.md. */
 }
 
 function drawRose(ctx, R, hue, sat, light) {
