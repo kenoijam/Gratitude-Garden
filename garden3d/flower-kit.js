@@ -191,10 +191,19 @@ export const SPECIES3D = {
      canopy, it gives the plot vertical variety, and it is something you
      can sit under, which is what "reflection and presence" should be. */
   sakura: {
+    /* A STEM FLOWER AGAIN, and the NOTCH is what makes that possible.
+       It was a tree here, because one blossom on a stem lost the silhouette
+       test against the daisy. The cleft tip is the actual signature of a
+       cherry petal in botanical drawing, and five broad notched petals round
+       a ring of stamens cannot be read as a daisy's twelve narrow ones.
+       The tree is still in the scene, as SCENERY: see `buildTree`. */
     name: "Sakura", meaning: "Reflection and presence",
     hue: 335, sat: 58, light: 72,
-    tree: { trunk: 0.7, branches: 5, blobs: 16, spread: 0.34, top: 0.42 },
-    leaves: false
+    petals: 5, pitch: 66, petalLen: 0.125, petalWid: 0.088, curl: 0.18, cup: 0.3,
+    tip: "notch",
+    centre: { r: 0.022, h: 0.012, hue: 48, sat: 72, light: 58 },
+    stamens: 8,
+    stem: 0.42, leaves: true
   },
   /* ON WATER. Its meaning is rising out of something, so the pad it rises
      from is not decoration: it is the half of the picture that says it.
@@ -203,14 +212,18 @@ export const SPECIES3D = {
   lotus: {
     name: "Lotus", meaning: "Strength and rising",
     hue: 318, sat: 56, light: 70,
-    water: { pads: 4, padR: 0.225 },
+
     rings: [
       { count: 6, pitch: 20, len: 0.17, wid: 0.066, curl: -0.15, cup: 0.5, light: 6 },
       { count: 7, pitch: 42, len: 0.185, wid: 0.072, curl: 0.05, cup: 0.45, light: 0 },
       { count: 8, pitch: 64, len: 0.2, wid: 0.078, curl: 0.2, cup: 0.4, light: -6 }
     ],
     tip: "point",
-    stem: 0.28, leaves: false
+    /* ON A STEM, IN THE GRASS. It grew from its own pool of water, which was
+       true to the plant and made it the one species that could not be
+       planted with the others. The 2D version has always drawn it as a bloom
+       on a stem in a meadow, and nobody has ever blinked at it. */
+    stem: 0.44, leaves: true
   },
   lavender: {
     name: "Lavender", meaning: "Calm and safety",
@@ -250,73 +263,6 @@ export function buildFlower(id, { hue = null } = {}) {
   group.userData.petalMat = petalMat;
   group.userData.greenMat = greenMat;
   group.userData.tint = tint;
-
-  /* a small tree: trunk, a few branches, and a canopy of blobs */
-  if (sp.tree) {
-    const t = sp.tree;
-    const rnd = mulberry(3);
-    const bark = flatMat(24, 26, 40);
-    const woods = [stemGeometry({ height: t.trunk, rBase: 0.055, rTop: 0.028, bend: 0.06, sides: 5 })];
-    for (let i = 0; i < t.branches; i++) {
-      const a = (i / t.branches) * Math.PI * 2 + rnd() * 0.4;
-      const br = stemGeometry({ height: 0.3 + rnd() * 0.12, rBase: 0.022, rTop: 0.012, bend: 0.12, sides: 4 });
-      br.applyMatrix4(new THREE.Matrix4()
-        .makeTranslation(0.05, t.trunk * 0.78, 0)
-        .multiply(new THREE.Matrix4().makeRotationY(a))
-        .multiply(new THREE.Matrix4().makeRotationZ(THREE.MathUtils.degToRad(28 + rnd() * 14))));
-      woods.push(br);
-    }
-    group.add(mesh(mergeGeometries(woods), bark));
-
-    /* the canopy is a handful of overlapping blobs rather than one sphere:
-       one sphere reads as a lollipop, and a lollipop is not a tree */
-    const canopy = new THREE.Group();
-    canopy.position.y = t.trunk + t.top * 0.42;
-    const light = [], dark = [];
-    for (let i = 0; i < t.blobs; i++) {
-      const a = (i / t.blobs) * Math.PI * 2 + rnd();
-      const rad = t.spread * (0.3 + rnd() * 0.78);
-      const r = 0.095 + rnd() * 0.075;
-      /* every blob at the same detail. Mixing a detail 0 with a detail 1 put
-         three hard crystals in a canopy of soft ones, which reads as a fault
-         rather than as variety; the depth comes from the tone instead. */
-      const g = new THREE.IcosahedronGeometry(r, 1);
-      g.applyMatrix4(new THREE.Matrix4().makeTranslation(
-        Math.cos(a) * rad, (rnd() - 0.4) * t.top * 0.5, Math.sin(a) * rad));
-      (i % 3 === 0 ? dark : light).push(g);
-    }
-    canopy.add(mesh(mergeGeometries(light), tinted(0)));
-    canopy.add(mesh(mergeGeometries(dark), tinted(-9)));
-    group.add(canopy);
-    group.userData.blooms = [canopy];
-    return group;
-  }
-
-  /* on water: pads first, then the bloom rising out of them */
-  if (sp.water) {
-    const rnd = mulberry(5);
-    const padMat = flatMat(128, 32, 42);
-    const pads = [];
-    for (let i = 0; i < sp.water.pads; i++) {
-      const a = (i / sp.water.pads) * Math.PI * 2 + 0.6;
-      const rad = 0.3 + rnd() * 0.14;
-      const pr = sp.water.padR * (0.7 + rnd() * 0.5);
-      /* the notch is what makes a green disc a lily pad */
-      const pad = new THREE.CylinderGeometry(pr, pr * 0.97, 0.012, 14, 1, false, 0, Math.PI * 1.83);
-      pad.applyMatrix4(new THREE.Matrix4()
-        .makeTranslation(Math.cos(a) * rad, 0.006, Math.sin(a) * rad)
-        .multiply(new THREE.Matrix4().makeRotationY(rnd() * Math.PI * 2)));
-      pads.push(pad);
-    }
-    group.add(mesh(mergeGeometries(pads), padMat));
-    group.add(mesh(stemGeometry({ height: sp.stem, rBase: 0.014, rTop: 0.011, bend: 0.01 }), greenMat));
-    const bloom = new THREE.Group();
-    bloom.position.y = sp.stem;
-    addRings(bloom, sp, tinted);
-    group.add(bloom);
-    group.userData.blooms = [bloom];
-    return group;
-  }
 
   /* lavender is a clump of spikes rather than one bloom on one stem, which
      is what stops it reading as "a small purple flower" at distance */
@@ -448,13 +394,10 @@ export function buildBloom(id, { hue = null, scale = 1 } = {}) {
     return m;
   };
   const bloom = new THREE.Group();
-  /* the tree's blossom is not in its species row, since a canopy is not a
-     bloom. A sakura worn is a five petalled flower at the size of one. */
-  const wear = id === "sakura"
-    ? { ...sp, petals: 5, pitch: 62, petalLen: 0.11, petalWid: 0.075, curl: 0.2, cup: 0.3, tip: "round",
-        centre: { r: 0.022, h: 0.012, hue: 48, sat: 72, light: 58 }, rings: null, tree: null }
-    : sp;
-  dressBloom(bloom, wear, tinted, tinted(0));
+  /* every species is a bloom on a stem now, so a worn flower is simply that
+     species' own bloom. This used to carry an override for the sakura, whose
+     row described a tree. */
+  dressBloom(bloom, sp, tinted, tinted(0));
   bloom.scale.setScalar(scale);
   bloom.userData.tint = tint;
   return bloom;
@@ -536,4 +479,61 @@ function mulberry(a) {
     t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
     return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
   };
+}
+
+/* =========================================================================
+   THE TREE IS SCENERY, NOT A SPECIES.
+
+   It began as the sakura, because a blossom on a stem could not be told
+   apart from a daisy. The notched petal solved that, so the species went
+   back into the grass with the other seven and the tree stayed behind as
+   what it always really was: the thing the garden is arranged around, and
+   something to stand under. Nothing is planted as one.
+   ========================================================================= */
+export const TREE = { trunk: 0.7, branches: 5, blobs: 16, spread: 0.34, top: 0.42 };
+
+export function buildTree({ hue = 335, sat = 58, light = 72, t = TREE } = {}) {
+  const group = new THREE.Group();
+  const tint = [];
+  const tinted = (lightOff = 0) => {
+    const m = flatMat(hue, sat, light + lightOff);
+    tint.push({ mat: m, sat, light: light + lightOff });
+    return m;
+  };
+  const rnd = mulberry(3);
+  const bark = flatMat(24, 26, 40);
+  const woods = [stemGeometry({ height: t.trunk, rBase: 0.055, rTop: 0.028, bend: 0.06, sides: 5 })];
+  for (let i = 0; i < t.branches; i++) {
+    const a = (i / t.branches) * Math.PI * 2 + rnd() * 0.4;
+    const br = stemGeometry({ height: 0.3 + rnd() * 0.12, rBase: 0.022, rTop: 0.012, bend: 0.12, sides: 4 });
+    br.applyMatrix4(new THREE.Matrix4()
+      .makeTranslation(0.05, t.trunk * 0.78, 0)
+      .multiply(new THREE.Matrix4().makeRotationY(a))
+      .multiply(new THREE.Matrix4().makeRotationZ(THREE.MathUtils.degToRad(28 + rnd() * 14))));
+    woods.push(br);
+  }
+  group.add(mesh(mergeGeometries(woods), bark));
+
+  /* the canopy is a handful of overlapping blobs rather than one sphere:
+     one sphere reads as a lollipop, and a lollipop is not a tree. Every blob
+     is at the SAME detail, since mixing a detail 0 with a detail 1 put three
+     hard crystals in a canopy of soft ones. */
+  const canopy = new THREE.Group();
+  canopy.position.y = t.trunk + t.top * 0.42;
+  const pale = [], deep = [];
+  for (let i = 0; i < t.blobs; i++) {
+    const a = (i / t.blobs) * Math.PI * 2 + rnd();
+    const rad = t.spread * (0.3 + rnd() * 0.78);
+    const r = 0.095 + rnd() * 0.075;
+    const g = new THREE.IcosahedronGeometry(r, 1);
+    g.applyMatrix4(new THREE.Matrix4().makeTranslation(
+      Math.cos(a) * rad, (rnd() - 0.4) * t.top * 0.5, Math.sin(a) * rad));
+    (i % 3 === 0 ? deep : pale).push(g);
+  }
+  canopy.add(mesh(mergeGeometries(pale), tinted(0)));
+  canopy.add(mesh(mergeGeometries(deep), tinted(-9)));
+  group.add(canopy);
+  group.traverse(o => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; } });
+  group.userData.tint = tint;
+  return group;
 }

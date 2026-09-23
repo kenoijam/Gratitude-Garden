@@ -21,7 +21,7 @@
    and likes and comments in Supabase.
    ========================================================================= */
 import * as THREE from "./lib/three.module.min.js";
-import { buildFlower, SPECIES3D } from "./flower-kit.js";
+import { buildFlower, buildTree, SPECIES3D } from "./flower-kit.js";
 import { growMs, growFlower } from "./growth.js";
 import { dressScene } from "./world.js";
 
@@ -78,10 +78,8 @@ scene.add(bare);
    a grid of strangers; a circle reads as people who turned up to the same
    place. It is the sakura, which is the species whose meaning is being
    present somewhere. */
-const tree = buildFlower("sakura", { hue: SPECIES3D.sakura.hue });
+const tree = buildTree();
 tree.scale.setScalar(2.0);
-tree.userData.born = -1;
-tree.userData.species = "sakura";
 scene.add(tree);
 
 /* ---------------------------------------------------------- the rings
@@ -107,46 +105,20 @@ function slotFor(index) {
 }
 
 const flowers = [];
-/* EVERYBODY GETS THE SAME AMOUNT OF ROOM, so a species that needs more has
-   to be planted smaller. A sakura in a ring slot is a whole tree and it
-   swallowed its neighbours and the landmark in the middle; here it is a
-   SAPLING. One person's choice cannot be allowed to take three slots, which
-   is a rule a shared garden needs and a private plot does not. */
-const SLOT_SCALE = { sakura: 0.58, lotus: 0.86 };
-
-/* and a lotus cannot stand on grass. It brings its own water with it, one
-   small pool the size of its own slot, which is the same rule read the
-   other way: the species may have what it needs, at slot size. */
-function pool(x, z) {
-  const g = new THREE.Group();
-  const water = new THREE.Mesh(
-    new THREE.CircleGeometry(0.56, 22),
-    new THREE.MeshLambertMaterial({ color: new THREE.Color().setHSL(0.53, 0.44, 0.62) })
-  );
-  water.rotation.x = -Math.PI / 2;
-  water.position.y = 0.014;
-  const bank = new THREE.Mesh(
-    new THREE.RingGeometry(0.54, 0.66, 22),
-    new THREE.MeshLambertMaterial({ color: new THREE.Color().setHSL(0.09, 0.3, 0.5) })
-  );
-  bank.rotation.x = -Math.PI / 2;
-  bank.position.y = 0.011;
-  water.receiveShadow = bank.receiveShadow = true;
-  g.add(water, bank);
-  g.position.set(x, 0, z);
-  scene.add(g);
-}
-
+/* EVERY SPECIES PLANTS THE SAME WAY. This held two exceptions: a sakura was
+   a whole tree, so in a ring slot it swallowed its neighbours and had to be
+   shrunk to a sapling, and a lotus could not stand on grass, so it brought a
+   pool of water the size of its own slot. Both are ordinary stem flowers
+   now, and the rule that everybody gets the same amount of room needs no
+   special cases to enforce it. */
 function plant(entry, index, born) {
   const sp = SPECIES3D[entry.species] || SPECIES3D.daisy;
   /* a few degrees either side of the species' own hue, so a garden holding
      four daisies does not read as one daisy printed four times */
   const hue = (sp.hue + ((index * 37) % 25) - 12 + 360) % 360;
   const spot = slotFor(index);
-  if (entry.species === "lotus") pool(spot.x, spot.z);
   const f = buildFlower(entry.species, { hue });
-  f.scale.setScalar(SLOT_SCALE[entry.species] || 1);
-  f.position.set(spot.x, entry.species === "lotus" ? 0.02 : 0, spot.z);
+  f.position.set(spot.x, 0, spot.z);
   f.rotation.y = -spot.a;                 /* every bloom faces out of the ring */
   f.userData.entry = entry;
   f.userData.species = entry.species;      /* what the growth pace reads */
@@ -406,14 +378,8 @@ go.addEventListener("click", () => {
 function tick(now) {
   flowers.forEach((f, i) => {
     growFlower(f, now);
-    /* growFlower writes the whole scale, so a sapling has to be told its
-       size again every frame. Cheap, and the alternative is a second scale
-       living somewhere the growth code would have to know about. */
-    const k = SLOT_SCALE[f.userData.entry.species] || 1;
-    if (k !== 1) f.scale.multiplyScalar(k);
     f.rotation.z = Math.sin(now / 1500 + i * 1.3) * 0.018;
   });
-  growFlower(tree, now);
   world.life.update(now);
   placeTags();
   placePeek();

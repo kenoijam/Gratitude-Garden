@@ -19,13 +19,16 @@
                   space
    ========================================================================= */
 import * as THREE from "./lib/three.module.min.js";
-import { buildFlower, SPECIES3D } from "./flower-kit.js";
+import { buildFlower, buildTree, SPECIES3D } from "./flower-kit.js";
 import { buildAvatar, KEEPSAKES, SLOTS, SKINS, HAIRS, SHAPES, keepsakeOf, DEFAULT_LOOK }
   from "./avatar-kit.js";
 
-/* the bed holds the six that grow in soil. The sakura is a tree and the
-   lotus grows on water, so neither is planted in a row with the rest. */
-const ORDER = ["daisy", "tulip", "lily", "sunflower", "lavender", "rose"];
+/* ALL EIGHT GROW IN THE SOIL NOW. The sakura was a tree and the lotus grew
+   on water, which made them the two species that could not be planted with
+   the others; the notched petal and a plain stem put both back in the bed.
+   The tree and the pond are still here, as SCENERY: the plot keeps what it
+   gained from them, and nothing you plant needs its own kind of ground. */
+const ORDER = ["daisy", "tulip", "lily", "sunflower", "lavender", "rose", "sakura", "lotus"];
 
 /* the web version's own sequence, now shared with the other scene */
 import { growMs, smooth, growFlower } from "./growth.js";
@@ -58,20 +61,20 @@ const bed = new THREE.Mesh(
   /* deep enough to hold the specimens AND leave a free strip along the front.
    With the bed exactly full, choosing where to plant was a puzzle rather
    than a choice, which is the opposite of what this is testing. */
-  new THREE.BoxGeometry(3.35, 0.14, 1.9),
+  new THREE.BoxGeometry(3.9, 0.14, 1.9),
   new THREE.MeshLambertMaterial({ color: new THREE.Color().setHSL(26 / 360, 0.33, 0.47), flatShading: true })
 );
 bed.position.y = 0.07;
 bed.castShadow = true;
 bed.receiveShadow = true;
-bed.position.x = -0.4;
+bed.position.x = -0.5;
 ground.add(bed);
 
 /* A POND, because the lotus needed one. It is a test of the plot as much as
    of the flower: a garden made only of soil has one kind of place in it. */
 /* one place, so the water, its bank, what may be planted in it and where the
    avatar may stand all read the same numbers */
-const POND = { x: 2.6, z: 0.5, r: 1.16 };
+const POND = { x: 2.85, z: 0.6, r: 1.1 };
 const pond = new THREE.Mesh(
   new THREE.CircleGeometry(POND.r, 36),
   new THREE.MeshLambertMaterial({ color: new THREE.Color().setHSL(0.53, 0.44, 0.62) })
@@ -114,7 +117,7 @@ function plantRow(z, hueOffsets) {
     const sp = SPECIES3D[id];
     const hue = (sp.hue + (hueOffsets[i] || 0) + 360) % 360;
     const f = buildFlower(id, { hue });
-    f.position.set(-1.8 + i * 0.55, 0.14, z);
+    f.position.set(-2.16 + i * 0.48, 0.14, z);
     f.userData.baseHue = hue;
     f.userData.species = id;
     f.userData.born = -1;
@@ -124,23 +127,16 @@ function plantRow(z, hueOffsets) {
 }
 /* the front row in each species' own colour, the back row shifted, because
    a species that only reads in its own hue does not really read */
-plantRow(-0.12, [0, 0, 0, 0, 0, 0]);
-plantRow(-0.64, [40, -55, 120, 190, -80, 150]);
+plantRow(-0.12, [0, 0, 0, 0, 0, 0, 0, 0]);
+plantRow(-0.64, [40, -55, 120, 190, -80, 150, 60, -120]);
 
-/* the two that are not bed flowers, each standing where it belongs */
-function plantOne(id, x, z, y = 0) {
-  const sp = SPECIES3D[id];
-  const f = buildFlower(id, { hue: sp.hue });
-  f.position.set(x, y, z);
-  f.userData.baseHue = sp.hue;
-  f.userData.species = id;
-  f.userData.born = -1;
-  scene.add(f);
-  flowers.push(f);
-  return f;
-}
-plantOne("sakura", -2.15, -1.05);
-plantOne("lotus", POND.x - 0.42, POND.z - 0.3, 0.02);
+/* the tree, which is scenery. Nothing plants one and nothing may be planted
+   under it: it is here because a garden with something to stand under is a
+   place, and a flat bed is a rack. */
+const tree = buildTree();
+tree.position.set(-2.5, 0, -1.55);
+tree.scale.setScalar(1.15);
+scene.add(tree);
 
 redress();
 
@@ -263,12 +259,12 @@ function chooseSpecies(rating, shaper, note) {
    of place in it. This is the rule the 2D version had no way to express, and
    it is most of what makes the garden read as somewhere rather than as a
    canvas. */
-const PLOT = {
-  lotus:  { on: "pond",  gap: 0.55, stand: 1.25, y: 0.02, say: "A lotus opens on the water." },
-  sakura: { on: "grass", gap: 1.30, stand: 0.95, y: 0,    say: "A sakura is a tree, so it needs open ground." },
-  bed:    { on: "bed",   gap: 0.30, stand: 0.62, y: 0.14, say: "Pick a place in the bed." }
-};
-const plotFor = id => PLOT[id] || PLOT.bed;
+/* ONE RULE, because every species now grows in the same ground. It used to
+   hold a row per species: the water for the lotus, open grass for the tree.
+   What is left is the part that was always doing the work, which is that a
+   flower needs ROOM and the refusal has to say so in words. */
+const BED = { gap: 0.3, stand: 0.62, y: 0.14, say: "Pick a place in the bed." };
+const plotFor = () => BED;
 
 const ray = new THREE.Raycaster();
 const pointer = new THREE.Vector2();
@@ -301,16 +297,10 @@ function surfaceAt(ev) {
 function judge(spot, id) {
   if (!spot) return { ok: false, why: "" };
   const rule = plotFor(id);
-  if (spot.on !== rule.on) return { ok: false, why: rule.say };
-  if (rule.on === "pond" && Math.hypot(spot.point.x - POND.x, spot.point.z - POND.z) > POND.r - 0.34) {
-    return { ok: false, why: "Out in the open water, clear of the bank." };
-  }
+  if (spot.on !== "bed") return { ok: false, why: rule.say };
   for (const f of flowers) {
     const d = Math.hypot(f.position.x - spot.point.x, f.position.z - spot.point.z);
-    /* the AVERAGE of the two, not the larger. Taking the larger made a tree
-       demand its own 1.3 from every daisy in the bed beside it, which left
-       the open grass unplantable for the one species that has to go there. */
-    const near = (rule.gap + plotFor(f.userData.species).gap) / 2;
+    const near = rule.gap;
     if (d < near) return { ok: false, why: "Too close to something already growing." };
   }
   return { ok: true, why: "Plant it here." };
