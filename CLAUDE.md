@@ -74,6 +74,25 @@ So grepping `sakura` finds the data and never the rendering code.
 - **The eye keeps a little of the flower's own hue** rather than being flat black, or a re-coloured poppy reads as a sticker stuck on a bloom. It is the only near black centre in the set and the poppy is the only eight petalled bloom, which is what makes it the easiest of the eight to name with the colour removed.
 - Its painted box is symmetric and exactly 1.00 R.
 
+**THE MEANINGS WERE AUDITED ACROSS ALL FIVE PLACES THEY APPEAR, and two of the eight disagreed with themselves before the swap ever happened.** A species' wording lives in `SPECIES` in the bouquet, `speciesList` in the shared garden, `flowerMeanings` in the personal garden, `flowerData` on the landing page and the catalogue tile's own `flower-mood` line. The rule has always been that one flower says one thing everywhere; these two did not.
+
+- **The daisy was "Simplicity and joy" in three places and "Simplicity and lightness" in two.** It is joy everywhere now, which is also the better fit for a flower whose settled meaning is cheerfulness and innocence.
+- **The lily was "Peace and restoration" in four places and "Peace and rest" in the bouquet.** It is restoration everywhere now.
+- **The peony is "Honour and strength"**, not the "Honour and resilience" it arrived with. Resilience was already the sunflower's, and one word doing duty for two of eight is the thing this audit exists to catch. Honour and strength is also the better founded pair: the peony is the flower of honour and nobility in Chinese symbolism and of bravery in Japanese.
+- **The sunflower keeps "Hope and resilience"** and that was checked rather than assumed. Hope is the common modern reading, and resilience is a real contemporary association rather than an invention. With the peony moved off the word, nothing is doubled.
+- The other five were checked and left alone: rose love and depth, tulip renewal and change, lavender calm and safety, poppy memory and reflection, daisy as above. **Re-run the comparison across all five places if any wording is ever touched.**
+
+**A NEW SPECIES HAS TO LAND INSIDE THE PALETTE'S EXISTING RANGE, on every page, and the poppy did not.** Each page carries its own saturation and lightness family and they are narrower than they look:
+
+| | saturation | lightness |
+|---|---|---|
+| bouquet `SPECIES` | 40 to 82 | 52 to 70 |
+| both gardens, `defaultSat` / `defaultLight` | 40 to 60 | 55 to 70 |
+| the landing ring and its tiles | 42 to 62 | 55 to 70 |
+| the hero meadow | 42 to 62 | 55 to 76 |
+
+The poppy arrived at 68/54, 74/52 and 66/56, taken from the reference drawing's own scarlet, and it was the loudest thing on a page of pastels: in the ring it read as a sticker on a wheel of soft colour. It is 58 to 62 saturation and 56 to 58 lightness now, which keeps it plainly red while sitting in the family. **The hue was not what made it shout, the saturation was**, and the dark eye is what names the flower anyway.
+
 **The seven copies were checked against each other rather than assumed**: the p5 preview family and the raw canvas family agree to within half a pixel at R 100 on both new species.
 
 **THE COLOUR WHEEL ON THE LANDING PAGE LOST ITS GREEN.** The lotus had been pushed to hue 140 precisely because it was the one of three pinks that could go green, and it was filling the only stretch of the ring with nothing in it. A peony is pink and a poppy is red, so the yellow to cyan arc is now a 142 degree gap where it was 92. Only two hues moved for the swap: the daisy went 25 to 28 to keep 20 degrees clear of the poppy, and the two new flowers took the pink and red ends. Moving the lily out to about 150 and calling it a green white one would have balanced the spacing and taken a second liberty with a species' colour to prop up a device; the ring is a way of showing eight flowers, not a promise about the spectrum.

@@ -539,7 +539,7 @@
       [476,100,3,  drawRose,     17,350,58,55],   // deep pink rose
       [608,150,4,  drawSunflower,23, 18,62,60],   // orange sunflower
       [735,112,3.5,drawLily,     17,185,42,70],   // teal lily
-      [858, 96,3,  drawPoppy,    16,356,66,56],   // red poppy
+      [858, 96,3,  drawPoppy,    16,356,60,58],   // red poppy
       [985,142,4,  drawPeony,    17,326,52,72],   // pink peony
       [1105,108,3, drawLavender, 14,268,56,68],   // lavender
       [1226,136,3.5,drawSunflower,21, 62,58,64],  // lemon sunflower
@@ -984,7 +984,7 @@
         <canvas class="flower-canvas" data-flower="peony" data-hue="320" data-sat="50" data-light="70" width="80" height="100"></canvas>
       </div>
       <div class="flower-name">Peony</div>
-      <div class="flower-mood">Honour and resilience</div>
+      <div class="flower-mood">Honour and strength</div>
       <span class="flower-chip chip-peony">strong, enduring, persist</span>
     </div>
 
@@ -1031,7 +1031,7 @@
     <!-- POPPY -->
     <div class="flower-tile reveal" onclick="openFlowerModal('poppy')">
       <div class="flower-svg-wrap">
-        <canvas class="flower-canvas" data-flower="poppy" data-hue="8" data-sat="74" data-light="52" width="80" height="100"></canvas>
+        <canvas class="flower-canvas" data-flower="poppy" data-hue="8" data-sat="60" data-light="57" width="80" height="100"></canvas>
       </div>
       <div class="flower-name">Poppy</div>
       <div class="flower-mood">Memory and reflection</div>
@@ -1205,10 +1205,10 @@
   const flowerData = {
     rose:      { name: 'Rose',      meaning: 'Love & depth',            keywords: ['love','heart','care','longing','connection'],  quote: 'Feeling deeply is a kind of courage. Your heart is open and that is a beautiful thing.' },
     sunflower: { name: 'Sunflower', meaning: 'Hope & resilience',        keywords: ['happy','joy','excited','positive','energized'], quote: 'Even on the cloudiest days, you are still reaching toward the light. That counts for a lot.' },
-    peony:     { name: 'Peony',     meaning: 'Honour & resilience',  keywords: ['difficult','struggling','strong','persevering','kept going'], quote: 'You moved through something hard today. That quiet strength matters more than you know.' },
+    peony:     { name: 'Peony',     meaning: 'Honour & strength',  keywords: ['difficult','struggling','strong','persevering','kept going'], quote: 'You moved through something hard today. That quiet strength matters more than you know.' },
     lavender:  { name: 'Lavender',  meaning: 'Calm & safety',            keywords: ['anxious','stressed','nervous','tense','worried'],  quote: 'You made it through the noise today. Take a breath. You are safe, and you are okay.' },
     tulip:     { name: 'Tulip',     meaning: 'Renewal & change',         keywords: ['change','new','beginning','fresh','transition'],  quote: 'Something new is taking root in you. Trust the direction you are growing in.' },
-    daisy:     { name: 'Daisy',     meaning: 'Simplicity & lightness',   keywords: ['calm','content','gentle','quiet','peaceful'],    quote: 'There is real wisdom in finding beauty in the ordinary. Today was enough, and so are you.' },
+    daisy:     { name: 'Daisy',     meaning: 'Simplicity & joy',        keywords: ['calm','content','gentle','quiet','peaceful'],    quote: 'There is real wisdom in finding beauty in the ordinary. Today was enough, and so are you.' },
     lily:      { name: 'Lily',      meaning: 'Peace & restoration',      keywords: ['tired','rest','recover','exhausted','recharging'], quote: 'Rest is not giving up. It is how you come back to yourself. You are allowed to slow down.' },
     poppy:     { name: 'Poppy',     meaning: 'Memory & reflection',  keywords: ['grateful','memory','remember','appreciating','thankful'], quote: 'You noticed something worth holding onto today. That kind of awareness is rare and beautiful.' },
     /* HIDDEN: no tile in the catalogue above, so nothing opens these. Kept so
@@ -1805,7 +1805,7 @@
 
        The eight tile canvases below carry the same numbers and must move with
        these, since the popup reads its colour off the tile. */
-    { id:'poppy',     a:-112.5, hue:8,   sat:74, light:52 },
+    { id:'poppy',     a:-112.5, hue:8,   sat:60, light:57 },
     { id:'daisy',     a:-67.5,  hue:28,  sat:54, light:68 },
     { id:'sunflower', a:-22.5,  hue:48,  sat:62, light:65 },
     { id:'lily',      a: 22.5,  hue:190, sat:42, light:70 },

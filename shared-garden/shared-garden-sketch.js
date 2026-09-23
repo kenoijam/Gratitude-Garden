@@ -45,7 +45,7 @@ const speciesList = [
 { id: "sunflower", name: "Sunflower", meaning: "Hope & resilience" },
 { id: "lily", name: "Lily", meaning: "Peace & restoration" },
 { id: "poppy", name: "Poppy", meaning: "Memory & reflection" },
-{ id: "peony", name: "Peony", meaning: "Honour & resilience" },
+{ id: "peony", name: "Peony", meaning: "Honour & strength" },
 /* Orchid and chrysanthemum are drawn by this sketch but deliberately absent
    from `speciesList`, so they appear in no picker, and the sakura and the
    lotus joined them when the peony and the poppy took their places. Every
@@ -94,11 +94,11 @@ chrysanth: 18
 }
 
 function defaultSat(sp) {
-return { daisy: 45, tulip: 50, rose: 55, sunflower: 60, lily: 40, sakura: 40, lotus: 50, peony: 52, poppy: 68, orchid: 50, chrysanth: 48 }[sp] || 45;
+return { daisy: 45, tulip: 50, rose: 55, sunflower: 60, lily: 40, sakura: 40, lotus: 50, peony: 52, poppy: 58, orchid: 50, chrysanth: 48 }[sp] || 45;
 }
 
 function defaultLight(sp) {
-return { daisy: 65, tulip: 60, rose: 55, sunflower: 65, lily: 70, sakura: 75, lotus: 70, peony: 70, poppy: 54, orchid: 68, chrysanth: 72 }[sp] || 65;
+return { daisy: 65, tulip: 60, rose: 55, sunflower: 65, lily: 70, sakura: 75, lotus: 70, peony: 70, poppy: 58, orchid: 68, chrysanth: 72 }[sp] || 65;
 }
 
 function addFlower(text, name, species, hue) {

@@ -19,12 +19,12 @@ const SPECIES = [
     blurb: "For simple days and light company.", hue: 52,  sat: 44, light: 70 },
   { id: "tulip", name: "Tulip", meaning: "Renewal and change",
     blurb: "For a new beginning worth marking.", hue: 350, sat: 68, light: 62 },
-  { id: "lily", name: "Lily", meaning: "Peace and rest",
+  { id: "lily", name: "Lily", meaning: "Peace and restoration",
     blurb: "For someone who needs a calm week.", hue: 20,  sat: 40, light: 70 },
-  { id: "peony", name: "Peony", meaning: "Honour and resilience",
+  { id: "peony", name: "Peony", meaning: "Honour and strength",
     blurb: "For someone who came through it all.", hue: 332, sat: 56, light: 70 },
   { id: "poppy", name: "Poppy", meaning: "Memory and reflection",
-    blurb: "For a memory you keep going back to.", hue: 356, sat: 72, light: 54 },
+    blurb: "For a memory you keep going back to.", hue: 356, sat: 62, light: 56 },
   { id: "lavender", name: "Lavender", meaning: "Calm and safety",
     blurb: "For a little quiet at the end of it.", hue: 275, sat: 42, light: 66 }
 ];

@@ -83,7 +83,7 @@ const flowerMeanings = {
   },
   daisy: {
     keywords: ["calm", "content", "simple", "okay", "fine", "gentle", "quiet", "peaceful", "neutral", "ordinary", "steady", "balanced", "comfortable", "relaxed", "mellow"],
-    meaning: "simplicity & lightness",
+    meaning: "simplicity & joy",
     quote: "There is real wisdom in finding beauty in the ordinary. Today was enough, and so are you."
   },
   tulip: {
@@ -103,7 +103,7 @@ const flowerMeanings = {
   },
   peony: {
     keywords: ["difficult", "struggling", "overwhelmed", "swamped", "pushing through", "accepting", "strong", "despite", "kept going", "still here", "persevering", "surviving", "managing", "enduring", "holding on"],
-    meaning: "honour & resilience",
+    meaning: "honour & strength",
     quote: "You moved through something hard today. That quiet strength matters more than you know."
   },
   /* HIDDEN. The orchid and the chrysanthemum below are drawn everywhere the
@@ -136,7 +136,7 @@ const flowerMeanings = {
   lotus: {
     keywords: [],
     keywordsHidden: ["difficult", "struggling", "overwhelmed", "swamped", "pushing through", "accepting", "strong", "despite", "kept going", "still here", "persevering", "surviving", "managing", "enduring", "holding on"],
-    meaning: "resilience & strength",
+    meaning: "strength & rising",
     quote: "You moved through something hard today. That quiet strength matters more than you know."
   },
   chrysanth: {
@@ -266,11 +266,11 @@ function speciesPetalCount(id) {
 }
 
 function defaultSat(sp) {
-  return { daisy: 45, tulip: 50, rose: 55, sunflower: 60, lily: 40, sakura: 40, lotus: 50, peony: 52, poppy: 68, orchid: 50, chrysanth: 48, lavender: 55 }[sp] || 45;
+  return { daisy: 45, tulip: 50, rose: 55, sunflower: 60, lily: 40, sakura: 40, lotus: 50, peony: 52, poppy: 58, orchid: 50, chrysanth: 48, lavender: 55 }[sp] || 45;
 }
 
 function defaultLight(sp) {
-  return { daisy: 65, tulip: 60, rose: 55, sunflower: 65, lily: 70, sakura: 75, lotus: 70, peony: 70, poppy: 54, orchid: 68, chrysanth: 72, lavender: 68 }[sp] || 65;
+  return { daisy: 65, tulip: 60, rose: 55, sunflower: 65, lily: 70, sakura: 75, lotus: 70, peony: 70, poppy: 58, orchid: 68, chrysanth: 72, lavender: 68 }[sp] || 65;
 }
 
 function getTodayDate() {
