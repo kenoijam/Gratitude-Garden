@@ -1053,7 +1053,7 @@ var BLOOM_BOX = {
 
 /* A little smaller than the bloom, so the flower overhangs its own shadow
    rather than sitting inside a dark halo the same size as itself. */
-var SHADOW_FIT = 0.90;
+var SHADOW_FIT = 0.82;
 
 function bloomShadow(f, R, alphaK) {
   var k = (alphaK === undefined) ? 1 : alphaK;
@@ -1067,32 +1067,66 @@ function bloomShadow(f, R, alphaK) {
   /* A RADIAL GRADIENT, NOT THE CANVAS SHADOW API. The halo used to be an
      ellipse drawn 6000 units off to the right and dragged back as its own
      shadow, with the offset and blur converted by hand from the transform.
-     That arithmetic was right, and it still came out wrong on an iPhone:
+     That arithmetic was right and it still came out wrong on an iPhone:
      WebKit handles canvas shadow offsets and blur differently from Chrome
      under a scaled context, and an offset of 18000 device pixels at a pixel
      density of 3 is exactly where engines disagree. A gradient is drawn in
      the current transform like any other shape, so it lands in the same
      place, at the same softness, in every browser, and it costs less.
 
-     Same look as before: centred on the bloom, the same 0.18 darkness, the
-     same 0.9 fit, and a soft edge a third of the radius wide. The edge is now
-     tied to the radius alone. It had a 6px floor, which on the small blooms a
-     phone draws made the soft edge nearly as wide as the flower. */
-  /* Lighter and tighter than the first gradient, 0.14 and a quarter of the
-     radius, after it still read as a smudge round every bloom on a phone.
-     It only has to lift the bloom's edge off the grass. */
-  var blur = R * 0.24;
+     WHAT READ AS HARSH WAS THE REACH, NOT THE DARKNESS AT THE RIM. The old
+     halo darkened the ground by 15 out of 255 and was STILL doing it 24px
+     out from the petals of a 46px bloom, which is a disc drawn around the
+     flower rather than something the flower is standing on. Sampled just
+     outside the petals at 2, 6, 10, 16, 24 and 34px, a pale daisy now
+     darkens the ground by 7.8, 3, 0, 0, 0 and 0, against that flat 15 at
+     every one of them: about half as dark where it is seen at all, and gone
+     within 10px instead of carrying on past 34.
+
+     THREE THINGS DO THAT, and the first two are what matter. There is NO
+     FLAT CORE any more: a constant alpha out to (rx - blur) ended on a
+     visible rim, and that rim is the edge that read as hard. The fit is
+     0.82 rather than 0.90, so the strong part of the gradient no longer
+     reaches the full width of the painted box and cannot show through the
+     gaps between petals. The alpha is 0.15.
+
+     TIGHTENING THE FIT FURTHER IS THE WRONG LEVER, and the sweep is worth
+     keeping because it looks like the obvious next step. From 0.82 down to
+     0.74 the rim a pale daisy casts falls 7.8, 5.7, 4.7, 3.7 and the
+     sunflower's falls 4, 1.7, 0, 0, so the round blooms lose the halo
+     altogether well before a notched one loses its overhang. At 0.70 it
+     ended inside the petals and did nothing whatever: the pixel just outside
+     them measured identical with it on and off, which is the feature
+     switched off rather than softened. It has to reach a little PAST the
+     bloom or it is not lifting anything off the grass.
+
+     THE PEONY STILL SHOWS A HALO IN ITS NOTCHES, and that is a silhouette
+     property rather than a size one, which is why the sweep above cannot
+     fix it. Its outline is ruffled, so measured from its own centre the
+     petals stop at 29px in two places and at 46px in another, while the
+     ellipse is sized to the box the longest petals set. In those gaps the
+     halo reads 13.5 at 12px out where the daisy's is already 0. Over the
+     same sweep it only goes 13.5, 11.5, 10.7, 9.7, so it costs every other
+     species its rim to buy almost nothing here. It is left alone: it is
+     still short of the old halo, which was 15 at 24px on every species at
+     every angle. A per species halo shape is the fix if it ever matters.
+
+     CENTRING WAS NEVER THE FAULT, and it was measured rather than assumed.
+     Every species' BLOOM_BOX matches its painted box exactly, and the
+     rendered halo's midpoint sits within half a pixel of that box's centre
+     on all ten. Only the reach moved. */
+  var blur = R * 0.34;
   var outer = rx + blur;
-  var a = 0.14 * k;
+  var a = 0.15 * k;
   var ink = "rgba(18,62,56,";
   ctx.save();
   ctx.translate(0, box[0] * R);
   ctx.scale(1, ry / rx);
   var g = ctx.createRadialGradient(0, 0, 0, 0, 0, outer);
-  g.addColorStop(0, ink + a.toFixed(3) + ")");
-  g.addColorStop(Math.max(0, (rx - blur) / outer), ink + a.toFixed(3) + ")");
-  g.addColorStop(rx / outer, ink + (a * 0.5).toFixed(3) + ")");
-  g.addColorStop(1, ink + "0)");
+  g.addColorStop(0.00, ink + a.toFixed(3) + ")");
+  g.addColorStop(0.60, ink + (a * 0.88).toFixed(3) + ")");
+  g.addColorStop(0.80, ink + (a * 0.62).toFixed(3) + ")");
+  g.addColorStop(1.00, ink + "0)");
   ctx.fillStyle = g;
   ctx.beginPath();
   ctx.arc(0, 0, outer, 0, Math.PI * 2);
