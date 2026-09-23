@@ -157,9 +157,16 @@ function frame() {
   camera.top = w / (2 * a); camera.bottom = -w / (2 * a);
   const ang = Math.PI / 4 + state.turn * (Math.PI / 2);
   const d = 12;
+  /* THE TARGET IS PUSHED AWAY FROM THE CAMERA, which is what puts the sky in
+     the frame. A wide window is short in world units, so the far rim of the
+     island sat just past the top edge and the bottom third was empty
+     foreground. Moving the target back trades that foreground for horizon
+     and costs nothing in scale, where widening the view would shrink every
+     flower to buy the same thing. */
+  const back = new THREE.Vector3(Math.cos(ang), 0, Math.sin(ang)).multiplyScalar(-w * 0.088);
   const t = state.dress
     ? new THREE.Vector3(avatar.position.x, 0.86, avatar.position.z)
-    : new THREE.Vector3(0.3, 0.45, 0.1);
+    : new THREE.Vector3(0.3 + back.x, 0.45, 0.1 + back.z);
   /* the wardrobe also drops the camera's PITCH. The garden is read from
      above, where a head is mostly hair, and choosing a face from up there is
      choosing something you cannot see. */

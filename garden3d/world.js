@@ -75,14 +75,18 @@ export function warmLight(scene) {
    a lawn. A finite island has an EDGE, and past the edge is sky. It is also
    the reference the whole direction came from, which the first attempt had
    quietly dropped in favour of a field. */
-export function buildGround(scene, { radius = 5, seed = 7 } = {}) {
+export function buildGround(scene, { radius = 5, seed = 7, island = 1.7 } = {}) {
   const group = new THREE.Group();
   scene.add(group);
   const r = rnd(seed);
   /* HOW BIG THE ISLAND IS decides whether its edge is ever on screen. At
      2.1 times the plot it was 18 units across against a frame that sees
-     about 15, so it filled every pixel and the sky never appeared. */
-  const R = radius * 1.7;
+     about 15, so it filled every pixel and the sky never appeared.
+     It is a MULTIPLE of the plot rather than a fixed size, and a scene may
+     name its own: the shared garden's plot disc has to be wide enough for
+     the outermost ring of a full day, most of which is empty most of the
+     time, so at the same multiple its rim sat far outside the frame. */
+  const R = radius * island;
 
   /* THE PLOT ITSELF STAYS FLAT. Everything is planted on it at y 0, so a
      bumpy surface would leave flowers hanging in the air or buried; the
@@ -171,13 +175,13 @@ export function buildGround(scene, { radius = 5, seed = 7 } = {}) {
 }
 
 /* ---------------------------------------------------------------- hills */
-export function buildHills(scene, { radius = 5, seed = 3 } = {}) {
+export function buildHills(scene, { radius = 5, seed = 3, island = 1.7 } = {}) {
   /* A RING of them ON THE ISLAND, not a backdrop, because the camera turns
      to four corners and a painted horizon would only work from one. They
      sit on the far half of the island, which is what gives the flat plot a
      skyline to stand against. */
   const r = rnd(seed);
-  const R = radius * 1.7;
+  const R = radius * island;
   const tones = [hsl(158, 30, 66), hsl(150, 27, 60), hsl(142, 25, 55)];
   const group = new THREE.Group();
   for (let i = 0; i < 12; i++) {

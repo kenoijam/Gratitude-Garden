@@ -61,7 +61,7 @@ const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0.1, 100);
 
 /* the same light, sky, hills, ground and air as the personal plot. Two
    scenes in one project may not be two looks. */
-const world = dressScene(scene, { radius: 4.9, seed: 21 });
+const world = dressScene(scene, { radius: 4.9, seed: 21, island: 1.32 });
 
 /* bare earth under the tree, which is what says the tree was here first and
    the rings were planted around it */
@@ -169,7 +169,7 @@ DAY.forEach((e, i) => {
 function fitted() {
   let r = 1.2;
   flowers.forEach(f => { r = Math.max(r, Math.hypot(f.position.x, f.position.z)); });
-  return Math.max(8.5, Math.min(15, r * 2 + 3.4));
+  return Math.max(8, Math.min(15, r * 2 + 2.8));
 }
 function frame() {
   const w = state.view === "garden" ? fitted() : VIEWS.wide;
@@ -182,8 +182,13 @@ function frame() {
      ground fills the frame and there is no horizon in it; at 22 the far rim
      of the island and the sky behind it are both on screen, which is what
      the whole sky and hills pass was for. */
-  camera.position.set(Math.cos(ang) * d, d * 0.72, Math.sin(ang) * d);
-  camera.lookAt(0, 0.7, 0);
+  /* the target is pushed AWAY from the camera, the same as the personal
+     plot: a wide window is short in world units, so without it the far rim
+     of the island and the sky sit just past the top edge */
+  const back = new THREE.Vector3(Math.cos(ang), 0, Math.sin(ang)).multiplyScalar(-w * 0.05);
+  const t = new THREE.Vector3(back.x, 0.7, back.z);
+  camera.position.set(t.x + Math.cos(ang) * d, t.y + d * 0.72, t.z + Math.sin(ang) * d);
+  camera.lookAt(t);
   camera.updateProjectionMatrix();
 }
 function resize() {
