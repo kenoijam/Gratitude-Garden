@@ -569,9 +569,9 @@ canvas.flower-canvas { position: absolute; top: 0; left: 0; width: 100%; height:
 .flower-mood { font-family: Arial,Helvetica,sans-serif; font-size: 0.8rem; color: var(--teal); font-style: italic; }
 .flower-chip { display: inline-block; padding: 0.25rem 0.75rem; border-radius: 50px; font-family: Arial,Helvetica,sans-serif; font-size: 0.72rem; font-weight: 600; margin-top: 0.2rem; }
 .chip-rose { background:#fde8e8;color:#b05070; } .chip-sun { background:#fffacc;color:#8a6a00; }
-.chip-lotus { background:var(--lightsky);color:var(--darkteal); } .chip-lav { background:#e4daf0; color:#6b4d8a; }
+.chip-peony { background:#fbe3ee;color:#9c4a72; }  /* was .chip-lotus: the peony took its tile */ .chip-lav { background:#e4daf0; color:#6b4d8a; }
 .chip-daisy { background:#fff4d6; color:#8a6d2a; } .chip-tulip { background:#eef8ee;color:#386040; } 
-.chip-lily { background:#fde8f0;color:#905060; } .chip-sakura { background:#fde8e8;color:#b05070; }
+.chip-lily { background:#fde8f0;color:#905060; } .chip-poppy { background:#fde3e1;color:#a83a35; }  /* was .chip-sakura */
 /* the hidden florist pair: no tile uses these, kept so turning them on needs no CSS work */
 .chip-orchid { background:var(--lightsky);color:var(--darkteal); } .chip-mum { background:#fde8e8;color:#b05070; }
 .catalogue::after { display: none; }

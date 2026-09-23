@@ -21,10 +21,10 @@ const SPECIES = [
     blurb: "For a new beginning worth marking.", hue: 350, sat: 68, light: 62 },
   { id: "lily", name: "Lily", meaning: "Peace and rest",
     blurb: "For someone who needs a calm week.", hue: 20,  sat: 40, light: 70 },
-  { id: "sakura", name: "Sakura", meaning: "Reflection and presence",
-    blurb: "For a moment you both want to keep.", hue: 335, sat: 58, light: 72 },
-  { id: "lotus", name: "Lotus", meaning: "Strength and rising",
-    blurb: "For someone who came through it all.", hue: 318, sat: 56, light: 70 },
+  { id: "peony", name: "Peony", meaning: "Honour and resilience",
+    blurb: "For someone who came through it all.", hue: 332, sat: 56, light: 70 },
+  { id: "poppy", name: "Poppy", meaning: "Memory and reflection",
+    blurb: "For a memory you keep going back to.", hue: 356, sat: 72, light: 54 },
   { id: "lavender", name: "Lavender", meaning: "Calm and safety",
     blurb: "For a little quiet at the end of it.", hue: 275, sat: 42, light: 66 }
 ];
@@ -46,7 +46,16 @@ const LEGACY_SPECIES = [
   { id: "chrysanth", name: "Chrysanthemum", meaning: "Reflection and presence",
     blurb: "For a moment you both want to keep.", hue: 335, sat: 58, light: 72 },
   { id: "orchid", name: "Orchid", meaning: "Grace and endurance",
-    blurb: "For someone who held themselves together.", hue: 305, sat: 50, light: 68 }
+    blurb: "For someone who held themselves together.", hue: 305, sat: 50, light: 68 },
+  /* THE SAKURA AND THE LOTUS RETIRED HERE, they were not deleted, and the
+     difference matters: every bouquet ever shared names its species in the
+     link, so a link made before the swap still has to open. They are drawn
+     in all seven sites exactly as they were and `SPECIES_MAP` still resolves
+     them; they appear in no picker, no catalogue and no mood map. */
+  { id: "sakura", name: "Sakura", meaning: "Reflection and presence",
+    blurb: "For a moment you both want to keep.", hue: 335, sat: 58, light: 72 },
+  { id: "lotus", name: "Lotus", meaning: "Strength and rising",
+    blurb: "For someone who came through it all.", hue: 318, sat: 56, light: 70 }
 ];
 /* SPECIES is what you can pick; ALL_SPECIES is what can be rendered. */
 const ALL_SPECIES = SPECIES.concat(LEGACY_SPECIES);
@@ -695,12 +704,76 @@ function drawChrysanth(ctx, R, hue, sat, light) {
   circleC(ctx, 0, 0, Rm * 0.14);
 }
 
+
+/* =========================================================================
+   PEONY and POPPY, which replaced the lotus and the sakura.
+
+   THE PEONY IS THREE RINGS AND A PALE CENTRE. A peony is a dense, ruffled
+   bloom, so it is rings of ROUNDED petals rather than the daisy's sixteen
+   narrow ones: outer petals are nearly as wide as they are long, which is
+   what a peony petal actually is, and each ring inward is smaller, deeper in
+   tone and turned half a step so petals fall into the gaps behind them. The
+   small warm centre is the tell that separates it from the rose, whose
+   middle is a spiral of ever smaller petals in the flower's own colour.
+
+   THE POPPY IS FOUR PETALS AND A DARK EYE, and both halves are load bearing.
+   Nothing else in the set has four petals, and nothing else has a centre
+   that goes nearly black, so it is the easiest of the eight to name with the
+   colour removed. The eye keeps a little of the flower's own hue rather than
+   being flat black, or a re-coloured poppy reads as a sticker on a bloom.
+   ========================================================================= */
+function drawPeony(ctx, R, hue, sat, light) {
+  function petal(ang,d,w,h,s,l){
+    ctx.save(); ctx.rotate(ang*Math.PI/180); ctx.translate(0,-d);
+    ctx.fillStyle=hsla(hue,s,Math.max(18,Math.min(96,l)),1);
+    ctx.beginPath(); ctx.ellipse(0,0,w/2,h/2,0,0,Math.PI*2); ctx.fill(); ctx.restore();
+  }
+  /* TEN outer petals at 36 degrees, alternating length and tone, rather than
+     two rings of five. Five and five left the bloom measurably lopsided, a
+     bbox of -0.96 to 0.95 across and -1.00 to 0.84 down, because the two sets
+     shared a start angle; ten even ones close that and read closer to the
+     reference drawing, which carries ten. */
+  for(var i=0;i<10;i++) petal(i*36, i%2?R*.537:R*.657, R*.388, i%2?R*.627:R*.686,
+                              i%2?sat*.78:sat*.62, i%2?light+8:light+16);
+  for(var i=0;i<6;i++) petal(i*60+18,  R*.299, R*.299, R*.478, sat*.92, light-3);
+  ctx.save(); ctx.fillStyle=hsla(48,80,86,1);
+  ctx.beginPath(); ctx.arc(0,0,R*.135,0,Math.PI*2); ctx.fill(); ctx.restore();
+}
+
+/* EIGHT PETALS, in two layers: four deep ones on the axes and four brighter
+   ones turned 45 degrees over them. Four petals alone read as a cross with
+   gaps in it; the second layer fills those gaps and is what makes it a
+   flower rather than a symbol, and the two tones are what keep the layers
+   apart when a sender re-colours the whole bloom. Geometry ported from the
+   reference drawing: back d 0.475 of R, front 0.45, and a dark eye with its
+   ribs and six stamen dots. */
+function drawPoppy(ctx, R, hue, sat, light) {
+  function petal(ang,d,w,h,s,l){
+    ctx.save(); ctx.rotate(ang*Math.PI/180); ctx.translate(0,-d);
+    ctx.fillStyle=hsla(hue,Math.min(100,s),Math.max(10,Math.min(96,l)),1);
+    ctx.beginPath(); ctx.ellipse(0,0,w/2,h/2,0,0,Math.PI*2); ctx.fill(); ctx.restore();
+  }
+  for(var i=0;i<4;i++) petal(i*90,    R*.475, R*.675, R*1.05, sat*1.05, light-13);
+  for(var i=0;i<4;i++) petal(i*90+45, R*.450, R*.650, R*1.00, sat,      light+(i%2?-4:2));
+  ctx.save(); 
+  ctx.fillStyle=hsla(hue,34,13,1);
+  ctx.beginPath(); ctx.ellipse(0,0,R*.20,R*.25,0,0,Math.PI*2); ctx.fill();
+  ctx.fillStyle=hsla(hue,30,27,1);
+  for(var i=-1;i<2;i++){ ctx.beginPath(); ctx.ellipse(0,R*.1125*i,R*.1375,R*.011,0,0,Math.PI*2); ctx.fill(); }
+  ctx.fillStyle=hsla(hue,40,7,1);
+  for(var i=0;i<6;i++){ var a=(i*60+30)*Math.PI/180;
+    ctx.beginPath(); ctx.arc(Math.sin(a)*R*.2875,-Math.cos(a)*R*.2875,R*.0215,0,Math.PI*2); ctx.fill(); }
+  ctx.restore();
+}
+
 function drawSpeciesBloom(ctx, species, R, hue, sat, light) {
   switch (species) {
     case "tulip": return drawTulip(ctx, R, hue, sat, light);
     case "rose": return drawRose(ctx, R, hue, sat, light);
     case "sunflower": return drawSunflower(ctx, R, hue, sat, light);
     case "sakura": return drawSakura(ctx, R, hue, sat, light);
+    case "peony": return drawPeony(ctx, R, hue, sat, light);
+    case "poppy": return drawPoppy(ctx, R, hue, sat, light);
     case "lily": return drawLily(ctx, R, hue, sat, light);
     case "lotus": return drawLotus(ctx, R, hue, sat, light);
     /* hidden from the picker, drawn anyway. See LEGACY_SPECIES. */
@@ -2692,27 +2765,27 @@ const TEMPLATES = [
      templates came out as stripes. **Keep both rules if these are edited.** */
   { id: "t1", name: "Sunlit Thanks", blurb: "For someone who kept you going",
     s: { flowers: ["sunflower", "daisy", "tulip", "rose", "sunflower",
-                   "rose", "daisy", "tulip", "sunflower", "lotus"],
+                   "rose", "daisy", "tulip", "sunflower", "peony"],
          foliages: ["wheat", "eucalyptus"],
          wrapH: 28, wrapS: 38, wrapL: 76, wrapP: "kraft", ribbonH: 200, card: "cream", bg: "sunlit" } },
   { id: "t2", name: "Quiet Comfort", blurb: "For a week that has been heavy",
-    s: { flowers: ["lily", "lavender", "daisy", "sakura", "lily",
-                   "sakura", "lavender", "daisy", "lily", "lotus"],
+    s: { flowers: ["lily", "lavender", "daisy", "poppy", "lily",
+                   "poppy", "lavender", "daisy", "lily", "peony"],
          foliages: ["eucalyptus", "gyp"],
          wrapH: 120, wrapS: 18, wrapL: 82, wrapP: "linen", ribbonH: 20, card: "mist", bg: "meadow" } },
   { id: "t3", name: "Love Letter", blurb: "For a love you want to say out loud",
-    s: { flowers: ["rose", "sakura", "lotus", "tulip", "rose",
-                   "tulip", "sakura", "lotus", "rose", "lavender"],
+    s: { flowers: ["rose", "poppy", "peony", "tulip", "rose",
+                   "tulip", "poppy", "peony", "rose", "lavender"],
          foliages: ["gyp", "leaves"],
          wrapH: 350, wrapS: 45, wrapL: 28, wrapP: "plain", ribbonH: 38, card: "rose", bg: "dawn" } },
   { id: "t4", name: "New Beginnings", blurb: "For a fresh start worth marking",
-    s: { flowers: ["tulip", "daisy", "sakura", "lily", "tulip",
-                   "lily", "daisy", "sakura", "tulip", "sunflower"],
+    s: { flowers: ["tulip", "daisy", "poppy", "lily", "tulip",
+                   "lily", "daisy", "poppy", "tulip", "sunflower"],
          foliages: ["fern", "beargrass"],
          wrapH: 40, wrapS: 10, wrapL: 97, wrapP: "plain", ribbonH: 140, card: "mint", bg: "sky" } },
   { id: "t5", name: "Get Well Soon", blurb: "For someone who needs a calm week",
     s: { flowers: ["daisy", "lily", "sunflower", "lavender", "daisy",
-                   "lavender", "lily", "sunflower", "daisy", "sakura"],
+                   "lavender", "lily", "sunflower", "daisy", "poppy"],
          foliages: ["eucalyptus", "berries"],
          wrapH: 210, wrapS: 4, wrapL: 88, wrapP: "news", ribbonH: 350, card: "snow", bg: "linen" } }
 ];
@@ -2856,9 +2929,9 @@ function initTemplateStep() {
    two compact rows on a phone. The pictures are painted on arrival, since a
    canvas on a hidden step measures zero. */
 const MODE_SHOWCASE = {
-  physical: { flowers: ["rose", "sunflower", "daisy", "tulip", "lily", "rose", "sakura"],
+  physical: { flowers: ["rose", "sunflower", "daisy", "tulip", "lily", "rose", "poppy"],
               wrap: [28, 38, 76, "kraft", 200] },
-  digital:  { flowers: ["tulip", "lavender", "sakura", "daisy", "rose", "lotus", "tulip"],
+  digital:  { flowers: ["tulip", "lavender", "poppy", "daisy", "rose", "peony", "tulip"],
               wrap: [222, 45, 28, "grid", 34] }
 };
 const MODE_BADGE = {

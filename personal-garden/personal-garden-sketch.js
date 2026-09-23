@@ -96,14 +96,14 @@ const flowerMeanings = {
     meaning: "peace & restoration",
     quote: "Rest is not giving up. It is how you come back to yourself. You are allowed to slow down."
   },
-  sakura: {
-    keywords: ["grateful", "gratitude", "reflecting", "nostalgic", "memory", "memories", "appreciating", "thankful", "fleeting", "aware", "bittersweet", "cherish", "present", "noticing", "savoring"],
-    meaning: "reflection & presence",
+  poppy: {
+    keywords: ["grateful", "gratitude", "reflecting", "nostalgic", "memory", "memories", "remember", "remembering", "appreciating", "thankful", "looked back", "bittersweet", "cherish", "noticing", "missed them"],
+    meaning: "memory & reflection",
     quote: "You noticed something worth holding onto today. That kind of awareness is rare and beautiful."
   },
-  lotus: {
+  peony: {
     keywords: ["difficult", "struggling", "overwhelmed", "swamped", "pushing through", "accepting", "strong", "despite", "kept going", "still here", "persevering", "surviving", "managing", "enduring", "holding on"],
-    meaning: "resilience & strength",
+    meaning: "honour & resilience",
     quote: "You moved through something hard today. That quiet strength matters more than you know."
   },
   /* HIDDEN. The orchid and the chrysanthemum below are drawn everywhere the
@@ -121,6 +121,23 @@ const flowerMeanings = {
     keywordsHidden: ["difficult", "struggling", "overwhelmed", "swamped", "pushing through", "accepting", "strong", "despite", "kept going", "still here", "persevering", "surviving", "managing", "enduring", "holding on", "held it together", "composed"],
     meaning: "grace & endurance",
     quote: "You held yourself together today, and that took more than anyone saw. That is its own kind of strength."
+  },
+  /* RETIRED, not deleted, and their keyword lists follow the same rule as the
+     pair above: EMPTY, never missing, with the real list parked alongside.
+     Every flower already planted carries its species, so a garden holding a
+     lotus from last year still draws it and still has something to say about
+     it when it is tapped. */
+  sakura: {
+    keywords: [],
+    keywordsHidden: ["grateful", "gratitude", "reflecting", "nostalgic", "memory", "memories", "appreciating", "thankful", "fleeting", "aware", "bittersweet", "cherish", "present", "noticing", "savoring"],
+    meaning: "reflection & presence",
+    quote: "You noticed something worth holding onto today. That kind of awareness is rare and beautiful."
+  },
+  lotus: {
+    keywords: [],
+    keywordsHidden: ["difficult", "struggling", "overwhelmed", "swamped", "pushing through", "accepting", "strong", "despite", "kept going", "still here", "persevering", "surviving", "managing", "enduring", "holding on"],
+    meaning: "resilience & strength",
+    quote: "You moved through something hard today. That quiet strength matters more than you know."
   },
   chrysanth: {
     keywords: [],
@@ -176,18 +193,18 @@ const ratingFlowerMap = {
   "calm":       "daisy",
   "happy":      "sunflower",
   "tired":      "lily",
-  "stressed":   "lotus",
+  "stressed":   "peony",
   "anxious":    "lavender",
-  "grateful":   "sakura",
+  "grateful":   "poppy",
   "hopeful":    "tulip",
   "loved":      "rose"
 };
 
 const shaperFlowerMap = {
-  "work/school":         "lotus",
+  "work/school":         "peony",
   "relationships":       "rose",
   "rest or energy":      "lily",
-  "a small joy":         "sakura",
+  "a small joy":         "poppy",
   "an unexpected event": "tulip",
   "nothing special":     "daisy",
   "worries":             "lavender"
@@ -197,7 +214,7 @@ const shaperFlowerMap = {
 function chooseFlowerForMood(dayRating, dayShaper, journal) {
   const votes = {
     sunflower: 0, rose: 0, daisy: 0, tulip: 0,
-    lily: 0, sakura: 0, lotus: 0, lavender: 0
+    lily: 0, poppy: 0, peony: 0, lavender: 0
   };
 
   const ratingFlower = ratingFlowerMap[dayRating];
@@ -241,17 +258,19 @@ function speciesPetalCount(id) {
     sunflower: 24,
     lily: 12,
     sakura: 5,
+    peony: 22,
+    poppy: 4,
     orchid: 5,
     chrysanth: 18
   }[id] || 16;
 }
 
 function defaultSat(sp) {
-  return { daisy: 45, tulip: 50, rose: 55, sunflower: 60, lily: 40, sakura: 40, lotus: 50, orchid: 50, chrysanth: 48, lavender: 55 }[sp] || 45;
+  return { daisy: 45, tulip: 50, rose: 55, sunflower: 60, lily: 40, sakura: 40, lotus: 50, peony: 52, poppy: 68, orchid: 50, chrysanth: 48, lavender: 55 }[sp] || 45;
 }
 
 function defaultLight(sp) {
-  return { daisy: 65, tulip: 60, rose: 55, sunflower: 65, lily: 70, sakura: 75, lotus: 70, orchid: 68, chrysanth: 72, lavender: 68 }[sp] || 65;
+  return { daisy: 65, tulip: 60, rose: 55, sunflower: 65, lily: 70, sakura: 75, lotus: 70, peony: 70, poppy: 54, orchid: 68, chrysanth: 72, lavender: 68 }[sp] || 65;
 }
 
 function getTodayDate() {
@@ -447,6 +466,8 @@ function speciesShapeCfg(species) {
     lily:     { w: 0.70, h: 1.00 },
     tulip:     { w: 0.80, h: 1.10 },
     sakura:    { w: 0.75, h: 1.00 },
+    peony:     { w: 0.62, h: 0.84 },
+    poppy:     { w: 0.80, h: 1.00 },
     orchid:    { w: 0.72, h: 1.00 },
     chrysanth: { w: 0.60, h: 1.10 }
   }[species] || { w: 0.55, h: 1.10 });
@@ -679,6 +700,126 @@ function drawSunflowerBloom(R, hue, sat, light) {
 
   fill(23, 40, 58);
   circle(0, 0, R * 1.05);
+}
+
+/* =========================================================================
+   PEONY and POPPY, which replaced the lotus and the sakura.
+
+   THE PEONY IS THREE RINGS AND A PALE CENTRE. A peony is a dense, ruffled
+   bloom, so it is rings of ROUNDED petals rather than the daisy's sixteen
+   narrow ones: an outer petal is nearly as wide as it is long, which is what
+   a peony petal actually is, and each ring inward is smaller, deeper in tone
+   and turned half a step so its petals fall into the gaps behind them. The
+   small warm centre is the tell that separates it from the rose, whose
+   middle is a spiral of ever smaller petals in the flower's own colour.
+
+   THE POPPY IS FOUR PETALS AND A DARK EYE, and both halves are load bearing.
+   Nothing else in the set has four petals and nothing else has a centre that
+   goes nearly black, so with the colour removed it is the easiest of the
+   eight to name. The eye keeps a little of the flower's own hue rather than
+   being flat black, or a re-coloured poppy reads as a sticker on a bloom.
+   ========================================================================= */
+function drawPeonyBloom(R, hue, sat, light) {
+  push();
+  noStroke();
+  const petal = (ang, d, w, h, s, l) => {
+    push();
+    rotate(ang);
+    translate(0, -d);
+    fill(hue, s, constrain(l, 18, 96), 1);
+    ellipse(0, 0, w, h);
+    pop();
+  };
+  /* TEN outer petals at 36 degrees, alternating length and tone. Two rings of
+     five shared a start angle and left the bloom measurably lopsided. */
+  for (let i = 0; i < 10; i++) {
+    petal(i * 36, i % 2 ? R * 0.537 : R * 0.657, R * 0.388, i % 2 ? R * 0.627 : R * 0.686,
+          i % 2 ? sat * 0.78 : sat * 0.62, i % 2 ? light + 8 : light + 16);
+  }
+  for (let i = 0; i < 6; i++) petal(i * 60 + 18, R * 0.299, R * 0.299, R * 0.478, sat * 0.92, light - 3);
+  fill(48, 80, 86, 1);
+  ellipse(0, 0, R * 0.27, R * 0.27);
+  pop();
+}
+
+/* EIGHT PETALS, in two layers: four deep ones on the axes and four brighter
+   ones turned 45 degrees over them. Four petals alone read as a cross with
+   gaps in it; the second layer fills those gaps and is what makes it a
+   flower rather than a symbol, and the two tones are what keep the layers
+   apart when a sender re-colours the whole bloom. Geometry ported from the
+   reference drawing: back d 0.475 of R, front 0.45, and a dark eye with its
+   ribs and six stamen dots. */
+function drawPoppyBloom(R, hue, sat, light) {
+  push();
+  noStroke();
+  const petal = (ang, d, w, h, s, l) => {
+    push();
+    rotate(ang);
+    translate(0, -d);
+    fill(hue, min(100, s), constrain(l, 10, 96), 1);
+    ellipse(0, 0, w, h);
+    pop();
+  };
+  for (let i = 0; i < 4; i++) petal(i * 90,      R * 0.475, R * 0.675, R * 1.05, sat * 1.05, light - 13);
+  for (let i = 0; i < 4; i++) petal(i * 90 + 45, R * 0.450, R * 0.650, R * 1.00, sat, light + (i % 2 ? -4 : 2));
+  fill(hue, 34, 13, 1);
+  ellipse(0, 0, R * 0.40, R * 0.50);
+  fill(hue, 30, 27, 1);
+  for (let i = -1; i < 2; i++) ellipse(0, R * 0.1125 * i, R * 0.275, R * 0.022);
+  fill(hue, 40, 7, 1);
+  for (let i = 0; i < 6; i++) {
+    const a = i * 60 + 30;
+    ellipse(sin(a) * R * 0.2875, -cos(a) * R * 0.2875, R * 0.043, R * 0.043);
+  }
+  pop();
+}
+
+function drawPeonyBloomOnGraphics(pg, R, hue, sat, light) {
+  pg.push();
+  pg.noStroke();
+  const petal = (ang, d, w, h, s, l) => {
+    pg.push();
+    pg.rotate(ang);
+    pg.translate(0, -d);
+    pg.fill(hue, s, constrain(l, 18, 96), 1);
+    pg.ellipse(0, 0, w, h);
+    pg.pop();
+  };
+  /* TEN outer petals at 36 degrees, alternating length and tone. Two rings of
+     five shared a start angle and left the bloom measurably lopsided. */
+  for (let i = 0; i < 10; i++) {
+    petal(i * 36, i % 2 ? R * 0.537 : R * 0.657, R * 0.388, i % 2 ? R * 0.627 : R * 0.686,
+          i % 2 ? sat * 0.78 : sat * 0.62, i % 2 ? light + 8 : light + 16);
+  }
+  for (let i = 0; i < 6; i++) petal(i * 60 + 18, R * 0.299, R * 0.299, R * 0.478, sat * 0.92, light - 3);
+  pg.fill(48, 80, 86, 1);
+  pg.ellipse(0, 0, R * 0.27, R * 0.27);
+  pg.pop();
+}
+
+function drawPoppyBloomOnGraphics(pg, R, hue, sat, light) {
+  pg.push();
+  pg.noStroke();
+  const petal = (ang, d, w, h, s, l) => {
+    pg.push();
+    pg.rotate(ang);
+    pg.translate(0, -d);
+    pg.fill(hue, min(100, s), constrain(l, 10, 96), 1);
+    pg.ellipse(0, 0, w, h);
+    pg.pop();
+  };
+  for (let i = 0; i < 4; i++) petal(i * 90,      R * 0.475, R * 0.675, R * 1.05, sat * 1.05, light - 13);
+  for (let i = 0; i < 4; i++) petal(i * 90 + 45, R * 0.450, R * 0.650, R * 1.00, sat, light + (i % 2 ? -4 : 2));
+  pg.fill(hue, 34, 13, 1);
+  pg.ellipse(0, 0, R * 0.40, R * 0.50);
+  pg.fill(hue, 30, 27, 1);
+  for (let i = -1; i < 2; i++) pg.ellipse(0, R * 0.1125 * i, R * 0.275, R * 0.022);
+  pg.fill(hue, 40, 7, 1);
+  for (let i = 0; i < 6; i++) {
+    const a = i * 60 + 30;
+    pg.ellipse(sin(a) * R * 0.2875, -cos(a) * R * 0.2875, R * 0.043, R * 0.043);
+  }
+  pg.pop();
 }
 
 function drawCherryBloom(R, hue, sat, light) {
@@ -945,6 +1086,8 @@ var BLOOM_BOX = {
   rose:      [ 0.00, 1.00, 1.00],
   sunflower: [ 0.00, 1.32, 1.35],
   sakura:    [-0.06, 1.05, 1.05],
+  peony:     [-0.08, 0.96, 0.92],  /* measured: the ruffled ring is not symmetric */
+  poppy:     [ 0.00, 1.00, 1.00],
   lily:      [ 0.00, 0.94, 1.08],
   daisy:     [ 0.00, 1.00, 1.00],
   lotus:     [-1.00, 1.15, 1.00],
@@ -1024,6 +1167,10 @@ function drawBloom(f, shadowK) {
     drawRoseBloom(R, hue, sat, light);
   } else if (f.species === "sunflower") {
     drawSunflowerBloom(R, hue, sat, light);
+  } else if (f.species === "peony") {
+    drawPeonyBloom(R, hue, sat, light);
+  } else if (f.species === "poppy") {
+    drawPoppyBloom(R, hue, sat, light);
   } else if (f.species === "sakura") {
     drawCherryBloom(R, hue, sat, light);
   } else if (f.species === "chrysanth") {
@@ -1067,6 +1214,10 @@ function drawPreviewFlower(pg, species, hue) {
     drawRoseBloomOnGraphics(pg, R, hue, sat, light);
   } else if (species === "sunflower") {
     drawSunflowerBloomOnGraphics(pg, R, hue, sat, light);
+  } else if (species === "peony") {
+    drawPeonyBloomOnGraphics(pg, R, hue, sat, light);
+  } else if (species === "poppy") {
+    drawPoppyBloomOnGraphics(pg, R, hue, sat, light);
   } else if (species === "sakura") {
     drawCherryBloomOnGraphics(pg, R, hue, sat, light);
   } else if (species === "chrysanth") {

@@ -391,6 +391,43 @@
     // vertex(0,-Rb*0.65) bz(Rb*.28,-Rb*.52,Rb*.40,-Rb*.20,Rb*.28,0)
     //                    bz(Rb*.18,Rb*.12,0,Rb*.18,-Rb*.18,Rb*.12)
     //                    bz(-Rb*.28,0,-Rb*.40,-Rb*.20,-Rb*.28,-Rb*.52)
+    /* PEONY and POPPY, which replaced the lotus and the sakura. Ported from
+       the same ellipse geometry as the other six sites: the peony is two
+       ruffled outer rings, a deeper inner ring and a small warm centre; the
+       poppy is four petals and a dark eye with its stamen dots. */
+    function drawPeony(R,hue,sat,light){
+      function petal(ang,d,w,h,s,l){
+        ctx.save(); ctx.rotate(ang*Math.PI/180); ctx.translate(0,-d);
+        ctx.fillStyle=hsl(hue,s,Math.max(18,Math.min(96,l)));
+        ctx.beginPath(); ctx.ellipse(0,0,w/2,h/2,0,0,Math.PI*2); ctx.fill(); ctx.restore();
+      }
+      /* TEN outer petals at 36 degrees, alternating length and tone. */
+      for(var i=0;i<10;i++) petal(i*36, i%2?R*.537:R*.657, R*.388, i%2?R*.627:R*.686,
+                                  i%2?sat*.78:sat*.62, i%2?light+8:light+16);
+      for(var i=0;i<6;i++) petal(i*60+18, R*.299, R*.299, R*.478, sat*.92, light-3);
+      ctx.fillStyle=hsl(48,80,86);
+      ctx.beginPath(); ctx.arc(0,0,R*.135,0,Math.PI*2); ctx.fill();
+    }
+
+    function drawPoppy(R,hue,sat,light){
+    function petal(ang,d,w,h,s,l){
+      ctx.save(); ctx.rotate(ang*Math.PI/180); ctx.translate(0,-d);
+      ctx.fillStyle=hsl(hue,Math.min(100,s),Math.max(10,Math.min(96,l)));
+      ctx.beginPath(); ctx.ellipse(0,0,w/2,h/2,0,0,Math.PI*2); ctx.fill(); ctx.restore();
+    }
+    for(var i=0;i<4;i++) petal(i*90,    R*.475, R*.675, R*1.05, sat*1.05, light-13);
+    for(var i=0;i<4;i++) petal(i*90+45, R*.450, R*.650, R*1.00, sat,      light+(i%2?-4:2));
+    ctx.save(); 
+    ctx.fillStyle=hsl(hue,34,13);
+    ctx.beginPath(); ctx.ellipse(0,0,R*.20,R*.25,0,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle=hsl(hue,30,27);
+    for(var i=-1;i<2;i++){ ctx.beginPath(); ctx.ellipse(0,R*.1125*i,R*.1375,R*.011,0,0,Math.PI*2); ctx.fill(); }
+    ctx.fillStyle=hsl(hue,40,7);
+    for(var i=0;i<6;i++){ var a=(i*60+30)*Math.PI/180;
+      ctx.beginPath(); ctx.arc(Math.sin(a)*R*.2875,-Math.cos(a)*R*.2875,R*.0215,0,Math.PI*2); ctx.fill(); }
+    ctx.restore();
+    }
+
     function drawSakura(R,hue,sat,light){
       var Rb=R*1.7;
       for(var i=0;i<5;i++){
@@ -502,8 +539,8 @@
       [476,100,3,  drawRose,     17,350,58,55],   // deep pink rose
       [608,150,4,  drawSunflower,23, 18,62,60],   // orange sunflower
       [735,112,3.5,drawLily,     17,185,42,70],   // teal lily
-      [858, 96,3,  drawSakura,   16,340,40,78],   // pale pink sakura
-      [985,142,4,  drawLotus,    17,320,50,68],   // mauve lotus
+      [858, 96,3,  drawPoppy,    16,356,66,56],   // red poppy
+      [985,142,4,  drawPeony,    17,326,52,72],   // pink peony
       [1105,108,3, drawLavender, 14,268,56,68],   // lavender
       [1226,136,3.5,drawSunflower,21, 62,58,64],  // lemon sunflower
       [1340, 92,3, drawDaisy,    15, 52,52,74]    // butter daisy
@@ -941,14 +978,14 @@
       <span class="flower-chip chip-sun">happy, sun, bright</span>
     </div>
 
-    <!-- LOTUS -->
-    <div class="flower-tile reveal" onclick="openFlowerModal('lotus')">
+    <!-- PEONY -->
+    <div class="flower-tile reveal" onclick="openFlowerModal('peony')">
       <div class="flower-svg-wrap">
-        <canvas class="flower-canvas" data-flower="lotus" data-hue="140" data-sat="34" data-light="68" width="80" height="100"></canvas>
+        <canvas class="flower-canvas" data-flower="peony" data-hue="320" data-sat="50" data-light="70" width="80" height="100"></canvas>
       </div>
-      <div class="flower-name">Lotus</div>
-      <div class="flower-mood">Strength and Rising</div>
-      <span class="flower-chip chip-lotus">strong, enduring, persist</span>
+      <div class="flower-name">Peony</div>
+      <div class="flower-mood">Honour and resilience</div>
+      <span class="flower-chip chip-peony">strong, enduring, persist</span>
     </div>
 
     <!-- LAVENDER -->
@@ -991,14 +1028,14 @@
       <span class="flower-chip chip-lily">tired, rest, recover</span>
     </div>
 
-    <!-- SAKURA -->
-    <div class="flower-tile reveal" onclick="openFlowerModal('sakura')">
+    <!-- POPPY -->
+    <div class="flower-tile reveal" onclick="openFlowerModal('poppy')">
       <div class="flower-svg-wrap">
-        <canvas class="flower-canvas" data-flower="sakura" data-hue="332" data-sat="44" data-light="75" width="80" height="100"></canvas>
+        <canvas class="flower-canvas" data-flower="poppy" data-hue="8" data-sat="74" data-light="52" width="80" height="100"></canvas>
       </div>
-      <div class="flower-name">Sakura</div>
-      <div class="flower-mood">Reflection and presence</div>
-      <span class="flower-chip chip-sakura">grateful, memory, notice</span>
+      <div class="flower-name">Poppy</div>
+      <div class="flower-mood">Memory and reflection</div>
+      <span class="flower-chip chip-poppy">grateful, memory, notice</span>
     </div>
 
   </div>
@@ -1168,12 +1205,12 @@
   const flowerData = {
     rose:      { name: 'Rose',      meaning: 'Love & depth',            keywords: ['love','heart','care','longing','connection'],  quote: 'Feeling deeply is a kind of courage. Your heart is open and that is a beautiful thing.' },
     sunflower: { name: 'Sunflower', meaning: 'Hope & resilience',        keywords: ['happy','joy','excited','positive','energized'], quote: 'Even on the cloudiest days, you are still reaching toward the light. That counts for a lot.' },
-    lotus:     { name: 'Lotus',     meaning: 'Strength & rising',    keywords: ['difficult','struggling','strong','persevering','kept going'], quote: 'You moved through something hard today. That quiet strength matters more than you know.' },
+    peony:     { name: 'Peony',     meaning: 'Honour & resilience',  keywords: ['difficult','struggling','strong','persevering','kept going'], quote: 'You moved through something hard today. That quiet strength matters more than you know.' },
     lavender:  { name: 'Lavender',  meaning: 'Calm & safety',            keywords: ['anxious','stressed','nervous','tense','worried'],  quote: 'You made it through the noise today. Take a breath. You are safe, and you are okay.' },
     tulip:     { name: 'Tulip',     meaning: 'Renewal & change',         keywords: ['change','new','beginning','fresh','transition'],  quote: 'Something new is taking root in you. Trust the direction you are growing in.' },
     daisy:     { name: 'Daisy',     meaning: 'Simplicity & lightness',   keywords: ['calm','content','gentle','quiet','peaceful'],    quote: 'There is real wisdom in finding beauty in the ordinary. Today was enough, and so are you.' },
     lily:      { name: 'Lily',      meaning: 'Peace & restoration',      keywords: ['tired','rest','recover','exhausted','recharging'], quote: 'Rest is not giving up. It is how you come back to yourself. You are allowed to slow down.' },
-    sakura:    { name: 'Sakura',    meaning: 'Reflection & presence',    keywords: ['grateful','memory','notice','appreciating','thankful'], quote: 'You noticed something worth holding onto today. That kind of awareness is rare and beautiful.' },
+    poppy:     { name: 'Poppy',     meaning: 'Memory & reflection',  keywords: ['grateful','memory','remember','appreciating','thankful'], quote: 'You noticed something worth holding onto today. That kind of awareness is rare and beautiful.' },
     /* HIDDEN: no tile in the catalogue above, so nothing opens these. Kept so
        the florist orderable pair stays complete and ready. See CLAUDE.md. */
     orchid:    { name: 'Orchid',    meaning: 'Grace & endurance',        keywords: ['difficult','struggling','strong','persevering','held it together'], quote: 'You held yourself together today, and that took more than anyone saw. That is its own kind of strength.' },
@@ -1183,15 +1220,15 @@
   const modalSvgs = {
     rose: '<svg width="120" height="120" viewBox="-40 -40 80 80" xmlns="http://www.w3.org/2000/svg"><line x1="0" y1="4" x2="0" y2="38" stroke="#3d7a60" stroke-width="2.5" stroke-linecap="round"/><ellipse cx="-9" cy="20" rx="11" ry="5" fill="#6aaa80" transform="rotate(-28 -9 20)"/><ellipse cx="0" cy="-22" rx="8" ry="13" fill="#f0b0c0" opacity="0.85"/><ellipse cx="0" cy="-22" rx="8" ry="13" fill="#f4c6c6" opacity="0.85" transform="rotate(45)"/><ellipse cx="0" cy="-22" rx="8" ry="13" fill="#f0b0c0" opacity="0.85" transform="rotate(90)"/><ellipse cx="0" cy="-22" rx="8" ry="13" fill="#f4c6c6" opacity="0.85" transform="rotate(135)"/><ellipse cx="0" cy="-22" rx="8" ry="13" fill="#f0b0c0" opacity="0.85" transform="rotate(180)"/><ellipse cx="0" cy="-22" rx="8" ry="13" fill="#f4c6c6" opacity="0.85" transform="rotate(225)"/><ellipse cx="0" cy="-22" rx="8" ry="13" fill="#f0b0c0" opacity="0.85" transform="rotate(270)"/><ellipse cx="0" cy="-22" rx="8" ry="13" fill="#f4c6c6" opacity="0.85" transform="rotate(315)"/><ellipse cx="0" cy="-16" rx="7" ry="10" fill="#f0a0b8" opacity="0.9"/><ellipse cx="0" cy="-16" rx="7" ry="10" fill="#f0a0b8" opacity="0.9" transform="rotate(45)"/><ellipse cx="0" cy="-16" rx="7" ry="10" fill="#f0a0b8" opacity="0.9" transform="rotate(90)"/><ellipse cx="0" cy="-16" rx="7" ry="10" fill="#f0a0b8" opacity="0.9" transform="rotate(135)"/><ellipse cx="0" cy="-16" rx="7" ry="10" fill="#f0a0b8" opacity="0.9" transform="rotate(180)"/><ellipse cx="0" cy="-16" rx="7" ry="10" fill="#f0a0b8" opacity="0.9" transform="rotate(225)"/><ellipse cx="0" cy="-16" rx="7" ry="10" fill="#f0a0b8" opacity="0.9" transform="rotate(270)"/><ellipse cx="0" cy="-16" rx="7" ry="10" fill="#f0a0b8" opacity="0.9" transform="rotate(315)"/><circle r="7" fill="#d4788a"/><circle r="5" fill="#c06070"/><circle r="3" fill="#a84858"/></svg>',
     sunflower: '<svg width="120" height="120" viewBox="-40 -40 80 80" xmlns="http://www.w3.org/2000/svg"><line x1="0" y1="6" x2="0" y2="38" stroke="#3d7a60" stroke-width="2.5" stroke-linecap="round"/><ellipse cx="10" cy="22" rx="11" ry="5" fill="#6aaa80" transform="rotate(28 10 22)"/><ellipse cx="0" cy="-22" rx="7" ry="14" fill="#fbe484" opacity="0.95"/><ellipse cx="0" cy="-22" rx="7" ry="14" fill="#f8dc70" opacity="0.95" transform="rotate(20)"/><ellipse cx="0" cy="-22" rx="7" ry="14" fill="#fbe484" opacity="0.95" transform="rotate(40)"/><ellipse cx="0" cy="-22" rx="7" ry="14" fill="#f8dc70" opacity="0.95" transform="rotate(60)"/><ellipse cx="0" cy="-22" rx="7" ry="14" fill="#fbe484" opacity="0.95" transform="rotate(80)"/><ellipse cx="0" cy="-22" rx="7" ry="14" fill="#f8dc70" opacity="0.95" transform="rotate(100)"/><ellipse cx="0" cy="-22" rx="7" ry="14" fill="#fbe484" opacity="0.95" transform="rotate(120)"/><ellipse cx="0" cy="-22" rx="7" ry="14" fill="#f8dc70" opacity="0.95" transform="rotate(140)"/><ellipse cx="0" cy="-22" rx="7" ry="14" fill="#fbe484" opacity="0.95" transform="rotate(160)"/><ellipse cx="0" cy="-22" rx="7" ry="14" fill="#f8dc70" opacity="0.95" transform="rotate(180)"/><ellipse cx="0" cy="-22" rx="7" ry="14" fill="#fbe484" opacity="0.95" transform="rotate(200)"/><ellipse cx="0" cy="-22" rx="7" ry="14" fill="#f8dc70" opacity="0.95" transform="rotate(220)"/><ellipse cx="0" cy="-22" rx="7" ry="14" fill="#fbe484" opacity="0.95" transform="rotate(240)"/><ellipse cx="0" cy="-22" rx="7" ry="14" fill="#f8dc70" opacity="0.95" transform="rotate(260)"/><ellipse cx="0" cy="-22" rx="7" ry="14" fill="#fbe484" opacity="0.95" transform="rotate(280)"/><ellipse cx="0" cy="-22" rx="7" ry="14" fill="#f8dc70" opacity="0.95" transform="rotate(300)"/><ellipse cx="0" cy="-22" rx="7" ry="14" fill="#fbe484" opacity="0.95" transform="rotate(320)"/><ellipse cx="0" cy="-22" rx="7" ry="14" fill="#f8dc70" opacity="0.95" transform="rotate(340)"/><circle r="13" fill="#3a2408"/><circle r="10" fill="#4a3010"/><circle r="7" fill="#5a3a18"/></svg>',
-    lotus: '<svg width="120" height="120" viewBox="-40 -40 80 80" xmlns="http://www.w3.org/2000/svg"><line x1="0" y1="10" x2="0" y2="38" stroke="#3d7a60" stroke-width="2.5" stroke-linecap="round"/><ellipse cx="0" cy="10" rx="20" ry="7" fill="#7bbfa0" opacity="0.7"/><path d="M0,8 C10,-2 10,-22 0,-32 C-10,-22 -10,-2 0,8Z" fill="#f4c6c6" opacity="0.88"/><path d="M0,8 C10,-2 10,-22 0,-32 C-10,-22 -10,-2 0,8Z" fill="#f0b8c0" opacity="0.88" transform="rotate(-50 0 8)"/><path d="M0,8 C10,-2 10,-22 0,-32 C-10,-22 -10,-2 0,8Z" fill="#f4c6c6" opacity="0.88" transform="rotate(50 0 8)"/><path d="M0,8 C10,-2 10,-22 0,-32 C-10,-22 -10,-2 0,8Z" fill="#f0b8c0" opacity="0.88" transform="rotate(-28 0 8)"/><path d="M0,8 C10,-2 10,-22 0,-32 C-10,-22 -10,-2 0,8Z" fill="#f4c6c6" opacity="0.88" transform="rotate(28 0 8)"/><circle cx="0" cy="-2" r="6" fill="#fbe484"/><circle cx="0" cy="-2" r="4" fill="#f0d060"/></svg>',
+    peony: '<svg width="120" height="120" viewBox="-40 -40 80 80" xmlns="http://www.w3.org/2000/svg"><line x1="0" y1="14" x2="0" y2="38" stroke="#3d7a60" stroke-width="2.5" stroke-linecap="round"/><ellipse rx="5" ry="8.9" fill="#f7c6d9" transform="rotate(0) translate(0,-17.1)"/><ellipse rx="5" ry="8.9" fill="#f7c6d9" transform="rotate(72) translate(0,-17.1)"/><ellipse rx="5" ry="8.9" fill="#f7c6d9" transform="rotate(144) translate(0,-17.1)"/><ellipse rx="5" ry="8.9" fill="#f7c6d9" transform="rotate(216) translate(0,-17.1)"/><ellipse rx="5" ry="8.9" fill="#f7c6d9" transform="rotate(288) translate(0,-17.1)"/><ellipse rx="5" ry="8.2" fill="#f2a8c4" transform="rotate(36) translate(0,-14)"/><ellipse rx="5" ry="8.2" fill="#f2a8c4" transform="rotate(108) translate(0,-14)"/><ellipse rx="5" ry="8.2" fill="#f2a8c4" transform="rotate(180) translate(0,-14)"/><ellipse rx="5" ry="8.2" fill="#f2a8c4" transform="rotate(252) translate(0,-14)"/><ellipse rx="5" ry="8.2" fill="#f2a8c4" transform="rotate(324) translate(0,-14)"/><ellipse rx="3.9" ry="6.2" fill="#e8739f" transform="rotate(18) translate(0,-7.8)"/><ellipse rx="3.9" ry="6.2" fill="#e8739f" transform="rotate(78) translate(0,-7.8)"/><ellipse rx="3.9" ry="6.2" fill="#e8739f" transform="rotate(138) translate(0,-7.8)"/><ellipse rx="3.9" ry="6.2" fill="#e8739f" transform="rotate(198) translate(0,-7.8)"/><ellipse rx="3.9" ry="6.2" fill="#e8739f" transform="rotate(258) translate(0,-7.8)"/><ellipse rx="3.9" ry="6.2" fill="#e8739f" transform="rotate(318) translate(0,-7.8)"/><circle r="3.5" fill="#fbe7b0"/></svg>',
     lavender: '<svg width="120" height="120" viewBox="-34 -90 68 130" xmlns="http://www.w3.org/2000/svg"><line x1="0" y1="-3" x2="0" y2="38" stroke="#3d7a60" stroke-width="2" stroke-linecap="round"/><ellipse cx="-7" cy="-10" rx="7" ry="11.2" fill="#b0a8c8" opacity="0.9" transform="rotate(-40 -7 -10)"/><ellipse cx="7" cy="-10" rx="7" ry="11.2" fill="#b4accd" opacity="0.9" transform="rotate(40 7 -10)"/><ellipse cx="0" cy="-14" rx="4.55" ry="9.52" fill="#b8b0d0" opacity="0.8"/><ellipse cx="-6.3" cy="-18.6" rx="6.5" ry="10.4" fill="#b6aecf" opacity="0.9" transform="rotate(-40 -6.3 -18.6)"/><ellipse cx="6.3" cy="-18.6" rx="6.5" ry="10.4" fill="#bab2d3" opacity="0.9" transform="rotate(40 6.3 -18.6)"/><ellipse cx="0" cy="-22.5" rx="4.23" ry="8.84" fill="#beb6d6" opacity="0.8"/><ellipse cx="-5.6" cy="-27.3" rx="6" ry="9.6" fill="#bcb4d5" opacity="0.9" transform="rotate(-40 -5.6 -27.3)"/><ellipse cx="5.6" cy="-27.3" rx="6" ry="9.6" fill="#c0b8d8" opacity="0.9" transform="rotate(40 5.6 -27.3)"/><ellipse cx="0" cy="-31.2" rx="3.9" ry="8.16" fill="#c4bcda" opacity="0.8"/><ellipse cx="-4.9" cy="-35.9" rx="5.5" ry="8.8" fill="#c2bad8" opacity="0.9" transform="rotate(-40 -4.9 -35.9)"/><ellipse cx="4.9" cy="-35.9" rx="5.5" ry="8.8" fill="#c6bedb" opacity="0.9" transform="rotate(40 4.9 -35.9)"/><ellipse cx="0" cy="-39.8" rx="3.58" ry="7.48" fill="#cac2de" opacity="0.8"/><ellipse cx="-4.1" cy="-44.6" rx="5" ry="8" fill="#c8c0dc" opacity="0.9" transform="rotate(-40 -4.1 -44.6)"/><ellipse cx="4.1" cy="-44.6" rx="5" ry="8" fill="#ccc4e0" opacity="0.9" transform="rotate(40 4.1 -44.6)"/><ellipse cx="0" cy="-48.5" rx="3.25" ry="6.8" fill="#d0c8e2" opacity="0.8"/><ellipse cx="-3.4" cy="-53.2" rx="4.5" ry="7.2" fill="#cec6e0" opacity="0.9" transform="rotate(-40 -3.4 -53.2)"/><ellipse cx="3.4" cy="-53.2" rx="4.5" ry="7.2" fill="#d2cae4" opacity="0.9" transform="rotate(40 3.4 -53.2)"/><ellipse cx="0" cy="-57.1" rx="2.93" ry="6.12" fill="#d6cee6" opacity="0.8"/><ellipse cx="-2.7" cy="-61.9" rx="4" ry="6.4" fill="#d4cce4" opacity="0.9" transform="rotate(-40 -2.7 -61.9)"/><ellipse cx="2.7" cy="-61.9" rx="4" ry="6.4" fill="#d8d0e8" opacity="0.9" transform="rotate(40 2.7 -61.9)"/><ellipse cx="0" cy="-65.8" rx="2.6" ry="5.44" fill="#dcd4ea" opacity="0.8"/><ellipse cx="-2" cy="-70.5" rx="3.5" ry="5.6" fill="#dad2e8" opacity="0.9" transform="rotate(-40 -2 -70.5)"/><ellipse cx="2" cy="-70.5" rx="3.5" ry="5.6" fill="#ded6ec" opacity="0.9" transform="rotate(40 2 -70.5)"/><ellipse cx="0" cy="-80.5" rx="3" ry="5.5" fill="#e0d8f0"/></svg>',
     tulip: '<svg width="120" height="120" viewBox="-40 -40 80 80" xmlns="http://www.w3.org/2000/svg"><line x1="0" y1="4" x2="0" y2="38" stroke="#3d7a60" stroke-width="2.5" stroke-linecap="round"/><ellipse cx="0" cy="-4" rx="14" ry="12" fill="#d4b8e0" opacity="0.9"/><path d="M-14,-4 C-18,-8 -20,-20 -12,-26 C-6,-22 -4,-14 -6,-4 Z" fill="#c8a8d8" opacity="0.9"/><path d="M14,-4 C18,-8 20,-20 12,-26 C6,-22 4,-14 6,-4 Z" fill="#c8a8d8" opacity="0.9"/><path d="M-8,-4 C-10,-16 -6,-28 0,-32 C6,-28 10,-16 8,-4 Z" fill="#d8c0e8" opacity="0.92"/></svg>',
     daisy: '<svg width="120" height="120" viewBox="-40 -40 80 80" xmlns="http://www.w3.org/2000/svg"><line x1="0" y1="4" x2="0" y2="38" stroke="#3d7a60" stroke-width="2.5" stroke-linecap="round"/><ellipse cx="0" cy="-18" rx="5" ry="11" fill="#f8f8f0" opacity="0.95"/><ellipse cx="0" cy="-18" rx="5" ry="11" fill="#f8f8f0" opacity="0.95" transform="rotate(22.5)"/><ellipse cx="0" cy="-18" rx="5" ry="11" fill="#f8f8f0" opacity="0.95" transform="rotate(45)"/><ellipse cx="0" cy="-18" rx="5" ry="11" fill="#f8f8f0" opacity="0.95" transform="rotate(67.5)"/><ellipse cx="0" cy="-18" rx="5" ry="11" fill="#f8f8f0" opacity="0.95" transform="rotate(90)"/><ellipse cx="0" cy="-18" rx="5" ry="11" fill="#f8f8f0" opacity="0.95" transform="rotate(112.5)"/><ellipse cx="0" cy="-18" rx="5" ry="11" fill="#f8f8f0" opacity="0.95" transform="rotate(135)"/><ellipse cx="0" cy="-18" rx="5" ry="11" fill="#f8f8f0" opacity="0.95" transform="rotate(157.5)"/><ellipse cx="0" cy="-18" rx="5" ry="11" fill="#f8f8f0" opacity="0.95" transform="rotate(180)"/><ellipse cx="0" cy="-18" rx="5" ry="11" fill="#f8f8f0" opacity="0.95" transform="rotate(202.5)"/><ellipse cx="0" cy="-18" rx="5" ry="11" fill="#f8f8f0" opacity="0.95" transform="rotate(225)"/><ellipse cx="0" cy="-18" rx="5" ry="11" fill="#f8f8f0" opacity="0.95" transform="rotate(247.5)"/><ellipse cx="0" cy="-18" rx="5" ry="11" fill="#f8f8f0" opacity="0.95" transform="rotate(270)"/><ellipse cx="0" cy="-18" rx="5" ry="11" fill="#f8f8f0" opacity="0.95" transform="rotate(292.5)"/><ellipse cx="0" cy="-18" rx="5" ry="11" fill="#f8f8f0" opacity="0.95" transform="rotate(315)"/><ellipse cx="0" cy="-18" rx="5" ry="11" fill="#f8f8f0" opacity="0.95" transform="rotate(337.5)"/><circle r="11" fill="#c8a050"/><circle r="8" fill="#d4b060"/><circle r="5" fill="#e0c070"/></svg>',
     lily: '<svg width="120" height="120" viewBox="-40 -40 80 80" xmlns="http://www.w3.org/2000/svg"><line x1="0" y1="4" x2="0" y2="38" stroke="#3d7a60" stroke-width="2.5" stroke-linecap="round"/><path d="M0,-4 C-10,-12 -14,-26 -8,2 C-4,4 0,6 4,4 C10,-10 10,-12 0,-4Z" fill="#b7e4e7" opacity="0.9"/><path d="M0,-4 C-10,-12 -14,-26 -8,2 C-4,4 0,6 4,4 C10,-10 10,-12 0,-4Z" fill="#a0d0d8" opacity="0.9" transform="rotate(60)"/><path d="M0,-4 C-10,-12 -14,-26 -8,2 C-4,4 0,6 4,4 C10,-10 10,-12 0,-4Z" fill="#b7e4e7" opacity="0.9" transform="rotate(120)"/><path d="M0,-4 C-10,-12 -14,-26 -8,2 C-4,4 0,6 4,4 C10,-10 10,-12 0,-4Z" fill="#a0d0d8" opacity="0.9" transform="rotate(180)"/><path d="M0,-4 C-10,-12 -14,-26 -8,2 C-4,4 0,6 4,4 C10,-10 10,-12 0,-4Z" fill="#b7e4e7" opacity="0.9" transform="rotate(240)"/><path d="M0,-4 C-10,-12 -14,-26 -8,2 C-4,4 0,6 4,4 C10,-10 10,-12 0,-4Z" fill="#a0d0d8" opacity="0.9" transform="rotate(300)"/><circle r="6" fill="#429288"/><circle r="4" fill="#5aaa98"/></svg>',
-    sakura: '<svg width="120" height="120" viewBox="-40 -40 80 80" xmlns="http://www.w3.org/2000/svg"><line x1="0" y1="4" x2="0" y2="38" stroke="#3d7a60" stroke-width="2.5" stroke-linecap="round"/><path d="M0,-26 C10,-21 16,-9 11,2 C7,8 0,10 -11,2 C-16,-9 -10,-21 0,-26Z" fill="#f8d8e4" opacity="0.88"/><path d="M0,-26 C10,-21 16,-9 11,2 C7,8 0,10 -11,2 C-16,-9 -10,-21 0,-26Z" fill="#f8d8e4" opacity="0.88" transform="rotate(72)"/><path d="M0,-26 C10,-21 16,-9 11,2 C7,8 0,10 -11,2 C-16,-9 -10,-21 0,-26Z" fill="#f8d8e4" opacity="0.88" transform="rotate(144)"/><path d="M0,-26 C10,-21 16,-9 11,2 C7,8 0,10 -11,2 C-16,-9 -10,-21 0,-26Z" fill="#f8d8e4" opacity="0.88" transform="rotate(216)"/><path d="M0,-26 C10,-21 16,-9 11,2 C7,8 0,10 -11,2 C-16,-9 -10,-21 0,-26Z" fill="#f8d8e4" opacity="0.88" transform="rotate(288)"/><circle r="5" fill="#d4a5b5"/><circle r="3" fill="#c08898"/></svg>'
+    poppy: '<svg width="120" height="120" viewBox="-40 -40 80 80" xmlns="http://www.w3.org/2000/svg"><line x1="0" y1="10" x2="0" y2="38" stroke="#3d7a60" stroke-width="2.5" stroke-linecap="round"/><ellipse rx="8.9" ry="13.4" fill="#e63946" transform="rotate(0) translate(0,-12.6)"/><ellipse rx="8.9" ry="13.4" fill="#d62839" transform="rotate(90) translate(0,-12.6)"/><ellipse rx="8.9" ry="13.4" fill="#e63946" transform="rotate(180) translate(0,-12.6)"/><ellipse rx="8.9" ry="13.4" fill="#d62839" transform="rotate(270) translate(0,-12.6)"/><ellipse rx="5.6" ry="7" fill="#2b1220"/><rect x="-4.2" y="-1.8" width="8.4" height="0.6" fill="#4a2033"/><rect x="-4.2" y="-0.3" width="8.4" height="0.6" fill="#4a2033"/><rect x="-4.2" y="1.2" width="8.4" height="0.6" fill="#4a2033"/><circle cx="3.9" cy="-6.8" r="0.9" fill="#0c0509"/><circle cx="7.8" cy="-0.0" r="0.9" fill="#0c0509"/><circle cx="3.9" cy="6.8" r="0.9" fill="#0c0509"/><circle cx="-3.9" cy="6.8" r="0.9" fill="#0c0509"/><circle cx="-7.8" cy="0.0" r="0.9" fill="#0c0509"/><circle cx="-3.9" cy="-6.8" r="0.9" fill="#0c0509"/></svg>'
   };
 
-  const chipClasses = { rose:'chip-rose', sunflower:'chip-sun', lotus:'chip-lotus', lavender:'chip-lav', tulip:'chip-tulip', daisy:'chip-daisy', lily:'chip-lily', sakura:'chip-sakura',
+  const chipClasses = { rose:'chip-rose', sunflower:'chip-sun', peony:'chip-peony', lavender:'chip-lav', tulip:'chip-tulip', daisy:'chip-daisy', lily:'chip-lily', poppy:'chip-poppy',
                         orchid:'chip-orchid', chrysanth:'chip-mum' };   /* hidden pair */
 
   function openFlowerModal(id) {
@@ -1489,6 +1526,47 @@
     ctx.fillStyle=hsl(hue,sat*.45,light+10); ctx.beginPath(); ctx.arc(cx,cy,Rl*.20,0,Math.PI*2); ctx.fill();
   }
 
+  /* PEONY and POPPY, which replaced the lotus and the sakura. Ported from
+     the same ellipse geometry as the other six sites: the peony is two
+     ruffled outer rings, a deeper inner ring and a small warm centre; the
+     poppy is four petals and a dark eye with its stamen dots. */
+  function drawPeony(ctx,cx,cy,R,hue,sat,light){
+    function petal(ang,d,w,h,s,l){
+      ctx.save(); ctx.translate(cx,cy); ctx.rotate(ang*Math.PI/180); ctx.translate(0,-d);
+      ctx.fillStyle=hsl(hue,s,Math.max(18,Math.min(96,l)));
+      ctx.beginPath(); ctx.ellipse(0,0,w/2,h/2,0,0,Math.PI*2); ctx.fill(); ctx.restore();
+    }
+    /* TEN outer petals at 36 degrees, alternating length and tone, rather than
+       two rings of five. Five and five left the bloom measurably lopsided, a
+       bbox of -0.96 to 0.95 across and -1.00 to 0.84 down, because the two sets
+       shared a start angle; ten even ones close that and read closer to the
+       reference drawing, which carries ten. */
+    for(var i=0;i<10;i++) petal(i*36, i%2?R*.537:R*.657, R*.388, i%2?R*.627:R*.686,
+                                i%2?sat*.78:sat*.62, i%2?light+8:light+16);
+    for(var i=0;i<6;i++) petal(i*60+18, R*.299, R*.299, R*.478, sat*.92, light-3);
+    ctx.save(); ctx.translate(cx,cy); ctx.fillStyle=hsl(48,80,86);
+    ctx.beginPath(); ctx.arc(0,0,R*.135,0,Math.PI*2); ctx.fill(); ctx.restore();
+  }
+
+  function drawPoppy(ctx,cx,cy,R,hue,sat,light){
+    function petal(ang,d,w,h,s,l){
+      ctx.save(); ctx.translate(cx,cy); ctx.rotate(ang*Math.PI/180); ctx.translate(0,-d);
+      ctx.fillStyle=hsl(hue,Math.min(100,s),Math.max(10,Math.min(96,l)));
+      ctx.beginPath(); ctx.ellipse(0,0,w/2,h/2,0,0,Math.PI*2); ctx.fill(); ctx.restore();
+    }
+    for(var i=0;i<4;i++) petal(i*90,    R*.475, R*.675, R*1.05, sat*1.05, light-13);
+    for(var i=0;i<4;i++) petal(i*90+45, R*.450, R*.650, R*1.00, sat,      light+(i%2?-4:2));
+    ctx.save(); ctx.translate(cx,cy); 
+    ctx.fillStyle=hsl(hue,34,13);
+    ctx.beginPath(); ctx.ellipse(0,0,R*.20,R*.25,0,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle=hsl(hue,30,27);
+    for(var i=-1;i<2;i++){ ctx.beginPath(); ctx.ellipse(0,R*.1125*i,R*.1375,R*.011,0,0,Math.PI*2); ctx.fill(); }
+    ctx.fillStyle=hsl(hue,40,7);
+    for(var i=0;i<6;i++){ var a=(i*60+30)*Math.PI/180;
+      ctx.beginPath(); ctx.arc(Math.sin(a)*R*.2875,-Math.cos(a)*R*.2875,R*.0215,0,Math.PI*2); ctx.fill(); }
+    ctx.restore();
+  }
+
   function drawSakura(ctx,cx,cy,R,hue,sat,light){
     var Rb=R*1.7;
     for(var i=0;i<5;i++){
@@ -1589,7 +1667,7 @@
   }
 
   var bloomFns={rose:drawRose,sunflower:drawSunflower,lotus:drawLotus,lavender:drawLavender,
-                tulip:drawTulip,daisy:drawDaisy,lily:drawLily,sakura:drawSakura,
+                tulip:drawTulip,daisy:drawDaisy,lily:drawLily,sakura:drawSakura,peony:drawPeony,poppy:drawPoppy,
                 /* hidden from every picker, drawn anyway. See CLAUDE.md. */
                 orchid:drawOrchid,chrysanth:drawChrysanth};
   window._bloomFns = bloomFns; // expose for modal
@@ -1618,6 +1696,8 @@
     daisy:     { l:-1.00, r:0.99, t:-1.00, b:0.99 },
     lily:      { l:-0.94, r:0.93, t:-1.08, b:1.07 },
     sakura:    { l:-1.05, r:1.04, t:-1.11, b:0.99 },
+    peony:     { l:-0.96, r:0.95, t:-1.00, b:0.84 },
+    poppy:     { l:-1.00, r:0.99, t:-1.00, b:0.99 },
     /* hidden from every picker, measured anyway. See CLAUDE.md. */
     orchid:    { l:-1.04, r:1.03, t:-1.28, b:0.83 },
     chrysanth: { l:-1.20, r:1.19, t:-1.21, b:1.20 }
@@ -1698,39 +1778,41 @@
      The grid this sits beside is the same eight flowers and is kept for narrow
      and touch screens, where a ring has nowhere to put a label. */
   var RING = [
-    /* A COLOUR WHEEL, clockwise from the top left, and the hues were moved to
-       make it one. It used to carry the rose, the lotus and the sakura all at
-       340: three flowers, one pink, sitting side by side, with a 140 degree
-       jump from the sunflower straight to the lily. Now every step climbs and
-       no two are closer than 18 degrees, so the ring reads as a spectrum:
+    /* A COLOUR WHEEL, clockwise from the top left, and the hues are placed to
+       make it one: every step climbs and no two are closer than 18 degrees,
+       so the ring reads as a spectrum rather than as eight flowers that
+       happen to be scattered.
 
-         rose 350, daisy 25, sunflower 48, lotus 140, lily 190, tulip 232,
-         lavender 272, sakura 332, and back to the rose.
+         poppy 8, daisy 28, sunflower 48, lily 190, tulip 232, lavender 272,
+         peony 320, rose 350, and back to the poppy.
 
-       THE LOTUS IS THE ONE THAT WENT GREEN, at 140, and it is the only one of
-       the three pinks that could. A rose has to be red and a cherry blossom
-       has to be pink; a lotus comes in white and cream and a pale green white,
-       so a soft sage one is a flower that exists. It is 34 saturation, kept
-       well down, or it stops reading as a bloom and starts reading as a leaf.
+       THE PEONY AND THE POPPY REPLACED THE LOTUS AND THE SAKURA, and they
+       cost the wheel its green. The lotus had been pushed to 140 precisely
+       because it was the one of three pinks that could go green, and it was
+       filling the only stretch of the wheel that had nothing in it. A peony
+       is pink and a poppy is red, so neither can stand there, and the yellow
+       to cyan arc is now a 142 degree gap where it used to be 92.
 
-       Its POSITION moved with its colour, from beside the rose at the top to
-       between the sunflower and the lily, which is where a green belongs on a
-       wheel and is also the one stretch that had nothing in it.
+       THAT GAP IS ACCEPTED RATHER THAN HIDDEN. The alternative was to move
+       the lily out to about 150 and call it a green white one, which would
+       have balanced the spacing and taken a second liberty with a species'
+       colour to prop up a device. The ring is a way of showing eight flowers,
+       not a promise about the spectrum.
 
-       The 92 degree step from the sunflower to the lotus is the yellow green
-       arc, and it stays a gap on purpose: none of the eight is a yellow green
-       flower, and the leaves already are.
+       ONLY TWO HUES MOVED for the swap: the daisy went 25 to 28, to keep 20
+       degrees clear of the poppy, and the two new flowers took the pink and
+       red ends. The rose, sunflower, lily, tulip and lavender are unchanged.
 
        The eight tile canvases below carry the same numbers and must move with
        these, since the popup reads its colour off the tile. */
-    { id:'rose',      a:-112.5, hue:350, sat:55, light:55 },
-    { id:'daisy',     a:-67.5,  hue:25,  sat:54, light:68 },
+    { id:'poppy',     a:-112.5, hue:8,   sat:74, light:52 },
+    { id:'daisy',     a:-67.5,  hue:28,  sat:54, light:68 },
     { id:'sunflower', a:-22.5,  hue:48,  sat:62, light:65 },
-    { id:'lotus',     a: 22.5,  hue:140, sat:34, light:68 },
-    { id:'lily',      a: 67.5,  hue:190, sat:42, light:70 },
-    { id:'tulip',     a:112.5,  hue:232, sat:52, light:62 },
-    { id:'lavender',  a:157.5,  hue:272, sat:55, light:68 },
-    { id:'sakura',    a:-157.5, hue:332, sat:44, light:75 }
+    { id:'lily',      a: 22.5,  hue:190, sat:42, light:70 },
+    { id:'tulip',     a: 67.5,  hue:232, sat:52, light:62 },
+    { id:'lavender',  a:112.5,  hue:272, sat:55, light:68 },
+    { id:'peony',     a:157.5,  hue:320, sat:50, light:70 },
+    { id:'rose',      a:-157.5, hue:350, sat:55, light:55 }
   ];
 
 
@@ -1908,6 +1990,9 @@
       if(it.id === 'lavender') cy = size*0.798;
       else if(it.id === 'lotus') cy = size*0.799;
       else if(it.id === 'tulip') cy = size*0.465;
+      /* the peony paints 0.08 R above its origin, since its outer ring
+         alternates two lengths and the long ones start at the top */
+      else if(it.id === 'peony') cy = size*0.525;
       /* The sakura was the one already centred before this correction, so the
          shift applied to the rest took it 0.018 the other way. */
       else if(it.id === 'sakura') cy = size*0.520;
@@ -1982,7 +2067,7 @@
       blooms: [
         { species: 'tulip',  hue: 210, sat: 46, light: 62, xn: 0.19, R: 34, headY: 96,
           label: 'michael', tip: [['I WENT ON A NICE DATEE!']] },
-        { species: 'lotus',  hue: 276, sat: 44, light: 68, xn: 0.50, R: 32, headY: 102,
+        { species: 'peony',  hue: 320, sat: 50, light: 70, xn: 0.50, R: 32, headY: 102,
           label: 'putu',    tip: [['i ate good food today :)']] },
         { species: 'daisy',  hue: 340, sat: 45, light: 65, xn: 0.81, R: 30, headY: 92,
           label: 'rachel',  tip: [['i got to work from homee']] }
@@ -2391,8 +2476,8 @@
 
   var EXAMPLE = {
     wrap: 'butter', foliages: ['gyp','fern'],
-    flowers: ['rose','lotus','sunflower','lavender','daisy','tulip','lily','rose'],
-    hues: { rose: 356, lotus: 320, lavender: 268, tulip: 8 }
+    flowers: ['rose','peony','sunflower','lavender','daisy','tulip','lily','rose'],
+    hues: { rose: 356, peony: 320, lavender: 268, tulip: 8 }
   };
 
   var tag = document.getElementById('landingTag');

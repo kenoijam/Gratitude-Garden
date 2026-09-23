@@ -44,10 +44,13 @@ const speciesList = [
 { id: "rose", name: "Rose", meaning: "Love & depth" },
 { id: "sunflower", name: "Sunflower", meaning: "Hope & resilience" },
 { id: "lily", name: "Lily", meaning: "Peace & restoration" },
-{ id: "sakura", name: "Sakura", meaning: "Reflection & presence" },
-{ id: "lotus", name: "Lotus", meaning: "Strength & rising" },
+{ id: "poppy", name: "Poppy", meaning: "Memory & reflection" },
+{ id: "peony", name: "Peony", meaning: "Honour & resilience" },
 /* Orchid and chrysanthemum are drawn by this sketch but deliberately absent
-   from `speciesList`, so they appear in no picker. See CLAUDE.md. */
+   from `speciesList`, so they appear in no picker, and the sakura and the
+   lotus joined them when the peony and the poppy took their places. Every
+   one of the four is still drawn, so a flower planted before the swap still
+   comes up in the history and in a day that is replayed. See CLAUDE.md. */
 { id: "lavender", name: "Lavender", meaning: "Calm & safety" },
 ];
 
@@ -83,17 +86,19 @@ rose: 8,
 sunflower: 24,
 lily: 12,
 sakura: 5,
+peony: 22,
+poppy: 4,
 orchid: 5,
 chrysanth: 18
 }[id] || 16;
 }
 
 function defaultSat(sp) {
-return { daisy: 45, tulip: 50, rose: 55, sunflower: 60, lily: 40, sakura: 40, lotus: 50, orchid: 50, chrysanth: 48 }[sp] || 45;
+return { daisy: 45, tulip: 50, rose: 55, sunflower: 60, lily: 40, sakura: 40, lotus: 50, peony: 52, poppy: 68, orchid: 50, chrysanth: 48 }[sp] || 45;
 }
 
 function defaultLight(sp) {
-return { daisy: 65, tulip: 60, rose: 55, sunflower: 65, lily: 70, sakura: 75, lotus: 70, orchid: 68, chrysanth: 72 }[sp] || 65;
+return { daisy: 65, tulip: 60, rose: 55, sunflower: 65, lily: 70, sakura: 75, lotus: 70, peony: 70, poppy: 54, orchid: 68, chrysanth: 72 }[sp] || 65;
 }
 
 function addFlower(text, name, species, hue) {
@@ -243,6 +248,8 @@ rose:      { w: 0.60, h: 1.05 },
 lily:     { w: 0.70, h: 1.00 },
 tulip:     { w: 0.80, h: 1.10 },
 sakura:    { w: 0.75, h: 1.00 },
+peony:     { w: 0.62, h: 0.84 },
+poppy:     { w: 0.80, h: 1.00 },
     orchid:    { w: 0.72, h: 1.00 },
     chrysanth: { w: 0.60, h: 1.10 }
 }[species] || { w: 0.55, h: 1.10 });
@@ -651,6 +658,120 @@ fill(23, 40, 58);
 circle(0, 0, R * 1.05);
 }
 
+/* =========================================================================
+   PEONY and POPPY, which replaced the lotus and the sakura. The same two
+   shapes as the personal garden's, in this sketch's own family. Edit one and
+   edit the other, as with every other species here.
+
+   THE PEONY IS THREE RINGS AND A PALE CENTRE: rounded petals rather than the
+   daisy's sixteen narrow ones, each ring smaller, deeper and turned half a
+   step, and a small warm middle, which is what separates it from the rose.
+   THE POPPY IS FOUR PETALS AND A DARK EYE, which is the only four petalled
+   bloom and the only near black centre in the set.
+   ========================================================================= */
+function drawPeonyBloom(R, hue, sat, light) {
+  push();
+  noStroke();
+  const petal = (ang, d, w, h, s, l) => {
+    push();
+    rotate(ang);
+    translate(0, -d);
+    fill(hue, s, constrain(l, 18, 96), 1);
+    ellipse(0, 0, w, h);
+    pop();
+  };
+  /* TEN outer petals at 36 degrees, alternating length and tone. Two rings of
+     five shared a start angle and left the bloom measurably lopsided. */
+  for (let i = 0; i < 10; i++) {
+    petal(i * 36, i % 2 ? R * 0.537 : R * 0.657, R * 0.388, i % 2 ? R * 0.627 : R * 0.686,
+          i % 2 ? sat * 0.78 : sat * 0.62, i % 2 ? light + 8 : light + 16);
+  }
+  for (let i = 0; i < 6; i++) petal(i * 60 + 18, R * 0.299, R * 0.299, R * 0.478, sat * 0.92, light - 3);
+  fill(48, 80, 86, 1);
+  ellipse(0, 0, R * 0.27, R * 0.27);
+  pop();
+}
+
+/* EIGHT PETALS, in two layers: four deep ones on the axes and four brighter
+   ones turned 45 degrees over them. Four petals alone read as a cross with
+   gaps in it; the second layer fills those gaps and is what makes it a
+   flower rather than a symbol, and the two tones are what keep the layers
+   apart when a sender re-colours the whole bloom. Geometry ported from the
+   reference drawing: back d 0.475 of R, front 0.45, and a dark eye with its
+   ribs and six stamen dots. */
+function drawPoppyBloom(R, hue, sat, light) {
+  push();
+  noStroke();
+  const petal = (ang, d, w, h, s, l) => {
+    push();
+    rotate(ang);
+    translate(0, -d);
+    fill(hue, min(100, s), constrain(l, 10, 96), 1);
+    ellipse(0, 0, w, h);
+    pop();
+  };
+  for (let i = 0; i < 4; i++) petal(i * 90,      R * 0.475, R * 0.675, R * 1.05, sat * 1.05, light - 13);
+  for (let i = 0; i < 4; i++) petal(i * 90 + 45, R * 0.450, R * 0.650, R * 1.00, sat, light + (i % 2 ? -4 : 2));
+  fill(hue, 34, 13, 1);
+  ellipse(0, 0, R * 0.40, R * 0.50);
+  fill(hue, 30, 27, 1);
+  for (let i = -1; i < 2; i++) ellipse(0, R * 0.1125 * i, R * 0.275, R * 0.022);
+  fill(hue, 40, 7, 1);
+  for (let i = 0; i < 6; i++) {
+    const a = i * 60 + 30;
+    ellipse(sin(a) * R * 0.2875, -cos(a) * R * 0.2875, R * 0.043, R * 0.043);
+  }
+  pop();
+}
+
+function drawPeonyPreview(pg, R, hue, sat, light) {
+  pg.push();
+  pg.noStroke();
+  const petal = (ang, d, w, h, s, l) => {
+    pg.push();
+    pg.rotate(ang);
+    pg.translate(0, -d);
+    pg.fill(hue, s, constrain(l, 18, 96), 1);
+    pg.ellipse(0, 0, w, h);
+    pg.pop();
+  };
+  /* TEN outer petals at 36 degrees, alternating length and tone. Two rings of
+     five shared a start angle and left the bloom measurably lopsided. */
+  for (let i = 0; i < 10; i++) {
+    petal(i * 36, i % 2 ? R * 0.537 : R * 0.657, R * 0.388, i % 2 ? R * 0.627 : R * 0.686,
+          i % 2 ? sat * 0.78 : sat * 0.62, i % 2 ? light + 8 : light + 16);
+  }
+  for (let i = 0; i < 6; i++) petal(i * 60 + 18, R * 0.299, R * 0.299, R * 0.478, sat * 0.92, light - 3);
+  pg.fill(48, 80, 86, 1);
+  pg.ellipse(0, 0, R * 0.27, R * 0.27);
+  pg.pop();
+}
+
+function drawPoppyPreview(pg, R, hue, sat, light) {
+  pg.push();
+  pg.noStroke();
+  const petal = (ang, d, w, h, s, l) => {
+    pg.push();
+    pg.rotate(ang);
+    pg.translate(0, -d);
+    pg.fill(hue, min(100, s), constrain(l, 10, 96), 1);
+    pg.ellipse(0, 0, w, h);
+    pg.pop();
+  };
+  for (let i = 0; i < 4; i++) petal(i * 90,      R * 0.475, R * 0.675, R * 1.05, sat * 1.05, light - 13);
+  for (let i = 0; i < 4; i++) petal(i * 90 + 45, R * 0.450, R * 0.650, R * 1.00, sat, light + (i % 2 ? -4 : 2));
+  pg.fill(hue, 34, 13, 1);
+  pg.ellipse(0, 0, R * 0.40, R * 0.50);
+  pg.fill(hue, 30, 27, 1);
+  for (let i = -1; i < 2; i++) pg.ellipse(0, R * 0.1125 * i, R * 0.275, R * 0.022);
+  pg.fill(hue, 40, 7, 1);
+  for (let i = 0; i < 6; i++) {
+    const a = i * 60 + 30;
+    pg.ellipse(sin(a) * R * 0.2875, -cos(a) * R * 0.2875, R * 0.043, R * 0.043);
+  }
+  pg.pop();
+}
+
 function drawCherryBloom(R, hue, sat, light) {
 noStroke();
 const Rb = R * 1.7;
@@ -920,6 +1041,8 @@ var BLOOM_BOX = {
   rose:      [ 0.00, 1.00, 1.00],
   sunflower: [ 0.00, 1.32, 1.35],
   sakura:    [-0.06, 1.05, 1.05],
+  peony:     [-0.08, 0.96, 0.92],  /* measured: the ruffled ring is not symmetric */
+  poppy:     [ 0.00, 1.00, 1.00],
   lily:      [ 0.00, 0.94, 1.08],
   daisy:     [ 0.00, 1.00, 1.00],
   lotus:     [-1.00, 1.15, 1.00],
@@ -999,6 +1122,10 @@ drawSunflowerBloom(R, hue, sat, light);
 drawChrysanthBloom(R, hue, sat, light);
 } else if (f.species === "orchid") {
 drawOrchidBloom(R, hue, sat, light);
+} else if (f.species === "peony") {
+drawPeonyBloom(R, hue, sat, light);
+} else if (f.species === "poppy") {
+drawPoppyBloom(R, hue, sat, light);
 } else if (f.species === "sakura") {
 drawCherryBloom(R, hue, sat, light);
 } else if (f.species === "lily") {
@@ -1959,6 +2086,10 @@ drawSunflowerPreview(pg, R, hue, sat, light);
 drawChrysanthPreview(pg, R, hue, sat, light);
 } else if (speciesId === "orchid") {
 drawOrchidPreview(pg, R, hue, sat, light);
+} else if (speciesId === "peony") {
+drawPeonyPreview(pg, R, hue, sat, light);
+} else if (speciesId === "poppy") {
+drawPoppyPreview(pg, R, hue, sat, light);
 } else if (speciesId === "sakura") {
 drawCherryBlossomPreview(pg, R, hue, sat, light);
 } else if (speciesId === "lily") {
