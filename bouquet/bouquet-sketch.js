@@ -1580,10 +1580,45 @@ const BOUQUET_HALF = 142;
    placement can never be working from different values. */
 let NOTCH_Y = 286;
 let STEM_COUNT = 6;
+/* THE PAPER GROWS SMOOTHLY, IT DOES NOT STEP, and that is a visible fix
+   rather than tidiness. These two were tiers, `n >= 9 ? 292 : n >= 7 ? 286
+   : ...`, so the opening and the back tip held still for two or three stems
+   and then JUMPED 6 to 12px the moment a count crossed a threshold. Adding a
+   flower therefore made the whole wrapper bounce up and down under the
+   sender while the bouquet itself barely changed.
+
+   INTERPOLATING THE OLD TIERS WAS NOT ENOUGH. Spread smoothly they still
+   moved the paper about 10 units for every stem added, because the tiers
+   covered 274 to 292 across the range. Measured before settling this.
+
+   SO THE PAPER IS NOW FIXED ACROSS EVERYTHING A SENDER CAN BUILD. The tiers
+   were written when MIN_FLOWERS was 3, and the thing they were protecting
+   against is a deep opening under a tiny bunch, which is mostly bare paper.
+   The minimum has been 5 for a long time, so that case can now only arrive
+   from a share link made before the floor existed. Above 5 stems the paper
+   holds at 286 and 84, the old middle of the range, and adding or removing a
+   stem does not move it at all. Below 5 the old smaller geometry still
+   applies, so those old links render as they always did.
+
+   The cost, stated plainly: a 5 stem bouquet now gets an opening 12 units
+   deeper than it used to and a 12 stem bouquet one 6 units shallower. Both
+   are small, and neither moves while somebody is building. */
+var NOTCH_ANCHORS = [[3, 248, 110], [4, 268, 96], [5, 286, 84]];
+
 function setNotchForCount(n) {
   STEM_COUNT = n;
-  NOTCH_Y    = n >= 9 ? 292 : n >= 7 ? 286 : n >= 5 ? 274 : n >= 4 ? 268 : 248;
-  BACK_TIP_Y = n >= 9 ? 78  : n >= 7 ? 84  : n >= 5 ? 92  : n >= 4 ? 96  : 110;
+  var a = NOTCH_ANCHORS, i;
+  if (n <= a[0][0]) { NOTCH_Y = a[0][1]; BACK_TIP_Y = a[0][2]; return; }
+  var last = a[a.length - 1];
+  if (n >= last[0]) { NOTCH_Y = last[1]; BACK_TIP_Y = last[2]; return; }
+  for (i = 0; i < a.length - 1; i++) {
+    if (n >= a[i][0] && n <= a[i + 1][0]) {
+      var t = (n - a[i][0]) / (a[i + 1][0] - a[i][0]);
+      NOTCH_Y    = a[i][1] + (a[i + 1][1] - a[i][1]) * t;
+      BACK_TIP_Y = a[i][2] + (a[i + 1][2] - a[i][2]) * t;
+      return;
+    }
+  }
 }
 const CONE_BOT_Y = Y_NECK, CONE_BOT_HALF = 30;
 /* the sides hold their width well down the sleeve before drawing in, which is
@@ -2173,11 +2208,19 @@ function attachBloomTooltip(canvas) {
     if (!meta) return hide();
     tip.innerHTML = '<strong>' + meta.name + '</strong><span>' + meta.meaning + '</span>';
     tip.classList.add("on");
+    /* THE CANVAS IS NOT THE HOLDER, and forgetting that is why this sat far
+       above the flower it named. `px` and `py` are measured from the CANVAS,
+       the tip is positioned inside the HOLDER, and in the studio the canvas is
+       centred in a stage taller and wider than itself. So the offset between
+       the two has to be added, or the tip is drawn as though the canvas began
+       at the holder's top left and it rides up by exactly that gap. */
+    const cr = canvas.getBoundingClientRect(), hr = holder.getBoundingClientRect();
+    const offX = cr.left - hr.left, offY = cr.top - hr.top;
     /* keep it inside the holder rather than letting it run off the edge */
     const w = tip.offsetWidth, h = tip.offsetHeight;
     const maxX = holder.clientWidth - w - 4;
-    tip.style.left = Math.max(4, Math.min(px - w / 2, maxX)) + "px";
-    tip.style.top = Math.max(4, py - b.r - h - 8) + "px";
+    tip.style.left = Math.max(4, Math.min(px + offX - w / 2, maxX)) + "px";
+    tip.style.top = Math.max(4, py + offY - b.r - h - 8) + "px";
     canvas._tipFor = b;
   };
 
@@ -4421,7 +4464,8 @@ function buildStudio() {
     arrow("prev", "Previous step", "M12.5 4 6.5 10l6 6") +
     '<div class="bq-sum"><strong>Your bouquet</strong><span id="bqSumLine"></span></div>' +
     arrow("next", "Next step", "M7.5 4l6 6-6 6") +
-    '<button type="button" class="bq-btn bq-done" id="bqDone">Done</button>';
+    '<button type="button" class="bq-btn bq-done" id="bqDone">Done</button>' +
+    '<div class="bq-need" id="bqNeed" role="alert" hidden></div>';
   foot.addEventListener("click", e => {
     const b = e.target.closest(".bq-studio-arrow");
     if (!b) return;
@@ -4442,16 +4486,27 @@ function buildStudio() {
   foot.querySelector("#bqDone").addEventListener("click", () => {
     const next = studioNext();
     if (next.action === "reveal") {
+      hideNeed();
       if (!state.card) state.card = "snow";
       if (!state.bg) state.bg = "cream";
       goToStep("reveal");
-    } else if (next.tab) {
+      return;
+    }
+    if (next.tab) {
+      hideNeed();
       showStudio(next.tab);
-      if (next.tab === "card" && cameFromTemplate) {
+      if (next.tab === "card") {
         const to = document.getElementById("letterTo");
         if (to && !state.to) to.focus();
       }
+      return;
     }
+    /* A PRESS THAT LEADS NOWHERE HAS TO SAY WHY. The button reads "Write your
+       card" or "Pick a backdrop" while something is missing, and when you are
+       already ON that tab there is nowhere to send you, so the press did
+       absolutely nothing and read as a broken button. It names what is still
+       needed instead. */
+    showNeed(missingForBouquet().map(m => m.what));
   });
 
   opts.appendChild(body);
@@ -4546,17 +4601,64 @@ function showStudio(tab) {
 let bgPicked = false;
 
 /* What the studio's one button should do right now. */
+/* WHAT THE BOUQUET IS STILL SHORT OF, in the order somebody would fix it,
+   each with the tab that fixes it. One list, so the button's label, whether
+   Done is live, and the words in the notice can never disagree.
+
+   THE CARD IS REQUIRED OF A HAND BUILT BOUQUET TOO, which it was not. Done
+   used to go live on a picked backdrop alone, so a bouquet could be revealed
+   and sent with no name on the card and nothing written in it; the template
+   path had always asked for both. The card colour and the backdrop are NOT in
+   this list, because both already default to Snow and Cream and a bouquet
+   encoded without them is refused by `decodeState`. */
+function missingForBouquet() {
+  const out = [];
+  const short = MIN_FLOWERS - state.flowers.length;
+  if (short > 0) out.push({ what: short + " more " + (short === 1 ? "stem" : "stems"), tab: "flowers" });
+  if (!state.to) out.push({ what: "who it is for", tab: "card" });
+  if (!state.msg) out.push({ what: "a message", tab: "card" });
+  if (!cameFromTemplate && !bgPicked) out.push({ what: "a backdrop", tab: "bg" });
+  return out;
+}
+
+function wordList(items) {
+  if (items.length <= 1) return items[0] || "";
+  return items.slice(0, -1).join(", ") + " and " + items[items.length - 1];
+}
+
+function hideNeed() {
+  const el = document.getElementById("bqNeed");
+  if (el) el.hidden = true;
+  clearTimeout(showNeed._t);
+}
+
+/* Not `window.alert`. A blocking system dialog in the middle of a page this
+   carefully dressed reads as an error the page did not expect, and it cannot
+   name the thing it is pointing at. This is the project's own cream panel,
+   over the button that was just pressed. */
+function showNeed(items) {
+  const el = document.getElementById("bqNeed");
+  if (!el || !items.length) return;
+  el.innerHTML = "<strong>Not ready yet</strong><span>You have not chosen " +
+    wordList(items) + ".</span>";
+  el.hidden = false;
+  clearTimeout(showNeed._t);
+  showNeed._t = setTimeout(() => { el.hidden = true; }, 6000);
+}
+
 function studioNext() {
   const order = STUDIO_TABS.map(t => t.id);
   const short = MIN_FLOWERS - state.flowers.length;
   /* On the Paper tab, before anybody has reached the flowers, "Add 5 more"
      is an odd thing to be told; the next step is simply Flowers. */
   if (short > 0) return { label: studioTab === "wrap" ? "Next: Flowers" : "Add " + short + " more", tab: "flowers" };
+  const card = state.to && state.msg;
   if (cameFromTemplate) {
-    if (state.to && state.msg) return { label: "Done", action: "reveal" };
+    if (card) return { label: "Done", action: "reveal" };
     return { label: "Write your card", tab: studioTab === "card" ? null : "card" };
   }
-  if (bgPicked) return { label: "Done", action: "reveal" };
+  if (bgPicked && card) return { label: "Done", action: "reveal" };
+  if (bgPicked && !card) return { label: "Write your card", tab: studioTab === "card" ? null : "card" };
   const at = order.indexOf(studioTab);
   if (at < order.length - 1) {
     const t = STUDIO_TABS[at + 1];

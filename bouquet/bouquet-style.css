@@ -1489,7 +1489,29 @@ body[data-step="studio"] #bqBuilder { padding: 0 20px 24px; }
   padding: 14px 20px 16px;
   border-top: 1px solid #e3eeeb;
   background: #edf6f3;
+  position: relative;            /* the notice is anchored above the button */
 }
+/* WHAT THE BOUQUET IS STILL SHORT OF, said over the button that was just
+   pressed. It only ever appears on a press that would otherwise do nothing,
+   which is the button reading "Write your card" while you are already on the
+   card tab. It is a panel rather than window.alert: a system dialog on a page
+   dressed like this reads as an error the page did not expect. */
+.bq-need {
+  position: absolute; right: 16px; bottom: calc(100% + 10px);
+  max-width: min(320px, calc(100% - 32px));
+  display: flex; flex-direction: column; gap: 2px;
+  padding: 11px 14px 12px;
+  background: #fff9e3; border: 1px solid #e8c9a0; border-radius: 12px;
+  box-shadow: 0 10px 26px rgba(29,100,102,0.18);
+  font-family: Arial, Helvetica, sans-serif; text-align: left; z-index: 6;
+}
+.bq-need[hidden] { display: none !important; }
+.bq-need strong {
+  font-family: 'Fraunces', 'Georgia', serif; font-weight: 600;
+  font-variation-settings: 'SOFT' 50, 'WONK' 0;
+  font-size: 15px; color: #8a5a1d;
+}
+.bq-need span { font-size: 13px; line-height: 1.45; color: #2f6260; }
 .bq-sum { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
 .bq-sum strong {
   font-family: 'Fraunces', 'Georgia', serif; font-weight: 600;

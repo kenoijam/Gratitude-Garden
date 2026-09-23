@@ -66,7 +66,14 @@ body { padding-left: 0 !important; }
    it offers is a jump between sections, which on a phone is what scrolling
    already is, so it was paying for itself in covered text and giving nothing
    back. */
-@media (max-width: 768px) { .side-nav { display: none; } }
+/* HIDDEN UP TO 1100, NOT 768, and the two numbers have to agree. The rail is
+   48px circles at left 14, so it owns everything out to 62px. Below 1100 the
+   sections and the footer drop to 2.5rem of side padding, which puts their
+   first character at 42.5 and straight underneath it: at 800px wide the rail's
+   last button sat on the G of "Gratitude Garden" in the footer. 1100 is where
+   that padding rule starts, so the rail now goes exactly when the copy moves
+   into its lane. Above it the padding is 5rem and there is room for both. */
+@media (max-width: 1100px) { .side-nav { display: none; } }
 
 /* ── HERO ── */
 .hero { height: 100vh; min-height: 100vh; background: linear-gradient(180deg, var(--sky) 0%, var(--lightsky) 58%, var(--cream) 100%); display: flex; flex-direction: column; align-items: center; justify-content: flex-start; position: relative; overflow: hidden; padding-top: 0; padding-bottom: 0; padding-left: 0; padding-right: 0; }
@@ -663,16 +670,28 @@ footer::before {
   width: 110%; height: 100px; background: var(--lightsky); border-radius: 0 0 50% 50%;
 }
 .footer-top, .footer-bottom { position: relative; z-index: 1; }
-.footer-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2.5rem; }
+/* TWO COLUMNS, NOT TWO EDGES. `space-between` on a 939px row holding 403px
+   of content left a 535px gulf between Gratitude Garden and Explore, so the
+   footer read as two things that had drifted apart rather than as a row.
+   An even two column grid gives each half a column and a real gap, and it is
+   what lets the links be left aligned below. */
+.footer-top { display: grid; grid-template-columns: 1fr 1fr; gap: 0 3rem;
+  align-items: start; margin-bottom: 2.5rem; }
 .footer-brand-logo {
   font-variation-settings: 'SOFT' 50, 'WONK' 0; font-family: 'Fraunces','Georgia',serif; font-size: 1.4rem; color: var(--yellow); margin-bottom: 0.9rem; display: block; text-decoration: none; }
-.footer-desc { font-family: Arial,Helvetica,sans-serif; font-size: 0.88rem; line-height: 1.75; max-width: 260px; }
+.footer-desc { font-family: Arial,Helvetica,sans-serif; font-size: 0.88rem; line-height: 1.75; max-width: 340px; }
 .footer-col h4 {
-  font-variation-settings: 'SOFT' 50, 'WONK' 0; font-family: 'Fraunces','Georgia',serif; font-size: 1.4rem; font-weight: normal; color: var(--yellow); margin-bottom: 0.9rem; text-align: right; }
-.footer-col ul { list-style: none; display: flex; flex-direction: column; gap: 0.55rem; align-items: flex-end; }
+  font-variation-settings: 'SOFT' 50, 'WONK' 0; font-family: 'Fraunces','Georgia',serif; font-size: 1.4rem; font-weight: normal; color: var(--yellow); margin-bottom: 0.9rem; text-align: left; }
+/* Left aligned, like the column opposite. Ragged down their left side against
+   the right edge of the page, the three links had no edge to read down. */
+.footer-col ul { list-style: none; display: flex; flex-direction: column; gap: 0.55rem; align-items: flex-start; }
 .footer-col ul a { font-family: Arial,Helvetica,sans-serif; color: rgba(255,249,227,0.55); text-decoration: none; font-size: 0.88rem; transition: color 0.3s; }
 .footer-col ul a:hover { color: var(--yellow); }
-.footer-bottom { border-top: 1px solid rgba(255,255,255,0.1); padding-top: 1.5rem; display: flex; justify-content: space-between; align-items: center; font-family: Arial,Helvetica,sans-serif; font-size: 0.82rem; }
+.footer-bottom { border-top: 1px solid rgba(255,255,255,0.1);
+  /* 1.8rem, not 2.5: the row centres its credit in what is left, which adds
+     about 12px on top of the padding, so the gap UNDER the divider reads 43
+     and matches the 43 above it. Measured, not assumed. */
+  padding-top: 1.8rem; display: flex; justify-content: space-between; align-items: center; font-family: Arial,Helvetica,sans-serif; font-size: 0.82rem; }
 .footer-credit { display: flex; flex-direction: column; gap: 0.2rem; }
 .footer-name-bottom { font-family: 'Fraunces','Georgia',serif; font-size: 0.8rem; color: rgba(255,249,227,0.65); }
 .footer-logo-link { display: flex; align-items: center; text-decoration: none; opacity: 0.85; transition: opacity 0.2s; }
@@ -875,7 +894,7 @@ footer { padding: 140px 2.5rem 2rem; }   /* 100px clear, matching the sections, 
      chevron sat against the text instead of out at the right edge where a
      control belongs. `gap` goes because each fold carries its own rule and
      padding now, and the two together left a hole under the closed one. */
-  .footer-top { flex-direction: column; gap: 0; align-items: stretch;
+  .footer-top { grid-template-columns: 1fr; flex-direction: column; gap: 0; align-items: stretch;
     /* 2.5rem left a hole between the last fold's own rule and the divider
        above the credit. The folds carry their own spacing now. */
     margin-bottom: 1.1rem; }

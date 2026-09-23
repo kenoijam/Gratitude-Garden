@@ -668,6 +668,23 @@
      just the sentence and who planted it, which on a phone is the only way
      to read a flower at all, since there is no hover there. */
   var peekEl = null, peekFlower = null, peekCtx = null, peekPost = null, peekBusy = false;
+  /* The pointer resting ON the card counts as still reading it, which is what
+     keeps it open long enough to press the heart or the comment button once
+     hovering a bloom is what opened it. */
+  var peekOver = false, lastPointer = { x: -1, y: -1 };
+  document.addEventListener("pointermove", function (e) {
+    lastPointer.x = e.clientX; lastPointer.y = e.clientY;
+  }, { passive: true });
+  /* ASKED OF THE RECTANGLE, not of pointerenter. The card is hidden and shown
+     again under a pointer that has not moved, and no enter event fires for an
+     element appearing beneath a stationary cursor, so the flag alone went
+     stale and the card shut while somebody was reaching for its heart. */
+  function pointerOverPeek() {
+    if (!peekEl || peekEl.hidden) return false;
+    var r = peekEl.getBoundingClientRect();
+    return lastPointer.x >= r.left && lastPointer.x <= r.right &&
+           lastPointer.y >= r.top && lastPointer.y <= r.bottom;
+  }
   var BUBBLE =
     '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" ' +
       'stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
@@ -740,6 +757,8 @@
       if (e.target && e.target.tagName === "CANVAS") return;
       hidePeek();
     });
+    peekEl.addEventListener("pointerenter", function () { peekOver = true; });
+    peekEl.addEventListener("pointerleave", function () { peekOver = false; });
     return peekEl;
   }
 
@@ -829,6 +848,11 @@
     open: function (f, ctx) { if (live) openPanel(f, ctx); },
     peek: showPeek,
     peekOpen: function () { return !!(peekEl && !peekEl.hidden); },
+    /* which bloom the card is showing, so the sketch can tell a second press
+       on the SAME flower from a press on a different one */
+    peekFor: function () { return peekFlower; },
+    peekOver: function () { return peekOver || pointerOverPeek(); },
+    peekClose: hidePeek,
     close: function () { hidePeek(); closePanel(); },
     isLive: function () { return live; },
     signedIn: function () { return !!me; }

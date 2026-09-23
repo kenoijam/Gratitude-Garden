@@ -2103,6 +2103,17 @@ function mousePressed(event) {
      flower was; the card answers that, and its button opens the book for
      anyone who wants more. A tap on empty ground puts the card away. */
   if (!hoveredFlower || !hoveredFlower.date) { hideFlowerCard(); return; }
+  /* A SECOND PRESS ON THE SAME FLOWER PUTS THE CARD AWAY. Without it the only
+     way to dismiss one was to find bare ground, which on a full garden is a
+     hunt. `hoverSuppress` is what stops a mouse re-opening it on the very
+     next frame: the pointer is still over that flower, so the hover tick
+     below would otherwise undo the press instantly and the card would never
+     shut. It is released as soon as the pointer moves off. */
+  if (flowerCardOpen() && flowerCardFor === hoveredFlower) {
+    hideFlowerCard();
+    hoverSuppress = hoveredFlower;
+    return;
+  }
   showFlowerCard(hoveredFlower);
 }
 
@@ -2113,6 +2124,54 @@ function mousePressed(event) {
    nothing about it is part of `buildUI()`'s screens. */
 let flowerCardEl = null;
 let flowerCardFor = null;
+
+/* HOVERING A FLOWER OPENS THE SAME CARD A TAP DOES. It used to open on a
+   press alone, so on a laptop there was nothing at all until you clicked, and
+   the flower gave no reason to.
+
+   THE CARD HAS A BUTTON IN IT, which is what decides the closing rule. Shut
+   the moment the pointer leaves the flower and "Read this day" can never be
+   reached: it vanishes while you are moving towards it. So it stays while the
+   pointer is over the flower OR over the card, and closes a quarter of a
+   second after leaving BOTH. The delay is what lets you cross the gap between
+   the two without it snapping shut. */
+let hoverCardTimer = null;
+let pointerOnCard = false;
+let hoverSuppress = null;
+let lastPointer = { x: -1, y: -1 };
+
+/* WHETHER THE POINTER IS ON THE CARD IS ASKED OF ITS RECTANGLE, not of
+   pointerenter, and that is a fix rather than a preference. The card is
+   hidden and shown again under a pointer that has not moved, and a browser
+   fires no enter event for an element that appears beneath a stationary
+   cursor. So the flag went stale and the card closed while the pointer was
+   sitting on it, which is exactly the case the delay exists to protect.
+   The listener keeps the last position; the test is pure arithmetic. */
+function pointerOverCard() {
+  if (!flowerCardEl || flowerCardEl.hidden) return false;
+  const r = flowerCardEl.getBoundingClientRect();
+  return lastPointer.x >= r.left && lastPointer.x <= r.right &&
+         lastPointer.y >= r.top && lastPointer.y <= r.bottom;
+}
+function onCard() { return pointerOnCard || pointerOverCard(); }
+
+function hoverCardTick() {
+  if (isTouchDevice) return;                       /* a tap screen has no hover */
+  if (window.GardenJournal && GardenJournal.isOpen && GardenJournal.isOpen()) return;
+  const f = (hoveredFlower && hoveredFlower.date) ? hoveredFlower : null;
+  if (f !== hoverSuppress) hoverSuppress = null;
+  if (f && !hoverSuppress) {
+    if (hoverCardTimer) { clearTimeout(hoverCardTimer); hoverCardTimer = null; }
+    if (flowerCardFor !== f) showFlowerCard(f);
+    return;
+  }
+  if (!f && flowerCardOpen() && !onCard() && !hoverCardTimer) {
+    hoverCardTimer = setTimeout(function () {
+      hoverCardTimer = null;
+      if (!onCard() && !hoveredFlower) hideFlowerCard();
+    }, 250);
+  }
+}
 
 function flowerCardOpen() { return !!(flowerCardEl && !flowerCardEl.hidden); }
 
@@ -2167,6 +2226,23 @@ function buildFlowerCard() {
     if (!f || !window.GardenJournal || !GardenJournal.openAt) return;
     const day = GardenJournal.fromUS(f.date);
     if (day) GardenJournal.openAt(day);
+  });
+  /* The pointer being ON the card counts as still reading it, which is what
+     keeps it open long enough to press the button inside it. */
+  document.addEventListener("pointermove", e => {
+    lastPointer.x = e.clientX; lastPointer.y = e.clientY;
+  }, { passive: true });
+  el.addEventListener("pointerenter", () => {
+    pointerOnCard = true;
+    if (hoverCardTimer) { clearTimeout(hoverCardTimer); hoverCardTimer = null; }
+  });
+  el.addEventListener("pointerleave", () => {
+    pointerOnCard = false;
+    if (hoverCardTimer) { clearTimeout(hoverCardTimer); hoverCardTimer = null; }
+    hoverCardTimer = setTimeout(function () {
+      hoverCardTimer = null;
+      if (!onCard() && !hoveredFlower) hideFlowerCard();
+    }, 250);
   });
   document.addEventListener("keydown", e => { if (e.key === "Escape") hideFlowerCard(); });
   window.addEventListener("resize", hideFlowerCard);
@@ -3357,6 +3433,7 @@ function draw() {
     if (!isTouchDevice) {
       checkHover();
       if (canvas && canvas.elt) canvas.elt.setAttribute("data-gg-hot", hoveredFlower ? "1" : "0");
+      hoverCardTick();
     }
   }
 }

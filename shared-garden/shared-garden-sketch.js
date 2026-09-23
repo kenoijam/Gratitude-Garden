@@ -312,6 +312,19 @@ if (step !== "garden") return;
 
 const tapped = findFlowerAt(px, py);
 
+/* A SECOND PRESS ON THE SAME FLOWER PUTS THE CARD AWAY. It used to re-open it
+   on the same bloom, so the only way to dismiss one was to find bare ground.
+   `hoverSuppress` stops a mouse re-opening it on the very next frame, since
+   the pointer is still over that bloom; it is released as soon as it moves. */
+const shown = window.GardenSocial && GardenSocial.peekOpen && GardenSocial.peekOpen() &&
+  GardenSocial.peekFor && GardenSocial.peekFor();
+if (tapped && shown && shown.createdIndex === tapped.createdIndex) {
+if (GardenSocial.peekClose) GardenSocial.peekClose();
+hoveredFlower = null;
+hoverSuppress = tapped;
+return;
+}
+
 if (!tapped) {
 hoveredFlower = null;
 } else if (hoveredFlower && hoveredFlower.createdIndex === tapped.createdIndex && !(window.GardenSocial && GardenSocial.peekOpen && GardenSocial.peekOpen())) {
@@ -335,21 +348,57 @@ hoveredFlower = tapped;
    sketch knows how the canvas is scaled. */
 if (window.GardenSocial) {
 if (tapped) {
-const sp = speciesList.find(x => x.id === tapped.species);
-const rect = canvas.elt.getBoundingClientRect();
-const sx = rect.width / width, sy = rect.height / height;
-const headY = tapped.baseY - tapped.stemLen;
-const anchor = {
-  x: rect.left + tapped.x * sx,
-  top: rect.top + (headY - tapped.size * 1.3) * sy,
-  bottom: rect.top + (headY + tapped.size * 1.1) * sy
-};
-if (GardenSocial.peek) GardenSocial.peek(tapped, { day: roomKey, meaning: sp ? sp.meaning : "", anchor });
-else GardenSocial.open(tapped, { day: roomKey, meaning: sp ? sp.meaning : "" });
+showPeekFor(tapped);
 hoveredFlower = null;
 } else {
 GardenSocial.close();
 }
+}
+}
+
+/* The one place the card is opened, so a hover and a press can never put it in
+   different places or hand it different things. */
+function showPeekFor(f) {
+if (!window.GardenSocial || !f) return;
+const sp = speciesList.find(x => x.id === f.species);
+const rect = canvas.elt.getBoundingClientRect();
+const sx = rect.width / width, sy = rect.height / height;
+const headY = f.baseY - f.stemLen;
+const anchor = {
+  x: rect.left + f.x * sx,
+  top: rect.top + (headY - f.size * 1.3) * sy,
+  bottom: rect.top + (headY + f.size * 1.1) * sy
+};
+if (GardenSocial.peek) GardenSocial.peek(f, { day: roomKey, meaning: sp ? sp.meaning : "", anchor });
+else GardenSocial.open(f, { day: roomKey, meaning: sp ? sp.meaning : "" });
+}
+
+/* HOVERING A BLOOM OPENS THE SAME CARD A TAP DOES, and the closing rule is the
+   personal garden's for the same reason: the card carries a heart and a
+   comment button, so shutting it the moment the pointer leaves the bloom would
+   put both out of reach. It stays while the pointer is over the bloom OR over
+   the card, and closes a quarter of a second after leaving both. */
+let peekHoverTimer = null;
+let hoverSuppress = null;
+
+function hoverPeekTick() {
+if (isTouchDevice) return;
+if (!window.GardenSocial || !GardenSocial.peekOpen) return;
+const f = (hoveredFlower && hoveredFlower.gratitude) ? hoveredFlower : null;
+if (f !== hoverSuppress) hoverSuppress = null;
+if (f && !hoverSuppress) {
+if (peekHoverTimer) { clearTimeout(peekHoverTimer); peekHoverTimer = null; }
+const cur = GardenSocial.peekFor && GardenSocial.peekFor();
+if (!cur || cur.createdIndex !== f.createdIndex) showPeekFor(f);
+return;
+}
+const over = GardenSocial.peekOver && GardenSocial.peekOver();
+if (!f && GardenSocial.peekOpen() && !over && !peekHoverTimer) {
+peekHoverTimer = setTimeout(function () {
+peekHoverTimer = null;
+if (!(GardenSocial.peekOver && GardenSocial.peekOver()) && !hoveredFlower &&
+    GardenSocial.peekClose) GardenSocial.peekClose();
+}, 250);
 }
 }
 
@@ -2605,6 +2654,7 @@ drawOverlayControls();
 if (!isTouchDevice) {
 checkHover();
 if (canvas && canvas.elt) canvas.elt.setAttribute("data-gg-hot", hoveredFlower ? "1" : "0");
+hoverPeekTick();
 }
 }
 }
