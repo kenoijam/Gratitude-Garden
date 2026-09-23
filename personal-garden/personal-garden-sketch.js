@@ -1096,6 +1096,74 @@ var BLOOM_BOX = {
   chrysanth: [ 0.00, 1.19, 1.21]
 };
 
+/* HALO_BOX is the ellipse that best FITS each silhouette, which is not the
+   box that bounds it. BLOOM_BOX above is the true painted extent and stays
+   that way; the halo is the only thing that reads this.
+
+   THE PEONY IS WHY. Its ruffled outline reaches 0.96 R at its longest petals
+   and stops at 0.61 R between them, so an ellipse sized to the bounding box
+   sat 15 percent outside the flower in those gaps and showed there as a dark
+   patch. Fitting the ellipse to the outline by least squares over 720
+   directions puts it between the notches and the tips instead, which is what
+   a shadow of that flower would actually be.
+
+   THE LAVENDER HAD THE SAME FAULT THE OTHER WAY. It is a spike, so its
+   bounding box is mostly empty air either side of it and the halo was nearly
+   twice the width of anything it was under.
+
+   Measured, not chosen: every figure is BLOOM_BOX times that species' own
+   fitted shrink, and the shrink is capped at 1 so no halo grew. A solid
+   bloom barely moves (rose 0.99, tulip 1.00, daisy 0.96) and a notched or
+   thin one tightens (peony 0.86, lily 0.94 by 0.81, lavender 0.67 wide).
+   Re-measure with the silhouette fit if any species' drawing changes. */
+var HALO_BOX = {
+  tulip:     [ 0.08, 0.61, 0.83],
+  rose:      [ 0.00, 0.99, 1.00],
+  sunflower: [ 0.00, 1.15, 1.16],
+  sakura:    [-0.06, 0.99, 0.99],
+  peony:     [-0.08, 0.68, 0.68],   /* sized to its NOTCH, not its tips */
+  poppy:     [ 0.00, 0.90, 0.90],
+  lily:      [ 0.00, 0.88, 0.87],
+  daisy:     [ 0.00, 0.96, 0.96],
+  lotus:     [-1.00, 1.05, 0.83],
+  lavender:  [-0.97, 0.24, 0.96],
+  orchid:    [-0.23, 1.02, 0.96],
+  chrysanth: [ 0.00, 1.05, 1.13]
+};
+
+/* A BLOOM CASTS NO SHADOW ON THE SKY, and that is the whole of this.
+
+   The halo exists because a pale bloom on the pale teal ground can vanish
+   into it: swept over every species at every hue the planter can pick, the
+   worst case against the grass is 1.00, which is invisible. Against the SKY
+   the same sweep never falls below 1.26, because the sky runs #cfeef0 to
+   #f9ffff and every bloom is darker than that. So up there the halo buys
+   nothing, and it costs plenty: dark teal fog reads far louder on near white
+   than it does on mid teal grass, which is what a tall flower's bloom looked
+   like against the sky.
+
+   It is also what a shadow IS. A flower casts one on the ground it stands
+   on, not on the air behind it.
+
+   So the strength is how much of the bloom actually overlaps the ground,
+   ramped rather than switched, or a bloom drifting across the skyline would
+   pop. The line is the BACK hill's own edge at this bloom's x, the same
+   expression drawHillsBack draws, since that is the highest ground edge on
+   the page and everything above it is sky whatever layer the flower is in.
+
+   IT READS THE LIVE TRANSFORM for the same reason bloomShadow does: the
+   opening scales the bloom, so its extent on the canvas is not R alone. */
+function groundK(ctx, R, box) {
+  var tf = ctx.getTransform(), dens = pixelDensity();
+  var sc = Math.sqrt(tf.a * tf.a + tf.b * tf.b) / dens;
+  var ox = tf.e / dens, oy = tf.f / dens;
+  var top = oy + (box[0] - box[2]) * R * sc;
+  var bot = oy + (box[0] + box[2]) * R * sc;
+  if (!(bot > top)) return 0;
+  var ground = height * 0.56 + noise(ox * 0.002, 0.1) * 52;
+  return Math.max(0, Math.min(1, (bot - ground) / (bot - top)));
+}
+
 /* A little smaller than the bloom, so the flower overhangs its own shadow
    rather than sitting inside a dark halo the same size as itself. */
 var SHADOW_FIT = 0.82;
@@ -1107,7 +1175,7 @@ const STEM_FLOOR = { front: 0.13, mid: 0.17, back: 0.11 };
 function bloomShadow(f, R, alphaK) {
   var k = (alphaK === undefined) ? 1 : alphaK;
   if (k <= 0) return;
-  var box = BLOOM_BOX[f.species] || BLOOM_BOX.daisy;
+  var box = HALO_BOX[f.species] || HALO_BOX.daisy;
   var ctx = drawingContext;
   var rx = box[1] * R * SHADOW_FIT;
   var ry = box[2] * R * SHADOW_FIT;
@@ -1164,9 +1232,18 @@ function bloomShadow(f, R, alphaK) {
      Every species' BLOOM_BOX matches its painted box exactly, and the
      rendered halo's midpoint sits within half a pixel of that box's centre
      on all ten. Only the reach moved. */
-  var blur = R * 0.34;
+  /* THE SOFT EDGE IS A FRACTION OF THE HALO, NOT OF R, and the lavender is
+     what proved it. The gradient is drawn inside a scale(1, ry / rx), so a
+     blur given in x is multiplied by the aspect ratio in y. The lavender's
+     halo is 6px wide and 36 tall, an aspect of 5.7, so a 15.6px blur became
+     88px vertically: a 124px tall fog around a 44px spike. At 0.43 of rx the
+     whole ellipse simply grows by 43 percent in both axes, so the soft edge
+     is proportional to the shape rather than to the canvas. A round bloom is
+     unchanged, the daisy's blur measuring 15.57 against the old 15.64. */
+  var blur = rx * 0.43;
   var outer = rx + blur;
-  var a = 0.15 * k;
+  var a = 0.15 * k * groundK(ctx, R, box);
+  if (!(a > 0)) return;
   var ink = "rgba(18,62,56,";
   ctx.save();
   ctx.translate(0, box[0] * R);
