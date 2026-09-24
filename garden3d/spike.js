@@ -473,8 +473,13 @@ requestAnimationFrame(tick);
    rather than described. 1 is the sharp render we had; 3, 4 and 6 are
    progressively chunkier. Nothing else in the scene changes, which is the
    point: it is the same generated garden at a different resolution. */
-const PX_STEPS = [1, 3, 4, 6];
-let pxAt = 2;
+const PX_STEPS = [1, 2, 3, 4, 6];
+/* 2 IS THE DEFAULT because it is the last scale where the species survive.
+   Compared side by side at the garden camera: at 2 every bloom keeps its
+   shape and the fence rails and path stones hold; at 3 the lavender spike
+   and the daisy go mushy, the rails break up and neighbouring blooms start
+   merging. 4 and 6 are here to see the look pushed, not to use. */
+let pxAt = 1;
 const pxBtn = document.getElementById("px");
 if (pxBtn) {
   pxBtn.textContent = "Pixels: " + PX_STEPS[pxAt];
