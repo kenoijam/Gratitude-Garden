@@ -23,7 +23,7 @@
 import * as THREE from "./lib/three.module.min.js";
 import { buildFlower, SPECIES3D } from "./flower-kit.js";
 import { growMs, growFlower } from "./growth.js";
-import { dressScene, setupRenderer, buildCairn, buildRock, buildShrub } from "./world.js";
+import { dressScene, setupRenderer, buildSign, buildRock, buildShrub } from "./world.js";
 
 const state = { view: "garden", turn: 0, planted: false };
 const VIEWS = { garden: 9.6, wide: 15 };
@@ -76,18 +76,21 @@ scene.add(bare);
    to the same place. It was a cherry tree, because the sakura was a species
    then and its meaning was being present somewhere.
 
-   A CAIRN DOES THE SAME JOB WITHOUT BELONGING TO ANY SPECIES, which is the
+   A SIGN DOES THE SAME JOB WITHOUT BELONGING TO ANY SPECIES, which is the
    point: the middle of a shared garden should not be one person's flower. It
-   is stones somebody stacked, which says people have been here without saying
-   who, and it is five meshes where the tree was a trunk and sixteen blobs.
+   was briefly a cairn, which said people had been here without saying who.
+   The sign says more for the same money, because it CARRIES THE DATE, and
+   this garden is one day that empties at midnight. Nothing else in the scene
+   said which day you were standing in.
 
    A few rocks and shrubs sit out on the rim so the island does not end in
    nothing now that the canopy has gone. */
 const cairnRnd = (() => { let v = 90210 >>> 0;
   return () => { v = (v * 1664525 + 1013904223) >>> 0; return v / 4294967296; }; })();
-const cairn = buildCairn(cairnRnd);
-cairn.scale.setScalar(1.2);
-scene.add(cairn);
+const sign = buildSign(new Date().toLocaleDateString(undefined,
+  { day: "numeric", month: "long" }));
+sign.scale.setScalar(1.15);
+scene.add(sign);
 [[-4.0, -1.9, 0.26], [4.2, 1.5, 0.22], [-1.6, 4.1, 0.19], [3.2, -3.4, 0.24]]
   .forEach(([x, z, r0]) => {
     const m = buildRock(cairnRnd, r0); m.position.set(x, 0, z); scene.add(m);

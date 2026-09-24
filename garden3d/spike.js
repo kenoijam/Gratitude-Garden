@@ -59,7 +59,7 @@ const bed = new THREE.Mesh(
    With the bed exactly full, choosing where to plant was a puzzle rather
    than a choice, which is the opposite of what this is testing. */
   new THREE.BoxGeometry(3.9, 0.14, 1.9),
-  new THREE.MeshStandardMaterial({ roughness: 0.88, metalness: 0, color: new THREE.Color().setHSL(26 / 360, 0.33, 0.47), flatShading: true })
+  new THREE.MeshStandardMaterial({ roughness: 0.88, metalness: 0, color: new THREE.Color().setHSL(26 / 360, 0.33, 0.47) })
 );
 bed.position.y = 0.07;
 bed.castShadow = true;

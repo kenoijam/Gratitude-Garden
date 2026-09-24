@@ -25,8 +25,16 @@ import * as THREE from "./lib/three.module.min.js";
    than being a flat card. Three vertices per row: left, middle, right, and
    the middle one is lifted to make the cup. */
 export function petalGeometry({ len = 0.2, wid = 0.06, curl = 0.25, cup = 0.35, tip = "round" }) {
-  const ROWS = 6;
-  const pos = [];
+  /* A GRID, NOT A FOLDED STRIP. This was three vertices across, so the cup
+     was a single crease straight down the middle of every petal: a literal
+     fold, which no amount of shading can round off. Five columns carrying a
+     parabolic cup give it a curve instead, and `weldSmooth` in
+     `fromPositions` then averages the normals across it.
+
+     8 by 4 is 64 triangles a petal against the old 24. That is 2.7 times the
+     geometry and it is the cheapest thing in the scene to spend it on: the
+     petals are what anybody actually looks at. */
+  const ROWS = 8, COLS = 4;
   const rows = [];
   for (let i = 0; i <= ROWS; i++) {
     const t = i / ROWS;
@@ -37,36 +45,40 @@ export function petalGeometry({ len = 0.2, wid = 0.06, curl = 0.25, cup = 0.35, 
     else                      w = wid * Math.sin(Math.PI * Math.pow(t, 0.62));
     const y = len * t;
     const z = curl * len * t * t;                 /* the backward bend */
-    const lift = -cup * w;                        /* the cup across the petal */
-    rows.push([
-      new THREE.Vector3(-w, y, z),
-      new THREE.Vector3(0, y, z + lift),
-      new THREE.Vector3(w, y, z)
-    ]);
+    const row = [];
+    for (let j = 0; j <= COLS; j++) {
+      const u = (j / COLS) * 2 - 1;               /* -1 to 1 across the petal */
+      /* the cup, as a parabola rather than a single dropped centre point */
+      const lift = -cup * w * (1 - u * u);
+      row.push(new THREE.Vector3(w * u, y, z + lift));
+    }
+    rows.push(row);
   }
-  /* a notched tip is the same shape with its last row split back down */
+  /* a notched tip is the same shape with a narrow cleft cut into its end */
   if (tip === "notch") {
     const last = rows[ROWS];
-    last[1].y -= len * 0.12;
-    last[1].z += 0.01;
+    for (let j = 0; j <= COLS; j++) {
+      const u = (j / COLS) * 2 - 1;
+      last[j].y -= len * 0.16 * Math.max(0, 1 - Math.abs(u) * 2.4);
+      last[j].z += 0.01 * Math.max(0, 1 - Math.abs(u) * 2.4);
+    }
   }
+  const pos = [];
   for (let i = 0; i < ROWS; i++) {
-    const a = rows[i], b = rows[i + 1];
-    quad(pos, a[0], a[1], b[1], b[0]);
-    quad(pos, a[1], a[2], b[2], b[1]);
+    for (let j = 0; j < COLS; j++) {
+      quad(pos, rows[i][j], rows[i][j + 1], rows[i + 1][j + 1], rows[i + 1][j]);
+    }
   }
   return fromPositions(pos);
 }
 
-/* A tapered, slightly bent stem. Five sides, because at this size nobody
-   counts them and it keeps the flat shading crisp. */
-export function stemGeometry({ height = 0.4, rBase = 0.012, rTop = 0.008, bend = 0.05, sides = 5 }) {
+export function stemGeometry({ height = 0.4, rBase = 0.012, rTop = 0.008, bend = 0.05, sides = 9 }) {
   const curve = new THREE.QuadraticBezierCurve3(
     new THREE.Vector3(0, 0, 0),
     new THREE.Vector3(bend * 0.6, height * 0.55, 0),
     new THREE.Vector3(bend, height, 0)
   );
-  const STEPS = 7;
+  const STEPS = 9;
   const rings = [];
   for (let i = 0; i <= STEPS; i++) {
     const t = i / STEPS;
@@ -109,7 +121,7 @@ export function spikeGeometry({ buds = 26, height = 0.34, radius = 0.035, budSiz
 }
 
 /* A flower centre, and the lily's stamens use it too at a smaller size. */
-export function discGeometry({ r = 0.05, h = 0.02, seg = 10 }) {
+export function discGeometry({ r = 0.05, h = 0.02, seg = 20 }) {
   return new THREE.CylinderGeometry(r * 0.92, r, h, seg);
 }
 
@@ -482,8 +494,11 @@ function addRings(bloom, sp, tinted) {
 
 /* ---------------------------------------------------------- helpers */
 
+/* `flatMat` keeps its name and no longer shades flat. Smooth normals plus a
+   fairly high roughness is the Animal Crossing register: soft gradients over
+   chunky forms, with no hard facet anywhere and no specular glint either. */
 function flatMat(h, s, l) {
-  const m = new THREE.MeshStandardMaterial({ roughness: 0.88, metalness: 0, flatShading: true, side: THREE.DoubleSide });
+  const m = new THREE.MeshStandardMaterial({ roughness: 0.82, metalness: 0, side: THREE.DoubleSide });
   m.color.setHSL(h / 360, s / 100, l / 100);
   return m;
 }
@@ -497,11 +512,45 @@ function quad(out, a, b, c, d) {
   out.push(a.x, a.y, a.z, b.x, b.y, b.z, c.x, c.y, c.z);
   out.push(a.x, a.y, a.z, c.x, c.y, c.z, d.x, d.y, d.z);
 }
+/* SMOOTH SHADING NEEDS WELDED VERTICES, and that is why turning `flatShading`
+   off on its own changed almost nothing. Geometry built here is a soup of
+   loose triangles, so `computeVertexNormals` has nothing to average: each
+   triangle owns its three vertices and gets one flat normal, which is
+   exactly what flat shading was doing anyway.
+
+   Welding by position first gives every vertex its neighbours back, so the
+   normal at a point becomes the average of every face meeting there and the
+   surface reads as curved. The tolerance is 0.1mm in world units, which is
+   far below anything modelled here and far above float noise. */
+function weldSmooth(geo, tol = 1e-4) {
+  const pos = geo.attributes.position.array;
+  const n = pos.length / 3;
+  const seen = new Map();
+  const verts = [];
+  const index = new Array(n);
+  const q = 1 / tol;
+  for (let i = 0; i < n; i++) {
+    const x = pos[i * 3], y = pos[i * 3 + 1], z = pos[i * 3 + 2];
+    const key = Math.round(x * q) + "," + Math.round(y * q) + "," + Math.round(z * q);
+    let id = seen.get(key);
+    if (id === undefined) {
+      id = verts.length / 3;
+      seen.set(key, id);
+      verts.push(x, y, z);
+    }
+    index[i] = id;
+  }
+  const out = new THREE.BufferGeometry();
+  out.setAttribute("position", new THREE.Float32BufferAttribute(verts, 3));
+  out.setIndex(index);
+  out.computeVertexNormals();
+  return out;
+}
+
 function fromPositions(pos) {
   const g = new THREE.BufferGeometry();
   g.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3));
-  g.computeVertexNormals();
-  return g;
+  return weldSmooth(g);
 }
 /* `BufferGeometryUtils` lives in three's examples rather than the core, and
    the whole point of vendoring one file is not to chase a second one. */

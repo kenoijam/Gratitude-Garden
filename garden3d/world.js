@@ -26,15 +26,18 @@ const hsl = (h, s, l) => new THREE.Color().setHSL(h / 360, s / 100, l / 100);
 
 /* ------------------------------------------------------------------ sky */
 export function skyTexture() {
-  /* LATE AFTERNOON, so it is warm at the horizon and cool overhead. A flat
-     pastel fill has no up in it, and a scene with no up reads as a sticker. */
+  /* BRIGHT AFTERNOON, warm at the horizon and cool overhead. A flat pastel
+     fill has no up in it, and a scene with no up reads as a sticker.
+     Lifted and saturated toward the greenhouse reference: the old stops were
+     a late afternoon that came out chalky once everything under it went
+     smooth, because smooth shading has no facet edges to carry contrast. */
   const c = document.createElement("canvas");
   c.width = 4; c.height = 128;
   const g = c.getContext("2d").createLinearGradient(0, 0, 0, 128);
-  g.addColorStop(0.00, "#a9dcec");
-  g.addColorStop(0.45, "#cfeef0");
-  g.addColorStop(0.78, "#eaf3e4");
-  g.addColorStop(1.00, "#ffe6c2");
+  g.addColorStop(0.00, "#7fcbe8");
+  g.addColorStop(0.45, "#b4e6f0");
+  g.addColorStop(0.78, "#e2f5e6");
+  g.addColorStop(1.00, "#fff0cf");
   const ctx = c.getContext("2d");
   ctx.fillStyle = g;
   ctx.fillRect(0, 0, 4, 128);
@@ -72,10 +75,10 @@ export function skyEnvironment(renderer) {
   c.width = 32; c.height = 64;
   const ctx = c.getContext("2d");
   const g = ctx.createLinearGradient(0, 0, 0, 64);
-  g.addColorStop(0.00, "#a9dcf2");          /* zenith */
-  g.addColorStop(0.44, "#e2f3f4");
-  g.addColorStop(0.52, "#f3ead2");          /* the warm band the sun sits in */
-  g.addColorStop(1.00, "#8fb894");          /* grass, bouncing back up */
+  g.addColorStop(0.00, "#8fd2ef");          /* zenith */
+  g.addColorStop(0.44, "#dff2f6");
+  g.addColorStop(0.52, "#fdf3d8");          /* the warm band the sun sits in */
+  g.addColorStop(1.00, "#a8d48f");          /* grass, bouncing back up */
   ctx.fillStyle = g; ctx.fillRect(0, 0, 32, 64);
   const tex = new THREE.CanvasTexture(c);
   tex.mapping = THREE.EquirectangularReflectionMapping;
@@ -94,8 +97,17 @@ export function setupRenderer(renderer) {
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-  renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 1.18;
+  /* NEUTRAL, NOT ACES, and the difference is the whole cute palette. ACES is
+     a film curve: it desaturates as it rolls off, which is right for
+     photographic material and wrong here, because it quietly greys out
+     exactly the saturated greens and pinks this look is made of. Every colour
+     came back a few steps duller than it was authored.
+
+     Khronos PBR Neutral keeps hue and saturation and only compresses the top
+     end, so what is written in the palette is what appears. It is guarded
+     because it is a newer addition to three than the rest of this file. */
+  renderer.toneMapping = THREE.NeutralToneMapping || THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.15;
   return renderer;
 }
 
@@ -109,13 +121,13 @@ export function warmLight(scene) {
      with the environment at 0.62 the shadow side went nearly black, which is
      a night look rather than a late afternoon one; 0.3 against 0.8 keeps the
      contrast and puts colour back in the dark half. */
-  const hemi = new THREE.HemisphereLight(0xdcf0ff, 0xa8dfc8, 0.3);
+  const hemi = new THREE.HemisphereLight(0xe6f6ff, 0xbdf0d4, 0.5);
   scene.add(hemi);
 
   /* 2.6, up from 1.55, which is only a big number because ACES is now
      rolling the top off. The RATIO to the fill is what matters, and it went
      from about 1.5 to 1 to about 12 to 1: that is the contrast. */
-  const sun = new THREE.DirectionalLight(0xffdca0, 2.6);
+  const sun = new THREE.DirectionalLight(0xfff0cf, 2.3);
   sun.position.set(6.5, 5.2, 3.2);
   sun.castShadow = true;
   sun.shadow.mapSize.set(2048, 2048);
@@ -160,7 +172,7 @@ export function buildGround(scene, { radius = 5, seed = 7, island = 1.7 } = {}) 
     /* the SAME tone as the land around it, or the plot reads as a lighter
        disc pasted onto a field. What marks the garden is what is planted on
        it, not a ring of different grass. */
-    new THREE.MeshStandardMaterial({ roughness: 0.88, metalness: 0, color: hsl(119, 36, 72) })
+    new THREE.MeshStandardMaterial({ roughness: 0.88, metalness: 0, color: hsl(96, 60, 60) })
   );
   grass.rotation.x = -Math.PI / 2;
   grass.receiveShadow = true;
@@ -171,7 +183,7 @@ export function buildGround(scene, { radius = 5, seed = 7, island = 1.7 } = {}) 
   const farGeo = new THREE.CircleGeometry(R, 72);
   const pos = farGeo.attributes.position;
   const col = [];
-  const base = hsl(119, 36, 72);
+  const base = hsl(96, 60, 60);
   for (let i = 0; i < pos.count; i++) {
     const x = pos.getX(i), y = pos.getY(i);
     const d = Math.hypot(x, y);
@@ -189,17 +201,57 @@ export function buildGround(scene, { radius = 5, seed = 7, island = 1.7 } = {}) 
   farGeo.setAttribute("color", new THREE.Float32BufferAttribute(col, 3));
   farGeo.computeVertexNormals();
   const far = new THREE.Mesh(farGeo,
-    new THREE.MeshStandardMaterial({ roughness: 0.88, metalness: 0, vertexColors: true, flatShading: true }));
+    new THREE.MeshStandardMaterial({ roughness: 0.88, metalness: 0, vertexColors: true }));
   far.rotation.x = -Math.PI / 2;
   far.position.y = -0.03;
   far.receiveShadow = true;
   group.add(far);
 
+  /* THE ISLAND IS A BLOCK OF EARTH, NOT A DISC, which is the single thing
+     that makes the reference's little plots read as cute: you can see how
+     THICK the ground is. A flat circle floating on sky reads as a cut out.
+
+     The wall FOLLOWS THE LAND'S OWN RIM rather than being a plain cylinder,
+     because the rim undulates by up to a unit: a straight cylinder at a
+     fixed height would stand proud of it on one side and leave a gap on the
+     other. These are the same vertices, read back out of the geometry and
+     converted through the rotation that is about to be applied to it, which
+     is why the y and z look swapped here. */
+  const SEG = 72, DEPTH = 1.3, IN = 0.94;
+  const ring = [];
+  let lowest = Infinity;
+  for (let i = 0; i <= SEG; i++) {
+    const vi = i + 1;                       /* vertex 0 of a circle is its centre */
+    const v = new THREE.Vector3(pos.getX(vi), pos.getZ(vi) - 0.03, -pos.getY(vi));
+    ring.push(v);
+    if (v.y < lowest) lowest = v.y;
+  }
+  const floorY = lowest - DEPTH;
+  const wall = [];
+  const face = (p1, p2, p3) =>
+    wall.push(p1.x, p1.y, p1.z, p2.x, p2.y, p2.z, p3.x, p3.y, p3.z);
+  const hub = new THREE.Vector3(0, floorY, 0);
+  for (let i = 0; i < SEG; i++) {
+    const a = ring[i], b = ring[i + 1];
+    const a2 = new THREE.Vector3(a.x * IN, floorY, a.z * IN);
+    const b2 = new THREE.Vector3(b.x * IN, floorY, b.z * IN);
+    face(a, b, b2); face(a, b2, a2);
+    /* and the underside, so it is a solid lump rather than an open tube */
+    face(hub, b2, a2);
+  }
+  const wallGeo = new THREE.BufferGeometry();
+  wallGeo.setAttribute("position", new THREE.Float32BufferAttribute(wall, 3));
+  wallGeo.computeVertexNormals();
+  const soil = new THREE.Mesh(wallGeo, new THREE.MeshStandardMaterial({
+    roughness: 0.96, metalness: 0, color: hsl(25, 44, 40) }));
+  soil.receiveShadow = true;
+  group.add(soil);
+
   /* the soil the island is standing on, tapered so it reads as a piece of
      ground lifted out rather than as a cylinder */
   const side = new THREE.Mesh(
     new THREE.CylinderGeometry(R, R * 0.72, 1.5, 48, 1, true),
-    new THREE.MeshStandardMaterial({ roughness: 0.88, metalness: 0, color: hsl(27, 32, 44), flatShading: true,
+    new THREE.MeshStandardMaterial({ roughness: 0.88, metalness: 0, color: hsl(27, 32, 44),
                                     side: THREE.DoubleSide })
   );
   side.position.y = -1.28;
@@ -231,7 +283,7 @@ export function buildGround(scene, { radius = 5, seed = 7, island = 1.7 } = {}) 
   tuftGeo.setAttribute("position", new THREE.Float32BufferAttribute(tri, 3));
   tuftGeo.computeVertexNormals();
   const tufts = new THREE.Mesh(tuftGeo, new THREE.MeshStandardMaterial({ roughness: 0.88, metalness: 0,
-    color: hsl(122, 36, 62), side: THREE.DoubleSide, flatShading: true
+    color: hsl(122, 36, 62), side: THREE.DoubleSide
   }));
   group.add(tufts);
 
@@ -246,7 +298,7 @@ export function buildHills(scene, { radius = 5, seed = 3, island = 1.7 } = {}) {
      skyline to stand against. */
   const r = rnd(seed);
   const R = radius * island;
-  const tones = [hsl(158, 30, 66), hsl(150, 27, 60), hsl(142, 25, 55)];
+  const tones = [hsl(126, 46, 60), hsl(116, 42, 53), hsl(106, 38, 46)];
   const group = new THREE.Group();
   for (let i = 0; i < 12; i++) {
     const a = (i / 12) * Math.PI * 2 + r() * 0.35;
@@ -255,7 +307,7 @@ export function buildHills(scene, { radius = 5, seed = 3, island = 1.7 } = {}) {
     const d = R * (0.97 + r() * 0.13);
     const h = new THREE.Mesh(
       new THREE.IcosahedronGeometry(1, 1),
-      new THREE.MeshStandardMaterial({ roughness: 0.88, metalness: 0, color: tones[i % 3], flatShading: true })
+      new THREE.MeshStandardMaterial({ roughness: 0.88, metalness: 0, color: tones[i % 3] })
     );
     h.position.set(Math.cos(a) * d, -0.5 - r() * 0.25, Math.sin(a) * d);
     h.scale.set(0.95 + r() * 1.0, 0.6 + r() * 0.55, 0.95 + r() * 1.0);
@@ -306,7 +358,7 @@ export function createLife(scene, { radius = 5, seed = 11 } = {}) {
 
   /* --- butterflies */
   const wingMat = new THREE.MeshStandardMaterial({ roughness: 0.88, metalness: 0,
-    color: hsl(42, 84, 74), side: THREE.DoubleSide, flatShading: true
+    color: hsl(42, 84, 74), side: THREE.DoubleSide
   });
   const flies = [];
   for (let i = 0; i < 3; i++) {
@@ -405,14 +457,26 @@ export function createLife(scene, { radius = 5, seed = 11 } = {}) {
    sat on; a shrub is several of them at two tones; a bench is five boxes. */
 
 function stoneMat(l) { return new THREE.MeshStandardMaterial({
-  color: hsl(90, 8, l), roughness: 0.95, metalness: 0, flatShading: true }); }
+  color: hsl(90, 8, l), roughness: 0.95, metalness: 0 }); }
 
 /* A ROCK IS AN ICOSAHEDRON THAT HAS BEEN SAT ON. Detail 0 gives twenty faces,
    which at this distance is exactly enough to read as stone; scaling it
    unevenly and turning it at random is what stops eight of them looking like
    eight of the same ball. It is sunk a little so it sits IN the ground. */
 export function buildRock(r, size = 0.3, tone = 62) {
-  const g = new THREE.IcosahedronGeometry(size, 0);
+  /* A PEBBLE, NOT A SHARD. An icosahedron at detail 0 is twenty flat faces
+     and three.js builds it non-indexed, so it stays faceted however the
+     material is shaded: it read as broken stone, which is the opposite of
+     cute. A low segment SPHERE is indexed, so its normals average into a
+     smooth round form, and jittering its vertices makes it a lumpy pebble
+     rather than a ball. */
+  const g = new THREE.SphereGeometry(size, 10, 8);
+  const pa = g.attributes.position;
+  for (let i = 0; i < pa.count; i++) {
+    const k = 1 + (r() - 0.5) * 0.22;
+    pa.setXYZ(i, pa.getX(i) * k, pa.getY(i) * k, pa.getZ(i) * k);
+  }
+  g.computeVertexNormals();
   const m = new THREE.Mesh(g, stoneMat(tone + (r() - 0.5) * 8));
   m.scale.set(1 + r() * 0.5, 0.62 + r() * 0.35, 1 + r() * 0.5);
   m.rotation.set(r() * 0.4, r() * Math.PI * 2, r() * 0.4);
@@ -431,10 +495,11 @@ export function buildShrub(r, size = 0.34) {
   const n = 4 + Math.floor(r() * 3);
   for (let i = 0; i < n; i++) {
     const rad = size * (0.5 + r() * 0.42);
-    const b = new THREE.Mesh(new THREE.IcosahedronGeometry(rad, 0),
+    /* soft round blobs, for the same reason the rocks are spheres now */
+    const b = new THREE.Mesh(new THREE.SphereGeometry(rad, 9, 7),
       new THREE.MeshStandardMaterial({
         color: hsl(112 + r() * 18, 30 + r() * 12, i % 2 ? 40 : 34),
-        roughness: 0.92, metalness: 0, flatShading: true }));
+        roughness: 0.92, metalness: 0 }));
     const a = (i / n) * Math.PI * 2 + r();
     b.position.set(Math.cos(a) * size * 0.42, rad * 0.72 + r() * 0.06, Math.sin(a) * size * 0.42);
     b.rotation.y = r() * Math.PI;
@@ -453,9 +518,9 @@ export function buildShrub(r, size = 0.34) {
 export function buildBench() {
   const g = new THREE.Group();
   const wood = new THREE.MeshStandardMaterial({
-    color: hsl(28, 30, 46), roughness: 0.9, metalness: 0, flatShading: true });
+    color: hsl(28, 30, 46), roughness: 0.9, metalness: 0 });
   const dark = new THREE.MeshStandardMaterial({
-    color: hsl(26, 26, 34), roughness: 0.9, metalness: 0, flatShading: true });
+    color: hsl(26, 26, 34), roughness: 0.9, metalness: 0 });
   const seat = new THREE.Mesh(new THREE.BoxGeometry(1.05, 0.055, 0.34), wood);
   seat.position.y = 0.23;
   const back = new THREE.Mesh(new THREE.BoxGeometry(1.05, 0.2, 0.05), wood);
@@ -510,7 +575,7 @@ export function buildCairn(r) {
   const n = 5;
   for (let i = 0; i < n; i++) {
     const size = 0.34 * (1 - i / (n + 1.6));
-    const st = new THREE.Mesh(new THREE.IcosahedronGeometry(size, 0), stoneMat(46 + i * 4));
+    const st = new THREE.Mesh(new THREE.SphereGeometry(size, 10, 8), stoneMat(46 + i * 4));
     st.scale.set(1.1 + r() * 0.3, 0.55 + r() * 0.2, 1.1 + r() * 0.3);
     st.rotation.set((r() - 0.5) * 0.25, r() * Math.PI * 2, (r() - 0.5) * 0.25);
     const h = size * (0.55 + r() * 0.2) * 2;
@@ -524,6 +589,79 @@ export function buildCairn(r) {
   return g;
 }
 
+/* A WOODEN SIGN, which is the shared garden's landmark. It was a cairn, and
+   before that a cherry tree.
+
+   IT CARRIES THE DATE, and that is why it beats both of them. The shared
+   garden IS one day: it fills from morning to night and empties at midnight,
+   and until now nothing in the scene said which day you were standing in.
+   The heading on the page says "Today's garden"; the sign says which today.
+
+   The text is drawn to a canvas and used as a map, so no font file or image
+   is added, which is the rule the rest of the project follows. It is on BOTH
+   faces of the board, since the camera turns in ninety degree steps and a
+   sign readable from one of four of them is furniture rather than a sign. */
+export function buildSign(text) {
+  const g = new THREE.Group();
+  const wood = new THREE.MeshStandardMaterial({
+    color: hsl(32, 44, 54), roughness: 0.85, metalness: 0 });
+  const post = new THREE.MeshStandardMaterial({
+    color: hsl(27, 36, 38), roughness: 0.88, metalness: 0 });
+
+  for (const x of [-0.46, 0.46]) {
+    const p = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.058, 1.05, 10), post);
+    p.position.set(x, 0.52, 0);
+    g.add(p);
+  }
+
+  const c = document.createElement("canvas");
+  c.width = 640; c.height = 300;
+  const ctx = c.getContext("2d");
+  ctx.fillStyle = "#edd3a0";
+  ctx.fillRect(0, 0, 640, 300);
+  /* a few plank lines and a grain, so the board is not a flat swatch */
+  ctx.strokeStyle = "rgba(120,82,44,0.22)";
+  ctx.lineWidth = 3;
+  for (const y of [100, 200]) {
+    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(640, y); ctx.stroke();
+  }
+  ctx.strokeStyle = "rgba(120,82,44,0.09)";
+  ctx.lineWidth = 2;
+  for (let i = 0; i < 26; i++) {
+    const y = 12 + i * 11;
+    ctx.beginPath(); ctx.moveTo(0, y); ctx.bezierCurveTo(200, y - 5, 440, y + 5, 640, y); ctx.stroke();
+  }
+  ctx.fillStyle = "#5c3a1e";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  /* FIT THE BOARD, do not trust a fixed size. "September 24" overran a 640
+     canvas at 78px and the S was cut off at the edge; a locale that writes
+     the month first, or a longer month, would be worse. Measure and step
+     down until it sits inside with a margin. */
+  let px = 82;
+  do {
+    ctx.font = "600 " + px + "px Georgia, 'Times New Roman', serif";
+    px -= 3;
+  } while (px > 30 && ctx.measureText(text).width > 540);
+  ctx.fillText(text, 320, 158);
+
+  const tex = new THREE.CanvasTexture(c);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  tex.anisotropy = 4;
+  const faceMat = new THREE.MeshStandardMaterial({ map: tex, roughness: 0.82, metalness: 0 });
+  /* BoxGeometry takes its materials as +x, -x, +y, -y, +z, -z */
+  const board = new THREE.Mesh(new THREE.BoxGeometry(1.28, 0.6, 0.075),
+    [wood, wood, wood, wood, faceMat, faceMat]);
+  board.position.y = 1.02;
+  g.add(board);
+
+  g.traverse(o => {
+    if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; o.userData.scenery = true; }
+  });
+  g.userData.scenery = true;
+  return g;
+}
+
 /* One call sets up a whole scene's look, so the two pages cannot drift. */
 export function dressScene(scene, opts = {}) {
   const sky = skyTexture();
@@ -533,12 +671,12 @@ export function dressScene(scene, opts = {}) {
   /* 30 to 62, not 23 to 41. At 23 the hills were half dissolved before they
      had been read, which is what made the distance look like a smudge rather
      than like air. It now only touches the rim and what is past it. */
-  const fog = new THREE.Fog(0xdceee8, 30, 62);
+  const fog = new THREE.Fog(0xe8f7ee, 34, 70);
   scene.background = sky;
   scene.fog = fog;
   if (opts.renderer) {
     scene.environment = skyEnvironment(opts.renderer);
-    if ("environmentIntensity" in scene) scene.environmentIntensity = 0.8;
+    if ("environmentIntensity" in scene) scene.environmentIntensity = 1.05;
   }
   const lights = warmLight(scene);
   const ground = buildGround(scene, opts);
