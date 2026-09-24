@@ -33,7 +33,7 @@ const ORDER = ["daisy", "tulip", "lily", "sunflower", "lavender", "rose", "poppy
 /* the web version's own sequence, now shared with the other scene */
 import { growMs, smooth, growFlower } from "./growth.js";
 import { dressScene, setupRenderer, buildRock, buildShrub, buildBench, buildPath,
-         buildConeTree, buildPump, buildBucket, buildRaisedBed, buildFence } from "./world.js";
+         buildConeTree, buildPump, buildBucket, buildRaisedBed, buildFence , sizeRenderer, setPixelScale } from "./world.js";
 
 /* the garden view is WIDER than it was, because the plot is no longer the
    whole world: at 7.8 the frame held nothing but the plot, and the sky, the
@@ -206,7 +206,7 @@ function frame() {
   camera.updateProjectionMatrix();
 }
 function resize() {
-  renderer.setSize(window.innerWidth, window.innerHeight);
+  sizeRenderer(renderer, window.innerWidth, window.innerHeight);
   frame();
 }
 window.addEventListener("resize", resize);
@@ -469,6 +469,23 @@ requestAnimationFrame(tick);
 /* ---------------------------------------------------------- the controls
    Plain HTML over the canvas, which is the architecture the real thing
    would use as well: never build a text field in WebGL. */
+/* THE PIXEL EXPERIMENT, on a button so it can be judged against itself
+   rather than described. 1 is the sharp render we had; 3, 4 and 6 are
+   progressively chunkier. Nothing else in the scene changes, which is the
+   point: it is the same generated garden at a different resolution. */
+const PX_STEPS = [1, 3, 4, 6];
+let pxAt = 2;
+const pxBtn = document.getElementById("px");
+if (pxBtn) {
+  pxBtn.textContent = "Pixels: " + PX_STEPS[pxAt];
+  pxBtn.addEventListener("click", () => {
+    pxAt = (pxAt + 1) % PX_STEPS.length;
+    setPixelScale(PX_STEPS[pxAt]);
+    pxBtn.textContent = "Pixels: " + (PX_STEPS[pxAt] === 1 ? "off" : PX_STEPS[pxAt]);
+    resize();
+  });
+}
+
 document.querySelectorAll("[data-view]").forEach(b => {
   b.addEventListener("click", () => {
     state.view = b.dataset.view;

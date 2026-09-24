@@ -23,7 +23,7 @@
 import * as THREE from "./lib/three.module.min.js";
 import { buildFlower, SPECIES3D } from "./flower-kit.js";
 import { growMs, growFlower } from "./growth.js";
-import { dressScene, setupRenderer, buildSign, buildRock, buildShrub, buildConeTree } from "./world.js";
+import { dressScene, setupRenderer, buildSign, buildRock, buildShrub, buildConeTree , sizeRenderer, setPixelScale } from "./world.js";
 
 const state = { view: "garden", turn: 0, planted: false };
 const VIEWS = { garden: 9.6, wide: 15 };
@@ -188,7 +188,7 @@ function frame() {
   camera.updateProjectionMatrix();
 }
 function resize() {
-  renderer.setSize(window.innerWidth, window.innerHeight);
+  sizeRenderer(renderer, window.innerWidth, window.innerHeight);
   frame();
 }
 window.addEventListener("resize", resize);

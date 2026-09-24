@@ -93,6 +93,38 @@ export function skyEnvironment(renderer) {
 /* Tone mapping and shadow settings, in one place so the two scenes cannot
    drift. ACES is what stops the warm key clipping to white the moment it is
    strong enough to model anything. */
+/* HOW MANY SCREEN PIXELS ONE RENDERED PIXEL IS WORTH. 1 is off. */
+export let PIXEL_SCALE = 4;
+export function setPixelScale(n) { PIXEL_SCALE = Math.max(1, n | 0); }
+
+/* THE PIXEL LOOK IS A SIZE, NOT A SHADER, which is why it costs forty lines
+   and can be deleted in one.
+
+   The canvas's BACKING STORE is set to the real size divided by the scale,
+   and CSS then stretches that small image over the full element with
+   `image-rendering: pixelated`, which is a nearest neighbour upscale. So the
+   whole scene is genuinely rendered at a low resolution and blown up, the
+   way a pixel game is, rather than being a filter laid over a sharp render.
+
+   Doing it this way rather than through a render target and a blit shader
+   avoids the one thing that usually goes wrong here: tone mapping and the
+   sRGB conversion are applied by three when it draws to the CANVAS, so
+   rendering to a target and copying it across means either doing that
+   conversion twice or not at all, and both look wrong. Here nothing changes
+   about how the frame is produced; only how big it is.
+
+   It also costs far LESS to run, not more: a quarter scale frame is a
+   sixteenth of the pixels. */
+export function sizeRenderer(renderer, w, h) {
+  const k = PIXEL_SCALE;
+  renderer.setPixelRatio(k > 1 ? 1 : Math.min(window.devicePixelRatio, 2));
+  renderer.setSize(Math.max(1, Math.round(w / k)), Math.max(1, Math.round(h / k)), false);
+  const c = renderer.domElement;
+  c.style.width = w + "px";
+  c.style.height = h + "px";
+  c.style.imageRendering = k > 1 ? "pixelated" : "auto";
+}
+
 export function setupRenderer(renderer) {
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
   renderer.shadowMap.enabled = true;
