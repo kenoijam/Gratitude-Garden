@@ -23,7 +23,7 @@
 import * as THREE from "./lib/three.module.min.js";
 import { buildFlower, SPECIES3D } from "./flower-kit.js";
 import { growMs, growFlower } from "./growth.js";
-import { dressScene, setupRenderer, buildSign, buildRock, buildShrub } from "./world.js";
+import { dressScene, setupRenderer, buildSign, buildRock, buildShrub, buildConeTree } from "./world.js";
 
 const state = { view: "garden", turn: 0, planted: false };
 const VIEWS = { garden: 9.6, wide: 15 };
@@ -98,6 +98,13 @@ scene.add(sign);
 [[-3.5, 3.2, 0.24], [4.35, -1.2, 0.2], [0.9, -4.4, 0.22], [-4.4, 0.6, 0.18]]
   .forEach(([x, z, s0]) => {
     const m = buildShrub(cairnRnd, s0); m.position.set(x, 0, z); scene.add(m);
+  });
+/* the same stand of trees as the plot, ringing the day's garden well outside
+   the outermost planting ring so nobody's flower is ever behind one */
+[[-6.4, -2.6, 1.7], [-3.2, -6.2, 1.45], [1.8, -6.6, 1.6], [5.8, -3.6, 1.5],
+ [6.8, 1.2, 1.7], [4.4, 5.4, 1.4], [-0.6, 6.9, 1.6], [-5.2, 4.6, 1.5]]
+  .forEach(([x, z, h]) => {
+    const t = buildConeTree(cairnRnd, h); t.position.set(x, 0, z); scene.add(t);
   });
 
 /* ---------------------------------------------------------- the rings

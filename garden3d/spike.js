@@ -32,7 +32,8 @@ const ORDER = ["daisy", "tulip", "lily", "sunflower", "lavender", "rose", "poppy
 
 /* the web version's own sequence, now shared with the other scene */
 import { growMs, smooth, growFlower } from "./growth.js";
-import { dressScene, setupRenderer, buildRock, buildShrub, buildBench, buildPath } from "./world.js";
+import { dressScene, setupRenderer, buildRock, buildShrub, buildBench, buildPath,
+         buildConeTree, buildPump, buildBucket, buildRaisedBed, buildFence } from "./world.js";
 
 /* the garden view is WIDER than it was, because the plot is no longer the
    whole world: at 7.8 the frame held nothing but the plot, and the sky, the
@@ -54,18 +55,19 @@ const world = dressScene(scene, { renderer, radius: 4.3, seed: 7 });
 const grass = world.ground.grass;
 const ground = world.ground.group;
 
-const bed = new THREE.Mesh(
-  /* deep enough to hold the specimens AND leave a free strip along the front.
-   With the bed exactly full, choosing where to plant was a puzzle rather
-   than a choice, which is the opposite of what this is testing. */
-  new THREE.BoxGeometry(3.9, 0.14, 1.9),
-  new THREE.MeshStandardMaterial({ roughness: 0.88, metalness: 0, color: new THREE.Color().setHSL(26 / 360, 0.33, 0.47) })
-);
-bed.position.y = 0.07;
-bed.castShadow = true;
-bed.receiveShadow = true;
-bed.position.x = -0.5;
-ground.add(bed);
+/* THE PLANTING IS A RAISED BED, NOT A PAINTED RECTANGLE. It was a flat slab
+   with no thickness: a brown rectangle lying on grass. It is a box built out
+   of boards now, two planks to a wall with the seam showing, a post at each
+   corner and the soil sunk below the rim so the boards contain it.
+
+   `bed` is still the name the rest of the file uses, and it is now the SOIL
+   mesh inside the box: that is what the raycast has to hit and what a flower
+   is planted in. */
+const BED_W = 3.9, BED_D = 1.9;
+const raised = buildRaisedBed(BED_W, BED_D);
+raised.group.position.set(-0.5, 0, 0);
+ground.add(raised.group);
+const bed = raised.soil;
 
 /* ------------------------------------------------- the island's own things
    The bed is 3.9 by 1.9 at x -0.5, so everything here keeps clear of that box
@@ -102,6 +104,35 @@ props.add(bench);
  [1.9, -3.15, 0.24], [-2.3, 2.85, 0.21], [3.3, 3.2, 0.18]]
   .forEach(([x, z, s0]) => {
     const m = buildShrub(sceneRnd, s0); m.position.set(x, 0, z); props.add(m);
+  });
+
+/* A FENCE ALONG THE BACK, open at the front so the bed is still walked up to
+   and planted in. Two sides would box the planting in from this camera. */
+const fence = buildFence(BED_W + 0.5, 5);
+fence.position.set(-0.5, 0, -(BED_D / 2 + 0.6));
+props.add(fence);
+
+/* THE PUMP IS THE ONE SATURATED ACCENT in a green and brown picture, which
+   is most of why the eye lands on the bed in the reference. It should stay
+   the only one. */
+const pump = buildPump();
+/* in FRONT of the bed's end rather than behind it: at -0.35 it stood on the
+   far side and the bed hid all but its handle from this camera */
+pump.position.set(2.15, 0, 0.75);
+pump.rotation.y = -0.7;
+props.add(pump);
+const bucket = buildBucket();
+bucket.position.set(1.72, 0, 1.15);
+props.add(bucket);
+
+/* A STAND OF TREES RINGING THE PLOT, which is what gives the island a
+   horizon of its own rather than ending in bare green. They sit outside the
+   planting circle, so nothing anybody grows is ever behind one. */
+[[-5.3, -2.2, 1.7], [-4.2, -4.4, 1.45], [-1.0, -5.5, 1.6], [2.4, -5.2, 1.35],
+ [5.0, -3.0, 1.75], [5.7, 0.6, 1.5], [4.6, 3.9, 1.6], [1.2, 5.6, 1.4],
+ [-2.6, 5.2, 1.65], [-5.4, 2.6, 1.5]]
+  .forEach(([x, z, h]) => {
+    const t = buildConeTree(sceneRnd, h); t.position.set(x, 0, z); props.add(t);
   });
 
 /* THE AVATAR IS AN OUTER GROUP WITH A BUILT BODY INSIDE IT, and that split
@@ -266,7 +297,7 @@ function chooseSpecies(rating, shaper, note) {
    hold a row per species: the water for the lotus, open grass for the tree.
    What is left is the part that was always doing the work, which is that a
    flower needs ROOM and the refusal has to say so in words. */
-const BED = { gap: 0.3, stand: 0.62, y: 0.14, say: "Pick a place in the bed." };
+const BED = { gap: 0.3, stand: 0.62, y: raised.topY, say: "Pick a place in the bed." };
 const plotFor = () => BED;
 
 const ray = new THREE.Raycaster();

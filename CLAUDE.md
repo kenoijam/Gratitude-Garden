@@ -1262,6 +1262,22 @@ Headings on the garden pages come from two places. `.gg-title` and `#tips-card h
 - **The light went up again**: exposure 1.15 under the neutral curve, sun 2.3 at a whiter `0xfff0cf`, hemisphere 0.5, `environmentIntensity` 1.05, fog 34 to 70, and the sky and grass pushed toward the reference's saturation. The hour is still afternoon; it is a bright one now.
 - **A DUPLICATE `const tri` BLANKED THE WHOLE SCENE**, with a syntax error that my own probe missed because it attached its `error` listener after `await`ing the page load. **Read the console rather than trusting a listener you attached late**, and note that this pane's console buffer SURVIVES navigation, so a fixed error goes on being reported: confirm against a live `import()` instead.
 
+**TWO SHADING LANGUAGES ON PURPOSE: FACETED SCENERY, SMOOTH FLOWERS.** The reference for this pass was a low poly farm scene, and the thing to notice about it is that it is NOT uniformly smooth: its trees and rocks are hard edged planes while its characters are soft blobs. That mix is deliberate here too.
+
+- **`flatShading: true` is back on every material in `world.js`**, which is all scenery and terrain, and stays OFF in `flower-kit.js` and `avatar-kit.js`. So the crisp chunky scenery and the rounded petals from the previous pass both survive. **If a new material is added, the file it lives in decides which language it speaks.**
+- **The rocks are faceted icosahedra again**, jittered so no two are the same lump, and TERRACOTTA rather than grey: grey stone reads as a quarry and pulls the whole palette cold. `stoneMat` takes a `warm` flag and the shrubs went back to icosahedra with it.
+- **THE LAND IS NEARLY FLAT NOW, a tenth of its old amplitude.** The reference's field is one clean plane of lime with the scenery standing on it, and rolling ground fights that: every dip put a gradient across ground that wants to read as a single colour. The island and its soil edge stay, so there is still a horizon and still somewhere the garden ends.
+
+**THE PLANTING IS A RAISED BED, NOT A PAINTED RECTANGLE.** It was a flat slab: a brown rectangle lying on grass with no thickness and no edge.
+
+- **`buildRaisedBed` makes a box out of BOARDS, and being able to see the boards is the whole of it.** Every wall is two stacked planks with a gap between them rather than one tall panel, there is a post at each corner, and the soil is sunk 5cm below the rim so the boards contain it.
+- **It returns its soil mesh and its top height**, because the sketch raycasts that mesh to decide where a flower may go and plants at that height. `bed` in `spike.js` is now that soil mesh, so every existing rule about the bed still reads correctly.
+- **`buildFence` runs along the BACK only.** Fencing two sides, as the reference does, boxes the planting in from this camera and puts rails across the flowers.
+
+**THE PUMP IS THE ONLY SATURATED ACCENT, and that is why the eye lands on the bed.** In a green and brown picture one red object does all the directing, so nothing else should take that job. `buildPump` and `buildBucket` stand at the near end of the bed; at the far end the bed hid everything but the handle.
+
+**`buildConeTree` RINGS BOTH SCENES.** Three stacked cones on a short trunk, each narrower and a shade lighter, at seven radial segments so the facets are big enough to read as planes. **The tiers are what make it a tree rather than a bush**: one cone is a party hat, and the step between them is what says branches. They sit outside the planting circle in both scenes, so nothing anybody grows is ever behind one.
+
 **THE LOOK: A COSY ISLAND, LATE AFTERNOON, AND A SLOWER FLOWER.** `world.js` holds the light, the sky, the ground and the life, and both scenes call `dressScene`, for the same reason `growth.js` exists: two copies of a look drift inside a session.
 
 - **A FLOWER TAKES AS LONG AS ITS SIZE SAYS IT SHOULD.** `SPEED` is 2.6 against the web version's pace and `PACE` is each species against the others, multiplied rather than replaced so the SHAPE of the 2D sequence is kept and only its length changes. Measured: daisy 7.1s, lily 8.8s, sunflower 11.1s, sakura 16.8s. Watching a tree reach full height in the time a daisy takes was the single thing that most said "animation". **This deliberately breaks the match with the web version's 3400ms**, which only matters if the two are ever shown side by side.

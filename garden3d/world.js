@@ -172,7 +172,7 @@ export function buildGround(scene, { radius = 5, seed = 7, island = 1.7 } = {}) 
     /* the SAME tone as the land around it, or the plot reads as a lighter
        disc pasted onto a field. What marks the garden is what is planted on
        it, not a ring of different grass. */
-    new THREE.MeshStandardMaterial({ roughness: 0.88, metalness: 0, color: hsl(96, 60, 60) })
+    new THREE.MeshStandardMaterial({ flatShading: true, roughness: 0.88, metalness: 0, color: hsl(84, 68, 58) })
   );
   grass.rotation.x = -Math.PI / 2;
   grass.receiveShadow = true;
@@ -183,14 +183,18 @@ export function buildGround(scene, { radius = 5, seed = 7, island = 1.7 } = {}) 
   const farGeo = new THREE.CircleGeometry(R, 72);
   const pos = farGeo.attributes.position;
   const col = [];
-  const base = hsl(96, 60, 60);
+  const base = hsl(84, 68, 58);
   for (let i = 0; i < pos.count; i++) {
     const x = pos.getX(i), y = pos.getY(i);
     const d = Math.hypot(x, y);
     /* SHALLOW. Every facet the displacement tilts turns away from a low sun,
        so a landscape that looks gentle from above goes muddy at this angle. */
-    const bump = Math.sin(x * 0.5 + seed) * Math.cos(y * 0.44 - seed) * 0.34
-               + Math.sin(d * 0.55) * 0.18;
+    /* NEARLY FLAT. The reference's field is one clean plane of lime with the
+       scenery sitting on it, and rolling land fights that: every dip put a
+       gradient across ground that wants to read as a single colour. A tenth
+       of the old amplitude leaves just enough to stop it looking printed. */
+    const bump = Math.sin(x * 0.5 + seed) * Math.cos(y * 0.44 - seed) * 0.05
+               + Math.sin(d * 0.55) * 0.03;
     const k = Math.min(1, Math.max(0, (d - radius) / (R - radius)));
     /* and it drops away at the rim, so the island rounds off rather than
        ending on a flat cut */
@@ -201,7 +205,7 @@ export function buildGround(scene, { radius = 5, seed = 7, island = 1.7 } = {}) 
   farGeo.setAttribute("color", new THREE.Float32BufferAttribute(col, 3));
   farGeo.computeVertexNormals();
   const far = new THREE.Mesh(farGeo,
-    new THREE.MeshStandardMaterial({ roughness: 0.88, metalness: 0, vertexColors: true }));
+    new THREE.MeshStandardMaterial({ flatShading: true, roughness: 0.88, metalness: 0, vertexColors: true }));
   far.rotation.x = -Math.PI / 2;
   far.position.y = -0.03;
   far.receiveShadow = true;
@@ -242,7 +246,7 @@ export function buildGround(scene, { radius = 5, seed = 7, island = 1.7 } = {}) 
   const wallGeo = new THREE.BufferGeometry();
   wallGeo.setAttribute("position", new THREE.Float32BufferAttribute(wall, 3));
   wallGeo.computeVertexNormals();
-  const soil = new THREE.Mesh(wallGeo, new THREE.MeshStandardMaterial({
+  const soil = new THREE.Mesh(wallGeo, new THREE.MeshStandardMaterial({ flatShading: true,
     roughness: 0.96, metalness: 0, color: hsl(25, 44, 40) }));
   soil.receiveShadow = true;
   group.add(soil);
@@ -251,14 +255,14 @@ export function buildGround(scene, { radius = 5, seed = 7, island = 1.7 } = {}) 
      ground lifted out rather than as a cylinder */
   const side = new THREE.Mesh(
     new THREE.CylinderGeometry(R, R * 0.72, 1.5, 48, 1, true),
-    new THREE.MeshStandardMaterial({ roughness: 0.88, metalness: 0, color: hsl(27, 32, 44),
+    new THREE.MeshStandardMaterial({ flatShading: true, roughness: 0.88, metalness: 0, color: hsl(27, 32, 44),
                                     side: THREE.DoubleSide })
   );
   side.position.y = -1.28;
   group.add(side);
   const under = new THREE.Mesh(
     new THREE.CircleGeometry(R * 0.72, 36),
-    new THREE.MeshStandardMaterial({ roughness: 0.88, metalness: 0, color: hsl(27, 28, 34) })
+    new THREE.MeshStandardMaterial({ flatShading: true, roughness: 0.88, metalness: 0, color: hsl(27, 28, 34) })
   );
   under.rotation.x = Math.PI / 2;
   under.position.y = -2.03;
@@ -282,7 +286,7 @@ export function buildGround(scene, { radius = 5, seed = 7, island = 1.7 } = {}) 
   const tuftGeo = new THREE.BufferGeometry();
   tuftGeo.setAttribute("position", new THREE.Float32BufferAttribute(tri, 3));
   tuftGeo.computeVertexNormals();
-  const tufts = new THREE.Mesh(tuftGeo, new THREE.MeshStandardMaterial({ roughness: 0.88, metalness: 0,
+  const tufts = new THREE.Mesh(tuftGeo, new THREE.MeshStandardMaterial({ flatShading: true, roughness: 0.88, metalness: 0,
     color: hsl(122, 36, 62), side: THREE.DoubleSide
   }));
   group.add(tufts);
@@ -298,7 +302,7 @@ export function buildHills(scene, { radius = 5, seed = 3, island = 1.7 } = {}) {
      skyline to stand against. */
   const r = rnd(seed);
   const R = radius * island;
-  const tones = [hsl(126, 46, 60), hsl(116, 42, 53), hsl(106, 38, 46)];
+  const tones = [hsl(92, 52, 56), hsl(86, 48, 49), hsl(78, 44, 43)];
   const group = new THREE.Group();
   for (let i = 0; i < 12; i++) {
     const a = (i / 12) * Math.PI * 2 + r() * 0.35;
@@ -307,7 +311,7 @@ export function buildHills(scene, { radius = 5, seed = 3, island = 1.7 } = {}) {
     const d = R * (0.97 + r() * 0.13);
     const h = new THREE.Mesh(
       new THREE.IcosahedronGeometry(1, 1),
-      new THREE.MeshStandardMaterial({ roughness: 0.88, metalness: 0, color: tones[i % 3] })
+      new THREE.MeshStandardMaterial({ flatShading: true, roughness: 0.88, metalness: 0, color: tones[i % 3] })
     );
     h.position.set(Math.cos(a) * d, -0.5 - r() * 0.25, Math.sin(a) * d);
     h.scale.set(0.95 + r() * 1.0, 0.6 + r() * 0.55, 0.95 + r() * 1.0);
@@ -357,7 +361,7 @@ export function createLife(scene, { radius = 5, seed = 11 } = {}) {
   group.add(motes);
 
   /* --- butterflies */
-  const wingMat = new THREE.MeshStandardMaterial({ roughness: 0.88, metalness: 0,
+  const wingMat = new THREE.MeshStandardMaterial({ flatShading: true, roughness: 0.88, metalness: 0,
     color: hsl(42, 84, 74), side: THREE.DoubleSide
   });
   const flies = [];
@@ -456,8 +460,11 @@ export function createLife(scene, { radius = 5, seed = 11 } = {}) {
    three primitives the flowers use. A rock is an icosahedron that has been
    sat on; a shrub is several of them at two tones; a bench is five boxes. */
 
-function stoneMat(l) { return new THREE.MeshStandardMaterial({
-  color: hsl(90, 8, l), roughness: 0.95, metalness: 0 }); }
+/* TERRACOTTA AND SAND, NOT GREY. The reference's rocks are warm: grey stone
+   reads as a quarry and pulls the whole palette cold, which is the opposite
+   of what a cosy garden wants. Two tones, sandy and a warmer clay. */
+function stoneMat(l, warm) { return new THREE.MeshStandardMaterial({ flatShading: true,
+  color: warm ? hsl(18, 38, l) : hsl(36, 34, l), roughness: 0.95, metalness: 0 }); }
 
 /* A ROCK IS AN ICOSAHEDRON THAT HAS BEEN SAT ON. Detail 0 gives twenty faces,
    which at this distance is exactly enough to read as stone; scaling it
@@ -470,14 +477,18 @@ export function buildRock(r, size = 0.3, tone = 62) {
      cute. A low segment SPHERE is indexed, so its normals average into a
      smooth round form, and jittering its vertices makes it a lumpy pebble
      rather than a ball. */
-  const g = new THREE.SphereGeometry(size, 10, 8);
+  /* FACETED AGAIN, and deliberately so: the reference's scenery is crisp
+     low poly while its characters are smooth, and this is the scenery half
+     of that. An icosahedron at detail 0 is twenty faces, jittered so no two
+     rocks are the same lump, and flat shaded so each face reads. */
+  const g = new THREE.IcosahedronGeometry(size, 0);
   const pa = g.attributes.position;
   for (let i = 0; i < pa.count; i++) {
-    const k = 1 + (r() - 0.5) * 0.22;
+    const k = 1 + (r() - 0.5) * 0.3;
     pa.setXYZ(i, pa.getX(i) * k, pa.getY(i) * k, pa.getZ(i) * k);
   }
   g.computeVertexNormals();
-  const m = new THREE.Mesh(g, stoneMat(tone + (r() - 0.5) * 8));
+  const m = new THREE.Mesh(g, stoneMat(tone + (r() - 0.5) * 8, r() > 0.6));
   m.scale.set(1 + r() * 0.5, 0.62 + r() * 0.35, 1 + r() * 0.5);
   m.rotation.set(r() * 0.4, r() * Math.PI * 2, r() * 0.4);
   m.position.y = -size * 0.22;
@@ -495,9 +506,8 @@ export function buildShrub(r, size = 0.34) {
   const n = 4 + Math.floor(r() * 3);
   for (let i = 0; i < n; i++) {
     const rad = size * (0.5 + r() * 0.42);
-    /* soft round blobs, for the same reason the rocks are spheres now */
-    const b = new THREE.Mesh(new THREE.SphereGeometry(rad, 9, 7),
-      new THREE.MeshStandardMaterial({
+    const b = new THREE.Mesh(new THREE.IcosahedronGeometry(rad, 1),
+      new THREE.MeshStandardMaterial({ flatShading: true,
         color: hsl(112 + r() * 18, 30 + r() * 12, i % 2 ? 40 : 34),
         roughness: 0.92, metalness: 0 }));
     const a = (i / n) * Math.PI * 2 + r();
@@ -517,9 +527,9 @@ export function buildShrub(r, size = 0.34) {
    is four wasted faces. */
 export function buildBench() {
   const g = new THREE.Group();
-  const wood = new THREE.MeshStandardMaterial({
+  const wood = new THREE.MeshStandardMaterial({ flatShading: true,
     color: hsl(28, 30, 46), roughness: 0.9, metalness: 0 });
-  const dark = new THREE.MeshStandardMaterial({
+  const dark = new THREE.MeshStandardMaterial({ flatShading: true,
     color: hsl(26, 26, 34), roughness: 0.9, metalness: 0 });
   const seat = new THREE.Mesh(new THREE.BoxGeometry(1.05, 0.055, 0.34), wood);
   seat.position.y = 0.23;
@@ -575,7 +585,7 @@ export function buildCairn(r) {
   const n = 5;
   for (let i = 0; i < n; i++) {
     const size = 0.34 * (1 - i / (n + 1.6));
-    const st = new THREE.Mesh(new THREE.SphereGeometry(size, 10, 8), stoneMat(46 + i * 4));
+    const st = new THREE.Mesh(new THREE.IcosahedronGeometry(size, 0), stoneMat(46 + i * 4));
     st.scale.set(1.1 + r() * 0.3, 0.55 + r() * 0.2, 1.1 + r() * 0.3);
     st.rotation.set((r() - 0.5) * 0.25, r() * Math.PI * 2, (r() - 0.5) * 0.25);
     const h = size * (0.55 + r() * 0.2) * 2;
@@ -585,6 +595,157 @@ export function buildCairn(r) {
     g.add(st);
   }
   g.traverse(o => { if (o.isMesh) o.userData.scenery = true; });
+  g.userData.scenery = true;
+  return g;
+}
+
+const woodMat = (h, sat, l) => new THREE.MeshStandardMaterial({
+  flatShading: true, color: hsl(h, sat, l), roughness: 0.9, metalness: 0 });
+
+/* A TIERED CONE TREE, which is the shape filling the background of the
+   reference. Three stacked cones on a short trunk, each narrower and a shade
+   lighter than the one below, all at SEVEN radial segments so the facets are
+   big enough to read as planes rather than as a smooth cone with a seam.
+
+   The tiers are what make it a tree rather than a bush: one cone is a party
+   hat, and it is the step between them that says branches. */
+export function buildConeTree(r, h = 1.6) {
+  const g = new THREE.Group();
+  const trunk = new THREE.Mesh(
+    new THREE.CylinderGeometry(h * 0.055, h * 0.075, h * 0.42, 7), woodMat(26, 32, 34));
+  trunk.position.y = h * 0.21;
+  g.add(trunk);
+  /* olive or yellow green, so a stand of them is not one tree repeated */
+  const hue = r() > 0.5 ? 74 : 88;
+  for (let i = 0; i < 3; i++) {
+    const rad = h * (0.4 - i * 0.09);
+    const ht = h * 0.42;
+    const c = new THREE.Mesh(new THREE.ConeGeometry(rad, ht, 7),
+      woodMat(hue + i * 2, 46 - i * 3, 42 + i * 7));
+    c.position.y = h * (0.42 + i * 0.26);
+    c.rotation.y = r() * Math.PI * 2;
+    g.add(c);
+  }
+  g.traverse(o => {
+    if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; o.userData.scenery = true; }
+  });
+  g.userData.scenery = true;
+  return g;
+}
+
+/* THE PUMP AND THE BUCKET, which are what say the garden is TENDED. The
+   reference's composition is a bed with a pump standing beside it, and the
+   one red object in a green and brown picture is most of why the eye lands
+   there. It is the only saturated accent in the scene and it should stay the
+   only one. */
+export function buildPump() {
+  const g = new THREE.Group();
+  const red = new THREE.MeshStandardMaterial({
+    flatShading: true, color: hsl(352, 52, 40), roughness: 0.75, metalness: 0 });
+  const base = new THREE.Mesh(new THREE.BoxGeometry(0.26, 0.09, 0.26), woodMat(26, 26, 32));
+  base.position.y = 0.045;
+  const column = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.075, 0.72, 8), red);
+  column.position.y = 0.45;
+  const head = new THREE.Mesh(new THREE.BoxGeometry(0.15, 0.13, 0.15), red);
+  head.position.y = 0.85;
+  const spout = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.045, 0.3, 7), red);
+  spout.position.set(0.13, 0.76, 0);
+  spout.rotation.z = Math.PI / 2.6;
+  const handle = new THREE.Mesh(new THREE.BoxGeometry(0.34, 0.045, 0.05), red);
+  handle.position.set(-0.16, 0.93, 0);
+  handle.rotation.z = -0.32;
+  g.add(base, column, head, spout, handle);
+  g.traverse(o => {
+    if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; o.userData.scenery = true; }
+  });
+  g.userData.scenery = true;
+  return g;
+}
+
+export function buildBucket() {
+  const g = new THREE.Group();
+  const pail = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.17, 0.14, 0.2, 9, 1, true), woodMat(28, 34, 42));
+  pail.material.side = THREE.DoubleSide;
+  pail.position.y = 0.1;
+  const water = new THREE.Mesh(new THREE.CircleGeometry(0.155, 9),
+    new THREE.MeshStandardMaterial({
+      flatShading: true, color: hsl(196, 56, 68), roughness: 0.35, metalness: 0 }));
+  water.rotation.x = -Math.PI / 2;
+  water.position.y = 0.165;
+  const band = new THREE.Mesh(new THREE.CylinderGeometry(0.172, 0.172, 0.03, 9), woodMat(26, 24, 30));
+  band.position.y = 0.17;
+  g.add(pail, water, band);
+  g.traverse(o => {
+    if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; o.userData.scenery = true; }
+  });
+  g.userData.scenery = true;
+  return g;
+}
+
+/* A RAISED BED, WITH SEAMS. The planting was a painted rectangle on grass:
+   a flat slab with no thickness and no edge. The reference's is a box built
+   out of boards, and being able to see the boards is the whole of it, so
+   every wall is TWO stacked planks with a gap between them rather than one
+   tall panel, and there is a post at each corner holding them.
+
+   It returns its soil mesh, because the sketch raycasts that to decide where
+   a flower may be planted, and its top height, because that is where a
+   flower now stands. */
+export function buildRaisedBed(w, d) {
+  const g = new THREE.Group();
+  const H = 0.26, T = 0.07, PL = H / 2 - 0.012;
+  const board = woodMat(30, 38, 46), post = woodMat(27, 32, 36);
+
+  const wall = (len, x, z, rot) => {
+    for (let i = 0; i < 2; i++) {
+      const b = new THREE.Mesh(new THREE.BoxGeometry(len, PL, T), board);
+      b.position.set(x, PL / 2 + i * (PL + 0.022), z);
+      b.rotation.y = rot;
+      b.castShadow = true; b.receiveShadow = true;
+      g.add(b);
+    }
+  };
+  wall(w, 0, d / 2, 0);
+  wall(w, 0, -d / 2, 0);
+  wall(d, w / 2, 0, Math.PI / 2);
+  wall(d, -w / 2, 0, Math.PI / 2);
+  for (const sx of [-1, 1]) for (const sz of [-1, 1]) {
+    const p = new THREE.Mesh(new THREE.BoxGeometry(0.11, H + 0.05, 0.11), post);
+    p.position.set(sx * w / 2, (H + 0.05) / 2, sz * d / 2);
+    p.castShadow = true;
+    g.add(p);
+  }
+  /* the soil, sunk a little below the rim so the boards contain it */
+  const soil = new THREE.Mesh(new THREE.BoxGeometry(w - T, H - 0.05, d - T),
+    new THREE.MeshStandardMaterial({
+      flatShading: true, color: hsl(24, 40, 32), roughness: 0.97, metalness: 0 }));
+  soil.position.y = (H - 0.05) / 2;
+  soil.receiveShadow = true;
+  g.add(soil);
+
+  g.userData.scenery = false;         /* the bed is not scenery: it is planted in */
+  return { group: g, soil, topY: H - 0.05 };
+}
+
+/* POST AND RAIL, the reference's fence. Two rails and a post every stretch,
+   left OPEN at the front so the bed is still walked up to and planted in. */
+export function buildFence(len, n = 4) {
+  const g = new THREE.Group();
+  const post = woodMat(27, 34, 40), rail = woodMat(30, 38, 48);
+  for (let i = 0; i <= n; i++) {
+    const p = new THREE.Mesh(new THREE.CylinderGeometry(0.045, 0.052, 0.52, 7), post);
+    p.position.set(-len / 2 + (len / n) * i, 0.26, 0);
+    g.add(p);
+  }
+  for (const y of [0.2, 0.38]) {
+    const rb = new THREE.Mesh(new THREE.BoxGeometry(len, 0.05, 0.035), rail);
+    rb.position.y = y;
+    g.add(rb);
+  }
+  g.traverse(o => {
+    if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; o.userData.scenery = true; }
+  });
   g.userData.scenery = true;
   return g;
 }
@@ -603,9 +764,9 @@ export function buildCairn(r) {
    sign readable from one of four of them is furniture rather than a sign. */
 export function buildSign(text) {
   const g = new THREE.Group();
-  const wood = new THREE.MeshStandardMaterial({
+  const wood = new THREE.MeshStandardMaterial({ flatShading: true,
     color: hsl(32, 44, 54), roughness: 0.85, metalness: 0 });
-  const post = new THREE.MeshStandardMaterial({
+  const post = new THREE.MeshStandardMaterial({ flatShading: true,
     color: hsl(27, 36, 38), roughness: 0.88, metalness: 0 });
 
   for (const x of [-0.46, 0.46]) {
@@ -648,7 +809,7 @@ export function buildSign(text) {
   const tex = new THREE.CanvasTexture(c);
   tex.colorSpace = THREE.SRGBColorSpace;
   tex.anisotropy = 4;
-  const faceMat = new THREE.MeshStandardMaterial({ map: tex, roughness: 0.82, metalness: 0 });
+  const faceMat = new THREE.MeshStandardMaterial({ flatShading: true, map: tex, roughness: 0.82, metalness: 0 });
   /* BoxGeometry takes its materials as +x, -x, +y, -y, +z, -z */
   const board = new THREE.Mesh(new THREE.BoxGeometry(1.28, 0.6, 0.075),
     [wood, wood, wood, wood, faceMat, faceMat]);
