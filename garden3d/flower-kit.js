@@ -24,37 +24,58 @@ import * as THREE from "./lib/three.module.min.js";
 /* A petal, built as a strip of rows so it can be cupped and curled rather
    than being a flat card. Three vertices per row: left, middle, right, and
    the middle one is lifted to make the cup. */
-export function petalGeometry({ len = 0.2, wid = 0.06, curl = 0.25, cup = 0.35, tip = "round" }) {
-  /* A GRID, NOT A FOLDED STRIP. This was three vertices across, so the cup
-     was a single crease straight down the middle of every petal: a literal
-     fold, which no amount of shading can round off. Five columns carrying a
-     parabolic cup give it a curve instead, and `weldSmooth` in
-     `fromPositions` then averages the normals across it.
+export function petalGeometry({ len = 0.2, wid = 0.06, curl = 0.25, cup = 0.35,
+                                tip = "round", thick = 0.2 }) {
+  /* A PILLOW, NOT A SHEET. The petal was a single surface with no thickness,
+     and a thin surface catches light as a thin surface however softly it is
+     shaded: it can never read as clay. It is a closed lens now, thickest
+     down its middle and tapering to a rounded rim all the way round, which
+     is what the reference's tulip petals are.
 
-     8 by 4 is 64 triangles a petal against the old 24. That is 2.7 times the
-     geometry and it is the cheapest thing in the scene to spend it on: the
-     petals are what anybody actually looks at. */
+     THE RIM IS ROUND BECAUSE OF THE PROFILE, not because of extra geometry.
+     The thickness follows `sqrt(1 - (1 - e)^2)`, a semicircle in the
+     distance from the edge, so it arrives at the boundary PERPENDICULAR.
+     A linear taper would meet it at an angle and read as a knife edge, and
+     rounding that off properly would have meant a separate rim strip.
+
+     THICKNESS IS 0.2 OF THE WIDTH AND IT CANNOT GO MUCH ABOVE THAT. At 0.42
+     it was measured against the reference's fat single petals and forgot the
+     ringed blooms: a peony is forty three petals at about 0.05 apart, so
+     inflating each by 0.04 filled every gap between them and the flower came
+     out as a featureless ball. What reads as puffy on one big petal welds a
+     ring of them into a sphere.
+
+     Front and back meet exactly at the boundary, where the thickness is
+     zero, so the shape closes with no seam to build. `weldSmooth` then
+     averages the normals across the join and the rim shades as a curve. */
   const ROWS = 8, COLS = 4;
+  /* TIPS ARE ROUND NOW, on every species. None of the references has a point
+     on anything. The width profile is evaluated at 0.9 of the way along, so
+     it still NARROWS toward the tip but stops before it reaches zero: the
+     lily still recurves and the tulip is still a closed cup, they simply end
+     in a soft cap rather than a spike. */
+  const TIPCUT = 0.9;
+  const widthAt = t => {
+    const a = t * TIPCUT;
+    if (tip === "point") return wid * Math.sin(Math.PI * Math.pow(a, 0.9)) * (1 - a * 0.55);
+    if (tip === "notch") return wid * Math.sin(Math.PI * Math.pow(a, 0.6));
+    return wid * Math.sin(Math.PI * Math.pow(a, 0.62));
+  };
+
   const rows = [];
   for (let i = 0; i <= ROWS; i++) {
     const t = i / ROWS;
-    /* how wide the petal is at this point along its length */
-    let w;
-    if (tip === "point")      w = wid * Math.sin(Math.PI * Math.pow(t, 0.9)) * (1 - t * 0.55);
-    else if (tip === "notch") w = wid * Math.sin(Math.PI * Math.pow(t, 0.6));
-    else                      w = wid * Math.sin(Math.PI * Math.pow(t, 0.62));
+    const w = widthAt(t);
     const y = len * t;
     const z = curl * len * t * t;                 /* the backward bend */
     const row = [];
     for (let j = 0; j <= COLS; j++) {
       const u = (j / COLS) * 2 - 1;               /* -1 to 1 across the petal */
-      /* the cup, as a parabola rather than a single dropped centre point */
-      const lift = -cup * w * (1 - u * u);
+      const lift = -cup * w * (1 - u * u);        /* the cup, as a parabola */
       row.push(new THREE.Vector3(w * u, y, z + lift));
     }
     rows.push(row);
   }
-  /* a notched tip is the same shape with a narrow cleft cut into its end */
   if (tip === "notch") {
     const last = rows[ROWS];
     for (let j = 0; j <= COLS; j++) {
@@ -63,10 +84,34 @@ export function petalGeometry({ len = 0.2, wid = 0.06, curl = 0.25, cup = 0.35, 
       last[j].z += 0.01 * Math.max(0, 1 - Math.abs(u) * 2.4);
     }
   }
+
+  const at = (i, j) => rows[Math.max(0, Math.min(ROWS, i))][Math.max(0, Math.min(COLS, j))];
+  const T = wid * thick;
+  const front = [], back = [];
+  for (let i = 0; i <= ROWS; i++) {
+    const fr = [], bk = [];
+    for (let j = 0; j <= COLS; j++) {
+      const du = new THREE.Vector3().subVectors(at(i, j + 1), at(i, j - 1));
+      const dv = new THREE.Vector3().subVectors(at(i + 1, j), at(i - 1, j));
+      const n = new THREE.Vector3().crossVectors(dv, du);
+      if (n.lengthSq() < 1e-12) n.set(0, 0, 1); else n.normalize();
+      /* how far inside the boundary this point sits, zero at every edge */
+      const eu = 1 - Math.abs((j / COLS) * 2 - 1);
+      const et = Math.min(i / ROWS, 1 - i / ROWS) * 2;
+      const e = Math.max(0, Math.min(1, Math.min(eu, et)));
+      const f = Math.sqrt(Math.max(0, 1 - (1 - e) * (1 - e)));
+      const o = n.multiplyScalar(T * f);
+      fr.push(at(i, j).clone().add(o));
+      bk.push(at(i, j).clone().sub(o));
+    }
+    front.push(fr); back.push(bk);
+  }
+
   const pos = [];
   for (let i = 0; i < ROWS; i++) {
     for (let j = 0; j < COLS; j++) {
-      quad(pos, rows[i][j], rows[i][j + 1], rows[i + 1][j + 1], rows[i + 1][j]);
+      quad(pos, front[i][j], front[i][j + 1], front[i + 1][j + 1], front[i + 1][j]);
+      quad(pos, back[i][j + 1], back[i][j], back[i + 1][j], back[i + 1][j + 1]);
     }
   }
   return fromPositions(pos);
@@ -283,7 +328,7 @@ export function buildFlower(id, { hue = null, seed = null } = {}) {
      `seed` is the caller's, so a reload still gives the same garden. */
   const sd = (seed == null ? 1 : seed) | 0;
 
-  const greenMat = flatMat(GREEN.h, GREEN.s, GREEN.l);
+  const greenMat = flatMat(GREEN.h, GREEN.s, GREEN.l, 0.78);
   /* Every petal material is registered here with its own lightness offset,
      so one hue slider can move a rose's five rings and keep the depth
      between them. The person picks a hue; the tones are the species'. */
@@ -347,7 +392,18 @@ export function buildFlower(id, { hue = null, seed = null } = {}) {
 
     if (sp.leaves && k === 0) {
       for (const side of [-1, 1]) {
-        const leaf = petalGeometry({ len: sp.stem * 0.42, wid: sp.stem * 0.12, curl: 0.3, cup: 0.25, tip: "point" });
+        /* SMALLER AND ROUNDER. At 0.42 of the stem a leaf was longer than
+           several blooms are wide, so the greens competed with the flower
+           instead of being the base it rises out of. Half the length, nearly
+           the same width, and a round end. Thinner than a petal on purpose:
+           soft clay rather than fully inflated. */
+        /* CAPPED, because leaf size was a fraction of the STEM and the
+           sunflower's stem is 1.02: its leaves came out at 0.27, three times
+           a daisy's and reading as paddles. Proportionally honest, visually
+           wrong, so the tall species stop growing leaves at 0.17. */
+        const lLen = Math.min(sp.stem * 0.26, 0.17);
+        const leaf = petalGeometry({ len: lLen, wid: lLen * 0.42,
+                                     curl: 0.3, cup: 0.25, tip: "round", thick: 0.18 });
         leaf.applyMatrix4(new THREE.Matrix4()
           .makeTranslation(hx, sp.stem * 0.3, hz)
           .multiply(new THREE.Matrix4().makeRotationY(side > 0 ? 0.6 : Math.PI - 0.6))
@@ -497,8 +553,11 @@ function addRings(bloom, sp, tinted) {
 /* `flatMat` keeps its name and no longer shades flat. Smooth normals plus a
    fairly high roughness is the Animal Crossing register: soft gradients over
    chunky forms, with no hard facet anywhere and no specular glint either. */
-function flatMat(h, s, l) {
-  const m = new THREE.MeshStandardMaterial({ roughness: 0.82, metalness: 0, side: THREE.DoubleSide });
+/* 0.55, not 0.82. A broad soft highlight rolling across a petal is a large
+   part of what says the thing is solid: the references all have one. The
+   green stays matter, since a shiny stem reads as plastic. */
+function flatMat(h, s, l, rough = 0.55) {
+  const m = new THREE.MeshStandardMaterial({ roughness: rough, metalness: 0, side: THREE.DoubleSide });
   m.color.setHSL(h / 360, s / 100, l / 100);
   return m;
 }

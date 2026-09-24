@@ -94,7 +94,7 @@ export function skyEnvironment(renderer) {
    drift. ACES is what stops the warm key clipping to white the moment it is
    strong enough to model anything. */
 /* HOW MANY SCREEN PIXELS ONE RENDERED PIXEL IS WORTH. 1 is off. */
-export let PIXEL_SCALE = 4;
+export let PIXEL_SCALE = 1;          /* 1 is off, which is the default */
 export function setPixelScale(n) { PIXEL_SCALE = Math.max(1, n | 0); }
 
 /* THE PIXEL LOOK IS A SIZE, NOT A SHADER, which is why it costs forty lines

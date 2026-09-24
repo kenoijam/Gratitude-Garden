@@ -479,7 +479,8 @@ const PX_STEPS = [1, 2, 3, 4, 6];
    shape and the fence rails and path stones hold; at 3 the lavender spike
    and the daisy go mushy, the rails break up and neighbouring blooms start
    merging. 4 and 6 are here to see the look pushed, not to use. */
-let pxAt = 1;
+let pxAt = 0;                       /* OFF by default */
+setPixelScale(PX_STEPS[pxAt]);      /* the module default is not the button's */
 const pxBtn = document.getElementById("px");
 if (pxBtn) {
   pxBtn.textContent = "Pixels: " + PX_STEPS[pxAt];
