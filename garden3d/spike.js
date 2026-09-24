@@ -19,20 +19,20 @@
                   space
    ========================================================================= */
 import * as THREE from "./lib/three.module.min.js";
-import { buildFlower, buildTree, SPECIES3D } from "./flower-kit.js";
+import { buildFlower, SPECIES3D } from "./flower-kit.js";
 import { buildAvatar, KEEPSAKES, SLOTS, SKINS, HAIRS, SHAPES, keepsakeOf, DEFAULT_LOOK }
   from "./avatar-kit.js";
 
-/* ALL EIGHT GROW IN THE SOIL NOW. The sakura was a tree and the lotus grew
-   on water, which made them the two species that could not be planted with
-   the others; the notched petal and a plain stem put both back in the bed.
-   The tree and the pond are still here, as SCENERY: the plot keeps what it
-   gained from them, and nothing you plant needs its own kind of ground. */
-const ORDER = ["daisy", "tulip", "lily", "sunflower", "lavender", "rose", "sakura", "lotus"];
+/* ALL EIGHT GROW IN THE SOIL, AND THE SET IS THE WEB VERSION'S EIGHT.
+   The sakura and the lotus are gone, replaced by the poppy and the peony the
+   2D project swapped to, and with them went the two pieces of scenery they
+   had needed: the cherry tree and the pond. The island carries scenery that
+   belongs to the PLACE now rather than to a species. */
+const ORDER = ["daisy", "tulip", "lily", "sunflower", "lavender", "rose", "poppy", "peony"];
 
 /* the web version's own sequence, now shared with the other scene */
 import { growMs, smooth, growFlower } from "./growth.js";
-import { dressScene } from "./world.js";
+import { dressScene, setupRenderer, buildRock, buildShrub, buildBench, buildPath } from "./world.js";
 
 /* the garden view is WIDER than it was, because the plot is no longer the
    whole world: at 7.8 the frame held nothing but the plot, and the sky, the
@@ -43,17 +43,14 @@ const state = { view: "garden", turn: 0, silhouette: false, hueShift: 0, planted
 
 const scene = new THREE.Scene();
 
-const renderer = new THREE.WebGLRenderer({ antialias: true });
-renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-renderer.shadowMap.enabled = true;
-renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+const renderer = setupRenderer(new THREE.WebGLRenderer({ antialias: true }));
 document.getElementById("stage").appendChild(renderer.domElement);
 
 const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0.1, 100);
 
 /* the light, the sky, the hills, the ground and the life in the air, all
    from the one module both scenes share */
-const world = dressScene(scene, { radius: 4.3, seed: 7 });
+const world = dressScene(scene, { renderer, radius: 4.3, seed: 7 });
 const grass = world.ground.grass;
 const ground = world.ground.group;
 
@@ -62,7 +59,7 @@ const bed = new THREE.Mesh(
    With the bed exactly full, choosing where to plant was a puzzle rather
    than a choice, which is the opposite of what this is testing. */
   new THREE.BoxGeometry(3.9, 0.14, 1.9),
-  new THREE.MeshLambertMaterial({ color: new THREE.Color().setHSL(26 / 360, 0.33, 0.47), flatShading: true })
+  new THREE.MeshStandardMaterial({ roughness: 0.88, metalness: 0, color: new THREE.Color().setHSL(26 / 360, 0.33, 0.47), flatShading: true })
 );
 bed.position.y = 0.07;
 bed.castShadow = true;
@@ -70,28 +67,42 @@ bed.receiveShadow = true;
 bed.position.x = -0.5;
 ground.add(bed);
 
-/* A POND, because the lotus needed one. It is a test of the plot as much as
-   of the flower: a garden made only of soil has one kind of place in it. */
-/* one place, so the water, its bank, what may be planted in it and where the
-   avatar may stand all read the same numbers */
-const POND = { x: 2.85, z: 0.6, r: 1.1 };
-const pond = new THREE.Mesh(
-  new THREE.CircleGeometry(POND.r, 36),
-  new THREE.MeshLambertMaterial({ color: new THREE.Color().setHSL(0.53, 0.44, 0.62) })
-);
-pond.rotation.x = -Math.PI / 2;
-pond.position.set(POND.x, 0.015, POND.z);
-pond.receiveShadow = true;
-ground.add(pond);
-/* a bank, so the water sits IN the ground rather than on it */
-const bank = new THREE.Mesh(
-  new THREE.RingGeometry(POND.r - 0.02, POND.r + 0.13, 36),
-  new THREE.MeshLambertMaterial({ color: new THREE.Color().setHSL(0.09, 0.3, 0.5) })
-);
-bank.rotation.x = -Math.PI / 2;
-bank.position.set(POND.x, 0.012, POND.z);
-bank.receiveShadow = true;
-ground.add(bank);
+/* ------------------------------------------------- the island's own things
+   The bed is 3.9 by 1.9 at x -0.5, so everything here keeps clear of that box
+   and of the ring the camera frames. It is placed by hand rather than
+   scattered at random: a path has to go somewhere, and a bench that faces
+   away from the garden is furniture in a field. */
+const sceneRnd = (() => { let v = 20260924 >>> 0;
+  return () => { v = (v * 1664525 + 1013904223) >>> 0; return v / 4294967296; }; })();
+const props = new THREE.Group();
+scene.add(props);
+
+/* a path in from the near corner, stopping at the front of the bed rather
+   than running through it */
+props.add(buildPath(sceneRnd, { x: 2.9, z: 2.55 }, { x: 0.75, z: 1.35 }, 9));
+
+/* somewhere to sit, looking AT the bed. This is the one prop that is about
+   the subject: a garden you reflect in should have a place to do it from. */
+const bench = buildBench();
+/* square-on to the bed and off to one side, so it reads as a bench looking
+   at the garden rather than as a plank lying in the grass */
+bench.position.set(2.75, 0, 0.55);
+bench.rotation.y = -Math.PI / 2 - 0.22;
+props.add(bench);
+
+/* stone and scrub round the rim, thinning toward the middle so the planting
+   keeps its room. The refusal rule only knows about the bed, so nothing here
+   can ever be in the way of a flower. */
+[[-3.5, -1.75, 0.26], [-3.7, 0.95, 0.19], [3.55, 2.0, 0.22],
+ [-1.35, -3.1, 0.17], [3.75, -1.5, 0.2], [0.5, -3.35, 0.15]]
+  .forEach(([x, z, r0]) => {
+    const m = buildRock(sceneRnd, r0); m.position.set(x, 0, z); props.add(m);
+  });
+[[-3.15, -2.6, 0.26], [3.85, 0.55, 0.22], [-3.9, 1.85, 0.2],
+ [1.9, -3.15, 0.24], [-2.3, 2.85, 0.21], [3.3, 3.2, 0.18]]
+  .forEach(([x, z, s0]) => {
+    const m = buildShrub(sceneRnd, s0); m.position.set(x, 0, z); props.add(m);
+  });
 
 /* THE AVATAR IS AN OUTER GROUP WITH A BUILT BODY INSIDE IT, and that split
    is load bearing: the walk, the bob and the crouch all move the outer group,
@@ -116,7 +127,7 @@ function plantRow(z, hueOffsets) {
   ORDER.forEach((id, i) => {
     const sp = SPECIES3D[id];
     const hue = (sp.hue + (hueOffsets[i] || 0) + 360) % 360;
-    const f = buildFlower(id, { hue });
+    const f = buildFlower(id, { hue, seed: i * 37 + Math.round(z * 100) });
     f.position.set(-2.16 + i * 0.48, 0.14, z);
     f.userData.baseHue = hue;
     f.userData.species = id;
@@ -129,14 +140,6 @@ function plantRow(z, hueOffsets) {
    a species that only reads in its own hue does not really read */
 plantRow(-0.12, [0, 0, 0, 0, 0, 0, 0, 0]);
 plantRow(-0.64, [40, -55, 120, 190, -80, 150, 60, -120]);
-
-/* the tree, which is scenery. Nothing plants one and nothing may be planted
-   under it: it is here because a garden with something to stand under is a
-   place, and a flat bed is a rack. */
-const tree = buildTree();
-tree.position.set(-2.5, 0, -1.55);
-tree.scale.setScalar(1.15);
-scene.add(tree);
 
 redress();
 
@@ -187,7 +190,7 @@ function setSilhouette(on) {
     if (!o.isMesh) return;
     if (on) {
       if (!o.userData._mat) o.userData._mat = o.material;
-      o.material = (o === grass || o === bed || o === pond || o === bank) ? PALE : DARK;
+      o.material = (o === grass || o === bed || o.userData.scenery) ? PALE : DARK;
     } else if (o.userData._mat) {
       o.material = o.userData._mat;
     }
@@ -226,7 +229,7 @@ function growth(now) {
    and every keyword hit in the sentence 2. With only the two buttons the
    rating would always win and the second question would be decoration, so
    the sentence is what lets the other answers matter. */
-const RATING_FLOWER = { 1: "lotus", 2: "lavender", 3: "sakura", 4: "daisy", 5: "sunflower" };
+const RATING_FLOWER = { 1: "peony", 2: "lavender", 3: "poppy", 4: "daisy", 5: "sunflower" };
 const SHAPER_FLOWER = { people: "rose", work: "lily", rest: "lavender", change: "tulip" };
 const KEYWORDS = {
   sunflower: ["happy", "proud", "energy", "sun", "hope", "good news"],
@@ -235,8 +238,8 @@ const KEYWORDS = {
   tulip:     ["new", "change", "start", "moved", "first", "again"],
   lily:      ["rest", "sleep", "slow", "peace", "still"],
   lavender:  ["safe", "home", "warm", "breathe", "held"],
-  sakura:    ["remember", "memory", "thinking", "past", "present", "noticed"],
-  lotus:     ["hard", "through", "survived", "difficult", "strong", "kept going"]
+  poppy:     ["remember", "memory", "thinking", "past", "missed", "noticed"],
+  peony:     ["hard", "through", "survived", "difficult", "strong", "kept going"]
 };
 function chooseSpecies(rating, shaper, note) {
   const votes = {};
@@ -285,9 +288,9 @@ function surfaceAt(ev) {
   pointer.x = ((ev.clientX - r.left) / r.width) * 2 - 1;
   pointer.y = -((ev.clientY - r.top) / r.height) * 2 + 1;
   ray.setFromCamera(pointer, camera);
-  const hit = ray.intersectObjects([bed, pond, grass], false)[0];
+  const hit = ray.intersectObjects([bed, grass], false)[0];
   if (!hit) return null;
-  const on = hit.object === bed ? "bed" : hit.object === pond ? "pond" : "grass";
+  const on = hit.object === bed ? "bed" : "grass";
   return { on, point: hit.point };
 }
 
@@ -367,18 +370,12 @@ function plantAt(id, point) {
   const toward = new THREE.Vector3(Math.cos(ang), 0, Math.sin(ang)).normalize();
   const stand = to.clone().sub(toward.clone().multiplyScalar(rule.stand));
   if (stand.length() > 3.9) stand.setLength(3.9);         /* stay on the grass */
-  /* and out of the water, which the far side of a lotus otherwise is */
-  const fromPond = new THREE.Vector2(stand.x - POND.x, stand.z - POND.z);
-  if (fromPond.length() < POND.r + 0.18) {
-    fromPond.setLength(POND.r + 0.18);
-    stand.set(POND.x + fromPond.x, 0, POND.z + fromPond.y);
-  }
   const travel = Math.max(0.25, from.distanceTo(stand)) / WALK_SPEED;
   /* facing the flower, which from here is also facing the camera */
   const face = Math.atan2(toward.x, toward.z);
 
   const now = performance.now();
-  const f = buildFlower(id, { hue: SPECIES3D[id].hue });
+  const f = buildFlower(id, { hue: SPECIES3D[id].hue, seed: flowers.length * 53 + 7 });
   f.position.set(point.x, rule.y, point.z);
   f.userData.baseHue = SPECIES3D[id].hue;
   f.userData.species = id;

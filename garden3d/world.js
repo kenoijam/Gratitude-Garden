@@ -43,26 +43,90 @@ export function skyTexture() {
   return t;
 }
 
-/* ---------------------------------------------------------------- light */
+/* ---------------------------------------------------------------- light
+
+   THE SCENE WAS WASHED OUT, and it was three things at once rather than a
+   shortage of light. The renderer did no TONE MAPPING at all, so every value
+   went to the screen raw and the bright half of the picture sat flat against
+   its own ceiling. The hemisphere fill ran at 1.05 against a sun of 1.55,
+   which is most of the light arriving from everywhere, and light from
+   everywhere is exactly what removes form from a low poly model, since flat
+   shading has nothing but the angle between a face and the key to work with.
+   And the fog began at 23 with the camera 16 out, so the hills it was meant
+   to soften were half dissolved.
+
+   The hour has not moved. It is the same late afternoon; it is lit properly
+   now. */
+
+/* THE AMBIENT IS AN ENVIRONMENT, NOT A HEMISPHERE LIGHT, and that is what
+   pays for the switch to a standard material. A HemisphereLight is two
+   colours blended by how far a normal points up. A real environment carries
+   the sky down one side of a petal and the grass up the other, so a white
+   bloom picks up green from the ground it stands on, which is most of what
+   makes low poly look expensive rather than plastic.
+
+   It is generated, not loaded: a 32 by 64 gradient through PMREM. No file is
+   added, which is the rule the rest of this project follows. */
+export function skyEnvironment(renderer) {
+  const c = document.createElement("canvas");
+  c.width = 32; c.height = 64;
+  const ctx = c.getContext("2d");
+  const g = ctx.createLinearGradient(0, 0, 0, 64);
+  g.addColorStop(0.00, "#a9dcf2");          /* zenith */
+  g.addColorStop(0.44, "#e2f3f4");
+  g.addColorStop(0.52, "#f3ead2");          /* the warm band the sun sits in */
+  g.addColorStop(1.00, "#8fb894");          /* grass, bouncing back up */
+  ctx.fillStyle = g; ctx.fillRect(0, 0, 32, 64);
+  const tex = new THREE.CanvasTexture(c);
+  tex.mapping = THREE.EquirectangularReflectionMapping;
+  tex.colorSpace = THREE.SRGBColorSpace;
+  const pmrem = new THREE.PMREMGenerator(renderer);
+  const env = pmrem.fromEquirectangular(tex).texture;
+  pmrem.dispose();
+  tex.dispose();
+  return env;
+}
+
+/* Tone mapping and shadow settings, in one place so the two scenes cannot
+   drift. ACES is what stops the warm key clipping to white the moment it is
+   strong enough to model anything. */
+export function setupRenderer(renderer) {
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.18;
+  return renderer;
+}
+
 export function warmLight(scene) {
-  /* A key light low and gold, a fill that is cool so the shadows go blue
-     rather than grey, and a third weak light from behind to keep the far
-     side of a bloom from going flat. Noon from straight above was what made
-     the first version read as a diagram. */
-  const hemi = new THREE.HemisphereLight(0xdcf0ff, 0xa8dfc8, 1.05);
+  /* A key low and gold, a cool fill so the shadows go blue rather than grey,
+     and a weak light from behind to keep the far side of a bloom off black.
+     Noon from straight above was what made the first version a diagram. */
+  /* 0.22, down from 1.05. The environment above does this job now, and with
+     both running the picture went right back to flat. What is left is a
+     floor, so nothing facing away from everything reads as a hole. At 0.22
+     with the environment at 0.62 the shadow side went nearly black, which is
+     a night look rather than a late afternoon one; 0.3 against 0.8 keeps the
+     contrast and puts colour back in the dark half. */
+  const hemi = new THREE.HemisphereLight(0xdcf0ff, 0xa8dfc8, 0.3);
   scene.add(hemi);
 
-  const sun = new THREE.DirectionalLight(0xffe2b4, 1.55);
+  /* 2.6, up from 1.55, which is only a big number because ACES is now
+     rolling the top off. The RATIO to the fill is what matters, and it went
+     from about 1.5 to 1 to about 12 to 1: that is the contrast. */
+  const sun = new THREE.DirectionalLight(0xffdca0, 2.6);
   sun.position.set(6.5, 5.2, 3.2);
   sun.castShadow = true;
   sun.shadow.mapSize.set(2048, 2048);
-  sun.shadow.radius = 4;
+  sun.shadow.radius = 3;
   sun.shadow.bias = -0.0006;
+  sun.shadow.normalBias = 0.02;
   Object.assign(sun.shadow.camera,
     { left: -7, right: 7, top: 7, bottom: -7, near: 0.5, far: 30 });
   scene.add(sun);
 
-  const rim = new THREE.DirectionalLight(0xbfe4ff, 0.3);
+  const rim = new THREE.DirectionalLight(0xa8d8ff, 0.5);
   rim.position.set(-5, 3, -4);
   scene.add(rim);
   return { sun, hemi, rim };
@@ -96,7 +160,7 @@ export function buildGround(scene, { radius = 5, seed = 7, island = 1.7 } = {}) 
     /* the SAME tone as the land around it, or the plot reads as a lighter
        disc pasted onto a field. What marks the garden is what is planted on
        it, not a ring of different grass. */
-    new THREE.MeshLambertMaterial({ color: hsl(119, 36, 72) })
+    new THREE.MeshStandardMaterial({ roughness: 0.88, metalness: 0, color: hsl(119, 36, 72) })
   );
   grass.rotation.x = -Math.PI / 2;
   grass.receiveShadow = true;
@@ -125,7 +189,7 @@ export function buildGround(scene, { radius = 5, seed = 7, island = 1.7 } = {}) 
   farGeo.setAttribute("color", new THREE.Float32BufferAttribute(col, 3));
   farGeo.computeVertexNormals();
   const far = new THREE.Mesh(farGeo,
-    new THREE.MeshLambertMaterial({ vertexColors: true, flatShading: true }));
+    new THREE.MeshStandardMaterial({ roughness: 0.88, metalness: 0, vertexColors: true, flatShading: true }));
   far.rotation.x = -Math.PI / 2;
   far.position.y = -0.03;
   far.receiveShadow = true;
@@ -135,14 +199,14 @@ export function buildGround(scene, { radius = 5, seed = 7, island = 1.7 } = {}) 
      ground lifted out rather than as a cylinder */
   const side = new THREE.Mesh(
     new THREE.CylinderGeometry(R, R * 0.72, 1.5, 48, 1, true),
-    new THREE.MeshLambertMaterial({ color: hsl(27, 32, 44), flatShading: true,
+    new THREE.MeshStandardMaterial({ roughness: 0.88, metalness: 0, color: hsl(27, 32, 44), flatShading: true,
                                     side: THREE.DoubleSide })
   );
   side.position.y = -1.28;
   group.add(side);
   const under = new THREE.Mesh(
     new THREE.CircleGeometry(R * 0.72, 36),
-    new THREE.MeshLambertMaterial({ color: hsl(27, 28, 34) })
+    new THREE.MeshStandardMaterial({ roughness: 0.88, metalness: 0, color: hsl(27, 28, 34) })
   );
   under.rotation.x = Math.PI / 2;
   under.position.y = -2.03;
@@ -166,7 +230,7 @@ export function buildGround(scene, { radius = 5, seed = 7, island = 1.7 } = {}) 
   const tuftGeo = new THREE.BufferGeometry();
   tuftGeo.setAttribute("position", new THREE.Float32BufferAttribute(tri, 3));
   tuftGeo.computeVertexNormals();
-  const tufts = new THREE.Mesh(tuftGeo, new THREE.MeshLambertMaterial({
+  const tufts = new THREE.Mesh(tuftGeo, new THREE.MeshStandardMaterial({ roughness: 0.88, metalness: 0,
     color: hsl(122, 36, 62), side: THREE.DoubleSide, flatShading: true
   }));
   group.add(tufts);
@@ -191,7 +255,7 @@ export function buildHills(scene, { radius = 5, seed = 3, island = 1.7 } = {}) {
     const d = R * (0.97 + r() * 0.13);
     const h = new THREE.Mesh(
       new THREE.IcosahedronGeometry(1, 1),
-      new THREE.MeshLambertMaterial({ color: tones[i % 3], flatShading: true })
+      new THREE.MeshStandardMaterial({ roughness: 0.88, metalness: 0, color: tones[i % 3], flatShading: true })
     );
     h.position.set(Math.cos(a) * d, -0.5 - r() * 0.25, Math.sin(a) * d);
     h.scale.set(0.95 + r() * 1.0, 0.6 + r() * 0.55, 0.95 + r() * 1.0);
@@ -241,7 +305,7 @@ export function createLife(scene, { radius = 5, seed = 11 } = {}) {
   group.add(motes);
 
   /* --- butterflies */
-  const wingMat = new THREE.MeshLambertMaterial({
+  const wingMat = new THREE.MeshStandardMaterial({ roughness: 0.88, metalness: 0,
     color: hsl(42, 84, 74), side: THREE.DoubleSide, flatShading: true
   });
   const flies = [];
@@ -328,15 +392,154 @@ export function createLife(scene, { radius = 5, seed = 11 } = {}) {
   return { group, update };
 }
 
+/* ------------------------------------------------------------- scenery
+   WHAT THE ISLAND IS MADE OF, now that the cherry tree and the pond have
+   gone. Those two were built because a species needed them, the sakura for a
+   canopy and the lotus for water, and when the species went they were props
+   with no part left to play. What replaces them belongs to the PLACE: stone,
+   scrub, a path and somewhere to sit. Nothing here is tied to a flower, so
+   nothing here has to change the next time the eight do.
+
+   All of it is merged where it can be, flat shaded, and built from the same
+   three primitives the flowers use. A rock is an icosahedron that has been
+   sat on; a shrub is several of them at two tones; a bench is five boxes. */
+
+function stoneMat(l) { return new THREE.MeshStandardMaterial({
+  color: hsl(90, 8, l), roughness: 0.95, metalness: 0, flatShading: true }); }
+
+/* A ROCK IS AN ICOSAHEDRON THAT HAS BEEN SAT ON. Detail 0 gives twenty faces,
+   which at this distance is exactly enough to read as stone; scaling it
+   unevenly and turning it at random is what stops eight of them looking like
+   eight of the same ball. It is sunk a little so it sits IN the ground. */
+export function buildRock(r, size = 0.3, tone = 62) {
+  const g = new THREE.IcosahedronGeometry(size, 0);
+  const m = new THREE.Mesh(g, stoneMat(tone + (r() - 0.5) * 8));
+  m.scale.set(1 + r() * 0.5, 0.62 + r() * 0.35, 1 + r() * 0.5);
+  m.rotation.set(r() * 0.4, r() * Math.PI * 2, r() * 0.4);
+  m.position.y = -size * 0.22;
+  m.castShadow = true; m.receiveShadow = true;
+  m.userData.scenery = true;
+  return m;
+}
+
+/* A SHRUB IS THE CANOPY ROUTINE, LOW AND ON THE GROUND. The tree taught this:
+   many small blobs at ONE detail level read as foliage, and mixing detail 0
+   with detail 1 puts hard crystals in among soft ones, which reads as a fault
+   rather than as variety. The depth comes from two tones instead. */
+export function buildShrub(r, size = 0.34) {
+  const g = new THREE.Group();
+  const n = 4 + Math.floor(r() * 3);
+  for (let i = 0; i < n; i++) {
+    const rad = size * (0.5 + r() * 0.42);
+    const b = new THREE.Mesh(new THREE.IcosahedronGeometry(rad, 0),
+      new THREE.MeshStandardMaterial({
+        color: hsl(112 + r() * 18, 30 + r() * 12, i % 2 ? 40 : 34),
+        roughness: 0.92, metalness: 0, flatShading: true }));
+    const a = (i / n) * Math.PI * 2 + r();
+    b.position.set(Math.cos(a) * size * 0.42, rad * 0.72 + r() * 0.06, Math.sin(a) * size * 0.42);
+    b.rotation.y = r() * Math.PI;
+    b.castShadow = true;
+    g.add(b);
+  }
+  g.traverse(o => { if (o.isMesh) o.userData.scenery = true; });
+  g.userData.scenery = true;
+  return g;
+}
+
+/* SOMEWHERE TO SIT, which is the one piece of scenery that is about the
+   subject rather than the scene: a garden you reflect in should have a place
+   to do it from. Five boxes, no joinery, because at this distance a mortice
+   is four wasted faces. */
+export function buildBench() {
+  const g = new THREE.Group();
+  const wood = new THREE.MeshStandardMaterial({
+    color: hsl(28, 30, 46), roughness: 0.9, metalness: 0, flatShading: true });
+  const dark = new THREE.MeshStandardMaterial({
+    color: hsl(26, 26, 34), roughness: 0.9, metalness: 0, flatShading: true });
+  const seat = new THREE.Mesh(new THREE.BoxGeometry(1.05, 0.055, 0.34), wood);
+  seat.position.y = 0.23;
+  const back = new THREE.Mesh(new THREE.BoxGeometry(1.05, 0.2, 0.05), wood);
+  back.position.set(0, 0.38, -0.14);
+  back.rotation.x = -0.16;
+  g.add(seat, back);
+  for (const x of [-0.42, 0.42]) {
+    const leg = new THREE.Mesh(new THREE.BoxGeometry(0.07, 0.23, 0.28), dark);
+    leg.position.set(x, 0.115, 0);
+    g.add(leg);
+  }
+  g.traverse(o => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; } });
+  g.traverse(o => { if (o.isMesh) o.userData.scenery = true; });
+  g.userData.scenery = true;
+  return g;
+}
+
+/* A PATH OF FLAT STONES, laid along a line rather than scattered, because a
+   path is the one thing on the island that says somebody walks here. They are
+   cylinders of six sides, sunk almost flush, each turned and sized a little
+   differently so the run does not read as a printed dotted line. */
+export function buildPath(r, from, to, n = 9) {
+  const g = new THREE.Group();
+  const mat = stoneMat(66);
+  for (let i = 0; i < n; i++) {
+    const t = i / (n - 1);
+    const rad = 0.15 + r() * 0.06;
+    const st = new THREE.Mesh(new THREE.CylinderGeometry(rad, rad * 0.9, 0.05, 6), mat);
+    /* a gentle bow, so the run is not a ruler */
+    const bow = Math.sin(t * Math.PI) * 0.5;
+    st.position.set(
+      from.x + (to.x - from.x) * t + (r() - 0.5) * 0.12,
+      0.018,
+      from.z + (to.z - from.z) * t + bow + (r() - 0.5) * 0.12);
+    st.rotation.y = r() * Math.PI;
+    st.receiveShadow = true;
+    g.add(st);
+  }
+  g.traverse(o => { if (o.isMesh) o.userData.scenery = true; });
+  g.userData.scenery = true;
+  return g;
+}
+
+/* THE SHARED GARDEN'S LANDMARK, replacing the tree everyone used to plant
+   around. A cairn is the right answer for that scene for the same reason the
+   tree was: it is one thing in the middle that nobody owns, that says people
+   have been here, and that a ring of flowers can be arranged around. It is
+   also four stones, where the tree was a trunk and sixteen canopy blobs. */
+export function buildCairn(r) {
+  const g = new THREE.Group();
+  let y = 0;
+  const n = 5;
+  for (let i = 0; i < n; i++) {
+    const size = 0.34 * (1 - i / (n + 1.6));
+    const st = new THREE.Mesh(new THREE.IcosahedronGeometry(size, 0), stoneMat(46 + i * 4));
+    st.scale.set(1.1 + r() * 0.3, 0.55 + r() * 0.2, 1.1 + r() * 0.3);
+    st.rotation.set((r() - 0.5) * 0.25, r() * Math.PI * 2, (r() - 0.5) * 0.25);
+    const h = size * (0.55 + r() * 0.2) * 2;
+    st.position.set((r() - 0.5) * 0.06, y + h * 0.5, (r() - 0.5) * 0.06);
+    y += h * 0.86;
+    st.castShadow = true; st.receiveShadow = true;
+    g.add(st);
+  }
+  g.traverse(o => { if (o.isMesh) o.userData.scenery = true; });
+  g.userData.scenery = true;
+  return g;
+}
+
 /* One call sets up a whole scene's look, so the two pages cannot drift. */
 export function dressScene(scene, opts = {}) {
   const sky = skyTexture();
   /* THE FOG STARTS BEYOND THE GARDEN. The camera stands sixteen units out,
      so a near plane of 16 put haze over the flowers themselves and washed
      the whole scene grey. It belongs on the rim and the hills only. */
-  const fog = new THREE.Fog(0xe4f2ea, 23, 41);
+  /* 30 to 62, not 23 to 41. At 23 the hills were half dissolved before they
+     had been read, which is what made the distance look like a smudge rather
+     than like air. It now only touches the rim and what is past it. */
+  const fog = new THREE.Fog(0xdceee8, 30, 62);
   scene.background = sky;
   scene.fog = fog;
+  if (opts.renderer) {
+    scene.environment = skyEnvironment(opts.renderer);
+    if ("environmentIntensity" in scene) scene.environmentIntensity = 0.8;
+  }
   const lights = warmLight(scene);
   const ground = buildGround(scene, opts);
   const hills = buildHills(scene, opts);

@@ -41,7 +41,10 @@ export const settle = t => {
 export const SPEED = 2.6;
 export const PACE = {
   daisy: 0.8, lavender: 0.85, tulip: 0.95, lily: 1.0,
-  lotus: 1.0, rose: 1.05, sunflower: 1.25, sakura: 1.9
+  /* the peony is the biggest bloom in the bed and the poppy the tallest stem
+     after the sunflower, so both take a little longer than a daisy. The
+     sakura's 1.9 went with it: that figure was for a TREE. */
+  poppy: 1.05, rose: 1.05, peony: 1.15, sunflower: 1.25
 };
 export const paceOf = id => SPEED * (PACE[id] || 1);
 /* how long the whole thing takes, which is what a caller waiting on it

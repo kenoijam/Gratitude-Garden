@@ -21,9 +21,9 @@
    and likes and comments in Supabase.
    ========================================================================= */
 import * as THREE from "./lib/three.module.min.js";
-import { buildFlower, buildTree, SPECIES3D } from "./flower-kit.js";
+import { buildFlower, SPECIES3D } from "./flower-kit.js";
 import { growMs, growFlower } from "./growth.js";
-import { dressScene } from "./world.js";
+import { dressScene, setupRenderer, buildCairn, buildRock, buildShrub } from "./world.js";
 
 const state = { view: "garden", turn: 0, planted: false };
 const VIEWS = { garden: 9.6, wide: 15 };
@@ -38,8 +38,8 @@ const DAY = [
   { at: "08:30", who: "Adeola", species: "rose",      said: "Twelve years today, still laughing at the same joke." },
   { at: "09:05", who: "Jonas",  species: "tulip",     said: "First morning in the new flat." },
   { at: "10:20", who: "Priya",  species: "lily",      said: "A quiet hour before anyone needed me." },
-  { at: "11:36", who: "Ines",   species: "sakura",    said: "Sat under a tree and did not look at my phone." },
-  { at: "12:48", who: "Kofi",   species: "lotus",     said: "Got through the thing I had been dreading." },
+  { at: "11:36", who: "Ines",   species: "poppy",     said: "Sat by the water and did not look at my phone." },
+  { at: "12:48", who: "Kofi",   species: "peony",     said: "Got through the thing I had been dreading." },
   { at: "13:30", who: "Elif",   species: "daisy",     said: "Somebody held the door with their elbow." },
   { at: "14:55", who: "Luka",   species: "sunflower", said: "The tomatoes finally turned red." },
   { at: "16:10", who: "Nadia",  species: "lavender",  said: "Rain on the window and nowhere to be." },
@@ -51,36 +51,51 @@ const DAY = [
 /* ---------------------------------------------------------- the scene */
 const scene = new THREE.Scene();
 
-const renderer = new THREE.WebGLRenderer({ antialias: true });
-renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-renderer.shadowMap.enabled = true;
-renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+const renderer = setupRenderer(new THREE.WebGLRenderer({ antialias: true }));
 document.getElementById("stage").appendChild(renderer.domElement);
 
 const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0.1, 100);
 
 /* the same light, sky, hills, ground and air as the personal plot. Two
    scenes in one project may not be two looks. */
-const world = dressScene(scene, { radius: 4.9, seed: 21, island: 1.32 });
+const world = dressScene(scene, { renderer, radius: 4.9, seed: 21, island: 1.32 });
 
-/* bare earth under the tree, which is what says the tree was here first and
-   the rings were planted around it */
+/* bare earth under the cairn, which is what says it was here first and the
+   rings were planted around it */
 const bare = new THREE.Mesh(
   new THREE.CircleGeometry(0.95, 26),
-  new THREE.MeshLambertMaterial({ color: new THREE.Color().setHSL(26 / 360, 0.3, 0.5) })
+  new THREE.MeshStandardMaterial({ roughness: 0.88, metalness: 0, color: new THREE.Color().setHSL(26 / 360, 0.3, 0.5) })
 );
 bare.rotation.x = -Math.PI / 2;
 bare.position.y = 0.008;
 bare.receiveShadow = true;
 scene.add(bare);
 
-/* ONE TREE, AND EVERYONE PLANTS AROUND IT. A field with no middle reads as
-   a grid of strangers; a circle reads as people who turned up to the same
-   place. It is the sakura, which is the species whose meaning is being
-   present somewhere. */
-const tree = buildTree();
-tree.scale.setScalar(2.0);
-scene.add(tree);
+/* ONE THING IN THE MIDDLE, AND EVERYONE PLANTS AROUND IT. A field with no
+   centre reads as a grid of strangers; a circle reads as people who turned up
+   to the same place. It was a cherry tree, because the sakura was a species
+   then and its meaning was being present somewhere.
+
+   A CAIRN DOES THE SAME JOB WITHOUT BELONGING TO ANY SPECIES, which is the
+   point: the middle of a shared garden should not be one person's flower. It
+   is stones somebody stacked, which says people have been here without saying
+   who, and it is five meshes where the tree was a trunk and sixteen blobs.
+
+   A few rocks and shrubs sit out on the rim so the island does not end in
+   nothing now that the canopy has gone. */
+const cairnRnd = (() => { let v = 90210 >>> 0;
+  return () => { v = (v * 1664525 + 1013904223) >>> 0; return v / 4294967296; }; })();
+const cairn = buildCairn(cairnRnd);
+cairn.scale.setScalar(1.2);
+scene.add(cairn);
+[[-4.0, -1.9, 0.26], [4.2, 1.5, 0.22], [-1.6, 4.1, 0.19], [3.2, -3.4, 0.24]]
+  .forEach(([x, z, r0]) => {
+    const m = buildRock(cairnRnd, r0); m.position.set(x, 0, z); scene.add(m);
+  });
+[[-3.5, 3.2, 0.24], [4.35, -1.2, 0.2], [0.9, -4.4, 0.22], [-4.4, 0.6, 0.18]]
+  .forEach(([x, z, s0]) => {
+    const m = buildShrub(cairnRnd, s0); m.position.set(x, 0, z); scene.add(m);
+  });
 
 /* ---------------------------------------------------------- the rings
    Radius, how many fit, and a half step turn so no two rings line up along
@@ -105,19 +120,18 @@ function slotFor(index) {
 }
 
 const flowers = [];
-/* EVERY SPECIES PLANTS THE SAME WAY. This held two exceptions: a sakura was
-   a whole tree, so in a ring slot it swallowed its neighbours and had to be
-   shrunk to a sapling, and a lotus could not stand on grass, so it brought a
-   pool of water the size of its own slot. Both are ordinary stem flowers
-   now, and the rule that everybody gets the same amount of room needs no
-   special cases to enforce it. */
+/* EVERY SPECIES PLANTS THE SAME WAY, and there is nothing left that does
+   not. This once held two exceptions, a sakura that was a whole tree and a
+   lotus that brought its own pool; both species are gone and the eight that
+   remain are all blooms on stems, so the rule that everybody gets the same
+   amount of room needs no code at all to enforce it. */
 function plant(entry, index, born) {
   const sp = SPECIES3D[entry.species] || SPECIES3D.daisy;
   /* a few degrees either side of the species' own hue, so a garden holding
      four daisies does not read as one daisy printed four times */
   const hue = (sp.hue + ((index * 37) % 25) - 12 + 360) % 360;
   const spot = slotFor(index);
-  const f = buildFlower(entry.species, { hue });
+  const f = buildFlower(entry.species, { hue, seed: index * 41 + 3 });
   f.position.set(spot.x, 0, spot.z);
   f.rotation.y = -spot.a;                 /* every bloom faces out of the ring */
   f.userData.entry = entry;
@@ -293,7 +307,7 @@ function placePeek() {
      came to rest on the title card in the corner; flipped below, it covered
      the very flower it was describing, which is worse. To the side it can
      do neither, and a bloom stays visible while its line is read. */
-  /* on the side AWAY from the middle, since the tree and the early rings
+  /* on the side AWAY from the middle, since the cairn and the early rings
      are what somebody is looking at and a card laid over them hides the
      garden to explain one flower in it */
   let left = x < window.innerWidth / 2 ? x - w - 28 : x + 28;

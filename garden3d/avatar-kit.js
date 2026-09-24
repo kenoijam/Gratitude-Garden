@@ -16,8 +16,8 @@
 import * as THREE from "./lib/three.module.min.js";
 import { buildBloom, stemGeometry, mergeGeometries, SPECIES3D } from "./flower-kit.js";
 
-const flat = hex => new THREE.MeshLambertMaterial({ color: hex, flatShading: true });
-const hsl = (h, s, l) => new THREE.MeshLambertMaterial({
+const flat = hex => new THREE.MeshStandardMaterial({ roughness: 0.88, metalness: 0, color: hex, flatShading: true });
+const hsl = (h, s, l) => new THREE.MeshStandardMaterial({ roughness: 0.88, metalness: 0,
   color: new THREE.Color().setHSL(h / 360, s / 100, l / 100), flatShading: true
 });
 
@@ -33,12 +33,12 @@ export const SHAPES = ["Short", "Bun", "Long"];
 export const KEEPSAKES = {
   chain: { slot: "head",      from: "daisy",     name: "Daisy chain", note: "Simplicity and joy, worn" },
   hat:   { slot: "head",      from: "sunflower", name: "Sun hat",     note: "For standing in the light" },
-  clip:  { slot: "head",      from: "sakura",    name: "Blossom clip", note: "Two blossoms, kept" },
+  pin:   { slot: "head",      from: "poppy",     name: "Poppy pin",   note: "One, worn where it shows" },
   scarf: { slot: "shoulders", from: "lavender",  name: "Soft scarf",  note: "Calm and safety, worn" },
   shawl: { slot: "shoulders", from: "rose",      name: "Rose shawl",  note: "Something warm at the collar" },
   posy:  { slot: "held",      from: "lily",      name: "Lily posy",   note: "Three, carried" },
   stem:  { slot: "held",      from: "tulip",     name: "One tulip",   note: "Carried, not planted" },
-  cup:   { slot: "held",      from: "lotus",     name: "Lotus in hand", note: "Lifted out of the water" }
+  bunch: { slot: "held",      from: "peony",     name: "Peony posy",  note: "The fullest bloom, carried" }
 };
 export const SLOTS = ["head", "shoulders", "held"];
 export const keepsakeOf = species =>
@@ -174,27 +174,19 @@ function held(species, count) {
   g.rotation.z = -0.25;
   return g;
 }
-function cupped(species) {                /* a lotus carried on its own pad */
-  const g = new THREE.Group();
-  const pad = new THREE.Mesh(
-    new THREE.CylinderGeometry(0.13, 0.125, 0.012, 12, 1, false, 0, Math.PI * 1.83),
-    hsl(128, 32, 42));
-  g.add(pad);
-  const b = buildBloom(species, { scale: 0.5 });
-  b.position.y = 0.02;
-  g.add(b);
-  g.position.copy(HAND);
-  return g;
-}
+/* `cupped` is gone with the lotus. It carried a bloom on its own lily pad,
+   which was the one keepsake that was not simply the flower: a peony on a pad
+   is not an object anybody would own. The peony is carried as a posy, through
+   `held`, which is the same routine the lily and the tulip already use. */
 const BUILDERS = {
   chain: () => chain("daisy"),
   hat:   () => hat("sunflower"),
-  clip:  () => clip("sakura"),
+  pin:   () => clip("poppy"),
   scarf: () => scarf("lavender"),
   shawl: () => shawl("rose"),
   posy:  () => held("lily", 3),
   stem:  () => held("tulip", 1),
-  cup:   () => cupped("lotus")
+  bunch: () => held("peony", 3)
 };
 
 /* ------------------------------------------------------------- assembly */

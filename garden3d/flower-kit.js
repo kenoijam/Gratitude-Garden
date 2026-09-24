@@ -185,45 +185,62 @@ export const SPECIES3D = {
     ],
     stem: 0.52, heads: 2, leaves: true
   },
-  /* A TREE, and that is the whole point. As one blossom on a stem the
-     sakura is a five petalled pink flower, which is a daisy in another
-     colour. As a small tree it is the only thing in the garden with a
-     canopy, it gives the plot vertical variety, and it is something you
-     can sit under, which is what "reflection and presence" should be. */
-  sakura: {
-    /* A STEM FLOWER AGAIN, and the NOTCH is what makes that possible.
-       It was a tree here, because one blossom on a stem lost the silhouette
-       test against the daisy. The cleft tip is the actual signature of a
-       cherry petal in botanical drawing, and five broad notched petals round
-       a ring of stamens cannot be read as a daisy's twelve narrow ones.
-       The tree is still in the scene, as SCENERY: see `buildTree`. */
-    name: "Sakura", meaning: "Reflection and presence",
-    hue: 335, sat: 58, light: 72,
-    petals: 5, pitch: 66, petalLen: 0.125, petalWid: 0.088, curl: 0.18, cup: 0.3,
-    tip: "notch",
-    centre: { r: 0.022, h: 0.012, hue: 48, sat: 72, light: 58 },
-    stamens: 8,
-    stem: 0.42, leaves: true
-  },
-  /* ON WATER. Its meaning is rising out of something, so the pad it rises
-     from is not decoration: it is the half of the picture that says it.
-     The pads also make the lotus the one species that cannot be planted
-     just anywhere, which is a rule the 2D version had no way to express. */
-  lotus: {
-    name: "Lotus", meaning: "Strength and rising",
-    hue: 318, sat: 56, light: 70,
+  /* A BOWL OF FEW BROAD PETALS ROUND A BLACK EYE, which is the whole of a
+     poppy and is unlike anything else in the set. It replaced the sakura,
+     which was a five petalled pink flower and therefore a daisy in another
+     colour until a notched petal was invented to save it. The poppy needs no
+     such rescue: six petals where the daisy has twelve, each nearly as wide
+     as it is long, and a centre that goes almost black.
 
+     THE EYE IS THE SPECIES. Every other centre here is gold or pale; this is
+     the only dark one, so at garden distance the poppy is the flower with a
+     hole in the middle. `stamenTone` exists for it: a poppy's stamens are a
+     dense dark ring, and the kit's default gold would have filled that hole
+     back in. */
+  poppy: {
+    name: "Poppy", meaning: "Memory and reflection",
+    hue: 356, sat: 58, light: 58,
+    /* A BOWL, NOT A PLATE. At pitch 48 six petals this wide overlapped into a
+       continuous flat disc and the black eye had nowhere to sit; from the
+       garden camera it read as a dinner plate on a stem. At 38 the petals
+       stand as walls, which is what a poppy actually does and what makes it
+       the only open CUP in a set of flat rings and recurves. */
+    petals: 6, pitch: 38, petalLen: 0.165, petalWid: 0.12, curl: 0.14, cup: 0.68,
+    tip: "round",
+    /* THE EYE HAS TO BE BIG ENOUGH TO SEE FROM THE GARDEN CAMERA. At 0.042
+       against petals of 0.16 it was a dot, and rendered close up the poppy
+       read as a plain six petalled star with a slightly darker middle, which
+       is the one thing it must not be. It is 0.058 and domed, so it catches
+       its own shadow, and it goes darker still. */
+    centre: { r: 0.07, h: 0.03, y: 0.022, hue: 356, sat: 30, light: 11 },
+    stamens: 12, stamenTone: { hue: 352, sat: 24, light: 17 },
+    /* tall and bare, the way a poppy carries its head well clear of the
+       leaves. It is the tallest of the seven bed flowers after the sunflower */
+    stem: 0.6, leaves: true
+  },
+  /* THE OTHER RINGED BLOOM, and it has to differ from the rose in HABIT as
+     well as in size, or two balls of petals is one flower drawn twice.
+
+     The rose is a tight spray of TWO small heads. The peony is ONE big loose
+     dome: five rings against the rose's five but wider at every step, the
+     outer two pushed past flat so it spreads into a flange rather than
+     closing into a ball, and paler. Measured across the outermost ring it is
+     about a third wider than the rose.
+
+     It replaced the lotus, which was the same routine already, so this is one
+     ringed species standing in for another and the kit needed nothing new. */
+  peony: {
+    name: "Peony", meaning: "Honour and strength",
+    hue: 332, sat: 52, light: 70,
     rings: [
-      { count: 6, pitch: 20, len: 0.17, wid: 0.066, curl: -0.15, cup: 0.5, light: 6 },
-      { count: 7, pitch: 42, len: 0.185, wid: 0.072, curl: 0.05, cup: 0.45, light: 0 },
-      { count: 8, pitch: 64, len: 0.2, wid: 0.078, curl: 0.2, cup: 0.4, light: -6 }
+      { count: 5,  pitch: 18,  len: 0.07,  wid: 0.078, curl: -0.26, cup: 0.6,  light: 10, y: 0.03 },
+      { count: 7,  pitch: 40,  len: 0.086, wid: 0.096, curl: -0.1,  cup: 0.55, light: 5,  y: 0.021 },
+      { count: 9,  pitch: 62,  len: 0.1,   wid: 0.11,  curl: 0.08,  cup: 0.48, light: 0,  y: 0.011 },
+      { count: 11, pitch: 86,  len: 0.115, wid: 0.12,  curl: 0.24,  cup: 0.4,  light: -5, y: 0.002 },
+      { count: 11, pitch: 102, len: 0.122, wid: 0.115, curl: 0.34,  cup: 0.3,  light: -9, y: -0.007 }
     ],
-    tip: "point",
-    /* ON A STEM, IN THE GRASS. It grew from its own pool of water, which was
-       true to the plant and made it the one species that could not be
-       planted with the others. The 2D version has always drawn it as a bloom
-       on a stem in a meadow, and nobody has ever blinked at it. */
-    stem: 0.44, leaves: true
+    tip: "round",
+    stem: 0.5, leaves: true
   },
   lavender: {
     name: "Lavender", meaning: "Calm and safety",
@@ -241,13 +258,18 @@ const GREEN = { h: 138, s: 38, l: 38 };
    centre. Kept separate because each takes its own colour, and because
    each is what an InstancedMesh would instance later when a garden holds
    hundreds of these. */
-export function buildFlower(id, { hue = null } = {}) {
+export function buildFlower(id, { hue = null, seed = null } = {}) {
   const sp = SPECIES3D[id];
   if (!sp) throw new Error("unknown species " + id);
   const H = hue == null ? sp.hue : hue;
 
   const group = new THREE.Group();
   group.name = id;
+  /* EVERY PLANT USED TO BE THE SAME PLANT. The two generators below were
+     seeded 7 and 11, fixed, so a row of eight daisies was one daisy drawn
+     eight times and a bed read as a rack rather than as something grown.
+     `seed` is the caller's, so a reload still gives the same garden. */
+  const sd = (seed == null ? 1 : seed) | 0;
 
   const greenMat = flatMat(GREEN.h, GREEN.s, GREEN.l);
   /* Every petal material is registered here with its own lightness offset,
@@ -268,7 +290,7 @@ export function buildFlower(id, { hue = null } = {}) {
      is what stops it reading as "a small purple flower" at distance */
   if (id === "lavender") {
     const stems = [], spikes = [];
-    const rnd = mulberry(7);
+    const rnd = mulberry(7 + sd * 13);
     for (let i = 0; i < sp.stems; i++) {
       const a = (i / sp.stems) * Math.PI * 2 + rnd() * 0.5;
       const rad = 0.035 + rnd() * 0.03;
@@ -289,12 +311,12 @@ export function buildFlower(id, { hue = null } = {}) {
     group.add(stemMesh, budMesh);
     /* lavender has no bloom that opens: the spike simply rises */
     group.userData.blooms = [];
-    return group;
+    return vary(group, id, sd);
   }
 
   /* everything else: stems, leaves, and one bloom per head */
   const heads = sp.heads || 1;
-  const rnd = mulberry(11);
+  const rnd = mulberry(11 + sd * 29);
   const greens = [];
   const blooms = [];
 
@@ -335,7 +357,32 @@ export function buildFlower(id, { hue = null } = {}) {
 
   group.add(mesh(mergeGeometries(greens), greenMat));
   group.userData.blooms = blooms;
-  return group;
+  return vary(group, id, sd);
+}
+
+/* NO TWO PLANTS STAND THE SAME WAY, and the size has to go on an INNER group
+   rather than on the one that is returned. `growFlower` writes the whole of
+   the outer scale every frame, `(1, up, 1)`, so a per plant scale put there
+   would be wiped on the first frame of growth and the bed would snap back to
+   uniform the moment anything grew. Turning it and leaning it are safe on the
+   outer group, since growth never touches rotation.
+
+   The amounts are small on purpose: a few degrees of lean and about seven
+   percent of size. Enough that a row is not a row of copies, not so much that
+   a garden looks windswept. */
+function vary(body, id, sd) {
+  const r = mulberry(sd * 977 + 31);
+  const outer = new THREE.Group();
+  outer.name = id;
+  outer.add(body);
+  outer.userData = body.userData;          /* by reference: growth reads this */
+  outer.rotation.y = r() * Math.PI * 2;    /* which way it happens to face */
+  const lean = 0.045 + r() * 0.055;
+  const dir = r() * Math.PI * 2;
+  outer.rotation.x = Math.cos(dir) * lean;
+  outer.rotation.z = Math.sin(dir) * lean;
+  body.scale.setScalar(0.93 + r() * 0.14);
+  return outer;
 }
 
 /* THE BLOOM ITSELF, so that a flower in the garden and the same flower worn
@@ -360,7 +407,10 @@ function dressBloom(bloom, sp, tinted, petalMat) {
   if (sp.centre) {
     const c = mesh(discGeometry({ r: sp.centre.r, h: sp.centre.h }),
                    flatMat(sp.centre.hue, sp.centre.sat, sp.centre.light));
-    c.position.y = sp.centre.h * 0.5;
+    /* `y` lifts a centre clear of petals that cup up around it. The poppy
+       needs it: at cup 0.6 its six broad petals rose past a disc sitting on
+       the origin and swallowed the black eye that names the species. */
+    c.position.y = sp.centre.h * 0.5 + (sp.centre.y || 0);
     bloom.add(c);
   }
   if (sp.stamens) {
@@ -376,7 +426,10 @@ function dressBloom(bloom, sp, tinted, petalMat) {
         Math.cos(ang) * 0.028, 0.078, Math.sin(ang) * 0.028));
       sticks.push(tipG);
     }
-    bloom.add(mesh(mergeGeometries(sticks), flatMat(42, 60, 52)));
+    /* gold unless the species says otherwise. The poppy's stamens are a dark
+       ring and gold ones would have filled in the black eye that names it. */
+    const st = sp.stamenTone || { hue: 42, sat: 60, light: 52 };
+    bloom.add(mesh(mergeGeometries(sticks), flatMat(st.hue, st.sat, st.light)));
   }
 }
 
@@ -430,7 +483,7 @@ function addRings(bloom, sp, tinted) {
 /* ---------------------------------------------------------- helpers */
 
 function flatMat(h, s, l) {
-  const m = new THREE.MeshLambertMaterial({ flatShading: true, side: THREE.DoubleSide });
+  const m = new THREE.MeshStandardMaterial({ roughness: 0.88, metalness: 0, flatShading: true, side: THREE.DoubleSide });
   m.color.setHSL(h / 360, s / 100, l / 100);
   return m;
 }
