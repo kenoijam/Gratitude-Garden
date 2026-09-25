@@ -112,27 +112,36 @@ export function petalGeometry({ len = 0.2, wid = 0.06, curl = 0.25, cup = 0.35,
      so one gradient serves every colour and the hue slider still works. Every
      clay reference has this, and it is most of why they read as soft rather
      than printed: a flat petal has no throat. */
-  const pos = [], col = [];
+  const pos = [], col = [], uvs = [];
   const shade = v => {
     const t = Math.max(0, Math.min(1, v.y / Math.max(1e-6, len)));
     const k = 0.84 + t * 0.3;                 /* 0.84 at the base, 1.14 at the tip */
     col.push(k, k, k);
   };
-  const pushQuad = (a1, b1, c1, d1) => {
-    quad(pos, a1, b1, c1, d1);
-    shade(a1); shade(b1); shade(c1);
-    shade(a1); shade(c1); shade(d1);
+  /* UVs, which this geometry has never had: u runs ACROSS the petal and v
+     ALONG it, so a texture drawn as vertical bands lands as streaks running
+     base to tip. Front and back share them, so the marking reads through. */
+  const emit = (grid, i, j) => {
+    const v = grid[i][j];
+    pos.push(v.x, v.y, v.z);
+    shade(v);
+    uvs.push(j / COLS, i / ROWS);
   };
   for (let i = 0; i < ROWS; i++) {
     for (let j = 0; j < COLS; j++) {
-      pushQuad(front[i][j], front[i][j + 1], front[i + 1][j + 1], front[i + 1][j]);
-      pushQuad(back[i][j + 1], back[i][j], back[i + 1][j], back[i + 1][j + 1]);
+      emit(front, i, j); emit(front, i, j + 1); emit(front, i + 1, j + 1);
+      emit(front, i, j); emit(front, i + 1, j + 1); emit(front, i + 1, j);
+      emit(back, i, j + 1); emit(back, i, j); emit(back, i + 1, j);
+      emit(back, i, j + 1); emit(back, i + 1, j); emit(back, i + 1, j + 1);
     }
   }
-  return fromPositions(pos, col);
+  return fromPositions(pos, col, uvs);
 }
 
-export function stemGeometry({ height = 0.4, rBase = 0.012, rTop = 0.008, bend = 0.05, sides = 9 }) {
+/* THINNER. A stem at 0.012 was about a fifth of a daisy's bloom and read as
+   a dowel with a flower on it, which is a large part of what "clunky" meant.
+   The reference's are thin enough to lean and cross. */
+export function stemGeometry({ height = 0.4, rBase = 0.0085, rTop = 0.0055, bend = 0.05, sides = 9 }) {
   const curve = new THREE.QuadraticBezierCurve3(
     new THREE.Vector3(0, 0, 0),
     new THREE.Vector3(bend * 0.6, height * 0.55, 0),
@@ -358,7 +367,7 @@ export function buildFlower(id, { hue = null, seed = null } = {}) {
      between them. The person picks a hue; the tones are the species'. */
   const tint = [];
   const tinted = (lightOff = 0) => {
-    const m = flatMat(H, sp.sat, sp.light + lightOff, 0.55, true);
+    const m = flatMat(H, sp.sat, sp.light + lightOff, 0.55, true, true);
     tint.push({ mat: m, sat: sp.sat, light: sp.light + lightOff });
     return m;
   };
@@ -408,7 +417,9 @@ export function buildFlower(id, { hue = null, seed = null } = {}) {
     const off = heads === 1 ? 0 : 0.055 + rnd() * 0.03;
     const hx = Math.cos(a) * off, hz = Math.sin(a) * off;
     const h = sp.stem * STEM_K * (heads === 1 ? 1 : 0.74 + rnd() * 0.45);
-    const bend = 0.035 + rnd() * 0.03;
+    /* more lean, and a different one per head, so a spray crosses itself
+       rather than standing as parallel rods */
+    const bend = 0.045 + rnd() * 0.075;
 
     const st = stemGeometry({ height: h, bend });
     st.applyMatrix4(new THREE.Matrix4().makeTranslation(hx, 0, hz));
@@ -439,6 +450,30 @@ export function buildFlower(id, { hue = null, seed = null } = {}) {
           .multiply(new THREE.Matrix4().makeRotationX(
             THREE.MathUtils.degToRad(56 + rnd() * 26))));
         greens.push(leaf);
+      }
+    }
+
+    /* LONG STRAPPY BLADES FROM THE BASE, which is the single thing that
+       stops a plant reading as a lollipop on a stick. Every real flower in
+       the reference has foliage coming out of the GROUND, not just a few
+       leaves clipped to its stem, and ours had none at all: the small stem
+       leaves stay, and these go under them.
+
+       They arch: nearly upright at the base and leaning out at the tip,
+       which is what `curl` on a long narrow petal already does. Two to four,
+       turned to their own side, at their own lengths. */
+    if (sp.leaves && k === 0) {
+      const nb = 2 + Math.floor(rnd() * 3);
+      for (let i = 0; i < nb; i++) {
+        const bl = h * (0.52 + rnd() * 0.36);
+        const blade = petalGeometry({ len: bl, wid: bl * 0.075, curl: 0.42 + rnd() * 0.2,
+                                      cup: 0.34, tip: "point", thick: 0.13 });
+        blade.applyMatrix4(new THREE.Matrix4()
+          .makeTranslation(hx, 0.01, hz)
+          .multiply(new THREE.Matrix4().makeRotationY(rnd() * Math.PI * 2))
+          .multiply(new THREE.Matrix4().makeRotationX(
+            THREE.MathUtils.degToRad(12 + rnd() * 16))));
+        greens.push(blade);
       }
     }
 
@@ -538,6 +573,17 @@ function dressBloom(bloom, sp, tinted, petalMat, rnd) {
   }
 
   if (sp.centre) {
+    /* A COLLAR ROUND THE CENTRE, which is the reference's trumpet read at our
+       scale. A dome sitting straight on the petals has no join, so the middle
+       of the flower is where the eye finds nothing; a ring a shade deeper
+       than the disc gives the centre a rim to sit in and reads, at garden
+       distance, as the species' own marking. */
+    const ring = mesh(
+      new THREE.TorusGeometry(sp.centre.r * 1.06, sp.centre.r * 0.26, 8, 20),
+      flatMat(sp.centre.hue, Math.min(100, sp.centre.sat + 8), Math.max(6, sp.centre.light - 13)));
+    ring.rotation.x = Math.PI / 2;
+    ring.position.y = (sp.centre.y || 0) + sp.centre.h * 0.16;
+    bloom.add(ring);
     const c = mesh(discGeometry({ r: sp.centre.r, h: sp.centre.h }),
                    flatMat(sp.centre.hue, sp.centre.sat, sp.centre.light));
     /* `y` lifts a centre clear of petals that cup up around it. The poppy
@@ -575,7 +621,7 @@ export function buildBloom(id, { hue = null, scale = 1 } = {}) {
   const H = hue === null ? sp.hue : hue;
   const tint = [];
   const tinted = (lightOff = 0) => {
-    const m = flatMat(H, sp.sat, sp.light + lightOff, 0.55, true);
+    const m = flatMat(H, sp.sat, sp.light + lightOff, 0.55, true, true);
     tint.push({ mat: m, sat: sp.sat, light: sp.light + lightOff });
     return m;
   };
@@ -623,9 +669,52 @@ function addRings(bloom, sp, tinted, rnd) {
 /* 0.55, not 0.82. A broad soft highlight rolling across a petal is a large
    part of what says the thing is solid: the references all have one. The
    green stays matter, since a shiny stem reads as plastic. */
-function flatMat(h, s, l, rough = 0.55, vcol = false) {
+/* THE VEINING, PAINTED IN CODE. The reference's richness is mostly texture:
+   fine lines running base to tip down every petal. No image file ships with
+   this project, so it is drawn to a canvas once, the way the wooden sign
+   already draws its date.
+
+   IT IS A MASK, NOT A COLOUR. three multiplies `map` by `color`, so a sheet
+   that is white with darker lines only says WHERE it is darker and lets the
+   planter's chosen hue supply what colour that is. A painted texture would
+   have baked one flower's colour into every flower.
+
+   It can only ever darken, since white is the brightest a canvas goes, so
+   the base is left pure white and the veins are drawn faint over it: the
+   average comes out about 0.97, which is under the threshold of looking
+   dimmed. The lines fade at both ends rather than at one, which sidesteps
+   the question of which way three flips a texture's v. */
+let _petalTex = null;
+function petalTexture() {
+  if (_petalTex) return _petalTex;
+  const c = document.createElement("canvas");
+  c.width = 64; c.height = 256;
+  const ctx = c.getContext("2d");
+  ctx.fillStyle = "#ffffff";
+  ctx.fillRect(0, 0, 64, 256);
+  const r = mulberry(4242);
+  for (let i = 0; i < 11; i++) {
+    const x = 4 + r() * 56;
+    const w = 0.7 + r() * 1.9;
+    const a = 0.05 + r() * 0.09;
+    const g = ctx.createLinearGradient(0, 0, 0, 256);
+    g.addColorStop(0.00, "rgba(96,74,88,0)");
+    g.addColorStop(0.40, "rgba(96,74,88," + a.toFixed(3) + ")");
+    g.addColorStop(1.00, "rgba(96,74,88,0)");
+    ctx.fillStyle = g;
+    ctx.fillRect(x, 0, w, 256);
+  }
+  const t = new THREE.CanvasTexture(c);
+  t.colorSpace = THREE.SRGBColorSpace;
+  t.anisotropy = 4;
+  _petalTex = t;
+  return t;
+}
+
+function flatMat(h, s, l, rough = 0.55, vcol = false, veined = false) {
   const m = new THREE.MeshStandardMaterial({
-    roughness: rough, metalness: 0, side: THREE.DoubleSide, vertexColors: vcol });
+    roughness: rough, metalness: 0, side: THREE.DoubleSide, vertexColors: vcol,
+    map: veined ? petalTexture() : null });
   m.color.setHSL(h / 360, s / 100, l / 100);
   return m;
 }
@@ -652,9 +741,10 @@ function quad(out, a, b, c, d) {
 function weldSmooth(geo, tol = 1e-4) {
   const pos = geo.attributes.position.array;
   const src = geo.attributes.color ? geo.attributes.color.array : null;
+  const suv = geo.attributes.uv ? geo.attributes.uv.array : null;
   const n = pos.length / 3;
   const seen = new Map();
-  const verts = [], cols = [];
+  const verts = [], cols = [], uvw = [];
   const index = new Array(n);
   const q = 1 / tol;
   for (let i = 0; i < n; i++) {
@@ -669,21 +759,24 @@ function weldSmooth(geo, tol = 1e-4) {
          safe here because the gradient is a function of POSITION: every copy
          of a shared vertex was given the same colour anyway */
       if (src) cols.push(src[i * 3], src[i * 3 + 1], src[i * 3 + 2]);
+      if (suv) uvw.push(suv[i * 2], suv[i * 2 + 1]);
     }
     index[i] = id;
   }
   const out = new THREE.BufferGeometry();
   out.setAttribute("position", new THREE.Float32BufferAttribute(verts, 3));
   if (src) out.setAttribute("color", new THREE.Float32BufferAttribute(cols, 3));
+  if (suv) out.setAttribute("uv", new THREE.Float32BufferAttribute(uvw, 2));
   out.setIndex(index);
   out.computeVertexNormals();
   return out;
 }
 
-function fromPositions(pos, col) {
+function fromPositions(pos, col, uv) {
   const g = new THREE.BufferGeometry();
   g.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3));
   if (col) g.setAttribute("color", new THREE.Float32BufferAttribute(col, 3));
+  if (uv) g.setAttribute("uv", new THREE.Float32BufferAttribute(uv, 2));
   return weldSmooth(g);
 }
 /* `BufferGeometryUtils` lives in three's examples rather than the core, and
@@ -700,18 +793,23 @@ export function mergeGeometries(list) {
      identity under the multiply the material does. Without this the material
      could not declare `vertexColors` at all. */
   const col = new Float32Array(n * 3).fill(1);
+  /* UVs default to 0,0, which the streak texture is painted plain at, so a
+     part with no UVs of its own picks up no marking rather than a stripe */
+  const uv = new Float32Array(n * 2);
   let o = 0;
   flat.forEach(g => {
     if (!g.attributes.normal) g.computeVertexNormals();
     pos.set(g.attributes.position.array, o * 3);
     nor.set(g.attributes.normal.array, o * 3);
     if (g.attributes.color) col.set(g.attributes.color.array, o * 3);
+    if (g.attributes.uv) uv.set(g.attributes.uv.array, o * 2);
     o += g.attributes.position.count;
   });
   const out = new THREE.BufferGeometry();
   out.setAttribute("position", new THREE.BufferAttribute(pos, 3));
   out.setAttribute("normal", new THREE.BufferAttribute(nor, 3));
   out.setAttribute("color", new THREE.BufferAttribute(col, 3));
+  out.setAttribute("uv", new THREE.BufferAttribute(uv, 2));
   return out;
 }
 /* Seeded, so a clump of lavender is the same clump on every reload. The
