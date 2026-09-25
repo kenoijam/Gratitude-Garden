@@ -32,6 +32,7 @@ const ORDER = ["daisy", "tulip", "lily", "sunflower", "lavender", "rose", "poppy
 
 /* the web version's own sequence, now shared with the other scene */
 import { growMs, smooth, growFlower } from "./growth.js";
+import { arSupported, createARLighting } from "./xr-light.js";
 import { dressScene, setupRenderer, buildRock, buildShrub, buildBench, buildPath,
          buildConeTree, buildPump, buildBucket, buildRaisedBed, buildFence , sizeRenderer, setPixelScale } from "./world.js";
 
@@ -444,7 +445,7 @@ function walk(now) {
 }
 
 /* ---------------------------------------------------------- loop */
-function tick(now) {
+function tick(now, frame) {
   growth(now);
   walk(now);
   if (!state.silhouette) world.life.update(now);
@@ -461,10 +462,15 @@ function tick(now) {
   flowers.forEach((f, i) => {
     f.rotation.z = Math.sin(now / 1400 + i * 1.7) * 0.02;
   });
+  ar.update(frame);
   renderer.render(scene, camera);
-  requestAnimationFrame(tick);
 }
-requestAnimationFrame(tick);
+/* `setAnimationLoop` RATHER THAN `requestAnimationFrame`, and it has to be:
+   inside an XR session the headset or phone drives the frames, and a plain
+   rAF loop simply stops being called. Outside a session three uses rAF for
+   it anyway, so nothing changes for everybody else. It also hands the
+   XRFrame through, which is the only way to read a light estimate. */
+renderer.setAnimationLoop(tick);
 
 /* ---------------------------------------------------------- the controls
    Plain HTML over the canvas, which is the architecture the real thing
@@ -480,6 +486,27 @@ const PX_STEPS = [1, 2, 3, 4, 6];
    and the daisy go mushy, the rails break up and neighbouring blooms start
    merging. 4 and 6 are here to see the look pushed, not to use. */
 let pxAt = 0;                       /* OFF by default */
+/* ------------------------------------------------------- lit by the room
+   WebXR lighting estimation, on a button that only appears where it can
+   actually run. See `xr-light.js` for what the API does and does not do. */
+const ar = createARLighting(renderer, scene, world.lights, (on, estimating) => {
+  const b = document.getElementById("ar");
+  if (b) b.textContent = on ? "Leave AR" : "In your room";
+  if (on) {
+    showHint(estimating
+      ? "Lit by your room. <span>Move the phone around to let it read the light.</span>"
+      : "In your room. <span>This device has no light estimation, so the garden keeps its own light.</span>");
+  } else showHint("");
+});
+arSupported().then(ok => {
+  const b = document.getElementById("ar");
+  if (!b || !ok) return;                  /* stays hidden on a laptop */
+  b.hidden = false;
+  b.addEventListener("click", () => {
+    (ar.inSession() ? ar.stop() : ar.start()).catch(e => showHint("AR did not start. <span>" + e.message + "</span>"));
+  });
+});
+
 setPixelScale(PX_STEPS[pxAt]);      /* the module default is not the button's */
 const pxBtn = document.getElementById("px");
 if (pxBtn) {

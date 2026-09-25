@@ -157,7 +157,8 @@ export function spikeGeometry({ buds = 26, height = 0.34, radius = 0.035, budSiz
     const a = t * Math.PI * 6.5 + rnd() * 0.6;
     const r = radius * (1 - t * 0.75);
     const s = budSize * (1 - t * 0.45);
-    const g = new THREE.OctahedronGeometry(s, 0);
+    /* round buds: an octahedron is eight flat faces and read as a crystal */
+    const g = new THREE.SphereGeometry(s, 7, 5);
     g.applyMatrix4(new THREE.Matrix4().makeTranslation(
       Math.cos(a) * r, height * t, Math.sin(a) * r));
     parts.push(g);
@@ -166,8 +167,16 @@ export function spikeGeometry({ buds = 26, height = 0.34, radius = 0.035, budSiz
 }
 
 /* A flower centre, and the lily's stamens use it too at a smaller size. */
+/* A SOFT DOME, NOT A DRUM. This was a cylinder, so the flower's centre met
+   its own side at a right angle and caught a hard line round the whole rim,
+   which on a daisy sits in the middle of the picture. A squashed sphere has
+   no edge anywhere and reads as the soft button the references have.
+   The `h` it is given is the full height, so the sphere is scaled to half of
+   it and the bottom half is buried in the petals. */
 export function discGeometry({ r = 0.05, h = 0.02, seg = 20 }) {
-  return new THREE.CylinderGeometry(r * 0.92, r, h, seg);
+  const g = new THREE.SphereGeometry(r, seg, Math.max(6, seg >> 1));
+  g.scale(1, Math.max(0.12, h / r), 1);
+  return g;
 }
 
 /* ---------------------------------------------------------- the species */
@@ -489,7 +498,7 @@ function dressBloom(bloom, sp, tinted, petalMat) {
       stk.applyMatrix4(new THREE.Matrix4().makeRotationY(ang)
         .multiply(new THREE.Matrix4().makeRotationX(THREE.MathUtils.degToRad(14))));
       sticks.push(stk);
-      const tipG = new THREE.OctahedronGeometry(0.011, 0);
+      const tipG = new THREE.SphereGeometry(0.011, 6, 5);
       tipG.applyMatrix4(new THREE.Matrix4().makeTranslation(
         Math.cos(ang) * 0.028, 0.078, Math.sin(ang) * 0.028));
       sticks.push(tipG);
