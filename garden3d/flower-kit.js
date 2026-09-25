@@ -107,14 +107,29 @@ export function petalGeometry({ len = 0.2, wid = 0.06, curl = 0.25, cup = 0.35,
     front.push(fr); back.push(bk);
   }
 
-  const pos = [];
+  /* DEEPER AT THE BASE, LIGHTER AT THE TIP, as a vertex colour rather than a
+     second material. It is a MULTIPLIER over whatever hue the planter chose,
+     so one gradient serves every colour and the hue slider still works. Every
+     clay reference has this, and it is most of why they read as soft rather
+     than printed: a flat petal has no throat. */
+  const pos = [], col = [];
+  const shade = v => {
+    const t = Math.max(0, Math.min(1, v.y / Math.max(1e-6, len)));
+    const k = 0.84 + t * 0.3;                 /* 0.84 at the base, 1.14 at the tip */
+    col.push(k, k, k);
+  };
+  const pushQuad = (a1, b1, c1, d1) => {
+    quad(pos, a1, b1, c1, d1);
+    shade(a1); shade(b1); shade(c1);
+    shade(a1); shade(c1); shade(d1);
+  };
   for (let i = 0; i < ROWS; i++) {
     for (let j = 0; j < COLS; j++) {
-      quad(pos, front[i][j], front[i][j + 1], front[i + 1][j + 1], front[i + 1][j]);
-      quad(pos, back[i][j + 1], back[i][j], back[i + 1][j], back[i + 1][j + 1]);
+      pushQuad(front[i][j], front[i][j + 1], front[i + 1][j + 1], front[i + 1][j]);
+      pushQuad(back[i][j + 1], back[i][j], back[i + 1][j], back[i + 1][j + 1]);
     }
   }
-  return fromPositions(pos);
+  return fromPositions(pos, col);
 }
 
 export function stemGeometry({ height = 0.4, rBase = 0.012, rTop = 0.008, bend = 0.05, sides = 9 }) {
@@ -337,13 +352,13 @@ export function buildFlower(id, { hue = null, seed = null } = {}) {
      `seed` is the caller's, so a reload still gives the same garden. */
   const sd = (seed == null ? 1 : seed) | 0;
 
-  const greenMat = flatMat(GREEN.h, GREEN.s, GREEN.l, 0.78);
+  const greenMat = flatMat(GREEN.h, GREEN.s, GREEN.l, 0.78, true);
   /* Every petal material is registered here with its own lightness offset,
      so one hue slider can move a rose's five rings and keep the depth
      between them. The person picks a hue; the tones are the species'. */
   const tint = [];
   const tinted = (lightOff = 0) => {
-    const m = flatMat(H, sp.sat, sp.light + lightOff);
+    const m = flatMat(H, sp.sat, sp.light + lightOff, 0.55, true);
     tint.push({ mat: m, sat: sp.sat, light: sp.light + lightOff });
     return m;
   };
@@ -360,7 +375,7 @@ export function buildFlower(id, { hue = null, seed = null } = {}) {
     for (let i = 0; i < sp.stems; i++) {
       const a = (i / sp.stems) * Math.PI * 2 + rnd() * 0.5;
       const rad = 0.035 + rnd() * 0.03;
-      const h = sp.stem * (0.78 + rnd() * 0.35);
+      const h = sp.stem * STEM_K * (0.78 + rnd() * 0.35);
       const lean = 0.06 + rnd() * 0.05;
       const m = new THREE.Matrix4()
         .makeTranslation(Math.cos(a) * rad, 0, Math.sin(a) * rad)
@@ -392,7 +407,7 @@ export function buildFlower(id, { hue = null, seed = null } = {}) {
     const a = heads === 1 ? 0 : (k / heads) * Math.PI * 2 + 0.7;
     const off = heads === 1 ? 0 : 0.055 + rnd() * 0.03;
     const hx = Math.cos(a) * off, hz = Math.sin(a) * off;
-    const h = sp.stem * (heads === 1 ? 1 : 0.74 + rnd() * 0.45);
+    const h = sp.stem * STEM_K * (heads === 1 ? 1 : 0.74 + rnd() * 0.45);
     const bend = 0.035 + rnd() * 0.03;
 
     const st = stemGeometry({ height: h, bend });
@@ -400,26 +415,44 @@ export function buildFlower(id, { hue = null, seed = null } = {}) {
     greens.push(st);
 
     if (sp.leaves && k === 0) {
-      for (const side of [-1, 1]) {
-        /* SMALLER AND ROUNDER. At 0.42 of the stem a leaf was longer than
-           several blooms are wide, so the greens competed with the flower
-           instead of being the base it rises out of. Half the length, nearly
-           the same width, and a round end. Thinner than a petal on purpose:
-           soft clay rather than fully inflated. */
-        /* CAPPED, because leaf size was a fraction of the STEM and the
-           sunflower's stem is 1.02: its leaves came out at 0.27, three times
-           a daisy's and reading as paddles. Proportionally honest, visually
-           wrong, so the tall species stop growing leaves at 0.17. */
-        const lLen = Math.min(sp.stem * 0.26, 0.17);
+      /* THREE TO FIVE LEAVES, STAGGERED. It was exactly two, exactly
+         opposite, at exactly the same height and the same angle, which read
+         as a bracket rather than as foliage and was the most mechanical
+         thing on the plant. They now sit at their own heights up the stem,
+         at their own sizes, and are turned to their own side rather than
+         paired, so no plant has a symmetry line through it.
+
+         CAPPED at 0.17, because leaf size is a fraction of the STEM and the
+         sunflower's is 1.02: proportionally honest, visually paddles. */
+      const n = 3 + Math.floor(rnd() * 3);
+      for (let i = 0; i < n; i++) {
+        const up = 0.16 + (i / n) * 0.44 + rnd() * 0.07;
+        const sz = 0.72 + rnd() * 0.5;
+        const lLen = Math.min(sp.stem * 0.26, 0.17) * sz;
         const leaf = petalGeometry({ len: lLen, wid: lLen * 0.42,
                                      curl: 0.3, cup: 0.25, tip: "round", thick: 0.18 });
+        /* the stem bends as it rises, so a leaf has to follow it or it hangs
+           in the air beside one. The curve is quadratic, hence up squared. */
         leaf.applyMatrix4(new THREE.Matrix4()
-          .makeTranslation(hx, sp.stem * 0.3, hz)
-          .multiply(new THREE.Matrix4().makeRotationY(side > 0 ? 0.6 : Math.PI - 0.6))
-          .multiply(new THREE.Matrix4().makeRotationX(THREE.MathUtils.degToRad(68))));
+          .makeTranslation(hx + bend * up * up, h * up, hz)
+          .multiply(new THREE.Matrix4().makeRotationY(rnd() * Math.PI * 2))
+          .multiply(new THREE.Matrix4().makeRotationX(
+            THREE.MathUtils.degToRad(56 + rnd() * 26))));
         greens.push(leaf);
       }
     }
+
+    /* A CALYX, the little green cup a bloom sits in. Without one the stem
+       simply vanished into the petals and the head read as pushed on rather
+       than grown. It is part of the GREENS rather than of the bloom, so it
+       stays put while the bloom opens out of it, which is what a real one
+       does. Sized from the bloom, not fixed, or the sunflower wears a daisy's. */
+    const calR = (sp.rings ? sp.rings[sp.rings.length - 1].len
+                           : sp.petalLen) * 0.42 + 0.012;
+    const cal = new THREE.ConeGeometry(calR, calR * 1.15, 9);
+    cal.rotateX(Math.PI);                        /* point down, mouth up */
+    cal.translate(hx + bend, h - calR * 0.3, hz);
+    greens.push(cal);
 
     /* THE BLOOM IS ITS OWN GROUP so the opening animation can scale it, the
        way the 2D version scales a bloom out of its bud. */
@@ -427,7 +460,13 @@ export function buildFlower(id, { hue = null, seed = null } = {}) {
     bloom.position.set(hx + bend, h, hz);
     if (sp.tilt) bloom.rotation.x = THREE.MathUtils.degToRad(sp.tilt);
 
-    dressBloom(bloom, sp, tinted, petalMat);
+    /* the scale goes on an INNER group: `growFlower` writes the whole of the
+       outer scale every frame to open the bloom, so a size put there would
+       be wiped on the first frame of growth. */
+    const head = new THREE.Group();
+    head.scale.setScalar(BLOOM_K);
+    dressBloom(head, sp, tinted, petalMat, rnd);
+    bloom.add(head);
     group.add(bloom);
     blooms.push(bloom);
   }
@@ -466,16 +505,33 @@ function vary(body, id, sd) {
    in somebody's hair are one piece of code. The avatar's keepsakes are built
    from this, which is the whole reason the kit exists: this project already
    pays for the same flower maths in seven places in the 2D version. */
-function dressBloom(bloom, sp, tinted, petalMat) {
+/* NO TWO PETALS IN A RING ARE THE SAME. Every petal was one geometry stamped
+   out at even angles, which is what made a bloom read as manufactured: the
+   eye finds the repeat immediately. Ten percent of jitter on length, width,
+   curl, pitch and angle is enough that it stops finding one, and small
+   enough that the species is untouched, which matters because telling the
+   eight apart is the question this whole spike exists to answer. */
+const JIT = 0.1;
+/* THE CUTE CARICATURE: a big head on a modest stem. A fifth larger and a
+   tenth shorter is the standard move and what every clay reference does. It
+   also helps the species read at garden distance, since the bloom is the
+   part carrying the meaning and the stem is not. */
+const BLOOM_K = 1.2, STEM_K = 0.9;
+const jit = (rnd, v) => v * (1 + (rnd() - 0.5) * 2 * JIT);
+
+function dressBloom(bloom, sp, tinted, petalMat, rnd) {
   if (sp.rings) {
-    addRings(bloom, sp, tinted);
+    addRings(bloom, sp, tinted, rnd);
   } else {
     const petals = [];
     for (let i = 0; i < sp.petals; i++) {
-      const g = petalGeometry({ len: sp.petalLen, wid: sp.petalWid, curl: sp.curl, cup: sp.cup, tip: sp.tip });
+      const g = petalGeometry({
+        len: jit(rnd, sp.petalLen), wid: jit(rnd, sp.petalWid),
+        curl: jit(rnd, sp.curl), cup: sp.cup, tip: sp.tip });
+      const spin = (i / sp.petals) * Math.PI * 2 + (rnd() - 0.5) * (Math.PI * 2 / sp.petals) * JIT * 2;
       g.applyMatrix4(new THREE.Matrix4()
-        .makeRotationY((i / sp.petals) * Math.PI * 2)
-        .multiply(new THREE.Matrix4().makeRotationX(THREE.MathUtils.degToRad(sp.pitch))));
+        .makeRotationY(spin)
+        .multiply(new THREE.Matrix4().makeRotationX(THREE.MathUtils.degToRad(jit(rnd, sp.pitch)))));
       petals.push(g);
     }
     bloom.add(mesh(mergeGeometries(petals), petalMat));
@@ -519,7 +575,7 @@ export function buildBloom(id, { hue = null, scale = 1 } = {}) {
   const H = hue === null ? sp.hue : hue;
   const tint = [];
   const tinted = (lightOff = 0) => {
-    const m = flatMat(H, sp.sat, sp.light + lightOff);
+    const m = flatMat(H, sp.sat, sp.light + lightOff, 0.55, true);
     tint.push({ mat: m, sat: sp.sat, light: sp.light + lightOff });
     return m;
   };
@@ -527,7 +583,7 @@ export function buildBloom(id, { hue = null, scale = 1 } = {}) {
   /* every species is a bloom on a stem now, so a worn flower is simply that
      species' own bloom. This used to carry an override for the sakura, whose
      row described a tree. */
-  dressBloom(bloom, sp, tinted, tinted(0));
+  dressBloom(bloom, sp, tinted, tinted(0), mulberry(5));
   bloom.scale.setScalar(scale);
   bloom.userData.tint = tint;
   return bloom;
@@ -536,21 +592,23 @@ export function buildBloom(id, { hue = null, scale = 1 } = {}) {
 /* A bloom built as rings of petals, inner rings nearly closed and outer
    rings nearly flat. The rose and the lotus are the same routine with
    different numbers, which is the kit doing its job. */
-function addRings(bloom, sp, tinted) {
+function addRings(bloom, sp, tinted, rnd) {
   sp.rings.forEach((ring, ri) => {
     const geoms = [];
     for (let i = 0; i < ring.count; i++) {
       const g = petalGeometry({
-        len: ring.len, wid: ring.wid, curl: ring.curl, cup: ring.cup,
+        len: jit(rnd, ring.len), wid: jit(rnd, ring.wid),
+        curl: jit(rnd, ring.curl), cup: ring.cup,
         tip: sp.tip || "round"
       });
       /* every ring is turned half a step off the one inside it, so petals
          sit in the gaps rather than stacking into columns */
-      const off = (ri % 2) * (Math.PI / ring.count);
+      const off = (ri % 2) * (Math.PI / ring.count) +
+                  (rnd() - 0.5) * (Math.PI * 2 / ring.count) * JIT * 2;
       g.applyMatrix4(new THREE.Matrix4()
         .makeTranslation(0, ring.y || 0, 0)
         .multiply(new THREE.Matrix4().makeRotationY((i / ring.count) * Math.PI * 2 + off))
-        .multiply(new THREE.Matrix4().makeRotationX(THREE.MathUtils.degToRad(ring.pitch))));
+        .multiply(new THREE.Matrix4().makeRotationX(THREE.MathUtils.degToRad(jit(rnd, ring.pitch)))));
       geoms.push(g);
     }
     bloom.add(mesh(mergeGeometries(geoms), tinted(ring.light || 0)));
@@ -565,8 +623,9 @@ function addRings(bloom, sp, tinted) {
 /* 0.55, not 0.82. A broad soft highlight rolling across a petal is a large
    part of what says the thing is solid: the references all have one. The
    green stays matter, since a shiny stem reads as plastic. */
-function flatMat(h, s, l, rough = 0.55) {
-  const m = new THREE.MeshStandardMaterial({ roughness: rough, metalness: 0, side: THREE.DoubleSide });
+function flatMat(h, s, l, rough = 0.55, vcol = false) {
+  const m = new THREE.MeshStandardMaterial({
+    roughness: rough, metalness: 0, side: THREE.DoubleSide, vertexColors: vcol });
   m.color.setHSL(h / 360, s / 100, l / 100);
   return m;
 }
@@ -592,9 +651,10 @@ function quad(out, a, b, c, d) {
    far below anything modelled here and far above float noise. */
 function weldSmooth(geo, tol = 1e-4) {
   const pos = geo.attributes.position.array;
+  const src = geo.attributes.color ? geo.attributes.color.array : null;
   const n = pos.length / 3;
   const seen = new Map();
-  const verts = [];
+  const verts = [], cols = [];
   const index = new Array(n);
   const q = 1 / tol;
   for (let i = 0; i < n; i++) {
@@ -605,19 +665,25 @@ function weldSmooth(geo, tol = 1e-4) {
       id = verts.length / 3;
       seen.set(key, id);
       verts.push(x, y, z);
+      /* a welded vertex takes the first colour seen at that point, which is
+         safe here because the gradient is a function of POSITION: every copy
+         of a shared vertex was given the same colour anyway */
+      if (src) cols.push(src[i * 3], src[i * 3 + 1], src[i * 3 + 2]);
     }
     index[i] = id;
   }
   const out = new THREE.BufferGeometry();
   out.setAttribute("position", new THREE.Float32BufferAttribute(verts, 3));
+  if (src) out.setAttribute("color", new THREE.Float32BufferAttribute(cols, 3));
   out.setIndex(index);
   out.computeVertexNormals();
   return out;
 }
 
-function fromPositions(pos) {
+function fromPositions(pos, col) {
   const g = new THREE.BufferGeometry();
   g.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3));
+  if (col) g.setAttribute("color", new THREE.Float32BufferAttribute(col, 3));
   return weldSmooth(g);
 }
 /* `BufferGeometryUtils` lives in three's examples rather than the core, and
@@ -628,16 +694,24 @@ export function mergeGeometries(list) {
   flat.forEach(g => { n += g.attributes.position.count; });
   const pos = new Float32Array(n * 3);
   const nor = new Float32Array(n * 3);
+  /* ALWAYS a colour attribute, filled with white where a part has none, so a
+     merged mesh can carry a gradient on some of its pieces and not others:
+     a stem has no gradient, the leaf merged beside it does, and white is the
+     identity under the multiply the material does. Without this the material
+     could not declare `vertexColors` at all. */
+  const col = new Float32Array(n * 3).fill(1);
   let o = 0;
   flat.forEach(g => {
     if (!g.attributes.normal) g.computeVertexNormals();
     pos.set(g.attributes.position.array, o * 3);
     nor.set(g.attributes.normal.array, o * 3);
+    if (g.attributes.color) col.set(g.attributes.color.array, o * 3);
     o += g.attributes.position.count;
   });
   const out = new THREE.BufferGeometry();
   out.setAttribute("position", new THREE.BufferAttribute(pos, 3));
   out.setAttribute("normal", new THREE.BufferAttribute(nor, 3));
+  out.setAttribute("color", new THREE.BufferAttribute(col, 3));
   return out;
 }
 /* Seeded, so a clump of lavender is the same clump on every reload. The
