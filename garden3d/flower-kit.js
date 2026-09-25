@@ -48,7 +48,10 @@ export function petalGeometry({ len = 0.2, wid = 0.06, curl = 0.25, cup = 0.35,
      Front and back meet exactly at the boundary, where the thickness is
      zero, so the shape closes with no seam to build. `weldSmooth` then
      averages the normals across the join and the rim shades as a curve. */
-  const ROWS = 8, COLS = 4;
+  /* SIX ACROSS, NOT FOUR. Five points across a petal is coarse enough that an
+     elliptical end renders as a blunt polygon, which is visible the moment the
+     outline is compared against the 2D drawing it is copying. */
+  const ROWS = 8, COLS = 6;
   /* TIPS ARE ROUND NOW, on every species. None of the references has a point
      on anything. The width profile is evaluated at 0.9 of the way along, so
      it still NARROWS toward the tip but stops before it reaches zero: the
@@ -56,6 +59,14 @@ export function petalGeometry({ len = 0.2, wid = 0.06, curl = 0.25, cup = 0.35,
      in a soft cap rather than a spike. */
   const TIPCUT = 0.9;
   const widthAt = t => {
+    /* AN ELLIPSE, because that is literally what the 2D draws. Most of the
+       web version's petals are a p5 `ellipse()`, and an ellipse's width
+       profile is `sqrt(4t(1-t))`, not a sine: at a quarter of the way along
+       it is 0.87 of full width where a sine is 0.71, so a sine petal is
+       visibly narrower at both ends than the drawing it is copying. It needs
+       no TIPCUT either, since an ellipse already arrives at its end with a
+       vertical tangent, which is a round tip. */
+    if (tip === "ellipse") return wid * Math.sqrt(Math.max(0, 4 * t * (1 - t)));
     const a = t * TIPCUT;
     if (tip === "point") return wid * Math.sin(Math.PI * Math.pow(a, 0.9)) * (1 - a * 0.55);
     if (tip === "notch") return wid * Math.sin(Math.PI * Math.pow(a, 0.6));
@@ -113,9 +124,16 @@ export function petalGeometry({ len = 0.2, wid = 0.06, curl = 0.25, cup = 0.35,
      clay reference has this, and it is most of why they read as soft rather
      than printed: a flat petal has no throat. */
   const pos = [], col = [], uvs = [];
+  /* A VERTEX SHADE MAY ONLY DARKEN, NEVER LIGHTEN, so the species' declared
+     colour IS the colour of the brightest part of the petal. It ran to 1.14
+     at the tip, and a multiplier above one pushes a colour toward WHITE,
+     which desaturates it: measured against the web version's own drawing of
+     the same flower, the 3D poppy came out 14 points of saturation low and 7
+     points light, and this was part of it. Same rule the vein texture mask
+     followed before it was deleted. */
   const shade = v => {
     const t = Math.max(0, Math.min(1, v.y / Math.max(1e-6, len)));
-    const k = 0.84 + t * 0.3;                 /* 0.84 at the base, 1.14 at the tip */
+    const k = 0.80 + t * 0.20;                /* 0.80 at the base, 1.00 at the tip */
     col.push(k, k, k);
   };
   /* UVs, which this geometry has never had: u runs ACROSS the petal and v
@@ -298,42 +316,58 @@ export const SPECIES3D = {
     ],
     stem: 0.52, heads: 2, leaves: true
   },
-  /* A BOWL OF FEW BROAD PETALS ROUND A BLACK EYE, which is the whole of a
-     poppy and is unlike anything else in the set. It replaced the sakura,
-     which was a five petalled pink flower and therefore a daisy in another
-     colour until a notched petal was invented to save it. The poppy needs no
-     such rescue: six petals where the daisy has twelve, each nearly as wide
-     as it is long, and a centre that goes almost black.
+  /* ================================================================
+     THE POPPY, TRANSCRIBED FROM `drawPoppyBloom` IN THE WEB VERSION.
+     Not designed here. Every number below is the ratio that function
+     already writes against its own R, so the two can be read side by side:
 
-     THE EYE IS THE SPECIES. Every other centre here is gold or pale; this is
-     the only dark one, so at garden distance the poppy is the flower with a
-     hole in the middle. `stamenTone` exists for it: a poppy's stamens are a
-     dense dark ring, and the kit's default gold would have filled that hole
-     back in. */
+       for (i<4) petal(i*90,    R*0.475, R*0.675, R*1.05, sat*1.05, light-13)
+       for (i<4) petal(i*90+45, R*0.450, R*0.650, R*1.00, sat,      light+2)
+       ellipse(0, 0, R*0.40, R*0.50)            <- the eye, near black
+       3 ribs, R*0.275 by R*0.022, R*0.1125 apart
+       6 dots at R*0.2875, R*0.043 across
+
+     It was SIX petals in one ring before, which is a different flower: the
+     poppy's signature in this project is EIGHT in two layers, four on the
+     axes and four turned 45 over them, and `addRings` already offsets an
+     odd ring by half a step, which for a count of four is exactly the 45.
+
+     `R` is the drawing's own R, and `wid` is a HALF width, so a 2D full
+     width of 0.675 is written 0.3375 here. See the note in `addRings`.
+
+     WHAT IS NOT IN THE 2D IS PITCH AND CUP. A flat drawing says nothing
+     about either, and at pitch 90 with no cup this is a dinner plate seen
+     from a camera 42 degrees up. The deep layer lies flatter and lower and
+     the bright layer stands over it, which is the 3D reading of the 2D's
+     draw order.
+     ================================================================ */
   poppy: {
     name: "Poppy", meaning: "Memory and reflection",
     hue: 356, sat: 58, light: 58,
-    /* A BOWL, NOT A PLATE AND NOT A BALL. At pitch 48 six petals this wide
-       overlapped into a continuous flat disc and the black eye had nowhere to
-       sit. At 38 with cup 0.68 they closed the other way: the walls met over
-       the top and the poppy came out as a peach BALL, which put it beside the
-       rose and the peony as a third round bloom and hid the one feature that
-       names it. 56 with cup 0.44 still met over the top, because `cup` bends a
-       petal UPWARD along its length and these are long enough to reach the
-       middle once tilted: what closes the flower is the cup, not the pitch.
-       68 with cup 0.26 is the bowl, and the eye is visible from the garden
-       camera's 42 degrees. It is a SHALLOWER bowl than the daisy is a plate,
-       which with six broad petals against twelve narrow ones is what keeps the
-       two apart from above. */
-    petals: 6, pitch: 68, petalLen: 0.165, petalWid: 0.12, curl: 0.14, cup: 0.26,
-    tip: "round",
-    /* THE EYE HAS TO BE BIG ENOUGH TO SEE FROM THE GARDEN CAMERA. At 0.042
-       against petals of 0.16 it was a dot, and rendered close up the poppy
-       read as a plain six petalled star with a slightly darker middle, which
-       is the one thing it must not be. It is 0.058 and domed, so it catches
-       its own shadow, and it goes darker still. */
-    centre: { r: 0.07, h: 0.03, y: 0.022, hue: 356, sat: 30, light: 11 },
-    stamens: 12, stamenTone: { hue: 352, sat: 24, light: 17 },
+    R: 0.17, tip: "ellipse",
+    rings: [
+      /* the DEEP four, on the axes, drawn first and therefore under */
+      { count: 4, pitch: 76, len: 1.05, wid: 0.3375, curl: 0.05, cup: 0.22,
+        light: -13, sat: 1.05, y: -0.02 },
+      /* the BRIGHT four, turned 45 over them. The 2D alternates this ring
+         between light+2 and light-4 petal by petal; a ring carries one
+         material, so it takes the +2. */
+      { count: 4, pitch: 68, len: 1.00, wid: 0.325, curl: 0.05, cup: 0.22,
+        light: 2, y: 0.02 }
+    ],
+    /* THE EYE IS THE SPECIES, and it is the only near black centre in the
+       set. Its tone is the 2D's `fill(hue, 34, 13)` exactly. It keeps a
+       little of the flower's own hue rather than being flat black, or a
+       recoloured poppy reads as a sticker stuck on a bloom. */
+    centre: { r: 0.21, h: 0.13, y: 0.03, hue: 356, sat: 34, light: 8,
+              ribs: { count: 3, len: 0.275, thick: 0.022, gap: 0.1125,
+                      hue: 356, sat: 30, light: 27 } },
+    /* THE DOTS SIT ON THE PETALS, NOT ON THE EYE: at 0.2875 they are outside
+       the eye's own 0.21, which is what the 2D draws. `y` has to clear the
+       petal surface at that radius, which for a ring at pitch 68 is about
+       0.116 R up before the cup lifts its edges, or they are buried in it. */
+    dots: { count: 6, at: 0.2875, r: 0.0215, y: 0.19,
+            hue: 356, sat: 40, light: 7 },
     /* tall and bare, the way a poppy carries its head well clear of the
        leaves. It is the tallest of the seven bed flowers after the sunflower */
     stem: 0.6, leaves: true
@@ -405,9 +439,13 @@ export function buildFlower(id, { hue = null, seed = null } = {}) {
      so one hue slider can move a rose's five rings and keep the depth
      between them. The person picks a hue; the tones are the species'. */
   const tint = [];
-  const tinted = (lightOff = 0) => {
-    const m = flatMat(H, sp.sat, sp.light + lightOff, 0.55, true);
-    tint.push({ mat: m, sat: sp.sat, light: sp.light + lightOff });
+  /* A LAYER MAY CARRY ITS OWN SATURATION as well as its own lightness, because
+     the 2D rows do: the poppy's deep four are drawn at `sat * 1.05` against
+     the bright four's plain `sat`, and a light offset alone cannot say that. */
+  const tinted = (lightOff = 0, satMul = 1) => {
+    const S = Math.min(100, sp.sat * satMul);
+    const m = flatMat(H, S, sp.light + lightOff, 0.55, true);
+    tint.push({ mat: m, sat: S, light: sp.light + lightOff });
     return m;
   };
   const petalMat = tinted(0);
@@ -518,7 +556,7 @@ export function buildFlower(id, { hue = null, seed = null } = {}) {
        thing in the close up. The mouth now sits a hair BELOW the origin, and
        the cup is a third smaller, so it is the collar the stem arrives in and
        nothing else. */
-    const calR = (sp.rings ? sp.rings[sp.rings.length - 1].len
+    const calR = (sp.rings ? sp.rings[sp.rings.length - 1].len * (sp.R || 1)
                            : sp.petalLen) * 0.3 + 0.008;
     const cal = new THREE.ConeGeometry(calR, calR * 1.15, 9);
     cal.rotateX(Math.PI);                        /* point down, mouth up */
@@ -622,13 +660,63 @@ function dressBloom(bloom, sp, tinted, petalMat, rnd) {
        a dark tyre laid on the flower, and on the daisy and the sunflower it
        was the first thing the eye found. The disc is a squashed sphere and
        already meets the petals on a soft curve; it needed no help. */
-    const c = mesh(discGeometry({ r: sp.centre.r, h: sp.centre.h }),
-                   flatMat(sp.centre.hue, sp.centre.sat, sp.centre.light));
+    const U = sp.R || 1;
+    const cr = sp.centre.r * U, ch = sp.centre.h * U;
+    /* ROUGHNESS 0.95 ON A CENTRE, against the petals' 0.55. The poppy's eye is
+       near black in the 2D and came out mid brown here, and the cause is the
+       sheen rather than the colour: a glossy dome rolls a broad highlight
+       right across the one feature that names the species. A dark thing in
+       life is matte. */
+    const c = mesh(discGeometry({ r: cr, h: ch }),
+                   flatMat(sp.centre.hue, sp.centre.sat, sp.centre.light,
+                           sp.centre.rough == null ? 0.95 : sp.centre.rough));
     /* `y` lifts a centre clear of petals that cup up around it. The poppy
        needs it: at cup 0.6 its six broad petals rose past a disc sitting on
        the origin and swallowed the black eye that names the species. */
-    c.position.y = sp.centre.h * 0.5 + (sp.centre.y || 0);
+    const cy = ch * 0.5 + (sp.centre.y || 0) * U;
+    c.position.y = cy;
     bloom.add(c);
+
+    /* RIBS ACROSS THE EYE, which the 2D poppy draws as three flat bars and
+       which are a third of what names that flower. They are laid on the dome
+       rather than cut into it: three thin boxes, the outer two shortened
+       because the dome falls away, sitting a hair proud so they are never
+       swallowed by it. */
+    if (sp.centre.ribs) {
+      /* THE DOME'S HALF HEIGHT IS `h`, NOT `h / 2`. `discGeometry` builds a
+         sphere of radius r and scales y by h / r, so its y extent is plus and
+         minus h. Reading it as h / 2 put all three ribs INSIDE the eye, where
+         they rendered perfectly and could not be seen. */
+      const rb = sp.centre.ribs, bars = [];
+      for (let i = 0; i < rb.count; i++) {
+        const k = i - (rb.count - 1) / 2;
+        const off = k * rb.gap * U;
+        /* how far across the dome still reaches at this offset, so a rib
+           never hangs off the edge of the eye it is drawn across */
+        const q = Math.sqrt(Math.max(0, 1 - Math.pow(off / cr, 2)));
+        const b = new THREE.BoxGeometry(rb.len * U * Math.max(0.35, q),
+                                        rb.thick * U * 1.6, rb.thick * U);
+        /* sat ON the surface, so half its own thickness stands proud of it */
+        b.translate(0, cy + ch * q, off);
+        bars.push(b);
+      }
+      bloom.add(mesh(mergeGeometries(bars),
+                     flatMat(rb.hue, rb.sat, rb.light, 0.95)));
+    }
+  }
+  /* SIX DOTS IN A RING, not six stalks. The 2D poppy's stamens are flat
+     specks drawn just outside its eye, so `dots` is what that species needs
+     and `stamens` (a stalk with a gold head) is the lily's answer to a
+     different drawing. */
+  if (sp.dots) {
+    const U = sp.R || 1, d = sp.dots, balls = [];
+    for (let i = 0; i < d.count; i++) {
+      const a = (i / d.count) * Math.PI * 2 + Math.PI / d.count;
+      const g = new THREE.SphereGeometry(d.r * U, 7, 6);
+      g.translate(Math.sin(a) * d.at * U, (d.y || 0) * U, -Math.cos(a) * d.at * U);
+      balls.push(g);
+    }
+    bloom.add(mesh(mergeGeometries(balls), flatMat(d.hue, d.sat, d.light, 0.95)));
   }
   if (sp.stamens) {
     const sticks = [];
@@ -658,9 +746,13 @@ export function buildBloom(id, { hue = null, scale = 1 } = {}) {
   if (!sp) return new THREE.Group();
   const H = hue === null ? sp.hue : hue;
   const tint = [];
-  const tinted = (lightOff = 0) => {
-    const m = flatMat(H, sp.sat, sp.light + lightOff, 0.55, true);
-    tint.push({ mat: m, sat: sp.sat, light: sp.light + lightOff });
+  /* A LAYER MAY CARRY ITS OWN SATURATION as well as its own lightness, because
+     the 2D rows do: the poppy's deep four are drawn at `sat * 1.05` against
+     the bright four's plain `sat`, and a light offset alone cannot say that. */
+  const tinted = (lightOff = 0, satMul = 1) => {
+    const S = Math.min(100, sp.sat * satMul);
+    const m = flatMat(H, S, sp.light + lightOff, 0.55, true);
+    tint.push({ mat: m, sat: S, light: sp.light + lightOff });
     return m;
   };
   const bloom = new THREE.Group();
@@ -677,13 +769,19 @@ export function buildBloom(id, { hue = null, scale = 1 } = {}) {
    rings nearly flat. The rose and the lotus are the same routine with
    different numbers, which is the kit doing its job. */
 function addRings(bloom, sp, tinted, rnd) {
+  /* `sp.R` IS THE 2D DRAWING'S OWN R. When a species carries one, every
+     length in its rows is a MULTIPLE of it, exactly as the web version's
+     draw function writes them (`R * 0.675`, `R * 1.05`), so the two can be
+     read side by side and a ratio cannot be mistranscribed. A species
+     without an `R` is in absolute units and is untouched. */
+  const U = sp.R || 1;
   sp.rings.forEach((ring, ri) => {
     const geoms = [];
     for (let i = 0; i < ring.count; i++) {
       const g = petalGeometry({
-        len: jit(rnd, ring.len), wid: jit(rnd, ring.wid),
+        len: jit(rnd, ring.len * U), wid: jit(rnd, ring.wid * U),
         curl: jit(rnd, ring.curl), cup: ring.cup,
-        tip: sp.tip || "round",
+        tip: ring.tip || sp.tip || "round",
         /* THINNER THAN A SINGLE PETAL BLOOM'S. The pillow is what stops a
            daisy's twelve petals reading as paper, but on a ringed bloom every
            petal passes through two or three others, and a thick one turns each
@@ -695,12 +793,12 @@ function addRings(bloom, sp, tinted, rnd) {
       const off = (ri % 2) * (Math.PI / ring.count) +
                   (rnd() - 0.5) * (Math.PI * 2 / ring.count) * JIT * 2;
       g.applyMatrix4(new THREE.Matrix4()
-        .makeTranslation(0, ring.y || 0, 0)
+        .makeTranslation(0, (ring.y || 0) * U, 0)
         .multiply(new THREE.Matrix4().makeRotationY((i / ring.count) * Math.PI * 2 + off))
         .multiply(new THREE.Matrix4().makeRotationX(THREE.MathUtils.degToRad(jit(rnd, ring.pitch)))));
       geoms.push(g);
     }
-    bloom.add(mesh(mergeGeometries(geoms), tinted(ring.light || 0)));
+    bloom.add(mesh(mergeGeometries(geoms), tinted(ring.light || 0, ring.sat || 1)));
   });
 }
 
@@ -726,7 +824,7 @@ function addRings(bloom, sp, tinted, rnd) {
 function flatMat(h, s, l, rough = 0.55, vcol = false) {
   const m = new THREE.MeshStandardMaterial({
     roughness: rough, metalness: 0, side: THREE.DoubleSide, vertexColors: vcol });
-  m.color.setHSL(h / 360, s / 100, l / 100);
+  m.color.setHSL(h / 360, s / 100, l / 100, THREE.SRGBColorSpace);
   return m;
 }
 function mesh(geo, mat) {

@@ -10,7 +10,9 @@
     * { box-sizing: border-box; }
     html, body { margin: 0; height: 100%; background: #eaf3ee; overflow: hidden; }
     body { font-family: Arial, Helvetica, sans-serif; color: #1d6466; }
-    #sheet { position: fixed; inset: 0; }
+    #twod { position: fixed; left: 0; right: 0; }
+    #twod canvas { position: absolute; }
+    #sheet { position: fixed; left: 0; right: 0; bottom: 0; }
     #sheet canvas { display: block; }
     #labels { position: fixed; inset: 0; pointer-events: none; }
     .lab { position: absolute; font-size: 11.5px; font-weight: 700; color: #2f6260;
@@ -22,8 +24,14 @@
   </style>
 </head>
 <body>
+  <div id="twod"></div>
   <div id="sheet"></div>
   <div id="labels"></div>
+  <!-- THE WEB VERSION'S OWN DRAWING CODE, so the sheet compares the 3D
+       against what the site actually draws rather than against a copy of it.
+       `boot()` returns immediately when #bqBuilder is absent, which is the
+       same guard that lets the landing page load this file. -->
+  <script src="../bouquet/bouquet-sketch.js"></script>
   <script type="module" src="./species.js"></script>
 </body>
 </html>

@@ -18,7 +18,7 @@ import { buildBloom, stemGeometry, mergeGeometries, SPECIES3D } from "./flower-k
 
 const flat = hex => new THREE.MeshStandardMaterial({ roughness: 0.88, metalness: 0, color: hex });
 const hsl = (h, s, l) => new THREE.MeshStandardMaterial({ roughness: 0.88, metalness: 0,
-  color: new THREE.Color().setHSL(h / 360, s / 100, l / 100)
+  color: new THREE.Color().setHSL(h / 360, s / 100, l / 100, THREE.SRGBColorSpace)
 });
 
 /* Four of each, which is a choice rather than a gesture at one. A palette

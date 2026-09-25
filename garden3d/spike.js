@@ -543,7 +543,8 @@ document.getElementById("hue").addEventListener("input", e => {
     /* every registered petal material moves together, each keeping its own
        lightness offset, which is what holds a rose's rings apart */
     (f.userData.tint || []).forEach(t => {
-      t.mat.color.setHSL(h / 360, t.sat / 100, Math.min(96, Math.max(18, t.light)) / 100);
+      t.mat.color.setHSL(h / 360, t.sat / 100,
+        Math.min(96, Math.max(18, t.light)) / 100, THREE.SRGBColorSpace);
     });
   });
 });

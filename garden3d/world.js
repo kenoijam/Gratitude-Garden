@@ -22,7 +22,17 @@ function rnd(seed) {
     return s / 4294967296;
   };
 }
-const hsl = (h, s, l) => new THREE.Color().setHSL(h / 360, s / 100, l / 100);
+/* SRGBColorSpace IS NOT OPTIONAL HERE, and leaving it out is why every colour
+   in this spike was wrong. `Color.setHex` and `Color.setStyle` default to
+   sRGB, but `Color.setHSL` defaults to the WORKING space, which is
+   srgb-linear: so `setHSL(356/360, 0.58, 0.58)` produced #ea9da4 where the
+   web version's `hsl(356,58%,58%)` is #d2565e, a pale washed pink in place of
+   a red. Measured against the 2D's own drawing of the same flower, the bloom
+   came out 17 points of saturation low. It is every HSL in the folder, so the
+   grass, the sky, the wood and the avatar were all lightened with it, and the
+   lighting had quietly been tuned to compensate. */
+const hsl = (h, s, l) =>
+  new THREE.Color().setHSL(h / 360, s / 100, l / 100, THREE.SRGBColorSpace);
 
 /* ------------------------------------------------------------------ sky */
 export function skyTexture() {
@@ -139,7 +149,14 @@ export function setupRenderer(renderer) {
      end, so what is written in the palette is what appears. It is guarded
      because it is a newer addition to three than the rest of this file. */
   renderer.toneMapping = THREE.NeutralToneMapping || THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 1.15;
+  /* THE LIGHT WENT UP BECAUSE THE COLOURS CAME DOWN. Every HSL in this folder
+     was being read as linear and rendered pale (see the note on `hsl` above),
+     and the exposure and the lights had been tuned against that: correcting
+     the colours dropped the measured lightness of a poppy's petals from 54 to
+     37 against the web version's own drawing at 50. These four figures were
+     then found by sweeping exposure, sun, hemisphere and environment together
+     against that drawing, not by eye. */
+  renderer.toneMappingExposure = 1.42;
   return renderer;
 }
 
@@ -153,13 +170,13 @@ export function warmLight(scene) {
      with the environment at 0.62 the shadow side went nearly black, which is
      a night look rather than a late afternoon one; 0.3 against 0.8 keeps the
      contrast and puts colour back in the dark half. */
-  const hemi = new THREE.HemisphereLight(0xe6f6ff, 0xbdf0d4, 0.5);
+  const hemi = new THREE.HemisphereLight(0xe6f6ff, 0xbdf0d4, 0.62);
   scene.add(hemi);
 
   /* 2.6, up from 1.55, which is only a big number because ACES is now
      rolling the top off. The RATIO to the fill is what matters, and it went
      from about 1.5 to 1 to about 12 to 1: that is the contrast. */
-  const sun = new THREE.DirectionalLight(0xfff0cf, 2.3);
+  const sun = new THREE.DirectionalLight(0xfff0cf, 3.0);
   sun.position.set(6.5, 5.2, 3.2);
   sun.castShadow = true;
   /* SHADOW QUALITY IS TEXEL DENSITY, not map size. The map was 2048 spread
@@ -180,7 +197,7 @@ export function warmLight(scene) {
     { left: -5.5, right: 5.5, top: 5.5, bottom: -5.5, near: 0.5, far: 26 });
   scene.add(sun);
 
-  const rim = new THREE.DirectionalLight(0xa8d8ff, 0.5);
+  const rim = new THREE.DirectionalLight(0xa8d8ff, 0.62);
   rim.position.set(-5, 3, -4);
   scene.add(rim);
   return { sun, hemi, rim };
@@ -932,7 +949,7 @@ export function dressScene(scene, opts = {}) {
   scene.fog = fog;
   if (opts.renderer) {
     scene.environment = skyEnvironment(opts.renderer);
-    if ("environmentIntensity" in scene) scene.environmentIntensity = 1.05;
+    if ("environmentIntensity" in scene) scene.environmentIntensity = 1.22;
   }
   const lights = warmLight(scene);
   const ground = buildGround(scene, opts);

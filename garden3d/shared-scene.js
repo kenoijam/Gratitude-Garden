@@ -64,7 +64,7 @@ const world = dressScene(scene, { renderer, radius: 4.9, seed: 21, island: 1.32 
    rings were planted around it */
 const bare = new THREE.Mesh(
   new THREE.CircleGeometry(0.95, 26),
-  new THREE.MeshStandardMaterial({ roughness: 0.88, metalness: 0, color: new THREE.Color().setHSL(26 / 360, 0.3, 0.5) })
+  new THREE.MeshStandardMaterial({ roughness: 0.88, metalness: 0, color: new THREE.Color().setHSL(26 / 360, 0.3, 0.5, THREE.SRGBColorSpace) })
 );
 bare.rotation.x = -Math.PI / 2;
 bare.position.y = 0.008;

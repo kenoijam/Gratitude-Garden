@@ -30,7 +30,12 @@ const ROWS = [
   { name: "close up",        h: 0.28, aim: 1.00 }
 ];
 
-const renderer = setupRenderer(new THREE.WebGLRenderer({ antialias: true }));
+/* `preserveDrawingBuffer` so the sheet can be MEASURED and not only looked at.
+   Without it the WebGL canvas reads back empty once the frame is composited,
+   so a pixel sample reports nothing and it looks as though the render failed.
+   This is a judging tool; the cost is a frame that is not discarded. */
+const renderer = setupRenderer(new THREE.WebGLRenderer({
+  antialias: true, preserveDrawingBuffer: true }));
 renderer.setScissorTest(true);
 document.getElementById("sheet").appendChild(renderer.domElement);
 
@@ -66,19 +71,54 @@ IDS.forEach((id, i) => {
 
 const cam = new THREE.OrthographicCamera(-1, 1, 1, -1, 0.1, 100);
 
+/* the 2D strip: one plain canvas per column, at the device pixel ratio */
+function draw2D(tileW, tileH, top) {
+  const host = document.getElementById("twod");
+  host.innerHTML = "";
+  host.style.top = top + "px";
+  host.style.height = tileH + "px";
+  const has = typeof window.drawSpeciesBloom === "function";
+  IDS.forEach((id, i) => {
+    const c = document.createElement("canvas");
+    const dpr = Math.min(2, window.devicePixelRatio || 1);
+    c.width = Math.round(tileW * dpr); c.height = Math.round(tileH * dpr);
+    c.style.cssText = "left:" + (i * tileW) + "px;top:0;width:" + tileW +
+                      "px;height:" + tileH + "px";
+    host.appendChild(c);
+    if (!has) return;
+    const ctx = c.getContext("2d");
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    const sp = SPECIES3D[id];
+    ctx.save();
+    ctx.translate(tileW / 2, tileH / 2);
+    /* the species' OWN hue, saturation and lightness, so what differs
+       between the rows is the shape and never the colour */
+    window.drawSpeciesBloom(ctx, id, Math.min(tileW, tileH) * 0.36,
+                            sp.hue, sp.sat, sp.light);
+    ctx.restore();
+  });
+}
+
 function draw() {
   const W = window.innerWidth, H = window.innerHeight;
-  /* updateStyle TRUE. Left false, three sets the backing store to W*dpr and
-     never gives the element a CSS width, so it lays out at its attribute
-     width and the whole sheet renders at twice the size it is measured at. */
-  renderer.setSize(W, H);
   const TOP = 30;
-  const tileW = W / IDS.length, tileH = (H - TOP) / ROWS.length;
+  /* THREE rows now, and the renderer only owns the lower two. Its element is
+     pinned to the bottom, so the 2D strip can be ordinary DOM canvases above
+     it rather than something painted into the WebGL buffer. */
+  const tileW = W / IDS.length, tileH = (H - TOP) / (ROWS.length + 1);
+  draw2D(tileW, tileH, TOP);
+  renderer.setSize(W, Math.round(tileH * ROWS.length));
   const labels = document.getElementById("labels");
   labels.innerHTML = "";
 
+  const GLTOP = TOP + tileH;
+  const label2 = document.createElement("div");
+  label2.className = "row"; label2.style.top = (TOP + 5) + "px";
+  label2.textContent = "the 2D drawing";
+  document.getElementById("labels").appendChild(label2);
+
   ROWS.forEach((row, r) => {
-    const y0 = TOP + r * tileH;
+    const y0 = GLTOP + r * tileH;
     const rl = document.createElement("div");
     rl.className = "row";
     rl.style.top = (y0 + 5) + "px";
@@ -90,8 +130,10 @@ function draw() {
          frame's clear colour down the edge of every column. */
       const x0 = Math.round(i * tileW), x1 = Math.round((i + 1) * tileW);
       const w = x1 - x0;
-      /* three.js counts viewport y from the BOTTOM, the DOM from the top */
-      const gy = Math.round(H - y0 - tileH), hh = Math.round(tileH);
+      /* three.js counts viewport y from the BOTTOM of ITS OWN canvas, which
+         now starts at GLTOP rather than at the top of the window */
+      const hh = Math.round(tileH);
+      const gy = Math.round((H - GLTOP) - (y0 - GLTOP) - tileH);
       renderer.setViewport(x0, gy, w, hh);
       renderer.setScissor(x0, gy, w, hh);
 
@@ -122,6 +164,10 @@ function draw() {
 }
 
 draw();
+/* THE SHEET IS A MEASURING INSTRUMENT, so it hands out its own scene. This is
+   how a lighting change is tried against the 2D drawing beside it without
+   editing a file per experiment. Nothing in either scene reads this. */
+window.__sheet = { scene, renderer, draw, THREE };
 window.addEventListener("resize", draw);
 /* redrawn on demand rather than every frame: nothing here moves */
 window.addEventListener("keydown", e => { if (e.key === "r") location.reload(); });
