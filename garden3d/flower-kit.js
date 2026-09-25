@@ -244,7 +244,9 @@ export const SPECIES3D = {
   sunflower: {
     name: "Sunflower", meaning: "Hope and resilience",
     hue: 45, sat: 82, light: 56,
-    petals: 18, pitch: 72, petalLen: 0.16, petalWid: 0.058, curl: 0.22, cup: 0.28, tip: "point",
+    /* the ray petals reach past the disc. At 0.16 against a disc of 0.12 the
+       sunflower was mostly brown plate with a fringe round it. */
+    petals: 18, pitch: 72, petalLen: 0.2, petalWid: 0.058, curl: 0.22, cup: 0.28, tip: "point",
     centre: { r: 0.12, h: 0.05, hue: 28, sat: 45, light: 32 },
     stem: 1.02, tilt: 24, leaves: true
   },
@@ -261,17 +263,38 @@ export const SPECIES3D = {
       /* each ring sits a little LOWER than the one inside it. Stacked at one
          height the climbing pitches read as a staircase of frills rather
          than as a ball, which is the first thing this got wrong. */
-      /* A ROSE PETAL IS ALMOST AS WIDE AS IT IS LONG, and that is what makes
-         the ball. Narrow petals at climbing pitches spiral upward into a
-         cone of frills, which is a hollyhock. Wide ones overlap sideways. */
-      { count: 4, pitch: 14, len: 0.062, wid: 0.072, curl: -0.3,  cup: 0.62, light: 8,  y: 0.03 },
-      { count: 6, pitch: 34, len: 0.072, wid: 0.086, curl: -0.18, cup: 0.58, light: 4,  y: 0.022 },
-      { count: 7, pitch: 52, len: 0.082, wid: 0.096, curl: -0.05, cup: 0.52, light: 0,  y: 0.012 },
-      { count: 8, pitch: 70, len: 0.09,  wid: 0.104, curl: 0.12,  cup: 0.46, light: -5, y: 0.003 },
-      /* the outer ring is pushed PAST flat, to 96, so the ball sits on a
+      /* A ROSE PETAL IS ALMOST AS WIDE AS IT IS LONG, and the numbers below
+         used to say `wid` roughly equal to `len`, which is NOT that.
+         `wid` is a HALF width: `petalGeometry` runs u from -1 to 1 and
+         multiplies, so a petal is about 2 * wid across. So wid 0.11 against
+         len 0.115 was a petal more than twice as wide as it was long, and
+         seven of those on a ring of radius 0.057 came to nearly five times
+         the circumference. That is the crumpling: not enough jitter, too much
+         petal. At 0.55 of the length the ring overlaps about twice, which is
+         a rose wrapping itself rather than a rose folded up. */
+      /* THREE RINGS AND EIGHTEEN PETALS, down from five and thirty three.
+         Thirty three petals at this size sat a few hundredths apart, so no
+         single one of them was ever visible: the bloom came out as a texture
+         rather than as a flower with parts. Each petal here is about half as
+         big again, which is what lets a layer be seen as a layer. */
+      /* FOUR RINGS, NOT THREE, AND THE PITCH CLIMBS EVENLY. At three the
+         steps were 18, 54, 96, and a 36 degree jump between rings leaves a gap
+         the ring outside cannot fill: the bloom came out as three flat tiers
+         with a star sitting on top of them, which is a pagoda. The rose's
+         whole signature is that no single petal is fully visible, and that
+         needs the pitches close enough for each ring to be half buried in the
+         one outside it. Twenty one petals against the old thirty three.
+         THE HEART IS A CONE, not a small flat ring. At cup 0.62 the inner four
+         lay open and the middle of the rose was a hole with a star round it;
+         at 0.84 they wrap into each other and the flower has a centre you
+         cannot see into, which is what a rose is. */
+      { count: 4, pitch: 10, len: 0.086, wid: 0.048, curl: -0.34, cup: 0.84, light: 8,  y: 0.05 },
+      { count: 5, pitch: 36, len: 0.1,   wid: 0.056, curl: -0.18, cup: 0.66, light: 4,  y: 0.03 },
+      { count: 6, pitch: 64, len: 0.114, wid: 0.064, curl: 0.04,  cup: 0.48, light: 0,  y: 0.013 },
+      /* the outer ring is pushed PAST flat, to 94, so the ball sits on a
          flange of splayed petals. In silhouette a plain ball of petals is
          a tulip bud drawn rounder; the flange is what tells them apart. */
-      { count: 8, pitch: 94, len: 0.098, wid: 0.11,  curl: 0.3,   cup: 0.34, light: -9, y: -0.005 }
+      { count: 6, pitch: 94, len: 0.126, wid: 0.072, curl: 0.3,   cup: 0.34, light: -8, y: -0.004 }
     ],
     stem: 0.52, heads: 2, leaves: true
   },
@@ -290,12 +313,19 @@ export const SPECIES3D = {
   poppy: {
     name: "Poppy", meaning: "Memory and reflection",
     hue: 356, sat: 58, light: 58,
-    /* A BOWL, NOT A PLATE. At pitch 48 six petals this wide overlapped into a
-       continuous flat disc and the black eye had nowhere to sit; from the
-       garden camera it read as a dinner plate on a stem. At 38 the petals
-       stand as walls, which is what a poppy actually does and what makes it
-       the only open CUP in a set of flat rings and recurves. */
-    petals: 6, pitch: 38, petalLen: 0.165, petalWid: 0.12, curl: 0.14, cup: 0.68,
+    /* A BOWL, NOT A PLATE AND NOT A BALL. At pitch 48 six petals this wide
+       overlapped into a continuous flat disc and the black eye had nowhere to
+       sit. At 38 with cup 0.68 they closed the other way: the walls met over
+       the top and the poppy came out as a peach BALL, which put it beside the
+       rose and the peony as a third round bloom and hid the one feature that
+       names it. 56 with cup 0.44 still met over the top, because `cup` bends a
+       petal UPWARD along its length and these are long enough to reach the
+       middle once tilted: what closes the flower is the cup, not the pitch.
+       68 with cup 0.26 is the bowl, and the eye is visible from the garden
+       camera's 42 degrees. It is a SHALLOWER bowl than the daisy is a plate,
+       which with six broad petals against twelve narrow ones is what keeps the
+       two apart from above. */
+    petals: 6, pitch: 68, petalLen: 0.165, petalWid: 0.12, curl: 0.14, cup: 0.26,
     tip: "round",
     /* THE EYE HAS TO BE BIG ENOUGH TO SEE FROM THE GARDEN CAMERA. At 0.042
        against petals of 0.16 it was a dot, and rendered close up the poppy
@@ -323,11 +353,20 @@ export const SPECIES3D = {
     name: "Peony", meaning: "Honour and strength",
     hue: 332, sat: 52, light: 70,
     rings: [
-      { count: 5,  pitch: 18,  len: 0.07,  wid: 0.078, curl: -0.26, cup: 0.6,  light: 10, y: 0.03 },
-      { count: 7,  pitch: 40,  len: 0.086, wid: 0.096, curl: -0.1,  cup: 0.55, light: 5,  y: 0.021 },
-      { count: 9,  pitch: 62,  len: 0.1,   wid: 0.11,  curl: 0.08,  cup: 0.48, light: 0,  y: 0.011 },
-      { count: 11, pitch: 86,  len: 0.115, wid: 0.12,  curl: 0.24,  cup: 0.4,  light: -5, y: 0.002 },
-      { count: 11, pitch: 102, len: 0.122, wid: 0.115, curl: 0.34,  cup: 0.3,  light: -9, y: -0.007 }
+      /* Forty three petals became twenty two, over three rings rather than
+         five, and it is still the widest bloom in the bed: 0.152 along the
+         outer petal against the rose's 0.124, and one big head against the
+         rose's spray of two. Wider AND fewer is what keeps the two ringed
+         species apart now that neither is a mass of petals.
+         `wid` is a HALF width. See the rose above, where reading it as a full
+         one is what crumpled both of them. */
+      /* Its heart closes too, for the same reason the rose's does, but less:
+         a peony is a loose dome and the paler knot in the middle of it is
+         meant to be seen. Cup 0.72 against the rose's 0.84. */
+      { count: 5, pitch: 16,  len: 0.1,   wid: 0.056, curl: -0.28, cup: 0.72, light: 10, y: 0.042 },
+      { count: 7, pitch: 46,  len: 0.118, wid: 0.066, curl: -0.06, cup: 0.56, light: 5,  y: 0.026 },
+      { count: 8, pitch: 76,  len: 0.136, wid: 0.076, curl: 0.12,  cup: 0.42, light: 0,  y: 0.011 },
+      { count: 9, pitch: 104, len: 0.152, wid: 0.084, curl: 0.3,  cup: 0.3,  light: -8, y: -0.004 }
     ],
     tip: "round",
     stem: 0.5, leaves: true
@@ -367,7 +406,7 @@ export function buildFlower(id, { hue = null, seed = null } = {}) {
      between them. The person picks a hue; the tones are the species'. */
   const tint = [];
   const tinted = (lightOff = 0) => {
-    const m = flatMat(H, sp.sat, sp.light + lightOff, 0.55, true, true);
+    const m = flatMat(H, sp.sat, sp.light + lightOff, 0.55, true);
     tint.push({ mat: m, sat: sp.sat, light: sp.light + lightOff });
     return m;
   };
@@ -425,54 +464,44 @@ export function buildFlower(id, { hue = null, seed = null } = {}) {
     st.applyMatrix4(new THREE.Matrix4().makeTranslation(hx, 0, hz));
     greens.push(st);
 
-    if (sp.leaves && k === 0) {
-      /* THREE TO FIVE LEAVES, STAGGERED. It was exactly two, exactly
-         opposite, at exactly the same height and the same angle, which read
-         as a bracket rather than as foliage and was the most mechanical
-         thing on the plant. They now sit at their own heights up the stem,
-         at their own sizes, and are turned to their own side rather than
-         paired, so no plant has a symmetry line through it.
-
-         CAPPED at 0.17, because leaf size is a fraction of the STEM and the
-         sunflower's is 1.02: proportionally honest, visually paddles. */
-      const n = 3 + Math.floor(rnd() * 3);
-      for (let i = 0; i < n; i++) {
-        const up = 0.16 + (i / n) * 0.44 + rnd() * 0.07;
-        const sz = 0.72 + rnd() * 0.5;
-        const lLen = Math.min(sp.stem * 0.26, 0.17) * sz;
-        const leaf = petalGeometry({ len: lLen, wid: lLen * 0.42,
-                                     curl: 0.3, cup: 0.25, tip: "round", thick: 0.18 });
-        /* the stem bends as it rises, so a leaf has to follow it or it hangs
-           in the air beside one. The curve is quadratic, hence up squared. */
-        leaf.applyMatrix4(new THREE.Matrix4()
-          .makeTranslation(hx + bend * up * up, h * up, hz)
-          .multiply(new THREE.Matrix4().makeRotationY(rnd() * Math.PI * 2))
-          .multiply(new THREE.Matrix4().makeRotationX(
-            THREE.MathUtils.degToRad(56 + rnd() * 26))));
-        greens.push(leaf);
-      }
-    }
-
-    /* LONG STRAPPY BLADES FROM THE BASE, which is the single thing that
-       stops a plant reading as a lollipop on a stick. Every real flower in
-       the reference has foliage coming out of the GROUND, not just a few
-       leaves clipped to its stem, and ours had none at all: the small stem
-       leaves stay, and these go under them.
+    /* ONE KIND OF GREEN PER PLANT, and that is a deletion rather than a
+       tuning. There were two sets: small round leaves clipped up the stem,
+       and long blades from the base. Between them a plant carried three
+       different greens at three different sizes pointing in seven
+       directions, and the reference's carry ONE: a few long narrow blades
+       out of the ground, tapering to a point, and nothing on the stem at all.
+       The stem leaves are gone. What is left is longer, narrower and there
+       are more of them.
 
        They arch: nearly upright at the base and leaning out at the tip,
-       which is what `curl` on a long narrow petal already does. Two to four,
-       turned to their own side, at their own lengths. */
+       which is what `curl` on a long narrow petal already does. */
     if (sp.leaves && k === 0) {
-      const nb = 2 + Math.floor(rnd() * 3);
+      const nb = 4 + Math.floor(rnd() * 3);
       for (let i = 0; i < nb; i++) {
-        const bl = h * (0.52 + rnd() * 0.36);
-        const blade = petalGeometry({ len: bl, wid: bl * 0.075, curl: 0.42 + rnd() * 0.2,
-                                      cup: 0.34, tip: "point", thick: 0.13 });
+        /* A BLADE MAY NOT REACH THE BLOOM. They were first written at up to
+           1.04 of the stem and leaned only 10 to 26 degrees off vertical,
+           which on a tall plant looked right and on a SHORT one was a
+           disaster: the daisy's heads sit at 0.27 and its blades stood 0.28
+           straight up around them, so the flower was inside a cage of its own
+           foliage and rendered in its shadow. Half to three quarters of the
+           stem is a skirt under the head. */
+        const bl = h * (0.48 + rnd() * 0.28);
+        /* 0.055 of its own length, against 0.075. At the old width a blade
+           this long came out as a green paddle, which is the third thing the
+           bed was noisy with. */
+        const blade = petalGeometry({ len: bl, wid: bl * 0.055, curl: 0.44 + rnd() * 0.22,
+                                      cup: 0.36, tip: "point", thick: 0.12 });
+        /* fanned rather than randomly turned: an even sweep with a little
+           play in it, so a clump reads as one plant's foliage and not as
+           several plants' worth landing on one spot. */
         blade.applyMatrix4(new THREE.Matrix4()
           .makeTranslation(hx, 0.01, hz)
-          .multiply(new THREE.Matrix4().makeRotationY(rnd() * Math.PI * 2))
+          .multiply(new THREE.Matrix4().makeRotationY(
+            (i / nb) * Math.PI * 2 + rnd() * 0.5))
           .multiply(new THREE.Matrix4().makeRotationX(
-            THREE.MathUtils.degToRad(12 + rnd() * 16))));
+            /* leaned well out, so they arch away from the stem rather than
+               climbing it. This is the other half of not shading the bloom. */
+            THREE.MathUtils.degToRad(22 + rnd() * 20))));
         greens.push(blade);
       }
     }
@@ -482,11 +511,18 @@ export function buildFlower(id, { hue = null, seed = null } = {}) {
        than grown. It is part of the GREENS rather than of the bloom, so it
        stays put while the bloom opens out of it, which is what a real one
        does. Sized from the bloom, not fixed, or the sunflower wears a daisy's. */
+    /* SMALLER, AND UNDER THE BLOOM RATHER THAN IN IT. At 0.42 of the petal
+       length and centred at h - 0.3R its mouth finished ABOVE the bloom's
+       origin, so on anything that opens flat it came through the middle of
+       the flower as a green saucer: on the lily it was the largest single
+       thing in the close up. The mouth now sits a hair BELOW the origin, and
+       the cup is a third smaller, so it is the collar the stem arrives in and
+       nothing else. */
     const calR = (sp.rings ? sp.rings[sp.rings.length - 1].len
-                           : sp.petalLen) * 0.42 + 0.012;
+                           : sp.petalLen) * 0.3 + 0.008;
     const cal = new THREE.ConeGeometry(calR, calR * 1.15, 9);
     cal.rotateX(Math.PI);                        /* point down, mouth up */
-    cal.translate(hx + bend, h - calR * 0.3, hz);
+    cal.translate(hx + bend, h - calR * 0.68, hz);
     greens.push(cal);
 
     /* THE BLOOM IS ITS OWN GROUP so the opening animation can scale it, the
@@ -540,13 +576,19 @@ function vary(body, id, sd) {
    in somebody's hair are one piece of code. The avatar's keepsakes are built
    from this, which is the whole reason the kit exists: this project already
    pays for the same flower maths in seven places in the 2D version. */
-/* NO TWO PETALS IN A RING ARE THE SAME. Every petal was one geometry stamped
-   out at even angles, which is what made a bloom read as manufactured: the
-   eye finds the repeat immediately. Ten percent of jitter on length, width,
-   curl, pitch and angle is enough that it stops finding one, and small
-   enough that the species is untouched, which matters because telling the
-   eight apart is the question this whole spike exists to answer. */
-const JIT = 0.1;
+/* THE JITTER WENT FROM 0.10 TO 0.02, AND THAT IS THE WHOLE OF WHY THE BLOOMS
+   WENT BACKWARDS. Ten percent on length, width, curl, pitch and angle was
+   put in to stop a ring reading as stamped out, and on a daisy's twelve
+   petals it did exactly that. On a RINGED bloom it did something else: the
+   rose and the peony carried thirty three and forty three petals overlapping
+   a few hundredths apart, so a tenth of variation on every one of them
+   turned an ordered stack of layers into a crumpled ball with no layers
+   visible in it at all.
+   The reference wins by SUBTRACTION. Its petals are regular, and what keeps
+   them from reading as manufactured is that there are few of them and each
+   one is big. Two percent is enough to take the machined edge off a silhouette
+   and nowhere near enough to hide a ring. */
+const JIT = 0.02;
 /* THE CUTE CARICATURE: a big head on a modest stem. A fifth larger and a
    tenth shorter is the standard move and what every clay reference does. It
    also helps the species read at garden distance, since the bloom is the
@@ -573,17 +615,13 @@ function dressBloom(bloom, sp, tinted, petalMat, rnd) {
   }
 
   if (sp.centre) {
-    /* A COLLAR ROUND THE CENTRE, which is the reference's trumpet read at our
-       scale. A dome sitting straight on the petals has no join, so the middle
-       of the flower is where the eye finds nothing; a ring a shade deeper
-       than the disc gives the centre a rim to sit in and reads, at garden
-       distance, as the species' own marking. */
-    const ring = mesh(
-      new THREE.TorusGeometry(sp.centre.r * 1.06, sp.centre.r * 0.26, 8, 20),
-      flatMat(sp.centre.hue, Math.min(100, sp.centre.sat + 8), Math.max(6, sp.centre.light - 13)));
-    ring.rotation.x = Math.PI / 2;
-    ring.position.y = (sp.centre.y || 0) + sp.centre.h * 0.16;
-    bloom.add(ring);
+    /* THERE WAS A COLLAR TORUS HERE AND IT WAS A MISTAKE. It was put in to
+       give the centre "a rim to sit in", reading the reference's trumpet at
+       our scale. At garden distance a ring a shade darker than the disc,
+       drawn round the widest part of it, does not read as a rim: it reads as
+       a dark tyre laid on the flower, and on the daisy and the sunflower it
+       was the first thing the eye found. The disc is a squashed sphere and
+       already meets the petals on a soft curve; it needed no help. */
     const c = mesh(discGeometry({ r: sp.centre.r, h: sp.centre.h }),
                    flatMat(sp.centre.hue, sp.centre.sat, sp.centre.light));
     /* `y` lifts a centre clear of petals that cup up around it. The poppy
@@ -621,7 +659,7 @@ export function buildBloom(id, { hue = null, scale = 1 } = {}) {
   const H = hue === null ? sp.hue : hue;
   const tint = [];
   const tinted = (lightOff = 0) => {
-    const m = flatMat(H, sp.sat, sp.light + lightOff, 0.55, true, true);
+    const m = flatMat(H, sp.sat, sp.light + lightOff, 0.55, true);
     tint.push({ mat: m, sat: sp.sat, light: sp.light + lightOff });
     return m;
   };
@@ -645,7 +683,12 @@ function addRings(bloom, sp, tinted, rnd) {
       const g = petalGeometry({
         len: jit(rnd, ring.len), wid: jit(rnd, ring.wid),
         curl: jit(rnd, ring.curl), cup: ring.cup,
-        tip: sp.tip || "round"
+        tip: sp.tip || "round",
+        /* THINNER THAN A SINGLE PETAL BLOOM'S. The pillow is what stops a
+           daisy's twelve petals reading as paper, but on a ringed bloom every
+           petal passes through two or three others, and a thick one turns each
+           of those crossings into a hard crease. Half the thickness. */
+        thick: 0.1
       });
       /* every ring is turned half a step off the one inside it, so petals
          sit in the gaps rather than stacking into columns */
@@ -669,52 +712,20 @@ function addRings(bloom, sp, tinted, rnd) {
 /* 0.55, not 0.82. A broad soft highlight rolling across a petal is a large
    part of what says the thing is solid: the references all have one. The
    green stays matter, since a shiny stem reads as plastic. */
-/* THE VEINING, PAINTED IN CODE. The reference's richness is mostly texture:
-   fine lines running base to tip down every petal. No image file ships with
-   this project, so it is drawn to a canvas once, the way the wooden sign
-   already draws its date.
-
-   IT IS A MASK, NOT A COLOUR. three multiplies `map` by `color`, so a sheet
-   that is white with darker lines only says WHERE it is darker and lets the
-   planter's chosen hue supply what colour that is. A painted texture would
-   have baked one flower's colour into every flower.
-
-   It can only ever darken, since white is the brightest a canvas goes, so
-   the base is left pure white and the veins are drawn faint over it: the
-   average comes out about 0.97, which is under the threshold of looking
-   dimmed. The lines fade at both ends rather than at one, which sidesteps
-   the question of which way three flips a texture's v. */
-let _petalTex = null;
-function petalTexture() {
-  if (_petalTex) return _petalTex;
-  const c = document.createElement("canvas");
-  c.width = 64; c.height = 256;
-  const ctx = c.getContext("2d");
-  ctx.fillStyle = "#ffffff";
-  ctx.fillRect(0, 0, 64, 256);
-  const r = mulberry(4242);
-  for (let i = 0; i < 11; i++) {
-    const x = 4 + r() * 56;
-    const w = 0.7 + r() * 1.9;
-    const a = 0.05 + r() * 0.09;
-    const g = ctx.createLinearGradient(0, 0, 0, 256);
-    g.addColorStop(0.00, "rgba(96,74,88,0)");
-    g.addColorStop(0.40, "rgba(96,74,88," + a.toFixed(3) + ")");
-    g.addColorStop(1.00, "rgba(96,74,88,0)");
-    ctx.fillStyle = g;
-    ctx.fillRect(x, 0, w, 256);
-  }
-  const t = new THREE.CanvasTexture(c);
-  t.colorSpace = THREE.SRGBColorSpace;
-  t.anisotropy = 4;
-  _petalTex = t;
-  return t;
-}
-
-function flatMat(h, s, l, rough = 0.55, vcol = false, veined = false) {
+/* THE VEINING WAS PAINTED IN CODE AND IT IS GONE. It was a white canvas with
+   eleven faint darker bands down it, used as a mask so the planter's hue
+   still came through, and read close up it did look like a petal. At garden
+   distance, which is the distance this is played at, eleven lines on a petal
+   a few dozen pixels across is not a marking, it is noise, and eight species
+   of it is a bed that will not sit still. The reference packs are FLAT
+   COLOUR with one gradient, and that is what is left: the base to tip vertex
+   shade in `petalGeometry`, which says where the throat is and nothing else.
+   `petalGeometry` still emits UVs. They cost almost nothing and they are the
+   thing a future marking, one per species rather than one for all eight,
+   would need. */
+function flatMat(h, s, l, rough = 0.55, vcol = false) {
   const m = new THREE.MeshStandardMaterial({
-    roughness: rough, metalness: 0, side: THREE.DoubleSide, vertexColors: vcol,
-    map: veined ? petalTexture() : null });
+    roughness: rough, metalness: 0, side: THREE.DoubleSide, vertexColors: vcol });
   m.color.setHSL(h / 360, s / 100, l / 100);
   return m;
 }

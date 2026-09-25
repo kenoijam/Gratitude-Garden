@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Species sheet, 3D spike</title>
+  <style>
+    @font-face { font-family: 'Fraunces'; src: url('../Fraunces.ttf') format('truetype');
+      font-weight: 100 900; font-style: normal; font-display: swap; }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; height: 100%; background: #eaf3ee; overflow: hidden; }
+    body { font-family: Arial, Helvetica, sans-serif; color: #1d6466; }
+    #sheet { position: fixed; inset: 0; }
+    #sheet canvas { display: block; }
+    #labels { position: fixed; inset: 0; pointer-events: none; }
+    .lab { position: absolute; font-size: 11.5px; font-weight: 700; color: #2f6260;
+      text-align: center; transform: translateX(-50%); }
+    .row { position: absolute; left: 10px; font-size: 11px; letter-spacing: .1em;
+      text-transform: uppercase; color: #8aa9a7; font-weight: 700; }
+    #title { position: fixed; top: 7px; left: 14px; font-family: 'Fraunces', Georgia, serif;
+      font-weight: 600; font-size: 17px; color: #0f5132; }
+  </style>
+</head>
+<body>
+  <div id="sheet"></div>
+  <div id="labels"></div>
+  <script type="module" src="./species.js"></script>
+</body>
+</html>
