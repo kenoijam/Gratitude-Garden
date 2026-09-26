@@ -156,10 +156,15 @@ body { padding-left: 0 !important; }
    and the sky and behind the headline, which is what standing IN the garden
    means here. */
 .hero-objects, .hero-mark { display: none; }
-/* TWO DRAFTS ON ONE GATE. ?hero=2 keeps the copy in the middle with the
-   objects around it; ?hero=3 is the same scene with no headline at all, which
-   is the reference exactly. Everything below is shared by both. */
-[data-hero="2"] .hero-objects, [data-hero="3"] .hero-objects {
+/* THREE DRAFTS ON ONE GATE, and the shared rules key off `[data-hero]` with
+   no value rather than listing every variant: the gate only sets the
+   attribute when ?hero= is present at all, so the bare selector cannot be
+   matched by accident and it stops growing every time a draft is added.
+     ?hero=2  copy in the middle, objects around it, the garden behind
+     ?hero=3  the same with no headline at all
+     ?hero=4  copy in the middle, objects around it, NO garden behind
+*/
+[data-hero] .hero-objects {
   display: block; position: absolute; inset: 0; z-index: 4;
   /* the layer must not eat the meadow's own taps: a flower in it pops the
      gardens' sparkle burst, and a full width sheet over the top would
@@ -247,7 +252,7 @@ body { padding-left: 0 !important; }
    measured, each one overlapped the subtitle by 141px. At 540 the lanes are
    242 wide and the objects clear the text by about 20px. This is scoped to
    the draft, so the live hero keeps its full measure. */
-[data-hero="2"] .hero-text-block { max-width: 540px; }
+[data-hero] .hero-text-block { max-width: 540px; }
 .ho-personal { left: 13%; bottom: 38%; --ho-w: 124px; }
 .ho-bouquet  { left: 87%; bottom: 38%; --ho-w: 122px; }
 .ho-shared   { left: 50%; bottom: 11%; --ho-w: 180px; }
@@ -257,12 +262,30 @@ body { padding-left: 0 !important; }
    three objects, a sun, birds, motes and a meadow in it the same five are
    three too many. The two kept are one from each speed group, so they still
    overtake each other rather than reading as printed on a sheet. */
-[data-hero="2"] .cloud-3, [data-hero="2"] .cloud-4, [data-hero="2"] .cloud-5,
-[data-hero="3"] .cloud-3, [data-hero="3"] .cloud-4, [data-hero="3"] .cloud-5 { display: none; }
+[data-hero] .cloud-3, [data-hero] .cloud-4, [data-hero] .cloud-5 { display: none; }
 
 /* ?hero=3: the headline goes and the wordmark is the only type on the page */
 [data-hero="3"] .hero-text-block { display: none; }
 [data-hero="3"] .ho-personal, [data-hero="3"] .ho-bouquet { bottom: 40%; }
+
+/* ?hero=4: NO GARDEN BEHIND THE OBJECTS. The meadow is eleven flowers, three
+   hills, a ground, butterflies and motes, and every one of them is a detailed
+   thing competing with the three detailed things in front of it. Without it
+   the hero is the sky gradient alone, which already ends in cream at the
+   foot, so the objects stand on a pale surface with their own soft shadows
+   under them. That is the reference's arrangement: objects lying on an empty
+   ground, and nothing else in the picture.
+
+   THE COPY NEEDS ITS SECOND AUTO MARGIN BACK. `.hero` is a flex column and
+   `.hero-text-block` is centred by having `margin-top: auto` against the
+   meadow's own `margin-top: auto` below it, the two splitting the free space.
+   Remove the meadow and that single auto margin pushes the copy to the BOTTOM
+   of the hero instead. */
+[data-hero="4"] .meadow-scene { display: none; }
+[data-hero="4"] .hero-text-block { margin-bottom: auto; }
+[data-hero="4"] .ho-personal { bottom: 34%; }
+[data-hero="4"] .ho-bouquet  { bottom: 34%; }
+[data-hero="4"] .ho-shared   { bottom: 9%; }
 
 .hero-mark {
   position: absolute; top: 30px; left: 40px; z-index: 6; text-decoration: none;
@@ -270,7 +293,7 @@ body { padding-left: 0 !important; }
   font-weight: 600; font-size: 1.24rem; color: var(--darkteal); letter-spacing: .01em;
 }
 .hero-mark em { font-style: italic; color: var(--teal); }
-[data-hero="2"] .hero-mark, [data-hero="3"] .hero-mark { display: block; }
+[data-hero] .hero-mark { display: block; }
 
 /* NO CURSOR RULE HERE. `a` is already in garden-cursor.js's clickable list,
    so these take the sparkle pointer for free, and a `cursor: pointer` written
@@ -296,11 +319,13 @@ body { padding-left: 0 !important; }
      laptop drop back into a row under it. The breakpoint was 900 and that was
      too low: the collision above happens the moment the lanes fall under
      about 210px, which is a window of roughly 1000 with a 540 copy. */
-  [data-hero="2"] .hero-text-block { max-width: 740px; }
+  [data-hero] .hero-text-block { max-width: 740px; }
   .ho-personal { left: 16%; bottom: 25%; --ho-w: 76px; }
   .ho-shared   { left: 50%; bottom: 16%; --ho-w: 116px; }
   .ho-bouquet  { left: 84%; bottom: 25%; --ho-w: 74px; }
   [data-hero="3"] .ho-personal, [data-hero="3"] .ho-bouquet { bottom: 30%; }
+  [data-hero="4"] .ho-personal, [data-hero="4"] .ho-bouquet { bottom: 30%; }
+  [data-hero="4"] .ho-shared { bottom: 12%; }
   .hero-mark { top: 18px; left: 18px; font-size: 1.05rem; }
   .ho-name { font-size: .82rem; margin-top: 6px; }
   .ho::after { bottom: 20px; height: 9px; }
