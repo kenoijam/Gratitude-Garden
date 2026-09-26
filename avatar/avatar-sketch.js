@@ -9,13 +9,17 @@
   "use strict";
   var A = window.AvatarDraw;
 
+  /* SIX, which is the reference's count, and every one is a real question.
+     Skin and hair share a step so the FLOWER can have one of its own: it is
+     part of the gardener rather than a keepsake, and with a hood on, hair is
+     a fringe and little else. */
   var STEPS = [
-    { id: "begin", name: "Beginning" },
-    { id: "skin",  name: "Gardener" },
-    { id: "hair",  name: "Hair" },
-    { id: "top",   name: "Clothes" },
-    { id: "keep",  name: "Keepsakes" },
-    { id: "done",  name: "Done" }
+    { id: "begin",  name: "Beginning" },
+    { id: "skin",   name: "Gardener" },
+    { id: "flower", name: "Flower" },
+    { id: "top",    name: "Clothes" },
+    { id: "keep",   name: "Keepsakes" },
+    { id: "done",   name: "Done" }
   ];
   var at = 0;
   var look = Object.assign({}, A.DEFAULT_LOOK);
@@ -123,6 +127,29 @@
       }));
     });
   }
+  /* THE HOOD IS NOT GATED BY PLANTING and the keepsakes are, which is a
+     deliberate split: the flower you wear is who your gardener IS, so it is
+     free to choose, and a keepsake is something a day in the garden gave you. */
+  function buildFlower() {
+    var g = $("avFlower"); g.innerHTML = "";
+    A.SPECIES_ORDER.forEach(function (id) {
+      var box = document.createElement("span");
+      box.appendChild(thumb(id, 46));
+      box.appendChild(label(A.BLOOMS[id].name));
+      box.style.display = "flex";
+      box.style.flexDirection = "column";
+      box.style.alignItems = "center";
+      box.style.gap = "6px";
+      g.appendChild(tile(look.flower === id, box, function () {
+        look.flower = id; buildFlower(); paint();
+      }));
+    });
+    var h = A.HOOD[look.flower];
+    $("avFlowerNote").textContent = (h && h.mode !== "ring")
+      ? A.BLOOMS[look.flower].name + " has no ring of petals to sit inside, so it is worn on top."
+      : "";
+  }
+
   function buildTop() {
     var g = $("avTop"); g.innerHTML = "";
     A.TOPS.forEach(function (h) {
@@ -181,7 +208,7 @@
     var worn = A.SLOTS.filter(function (s) { return look[s]; })
       .map(function (s) { return A.KEEPSAKES[look[s]].name; });
     row.textContent = "skin " + look.skin + ", hair " + A.SHAPES[look.hair] +
-      " in " + look.hairCol + ", top hue " + look.top +
+      " in " + look.hairCol + ", " + look.flower + ", top hue " + look.top +
       (worn.length ? ", wearing " + worn.join(" and ") : ", nothing worn yet");
   }
 
@@ -197,13 +224,14 @@
     }
     $("avBack").disabled = at === 0;
     $("avNext").textContent = at === STEPS.length - 1 ? "start again" : "turn the page";
+    if (STEPS[at].id === "flower") buildFlower();
     if (STEPS[at].id === "keep") buildKeeps();
     if (STEPS[at].id === "done") buildDone();
     paint();
   }
 
   function boot() {
-    buildSteps(); buildSkin(); buildHair(); buildTop();
+    buildSteps(); buildSkin(); buildHair(); buildFlower(); buildTop();
     $("avName").addEventListener("input", function () {
       look.name = this.value.trim(); paint();
     });
@@ -213,7 +241,7 @@
     $("avNext").addEventListener("click", function () {
       if (at < STEPS.length - 1) { at++; }
       else { at = 0; look = Object.assign({}, A.DEFAULT_LOOK); $("avName").value = "";
-             buildSkin(); buildHair(); buildTop(); }
+             buildSkin(); buildHair(); buildFlower(); buildTop(); }
       show();
     });
     show();

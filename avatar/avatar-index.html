@@ -47,18 +47,28 @@
         </section>
 
         <section class="av-step" data-step="skin" hidden>
-          <h2>choose a skin</h2>
-          <p class="av-note">Four, because every one of them has to read at the
+          <h2>choose a gardener</h2>
+          <p class="av-note">Four of each, because every one has to read at the
              size a garden draws a person.</p>
+          <p class="av-label">Skin</p>
           <div class="av-grid av-grid-4" id="avSkin"></div>
+          <p class="av-label">Hair</p>
+          <div class="av-grid av-grid-3" id="avHairShape"></div>
+          <p class="av-label">Hair colour</p>
+          <div class="av-grid av-grid-4" id="avHairCol"></div>
         </section>
 
-        <section class="av-step" data-step="hair" hidden>
-          <h2>choose the hair</h2>
-          <p class="av-note">A shape, then a colour.</p>
-          <div class="av-grid av-grid-3" id="avHairShape"></div>
-          <p class="av-label">Colour</p>
-          <div class="av-grid av-grid-4" id="avHairCol"></div>
+        <!-- THE FLOWER IS WORN, and it is part of the gardener rather than a
+             keepsake, which is why it gets a step of its own. Two of the eight
+             cannot be a hood and are worn on top instead: a tulip has no ring
+             of petals to put a face inside and lavender is a spike. -->
+        <section class="av-step" data-step="flower" hidden>
+          <h2>choose your flower</h2>
+          <p class="av-note">Worn, not carried. Six of the eight ring the face
+             like a hood; the tulip sits on top as a bonnet and the lavender
+             rises behind as a plume, since neither has petals to sit inside.</p>
+          <div class="av-grid av-grid-4" id="avFlower"></div>
+          <p class="av-note av-quiet" id="avFlowerNote"></p>
         </section>
 
         <section class="av-step" data-step="top" hidden>
@@ -70,8 +80,9 @@
 
         <section class="av-step" data-step="keep" hidden>
           <h2>choose keepsakes</h2>
-          <p class="av-note">One for each flower you have planted, across three
-             places: head, shoulders and carried. Three can be worn at once.</p>
+          <p class="av-note">One for each flower you have planted, at the
+             shoulders or carried. Two can be worn at once, and the flower you
+             already chose has the head.</p>
           <div class="av-keeps" id="avKeeps"></div>
           <p class="av-note av-quiet" id="avKeepNote"></p>
         </section>
