@@ -21,11 +21,20 @@ const hsl = (h, s, l) => new THREE.MeshStandardMaterial({ roughness: 0.88, metal
   color: new THREE.Color().setHSL(h / 360, s / 100, l / 100, THREE.SRGBColorSpace)
 });
 
-/* Four of each, which is a choice rather than a gesture at one. A palette
-   this size is read at a glance and every entry is distinct at the distance
-   the garden is played at; sixteen browns are sixteen the same. */
-export const SKINS = [0xf6e3cd, 0xe4bd95, 0xbb8354, 0x76492c];
-export const HAIRS = [0x3a2a1e, 0x14131a, 0xa4642f, 0xd9c08a];
+/* EIGHT SKINS AND TWELVE HAIRS, AND THESE ARE `avatar/avatar-draw.js`'s
+   LISTS, IN ITS ORDER. A look stores `skin` and `hairCol` as INDICES, and the
+   whole point of a look being data is that the same row of numbers draws the
+   flat gardener on the web and the figure here, so the moment these two
+   disagree one index means two different people. Change one and change the
+   other; do not sort, insert or dedupe either of them on its own.
+   The skins are a ramp, light to dark. The hairs are eight naturals, dark to
+   light, then four that no head grows, which is the one choice on the figure
+   with no bearing on anything else. */
+export const SKINS = [0xfbeedd, 0xf6e3cd, 0xeed0ae, 0xe4bd95,
+                      0xcf9d6e, 0xbb8354, 0x96603a, 0x76492c];
+export const HAIRS = [0x14131a, 0x3a2a1e, 0x7a5540, 0xa4642f,
+                      0xb0412c, 0xd9c08a, 0x9c9aa2, 0xefe7d6,
+                      0xe489b2, 0x6fc6ae, 0xa98ede, 0x74aee2];
 export const SHAPES = ["Short", "Bun", "Long"];
 
 /* Each keepsake names the species that gives it and the slot it fills, so
@@ -44,8 +53,11 @@ export const SLOTS = ["head", "shoulders", "held"];
 export const keepsakeOf = species =>
   Object.keys(KEEPSAKES).find(k => KEEPSAKES[k].from === species) || null;
 
+/* `skin` and `hairCol` are 1, not 0, because the two lists were REORDERED
+   when they grew and these are where the old defaults landed: the figure a
+   first visitor sees is the one they have always seen. */
 export const DEFAULT_LOOK = {
-  skin: 0, hair: 0, hairCol: 0, top: 172,      /* the gardens' own teal */
+  skin: 1, hair: 0, hairCol: 1, top: 172,      /* the gardens' own teal */
   head: null, shoulders: null, held: null
 };
 

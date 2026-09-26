@@ -79,8 +79,28 @@
     lavender:  { mode: "sprout", stem: 14, R: 19, dy: 0 }
   };
 
-  var SKINS = ["#f6e3cd", "#e4bd95", "#bb8354", "#76492c"];
-  var HAIRS = ["#3a2a1e", "#14131a", "#a4642f", "#d9c08a"];
+  /* EIGHT SKINS AS A RAMP, and the four that were here are IN it rather
+     than in front of it. A swatch grid that is not a ramp reads as a random
+     handful, so the four new ones are interleaved: the light end gains one
+     above `#f6e3cd` and the rest fall between the old four. Both grids are
+     `av-grid-4`, so eight and twelve fill two and three clean rows with no
+     orphan tile at any width.
+     THEY WERE REORDERED, WHICH IS ONLY SAFE BECAUSE NOTHING IS SAVED YET. A
+     look stores `skin` and `hairCol` as INDICES into these lists, so once a
+     gardener can be kept against an account neither list may ever be
+     reordered again, only appended to. `DEFAULT_LOOK` moved with them so the
+     figure a first visitor sees is unchanged. */
+  var SKINS = ["#fbeedd", "#f6e3cd", "#eed0ae", "#e4bd95",
+               "#cf9d6e", "#bb8354", "#96603a", "#76492c"];
+  /* TWELVE HAIRS IN THREE ROWS, and the row break falls where the KIND
+     changes: eight naturals, dark to light, then four that no head grows.
+     The unreal four are last because a picker that opens on pink says the
+     gardener is a toy, and they are worth having anyway: this is the one
+     choice on the figure with no bearing on anything else, so it is the one
+     place somebody can simply please themselves. */
+  var HAIRS = ["#14131a", "#3a2a1e", "#7a5540", "#a4642f",
+               "#b0412c", "#d9c08a", "#9c9aa2", "#efe7d6",
+               "#e489b2", "#6fc6ae", "#a98ede", "#74aee2"];
   /* THE FRINGE AND THE BACK ARE TWO SEPARATE CHOICES. They were nine fixed
      styles, so a blunt fringe could only ever come with a bob and a side
      parting only ever with one long piece. Split, twelve tiles buy
@@ -145,7 +165,7 @@
   var NO_NONE = {};
 
   var DEFAULT_LOOK = {
-    name: "", skin: 0, fringe: 0, back: 0, hairCol: 0,
+    name: "", skin: 1, fringe: 0, back: 0, hairCol: 1,
     flower: "daisy", flowerHue: null, top: 172,
     clothes: null, neck: null, feet: null, hold: null, face: null,
     tints: {}
@@ -595,9 +615,10 @@
   /* THE TROUSERS DO NOT FOLLOW THE TOP. They were `hsl(L.top, 16, 38)`, so
      a blue top put the legs in a blue that is the Denim tint almost exactly,
      and a Denim welly then vanished into them: one colour from the hem to the
-     sole. They are a warm stone now, which is what work trousers are and what
-     no tint in the palette sits on. */
-  var TROUSER = hsl(30, 9, 44);
+     sole. They are a stone grey now, which is what work trousers are. AT 5
+     SATURATION NOTHING IN `TINTS` CAN BE MISTAKEN FOR THEM: the nearest is
+     Clay at hue 18 and saturation 42. It was 9 and read faintly tan. */
+  var TROUSER = hsl(34, 5, 47);
   function drawLegs(ctx, id, L, skin) {
     var w = WEAR[id] || { bare: false };
     ctx.fillStyle = w.bare ? skin : TROUSER;
@@ -977,16 +998,18 @@
       ctx.fillStyle = hsl(T.h, Math.min(60, T.s + 10), Math.max(28, T.l - 20), 0.55);
       /* THEY SIT BELOW THE EYE LINE. The eyes reach F.y + 11.5, so anything
          above that lands ON them, which is where the first set was. */
-      /* EIGHT SMALL ONES ACROSS THE NOSE AND THE INNER CHEEK, not twelve
+      /* SIX SMALL ONES ACROSS THE NOSE AND THE INNER CHEEK, not twelve
          spread to the edge of the face. They reached x plus or minus 28 at
          radius 2.1, which on a face of 44 is the whole width of it, and at
-         that size a freckle reads as a spot.
+         that size a freckle reads as a spot. The lowest pair, out at y 25,
+         went as well: that is level with the corners of the mouth, and a
+         freckle beside a mouth reads as something on the chin.
          BELOW THE EYES AND CLEAR OF THE MOUTH: the eyes reach F.y + 11.5 and
          the mouth runs from F.y + 18 across x plus or minus 6, so the band
          sits at 13 to 24 and stays outside that. */
       [[-4, 13], [4, 13],
-       [-21, 15], [-14, 19], [-17, 25],
-       [21, 15], [14, 19], [17, 25]].forEach(function (p) {
+       [-21, 15], [-14, 19],
+       [21, 15], [14, 19]].forEach(function (p) {
         disc(ctx, F.x + p[0], F.y + p[1], 1.4);
       });
       return;
