@@ -90,15 +90,19 @@
       }));
     });
   }
-  /* NINE SHAPES, drawn on a real head in the skin and colour already chosen,
-     because Fringe, Bob and Parted are three words for three brow lines and
-     only a silhouette tells them apart. Nine fills a three column grid
-     exactly, so there is no orphan tile at either width. */
+  /* THE FRINGE AND THE BACK ARE TWO ROWS, because they are two choices.
+     Twelve tiles buy thirty-six looks where nine fixed styles bought nine. */
   function buildHair() {
-    var sh = $("avHairShape"); sh.innerHTML = "";
-    A.SHAPES.forEach(function (n, i) {
-      sh.appendChild(pic("hair", i, 46, n, look.hair === i, function () {
-        look.hair = i; buildHair(); paint();
+    var fr = $("avHairShape"); fr.innerHTML = "";
+    A.FRINGES.forEach(function (n, i) {
+      fr.appendChild(pic("fringe", i, 44, n, look.fringe === i, function () {
+        look.fringe = i; buildHair(); paint();
+      }));
+    });
+    var bk = $("avHairBack"); bk.innerHTML = "";
+    A.BACKS.forEach(function (n, i) {
+      bk.appendChild(pic("back", i, 44, n, look.back === i, function () {
+        look.back = i; buildHair(); paint();
       }));
     });
     var co = $("avHairCol"); co.innerHTML = "";
@@ -108,6 +112,7 @@
       }));
     });
   }
+
   /* THE HOOD IS NOT GATED BY PLANTING and the keepsakes are, which is a
      deliberate split: the flower you wear is who your gardener IS, so it is
      free to choose, and a keepsake is something a day in the garden gave you. */
@@ -115,11 +120,17 @@
     var g = $("avFlower"); g.innerHTML = "";
     A.SPECIES_ORDER.forEach(function (id) {
       g.appendChild(pic("flower", id, 48, A.BLOOMS[id].name, look.flower === id,
-        function () { look.flower = id; buildFlower(); paint(); }));
+        function () {
+          /* PICKING A SPECIES RESETS THE HUE to that flower's own, so a new
+             choice always arrives in the colour it was drawn for. */
+          look.flower = id; look.flowerHue = null; buildFlower(); paint();
+        }));
     });
     /* THE TEST IS `=== "sprout"`, and it used to be `!== "ring"`. No species
        has ever been called `ring`, so the line fired on all eight and told
        somebody picking a rose that a rose has no ring of petals. */
+    $("avFlowerHue").value = look.flowerHue == null
+      ? A.BLOOMS[look.flower].hue : look.flowerHue;
     var h = A.HOOD[look.flower];
     $("avFlowerNote").textContent = (h && h.mode === "sprout")
       ? A.BLOOMS[look.flower].name + " has no ring of petals to sit inside, so it grows from the head instead."
@@ -143,6 +154,9 @@
       /* THREE COLUMNS, so each item's three colours is exactly one row: three
          Boots, then three Clogs, then three Wellies. */
       row.className = "av-grid av-grid-wear av-grid-3";
+      /* AN ITEM WITH NO COLOURS IS ONE TILE. What is held and what is on the
+         face carry none: three watering cans in three greens is the same
+         choice printed three times. */
       ids.forEach(function (id) {
         var tints = A.tintsFor(id);
         if (!tints.length) { row.appendChild(variant(slot, id, null)); return; }
@@ -204,9 +218,12 @@
     var row = $("avRow");
     var worn = A.SLOTS.filter(function (s) { return look[s]; })
       .map(function (s) { return A.WEAR[look[s]].name.toLowerCase(); });
-    row.textContent = "skin " + look.skin + ", hair " + A.SHAPES[look.hair] +
-      " in " + look.hairCol + ", " + look.flower + ", top hue " + look.top +
-      ", wearing " + worn.join(", ");
+    row.textContent = "skin " + look.skin + ", " + A.FRINGES[look.fringe] +
+      " fringe and " + A.BACKS[look.back] + " in " + look.hairCol + ", " +
+      look.flower + " at hue " +
+      (look.flowerHue == null ? A.BLOOMS[look.flower].hue : look.flowerHue) +
+      ", top hue " + look.top +
+      (worn.length ? ", wearing " + worn.join(", ") : ", nothing else");
   }
 
   /* ---------------------------------------------------------------- flow */
@@ -230,6 +247,9 @@
 
   function boot() {
     buildSteps(); buildSkin(); buildHair(); buildFlower(); buildTop(); buildWear();
+    $("avFlowerHue").addEventListener("input", function () {
+      look.flowerHue = +this.value; paint();
+    });
     $("avName").addEventListener("input", function () {
       look.name = this.value.trim(); paint();
     });

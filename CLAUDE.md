@@ -1273,12 +1273,20 @@ Headings on the garden pages come from two places. `.gg-title` and `#tips-card h
 - **ANYTHING LONGER THAN THE FACE GOES BEHIND THE FLOWER.** `drawHairLong` paints before the bonnet, so a plait or a length is hidden by the crown and the petals and emerges at the bonnet's LOWER CORNERS, which is what the bear, the chick, the penguin and the cat in the reference sheet all do.
 - **The order on the head is therefore**: long hair, flower, body, then the mass clipped to the opening, the face oval, the fringe clipped to the face, the ears, the marks.
 - **TWO SMALL EARS at the sides of the opening.** Every one of the hood references has them and they are most of why those heads read as heads rather than as discs.
-- **Buns and a ponytail still cannot exist**, since both are defined by what sits above and outside the head, where the flower is. The nine are Fringe, Parted, Side part, Bob, Long, Cropped, Curly, Wavy, Braids.
+- **THE FRINGE AND THE BACK ARE TWO SEPARATE CHOICES.** They were nine fixed styles, so a blunt fringe could only ever come with a bob and a side parting only ever with one long piece. Split, **twelve tiles buy thirty-six looks where nine used to buy nine**, and the two halves are drawn in different places anyway: a fringe is clipped to the face and a back falls out of the bonnet from the crown. `FRINGES` is Blunt, Parted, Side part, High, Curly, Wavy; `BACKS` is Tucked in, Bob, Long, Wavy, Braids, Curls.
+- **A fringe tile shows its fringe on a tucked-in head and a back tile shows its back under a blunt fringe**, so each tile is only ever about the one thing it changes.
+- **Buns and a ponytail still cannot exist**, since both are defined by what sits above and outside the head, where the flower is.
 
 **EVERY SLOT IS THREE ITEMS IN THREE COLOURS: nine tiles in three clean rows.** Every colour is its own tile, at three columns so an item's three land side by side: three Boots, then three Clogs, then three Wellies. A swatch row under the chosen item was tried first and it put the colours a step away from the choice and hid them until something was picked.
 
 - **THERE ARE NO `None` TILES AND NO `plain`.** Tapping the item already chosen takes it off. An empty clothes slot IS the plain body, whose colour is the row of six directly above it, so a Plain tile was that same choice printed twice; `NO_NONE` is now empty and kept only so a slot could be made compulsory again.
-- **Three slots had to gain a third item** to make the rows even: a **Backpack** at the shoulder, a **Trug basket** in hand and **Freckles** on the face. Only the straps of a backpack show on a figure facing you, which is the whole of what one looks like from the front; a trug is a shallow oval on a handle, which neither of the other two carried things is; and the freckles are the one thing in that row that is not eyewear.
+- **WHAT IS HELD AND WHAT IS ON THE FACE CARRY NO COLOURS**, and they are one row each. Three watering cans in three greens is the same choice printed three times.
+- **A Backpack and a Trug basket were built to even the rows out and both were cut.** The backpack read as a **letter H**, since from the front all a backpack is is two straps and a chest clip; and the trug was a shallow dark oval that read as a hammock. The shoulder and the hand keep two items each and the rows are simply shorter.
+- **Freckles stayed, and they sit BELOW the eye line.** The eyes reach `F.y + 11.5`, so the first set landed on them.
+
+**THE FLOWER TAKES A CHOSEN HUE, on the project's own rainbow slider.** Both gardens' planter and the bouquet's sender already move a flower's hue that way, so the gardener's does too rather than inventing a third way of choosing a colour. The saturation and lightness stay the SPECIES', so a re-coloured daisy is still a pastel daisy rather than whatever the slider lands on, and picking a different species resets the hue to that flower's own.
+
+**A BOOT'S SHAFT HALVES ON BARE LEGS.** With shorts on the leg is 52 pixels of skin and a welly's shaft is 54, so it swallowed the whole thing and the shorts appeared to sit straight on the boot.
 
 **THREE COLOURS PER ITEM, not a single fixed one and not the whole palette.** Every garment and accessory carried a hard-coded colour, so a gardener was a figure in their own hue with a fixed blue dungaree and a fixed brown boot stuck on. `TINTS` holds six, each `WEAR` entry names the three that suit it and the one it starts in, and `look.tints` overrides per SLOT.
 

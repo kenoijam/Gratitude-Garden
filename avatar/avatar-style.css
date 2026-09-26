@@ -145,6 +145,25 @@ button, a, [role="button"], summary, label[for] { touch-action: manipulation; }
   border: 1.5px solid #bde0d6; font: inherit;
 }
 .av-tint.is-on { border-color: #26a69a; box-shadow: 0 0 0 2px #fff, 0 0 0 3.5px #26a69a; }
+/* THE HUE SLIDER IS THE PROJECT'S OWN. Both gardens and the bouquet let
+   somebody move a flower's hue on a rainbow track, so the gardener's flower
+   does too rather than inventing a third way of choosing a colour. */
+.av-hue {
+  -webkit-appearance: none; appearance: none;
+  width: 100%; height: 14px; border-radius: 999px; margin: 2px 0 4px;
+  border: 1.5px solid #bde0d6; cursor: pointer;
+  background: linear-gradient(90deg, hsl(0,60%,62%), hsl(60,60%,62%),
+    hsl(120,60%,62%), hsl(180,60%,62%), hsl(240,60%,62%), hsl(300,60%,62%),
+    hsl(360,60%,62%));
+}
+.av-hue::-webkit-slider-thumb {
+  -webkit-appearance: none; width: 22px; height: 22px; border-radius: 50%;
+  background: #fff; border: 2.5px solid var(--darkteal); cursor: pointer;
+}
+.av-hue::-moz-range-thumb {
+  width: 22px; height: 22px; border-radius: 50%;
+  background: #fff; border: 2.5px solid var(--darkteal); cursor: pointer;
+}
 
 /* ── keepsakes ─────────────────────────────────────────────────────────── */
 .av-keeps { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
