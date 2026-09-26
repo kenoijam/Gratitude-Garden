@@ -141,6 +141,131 @@ body { padding-left: 0 !important; }
 .meadow-scene { margin-top: auto; flex: 0 0 auto; position: relative; margin-left: -5rem; margin-right: -5rem; margin-bottom: 0; line-height: 0; overflow: visible; display: block; }
 .meadow-scene canvas { display: block; }
 
+/* ── HERO OBJECTS, A DRAFT ────────────────────────────────────────────────
+   Off unless the page is opened with ?hero=2, which sets data-hero on <html>.
+   Delete that one gate to promote it, or delete this block to drop it.
+
+   After uncomfyworld.com: objects scattered on an open ground, each one
+   sparkling, each naming itself under the cursor, each going somewhere. The
+   mechanic transferred; the brown desk did not, because this hero is a pale
+   teal sky and that is the page's own opening colour.
+
+   Z-INDEX 4 IS THE ONLY VALUE THAT WORKS. The clouds and the sun are at 2,
+   the birds at 3 and the copy at 5, and the meadow canvas is in normal flow
+   with no z-index of its own. So 4 puts the objects in front of the meadow
+   and the sky and behind the headline, which is what standing IN the garden
+   means here. */
+.hero-objects { display: none; }
+[data-hero="2"] .hero-objects {
+  display: block; position: absolute; inset: 0; z-index: 4;
+  /* the layer must not eat the meadow's own taps: a flower in it pops the
+     gardens' sparkle burst, and a full width sheet over the top would
+     swallow every one of them. Each object takes its events back. */
+  pointer-events: none;
+}
+.ho {
+  position: absolute; pointer-events: auto; text-decoration: none;
+  display: flex; flex-direction: column; align-items: center;
+  transform: translateX(-50%);
+}
+/* A SHADOW THAT DOES NOT BOB. It sits on the anchor rather than on the art,
+   because the art is what floats: a shadow rising and falling with the object
+   reads as the ground moving rather than as the object leaving it. */
+.ho::after {
+  content: ""; position: absolute; left: 50%; bottom: 26px;
+  width: 58%; height: 13px; transform: translateX(-50%);
+  background: radial-gradient(ellipse at center,
+              rgba(29,100,102,0.20) 0%, rgba(29,100,102,0.10) 45%, rgba(29,100,102,0) 72%);
+  transition: width .35s ease, opacity .35s ease; z-index: -1;
+}
+.ho:hover::after, .ho:focus-visible::after { width: 50%; opacity: .75; }
+.ho-art { display: block; animation: hoBob 5.2s ease-in-out infinite; }
+.ho-art svg {
+  display: block; width: var(--ho-w, 130px); height: auto;
+  transition: transform .34s cubic-bezier(.34,1.3,.5,1);
+  filter: drop-shadow(0 4px 10px rgba(29,100,102,0.14));
+}
+/* THE BOB AND THE LIFT ARE ON TWO DIFFERENT ELEMENTS, and they have to be:
+   both are transforms, so on one element the hover would simply replace the
+   idle float and the object would drop to the ground as you reached it. */
+.ho:hover .ho-art svg, .ho:focus-visible .ho-art svg { transform: translateY(-13px) scale(1.07); }
+@keyframes hoBob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-7px); } }
+/* each on its own period, or the three rise and fall together and the row
+   reads as the page tilting. Same rule the hero's flowers sway by. */
+.ho-personal .ho-art { animation-duration: 5.2s; }
+.ho-shared   .ho-art { animation-duration: 6.4s; animation-delay: -2.1s; }
+.ho-bouquet  .ho-art { animation-duration: 5.8s; animation-delay: -3.6s; }
+
+/* THE SPARKLE IS THE PROJECT'S OWN, four outer points with the inner corners
+   at 0.35 of the radius, which is `drawNewestSparkles` exactly: the shape the
+   gardens throw when a flower is planted and the shape the page's drifting
+   motes are drawn as. Borrowing the reference's would have put a fourth kind
+   of sparkle on a site that already has one. */
+.ho-spark path { fill: #fbe484; opacity: 0; transition: opacity .3s ease; }
+.ho:hover .ho-spark path, .ho:focus-visible .ho-spark path {
+  opacity: 1; animation: hoTwinkle 1.7s ease-in-out infinite;
+}
+.ho-spark path:nth-child(2) { animation-delay: .34s; }
+.ho-spark path:nth-child(3) { animation-delay: .68s; }
+@keyframes hoTwinkle { 0%, 100% { opacity: 1; } 50% { opacity: .35; } }
+
+.ho-name {
+  font-family: 'Fraunces', 'Georgia', serif; font-variation-settings: 'SOFT' 50, 'WONK' 0;
+  /* --pale-card-ink, NOT --darkteal, and it was measured. These labels land
+     on the meadow's own grass, and #1d6466 on #7ec4b4 is 3.40 against the 4.5
+     body text needs: on screen it read as pale rather than as dark, which is
+     exactly what that ratio looks like. #14494b is 5.01 there and 6.9 on the
+     sky above it, so it passes wherever the object happens to stand. */
+  font-weight: 600; font-size: 1.02rem; color: var(--pale-card-ink);
+  margin-top: 10px; white-space: nowrap;
+  opacity: 0; transform: translateY(5px);
+  transition: opacity .28s ease, transform .28s ease;
+}
+.ho:hover .ho-name, .ho:focus-visible .ho-name { opacity: 1; transform: translateY(0); }
+
+/* THE MIDDLE ONE STANDS NEAREST, so it is the lowest and the largest and the
+   outer two sit back and smaller. It was written the other way round first,
+   with the middle raised, and that failed twice over: on a horizon higher up
+   the screen means further away, so a raised middle read as the far object
+   being the big one, and its top blooms ran into the last line of the
+   subtitle. Lowest and largest also puts the arc's weight where the eye
+   already is. */
+/* THEY OVERLAP THE MEADOW, they do not hover above it. At 27 and 17 percent
+   there was a band of empty sky between the objects and the grass and they
+   read as floating in front of the garden rather than standing in it. Dropped
+   until each one's shadow lands on the ground the meadow's own flowers grow
+   out of. */
+.ho-personal { left: 17%; bottom: 19%; --ho-w: 118px; }
+.ho-shared   { left: 50%; bottom: 10%; --ho-w: 186px; }
+.ho-bouquet  { left: 83%; bottom: 19%; --ho-w: 116px; }
+
+/* NO CURSOR RULE HERE. `a` is already in garden-cursor.js's clickable list,
+   so these take the sparkle pointer for free, and a `cursor: pointer` written
+   in this stylesheet would lose to it anyway: every rule that file writes
+   carries !important. */
+
+@media (hover: none) {
+  /* A LABEL NOBODY CAN HOVER IS A LABEL NOBODY READS. The reference gets away
+     with hiding its names because a book and an envelope say what they are; a
+     pot and a patch of ground do not say which garden they open. */
+  .ho-name { opacity: 1; transform: none; }
+  .ho-spark path { opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ho-art { animation: none; }
+  .ho:hover .ho-art svg, .ho:focus-visible .ho-art svg { transform: none; }
+  .ho:hover .ho-spark path, .ho:focus-visible .ho-spark path { animation: none; }
+}
+@media (max-width: 900px) {
+  /* one row along the foot, since three points of an arc need width the
+     phone does not have, and the copy above them grows taller as it wraps */
+  .ho-personal { left: 16%; bottom: 25%; --ho-w: 76px; }
+  .ho-shared   { left: 50%; bottom: 17%; --ho-w: 116px; }
+  .ho-bouquet  { left: 84%; bottom: 25%; --ho-w: 74px; }
+  .ho-name { font-size: .82rem; margin-top: 6px; }
+  .ho::after { bottom: 20px; height: 9px; }
+}
+
 /* ── BUTTONS ── */
 .btn-primary { background: var(--darkteal); color: var(--cream); padding: 0.9rem 2.4rem; border-radius: 50px; font-family: Arial,Helvetica,sans-serif; font-size: 1rem; font-weight: 700; text-decoration: none; border: none; cursor: pointer; transition: background 0.3s,transform 0.2s,box-shadow 0.3s; box-shadow: 0 4px 16px rgba(29,100,102,0.28); display: inline-flex; align-items: center; justify-content: center; }
 .btn-primary:hover { background: var(--teal); transform: translateY(-2px); color: var(--cream); }

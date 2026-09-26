@@ -35,6 +35,17 @@
   <link rel="stylesheet" href="styles.css"/>
 </head>
 <body>
+<!-- The hero objects draft is gated here and nowhere else. Set on <html>
+     rather than <body> so the rule can be written as a plain descendant
+     selector, and read before first paint so nothing flashes. -->
+<script>
+  (function () {
+    try {
+      var v = new URLSearchParams(location.search).get("hero");
+      if (v) document.documentElement.setAttribute("data-hero", v);
+    } catch (e) {}
+  })();
+</script>
 
 <!-- ── Nav ──────────────────────────────────────── -->
 <nav class="top-nav">
@@ -150,6 +161,145 @@
     </p>
   </div>
 
+
+  <!-- ==================================================================
+       HERO OBJECTS, A DRAFT. Off unless the page is opened with ?hero=2.
+
+       After uncomfyworld.com, whose hero is a scatter of objects on an open
+       ground: each one sparkles, each names itself under the cursor, each
+       goes somewhere. What was taken is that MECHANIC and not its palette,
+       which is a dark brown desk where this page is a pale teal sky.
+
+       They stand IN the meadow rather than on a surface of their own, at
+       z-index 4: over the clouds at 2 and the birds at 3, under the copy at
+       5, and in front of the meadow canvas, which is in normal flow.
+
+       Every object is inline SVG in the page's own tokens, because this
+       project ships three PNGs in total and draws everything else in code.
+       Flat fills and no outlines, which is how the meadow behind them is
+       painted; a line drawn object would read as belonging to another page.
+       ================================================================== -->
+  <div class="hero-objects" aria-label="Where you can go">
+
+    <!-- ONE POT, ONE BLOOM: the personal garden is private and takes one
+         flower a day, and a single bloom in a pot says both without a word. -->
+    <a class="ho ho-personal" href="personal-garden/personal-garden-index.html">
+      <span class="ho-art">
+        <svg viewBox="0 0 120 150" aria-hidden="true" focusable="false">
+          <g class="ho-spark">
+            <path d="M0-11 2.7-2.7 11 0 2.7 2.7 0 11-2.7 2.7-11 0-2.7-2.7Z" transform="translate(20 30)"/>
+            <path d="M0-8 2-2 8 0 2 2 0 8-2 2-8 0-2-2Z" transform="translate(99 58)"/>
+            <path d="M0-6 1.5-1.5 6 0 1.5 1.5 0 6-1.5 1.5-6 0-1.5-1.5Z" transform="translate(30 88)"/>
+          </g>
+          <path d="M60 92C60 78 57 66 55 56" stroke="#22693f" stroke-width="4.5" fill="none" stroke-linecap="round"/>
+          <path d="M58 76C48 74 42 68 40 60 50 60 57 66 58 76Z" fill="#2f8450"/>
+          <path d="M60 68C69 65 74 59 75 51 66 52 60 58 60 68Z" fill="#3b9a5e"/>
+          <g transform="translate(55 42)">
+            <g fill="hsl(350,62%,72%)">
+              <ellipse cx="0" cy="-12" rx="7.5" ry="12"/>
+              <ellipse cx="0" cy="-12" rx="7.5" ry="12" transform="rotate(60)"/>
+              <ellipse cx="0" cy="-12" rx="7.5" ry="12" transform="rotate(120)"/>
+              <ellipse cx="0" cy="-12" rx="7.5" ry="12" transform="rotate(180)"/>
+              <ellipse cx="0" cy="-12" rx="7.5" ry="12" transform="rotate(240)"/>
+              <ellipse cx="0" cy="-12" rx="7.5" ry="12" transform="rotate(300)"/>
+            </g>
+            <circle r="7" fill="#fbe484"/>
+            <circle r="3.4" fill="#e8c65a"/>
+          </g>
+          <path d="M33 90h54l-6 8H39Z" fill="#dcae86"/>
+          <path d="M39 98h42l-5 34a4 4 0 0 1-4 3.4H48a4 4 0 0 1-4-3.4Z" fill="#c9966d"/>
+          <path d="M39 98h42l-1.2 8H40.2Z" fill="#8a5c3c" fill-opacity=".22"/>
+        </svg>
+      </span>
+      <span class="ho-name">The Personal Garden</span>
+    </a>
+
+    <!-- A PATCH EVERYONE PLANTS IN: three blooms of three different colours
+         sharing one piece of ground, which is the shared garden exactly. -->
+    <a class="ho ho-shared" href="shared-garden/shared-garden-index.html">
+      <span class="ho-art">
+        <svg viewBox="0 0 160 150" aria-hidden="true" focusable="false">
+          <g class="ho-spark">
+            <path d="M0-10 2.5-2.5 10 0 2.5 2.5 0 10-2.5 2.5-10 0-2.5-2.5Z" transform="translate(25 40)"/>
+            <path d="M0-8 2-2 8 0 2 2 0 8-2 2-8 0-2-2Z" transform="translate(136 34)"/>
+            <path d="M0-6 1.5-1.5 6 0 1.5 1.5 0 6-1.5 1.5-6 0-1.5-1.5Z" transform="translate(118 96)"/>
+          </g>
+          <path d="M44 104C44 86 42 74 40 66" stroke="#22693f" stroke-width="4" fill="none" stroke-linecap="round"/>
+          <path d="M80 104C80 80 79 64 78 54" stroke="#22693f" stroke-width="4" fill="none" stroke-linecap="round"/>
+          <path d="M116 104C116 88 118 76 120 70" stroke="#22693f" stroke-width="4" fill="none" stroke-linecap="round"/>
+          <path d="M44 92C35 90 30 85 28 78 37 78 43 83 44 92Z" fill="#2f8450"/>
+          <path d="M80 86C89 84 94 79 96 72 87 72 81 77 80 86Z" fill="#2f8450"/>
+          <path d="M116 94C107 92 102 87 100 80 109 80 115 85 116 94Z" fill="#2f8450"/>
+          <g transform="translate(40 56)"><g fill="hsl(272,44%,76%)">
+            <ellipse cx="0" cy="-9" rx="5.6" ry="9"/><ellipse cx="0" cy="-9" rx="5.6" ry="9" transform="rotate(72)"/>
+            <ellipse cx="0" cy="-9" rx="5.6" ry="9" transform="rotate(144)"/><ellipse cx="0" cy="-9" rx="5.6" ry="9" transform="rotate(216)"/>
+            <ellipse cx="0" cy="-9" rx="5.6" ry="9" transform="rotate(288)"/></g><circle r="5" fill="#fbe484"/></g>
+          <g transform="translate(78 42)"><g fill="hsl(25,58%,74%)">
+            <ellipse cx="0" cy="-11" rx="6.4" ry="11"/><ellipse cx="0" cy="-11" rx="6.4" ry="11" transform="rotate(60)"/>
+            <ellipse cx="0" cy="-11" rx="6.4" ry="11" transform="rotate(120)"/><ellipse cx="0" cy="-11" rx="6.4" ry="11" transform="rotate(180)"/>
+            <ellipse cx="0" cy="-11" rx="6.4" ry="11" transform="rotate(240)"/><ellipse cx="0" cy="-11" rx="6.4" ry="11" transform="rotate(300)"/></g>
+            <circle r="6" fill="#fbe484"/><circle r="2.8" fill="#e8c65a"/></g>
+          <g transform="translate(120 60)"><g fill="hsl(196,48%,74%)">
+            <ellipse cx="0" cy="-9" rx="5.6" ry="9"/><ellipse cx="0" cy="-9" rx="5.6" ry="9" transform="rotate(72)"/>
+            <ellipse cx="0" cy="-9" rx="5.6" ry="9" transform="rotate(144)"/><ellipse cx="0" cy="-9" rx="5.6" ry="9" transform="rotate(216)"/>
+            <ellipse cx="0" cy="-9" rx="5.6" ry="9" transform="rotate(288)"/></g><circle r="5" fill="#fbe484"/></g>
+          <path d="M18 112c0-12 16-20 62-20s62 8 62 20-28 16-62 16-62-4-62-16Z" fill="#7ec4b4"/>
+          <path d="M18 112c0-7 5-12 16-15 14 6 34 9 46 9s32-3 46-9c11 3 16 8 16 15Z" fill="#96d3c2"/>
+          <path d="M34 106c1-6 3-10 5-13M126 106c-1-6-3-10-5-13M66 102c0-5 1-8 2-11M96 103c0-5-1-8-2-11"
+                stroke="#5aa899" stroke-width="2.6" fill="none" stroke-linecap="round"/>
+        </svg>
+      </span>
+      <span class="ho-name">The Shared Garden</span>
+    </a>
+
+    <!-- WRAPPED AND TIED, which is the one object here that is plainly a
+         thing you hand to somebody rather than a place you stand in. -->
+    <a class="ho ho-bouquet" href="bouquet/bouquet-index.html">
+      <span class="ho-art">
+        <svg viewBox="0 0 120 155" aria-hidden="true" focusable="false">
+          <g class="ho-spark">
+            <path d="M0-10 2.5-2.5 10 0 2.5 2.5 0 10-2.5 2.5-10 0-2.5-2.5Z" transform="translate(100 34)"/>
+            <path d="M0-8 2-2 8 0 2 2 0 8-2 2-8 0-2-2Z" transform="translate(16 52)"/>
+            <path d="M0-6 1.5-1.5 6 0 1.5 1.5 0 6-1.5 1.5-6 0-1.5-1.5Z" transform="translate(94 104)"/>
+          </g>
+          <path d="M60 96C48 82 38 70 30 58 44 62 54 76 60 96Z" fill="#3b9a5e"/>
+          <path d="M60 96C72 84 82 74 92 64 80 64 66 78 60 96Z" fill="#2f8450"/>
+          <path d="M60 96C58 78 56 62 55 48" stroke="#22693f" stroke-width="3.4" fill="none" stroke-linecap="round"/>
+          <g transform="translate(38 56)"><g fill="hsl(332,50%,78%)">
+            <ellipse cx="0" cy="-10" rx="6" ry="10"/><ellipse cx="0" cy="-10" rx="6" ry="10" transform="rotate(72)"/>
+            <ellipse cx="0" cy="-10" rx="6" ry="10" transform="rotate(144)"/><ellipse cx="0" cy="-10" rx="6" ry="10" transform="rotate(216)"/>
+            <ellipse cx="0" cy="-10" rx="6" ry="10" transform="rotate(288)"/></g><circle r="5.2" fill="#fbe484"/></g>
+          <g transform="translate(80 60)"><g fill="hsl(350,58%,76%)">
+            <ellipse cx="0" cy="-10" rx="6" ry="10"/><ellipse cx="0" cy="-10" rx="6" ry="10" transform="rotate(72)"/>
+            <ellipse cx="0" cy="-10" rx="6" ry="10" transform="rotate(144)"/><ellipse cx="0" cy="-10" rx="6" ry="10" transform="rotate(216)"/>
+            <ellipse cx="0" cy="-10" rx="6" ry="10" transform="rotate(288)"/></g><circle r="5.2" fill="#fbe484"/></g>
+          <g transform="translate(58 40)"><g fill="hsl(48,64%,72%)">
+            <ellipse cx="0" cy="-12" rx="6.6" ry="12"/><ellipse cx="0" cy="-12" rx="6.6" ry="12" transform="rotate(45)"/>
+            <ellipse cx="0" cy="-12" rx="6.6" ry="12" transform="rotate(90)"/><ellipse cx="0" cy="-12" rx="6.6" ry="12" transform="rotate(135)"/>
+            <ellipse cx="0" cy="-12" rx="6.6" ry="12" transform="rotate(180)"/><ellipse cx="0" cy="-12" rx="6.6" ry="12" transform="rotate(225)"/>
+            <ellipse cx="0" cy="-12" rx="6.6" ry="12" transform="rotate(270)"/><ellipse cx="0" cy="-12" rx="6.6" ry="12" transform="rotate(315)"/></g>
+            <circle r="6.4" fill="#d8a54e"/></g>
+          <!-- A SHEET GATHERED ROUND THE STEMS, not a pot. The first version
+               was a plain trapezoid with a flat rim and it read as a yellow
+               plant pot standing beside the terracotta one, which is the same
+               object drawn twice. What makes paper paper is the TOP EDGE: it
+               rises to a corner on each side and dips in the middle where the
+               sheet is folded down, and one crease runs the length of it. -->
+          <path d="M22 74C33 92 46 98 60 92 74 98 87 92 98 74L76 146H44Z" fill="#fbe484"/>
+          <path d="M60 92 44 146h-4L22 74C33 92 46 98 60 92Z" fill="#c9a33c" fill-opacity=".22"/>
+          <path d="M60 92v54" stroke="#c9a33c" stroke-opacity=".38" stroke-width="2" fill="none"/>
+          <path d="M31 92c9 9 19 12 29 8 10 4 20 1 29-8l-1.6 5.6c-9 8.4-18.4 11-27.4 7.4-9 3.6-18.4 1-27.4-7.4Z"
+                fill="#fff" fill-opacity=".38"/>
+          <!-- the ribbon is a flat bow, fill only and nothing symmetrical,
+               which is the rule the builder's own bow already follows -->
+          <path d="M60 116c-7-9-19-9-19-2 0 6 11 7 19 2Zm0 0c7-9 19-9 19-2 0 6-11 7-19 2Z" fill="#e8a3ad"/>
+          <path d="M57 118 49 138l9-4Zm6 0 8 20-9-4Z" fill="#dd8e9c"/>
+          <circle cx="60" cy="116" r="4.4" fill="#d67e8f"/>
+        </svg>
+      </span>
+      <span class="ho-name">The Bouquet Builder</span>
+    </a>
+  </div>
   <!-- Meadow canvas: p5.js draw functions exact port, full viewport width, flowers not cut -->
   <div class="meadow-scene" style="margin-left:-5rem;margin-right:-5rem;line-height:0;overflow:hidden;">
     <canvas id="meadow-canvas" style="display:block;"></canvas>
