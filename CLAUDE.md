@@ -1273,9 +1273,13 @@ Headings on the garden pages come from two places. `.gg-title` and `#tips-card h
 - **ANYTHING LONGER THAN THE FACE GOES BEHIND THE FLOWER.** `drawHairLong` paints before the bonnet, so a plait or a length is hidden by the crown and the petals and emerges at the bonnet's LOWER CORNERS, which is what the bear, the chick, the penguin and the cat in the reference sheet all do.
 - **The order on the head is therefore**: long hair, flower, body, then the mass clipped to the opening, the face oval, the fringe clipped to the face, the ears, the marks.
 - **TWO SMALL EARS at the sides of the opening.** Every one of the hood references has them and they are most of why those heads read as heads rather than as discs.
-- **THE FRINGE AND THE BACK ARE TWO SEPARATE CHOICES.** They were nine fixed styles, so a blunt fringe could only ever come with a bob and a side parting only ever with one long piece. Split, **twelve tiles buy thirty-six looks where nine used to buy nine**, and the two halves are drawn in different places anyway: a fringe is clipped to the face and a back falls out of the bonnet from the crown. `FRINGES` is Blunt, Parted, Side part, High, Curly, Wavy; `BACKS` is Tucked in, Bob, Long, Wavy, Braids, Curls.
+- **THE FRINGE AND THE BACK ARE TWO SEPARATE CHOICES.** They were nine fixed styles, so a blunt fringe could only ever come with a bob and a side parting only ever with one long piece. Split, **twelve tiles buy thirty-six looks where nine used to buy nine**, and the two halves are drawn in different places anyway: a fringe is clipped to the face and a back falls out of the bonnet from the crown. `FRINGES` is Blunt, Parted, Side part, High, Curly, Choppy; `BACKS` is Tucked in, Bob, Long, Wavy, Braids, Buns.
 - **A fringe tile shows its fringe on a tucked-in head and a back tile shows its back under a blunt fringe**, so each tile is only ever about the one thing it changes.
-- **Buns and a ponytail still cannot exist**, since both are defined by what sits above and outside the head, where the flower is.
+- **THE TWO LENGTHS MEET BEHIND**, which is what makes a head of hair look full rather than like two strips hung at the ears. The join paints before the flower and the body, so almost all of it is hidden and what shows is the hair in the gaps between the bonnet's edge and the shoulders, which is exactly where the back of somebody's hair is.
+- **BUNS ARE BUNCHES LOW AT THE SIDES, not space buns on top.** A bun above the head is exactly where the flower is, so a true pair would be entirely behind the bonnet and never seen; at 81 from the middle against the petals' 84 they clear its edge, which is where the bear and the cat in the hood references wear theirs. A ponytail still cannot exist at all.
+- **BLUNT AND WAVY WERE WITHIN A FEW PIXELS OF EACH OTHER**, so one had to become something else. The soft two-point shape kept the slot and the name Blunt; **Choppy**, four uneven points, replaced the other.
+- **A CENTRE PARTING IS HIGH IN THE MIDDLE AND LOW AT THE TEMPLES.** Parted was drawn the other way up, so it read as a fringe with a notch cut out of it.
+- **THE MASS IN THE OPENING IS SMOOTH FOR EVERY STYLE.** Curly used to scallop it as well as the hairline, which made the whole top of the head lumpy under a bonnet that is already round. Curly is a fringe and nothing else.
 
 **EVERY SLOT IS THREE ITEMS IN THREE COLOURS: nine tiles in three clean rows.** Every colour is its own tile, at three columns so an item's three land side by side: three Boots, then three Clogs, then three Wellies. A swatch row under the chosen item was tried first and it put the colours a step away from the choice and hid them until something was picked.
 
@@ -1286,7 +1290,11 @@ Headings on the garden pages come from two places. `.gg-title` and `#tips-card h
 
 **THE FLOWER TAKES A CHOSEN HUE, on the project's own rainbow slider.** Both gardens' planter and the bouquet's sender already move a flower's hue that way, so the gardener's does too rather than inventing a third way of choosing a colour. The saturation and lightness stay the SPECIES', so a re-coloured daisy is still a pastel daisy rather than whatever the slider lands on, and picking a different species resets the hue to that flower's own.
 
-**A BOOT'S SHAFT HALVES ON BARE LEGS.** With shorts on the leg is 52 pixels of skin and a welly's shaft is 54, so it swallowed the whole thing and the shorts appeared to sit straight on the boot.
+**A BOOT'S SHAFT HALVES ON BARE LEGS.** With shorts on the leg is 52 pixels of skin and a welly's shaft is 54, so it swallowed the whole thing and the shorts appeared to sit straight on the boot. **THE SHOES ALSO GO ON BEFORE THE SHORTS**, so a shaft passes behind the hem rather than over it, which is how a trouser leg covers the top of a boot.
+
+**THE TOP IS MUTED, 26 saturation against the 34 it was**, which puts the clothes just under the gardens' own flowers at 40 to 60 so the figure reads as a person IN a garden rather than a person made of the same stuff as the flowers. Every tone derived from it came down with it.
+
+**NO POCKET UNDER A SKIRT.** `drawTrim` puts one at `b - 40`, which is inside the skirt's own panel, so it came out printed on the front of it.
 
 **THREE COLOURS PER ITEM, not a single fixed one and not the whole palette.** Every garment and accessory carried a hard-coded colour, so a gardener was a figure in their own hue with a fixed blue dungaree and a fixed brown boot stuck on. `TINTS` holds six, each `WEAR` entry names the three that suit it and the one it starts in, and `look.tints` overrides per SLOT.
 

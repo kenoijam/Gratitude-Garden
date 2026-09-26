@@ -83,8 +83,8 @@
      and a back falls out of the bonnet from the crown.
      BUNS AND A PONYTAIL STILL CANNOT EXIST, since both are defined by what
      sits above and outside the head, which is where the flower is. */
-  var FRINGES = ["Blunt", "Parted", "Side part", "High", "Curly", "Wavy"];
-  var BACKS = ["Tucked in", "Bob", "Long", "Wavy", "Braids", "Curls"];
+  var FRINGES = ["Blunt", "Parted", "Side part", "High", "Curly", "Choppy"];
+  var BACKS = ["Tucked in", "Bob", "Long", "Wavy", "Braids", "Buns"];
 
   var TOPS = [172, 210, 275, 332, 45, 18];
   /* SIX COLOURS, AND EVERY GARMENT AND ACCESSORY PICKS FROM THEM. Each one
@@ -358,7 +358,7 @@
     2: { to: 104 },                                     /* long */
     3: { to: 98, wave: true },                          /* wavy */
     4: { plait: true },                                 /* braids */
-    5: { curls: true }                                  /* curls */
+    5: { buns: true }                                   /* bunches */
   };
 
   /* A LENGTH IS WIDE WHERE IT LEAVES THE HEAD AND NARROWS TO A ROUNDED TIP.
@@ -397,11 +397,21 @@
     if (!spec) return;
     var c = HAIRS[look.hairCol] || HAIRS[0], d = shade(c, 0.8), i, k;
     for (k = -1; k <= 1; k += 2) {
-      if (spec.curls) {
+      if (spec.buns) {
+        /* BUNCHES LOW AT THE SIDES, not space buns on top. A bun above the
+           head is exactly where the flower is, so a true pair would be
+           entirely behind the bonnet and never seen; low and out at 81 from
+           the middle against the petals' 84 they clear its edge, which is
+           where the bear and the cat in the hood references wear theirs. */
+        var bx = HEAD.x + k * 74, by = HEAD.y + 34;
         ctx.fillStyle = c;
-        for (i = 0; i < 4; i++) {
-          disc(ctx, HEAD.x + k * (46 + (i % 2) * 5), HEAD.y - 6 + i * 16, 13);
-        }
+        ctx.beginPath();
+        ctx.moveTo(HEAD.x + k * 14, HEAD.y - 34);
+        ctx.quadraticCurveTo(HEAD.x + k * 66, HEAD.y - 10, bx, by);
+        ctx.quadraticCurveTo(HEAD.x + k * 40, HEAD.y + 6, HEAD.x + k * 8, HEAD.y - 30);
+        ctx.closePath(); ctx.fill();
+        disc(ctx, bx, by, 20);
+        ctx.fillStyle = d; disc(ctx, bx, by, 10);
         continue;
       }
       ctx.save();
@@ -421,6 +431,21 @@
         disc(ctx, tx, HEAD.y + 38 + i * 15, 11 - i * 1.4);
       }
     }
+    /* THE TWO LENGTHS MEET BEHIND, which is what makes a head of hair look
+       full rather than like two strips hung at the ears. The join is painted
+       before the flower and the body, so almost all of it is hidden and what
+       shows is the hair in the gaps between the bonnet's edge and the
+       shoulders, which is exactly where the back of somebody's hair is. */
+    if (spec.to) {
+      var end = HEAD.y + spec.to;
+      ctx.fillStyle = c;
+      ctx.beginPath();
+      ctx.moveTo(HEAD.x - 52, end - 62);
+      ctx.lineTo(HEAD.x + 52, end - 62);
+      ctx.lineTo(HEAD.x + 50, end - 26);
+      ctx.quadraticCurveTo(HEAD.x, end + 10, HEAD.x - 50, end - 26);
+      ctx.closePath(); ctx.fill();
+    }
   }
 
   /* THE MASS, clipped to the opening, and the face cut low into it by the
@@ -431,20 +456,13 @@
     ctx.save();
     openPath(ctx); ctx.clip();
     ctx.fillStyle = c;
+    /* THE MASS IS SMOOTH FOR EVERY STYLE. Curly used to scallop it as well as
+       the hairline, which made the whole top of the head lumpy under a bonnet
+       that is already round; curly is a FRINGE and nothing else now. */
     if (look.fringe === 3) {
       ctx.beginPath();
       ctx.ellipse(HEAD.x, HEAD.y - 6, OPEN.rx - 5, OPEN.ry - 9, 0, 0, Math.PI * 2);
       ctx.fill();
-    } else if (look.fringe === 4) {                /* curly, a scalloped mass */
-      ctx.fillRect(HEAD.x - OPEN.rx, HEAD.y - OPEN.ry, OPEN.rx * 2, OPEN.ry * 2);
-      ctx.restore();
-      ctx.save();
-      ctx.fillStyle = c;
-      for (i = 0; i < 14; i++) {
-        a = Math.PI * (0.78 + (i / 13) * 1.44);
-        disc(ctx, HEAD.x + Math.cos(a) * (OPEN.rx - 4),
-                  HEAD.y + Math.sin(a) * (OPEN.ry - 4), 12);
-      }
     } else {
       ctx.fillRect(HEAD.x - OPEN.rx, HEAD.y - OPEN.ry, OPEN.rx * 2, OPEN.ry * 2);
     }
@@ -464,20 +482,22 @@
       ctx.moveTo(L, lowY); ctx.lineTo(L, TOP); ctx.lineTo(R, TOP); ctx.lineTo(R, lowY);
     }
     if (look.fringe === 0) {
-      /* A SOFT FRINGE WITH TWO GENTLE POINTS IN IT, which is the first
-         reference's. Five hard scallops read as a cog. */
-      ctx.beginPath();
-      ctx.moveTo(L, F.y - 24);
-      ctx.lineTo(L, TOP); ctx.lineTo(R, TOP); ctx.lineTo(R, F.y - 24);
-      ctx.quadraticCurveTo(F.x + 25, F.y - 3, F.x + 11, F.y - 15);
-      ctx.quadraticCurveTo(F.x, F.y - 1, F.x - 12, F.y - 15);
-      ctx.quadraticCurveTo(F.x - 26, F.y - 3, L, F.y - 24);
+      /* BLUNT IS THE SOFT TWO-POINT SHAPE THAT USED TO BE CALLED WAVY. The
+         two were within a few pixels of each other, so one of them had to
+         become something else; this is the one kept. */
+      brow(F.y - 6);
+      ctx.quadraticCurveTo(F.x + 25, F.y - 3, F.x + 13, F.y - 20);
+      ctx.quadraticCurveTo(F.x, F.y - 5, F.x - 15, F.y - 20);
+      ctx.quadraticCurveTo(F.x - 27, F.y - 3, L, F.y - 6);
       ctx.closePath(); ctx.fill();
-    } else if (look.fringe === 1) {                    /* a centre parting */
-      brow(F.y - 4);
-      ctx.quadraticCurveTo(F.x + 26, F.y - 24, F.x + 4, F.y - 21);
-      ctx.lineTo(F.x - 4, F.y - 21);
-      ctx.quadraticCurveTo(F.x - 26, F.y - 24, L, F.y - 4);
+    } else if (look.fringe === 1) {
+      /* A CENTRE PARTING, which means the hairline is HIGH in the middle and
+         low at the temples. It was drawn the other way up, so it read as a
+         fringe with a notch cut out of it rather than as a parting. */
+      brow(F.y - 2);
+      ctx.quadraticCurveTo(F.x + 22, F.y - 12, F.x + 2, F.y - 27);
+      ctx.lineTo(F.x - 2, F.y - 27);
+      ctx.quadraticCurveTo(F.x - 22, F.y - 12, L, F.y - 2);
       ctx.closePath(); ctx.fill();
     } else if (look.fringe === 2) {               /* a deep side parting */
       brow(F.y - 6);
@@ -489,14 +509,20 @@
       ctx.quadraticCurveTo(F.x + 28, F.y - 35, F.x, F.y - 36);
       ctx.quadraticCurveTo(F.x - 28, F.y - 35, L, F.y - 24);
       ctx.closePath(); ctx.fill();
-    } else if (look.fringe === 4) {                     /* curly, bumpy */
+    } else if (look.fringe === 4) {           /* curly, a bumpy hairline */
       brow(F.y - 18); ctx.closePath(); ctx.fill();
       for (i = 0; i < 6; i++) disc(ctx, L + 9 + i * 15, F.y - 18, i % 2 ? 12 : 9);
-    } else {                                           /* wavy, soft edge */
-      brow(F.y - 6);
-      ctx.quadraticCurveTo(F.x + 25, F.y - 3, F.x + 13, F.y - 20);
-      ctx.quadraticCurveTo(F.x, F.y - 5, F.x - 15, F.y - 20);
-      ctx.quadraticCurveTo(F.x - 27, F.y - 3, L, F.y - 6);
+    } else {
+      /* CHOPPY, four uneven points, which is what replaced the old blunt
+         shape once the wavy one took that name. */
+      ctx.beginPath();
+      ctx.moveTo(L, F.y - 12);
+      ctx.lineTo(L, TOP); ctx.lineTo(R, TOP); ctx.lineTo(R, F.y - 16);
+      ctx.lineTo(F.x + 22, F.y - 2);
+      ctx.lineTo(F.x + 13, F.y - 21);
+      ctx.lineTo(F.x + 2, F.y - 5);
+      ctx.lineTo(F.x - 9, F.y - 23);
+      ctx.lineTo(F.x - 19, F.y - 4);
       ctx.closePath(); ctx.fill();
     }
     ctx.restore();
@@ -527,7 +553,7 @@
      laid across the hips, which is what made the old shorts read as a nappy. */
   function drawLegs(ctx, id, L, skin) {
     var w = WEAR[id] || { bare: false };
-    ctx.fillStyle = w.bare ? skin : hsl(L.top, 20, 34);
+    ctx.fillStyle = w.bare ? skin : hsl(L.top, 16, 38);
     rr(ctx, LEG.lx, LEG.top, LEG.w, LEG.bottom - LEG.top, 8);
     rr(ctx, LEG.rx, LEG.top, LEG.w, LEG.bottom - LEG.top, 8);
   }
@@ -560,11 +586,14 @@
       ctx.closePath(); ctx.fill();
     });
   }
-  function drawTrim(ctx, L) {
+  function drawTrim(ctx, L, pocket) {
     var B = BODY, cx = B.cx, t = B.top, b = B.bottom;
     ctx.fillStyle = "#fdf6e6";
     [0, 1].forEach(function (i) { disc(ctx, cx, t + 24 + i * 15, 3.4); });
-    ctx.fillStyle = hsl(L.top, 34, 45);
+    /* NO POCKET UNDER A SKIRT. It sits at b - 40, which is inside the skirt's
+       own panel, so it came out printed on the front of it. */
+    if (!pocket) return;
+    ctx.fillStyle = hsl(L.top, 26, 48);
     rr(ctx, cx + 8, b - 40, 22, 17, 5);
   }
 
@@ -640,7 +669,7 @@
          shallow scallops along the bottom in a deeper tone. */
       frill(ctx, cx - bw - 13, cx + bw + 13, b + 19, 6, dark);
     }
-    if (!id || id === "skirt" || id === "shorts") drawTrim(ctx, L);
+    if (!id || id === "skirt" || id === "shorts") drawTrim(ctx, L, id !== "skirt");
   }
 
   /* THE SHORTS ARE PAINTED BEFORE THE TORSO, which is what finally joins
@@ -663,7 +692,7 @@
      worn and the top otherwise. `holding` puts a thumb across the handle of
      what is carried, so the grip is a thing you can see. */
   function sleeveTone(L) {
-    return L.clothes === "cardi" ? tone(tintOf(L, "clothes")) : hsl(L.top, 34, 52);
+    return L.clothes === "cardi" ? tone(tintOf(L, "clothes")) : hsl(L.top, 26, 56);
   }
   function armPoints(k) {
     return {
@@ -856,9 +885,13 @@
       ctx.fillStyle = hsl(T.h, Math.min(60, T.s + 10), Math.max(28, T.l - 20), 0.55);
       /* THEY SIT BELOW THE EYE LINE. The eyes reach F.y + 11.5, so anything
          above that lands ON them, which is where the first set was. */
-      [[-27, 17], [-20, 15], [-22, 22], [-14, 19],
-       [27, 17], [20, 15], [22, 22], [14, 19],
-       [-5, 18], [5, 18], [0, 22]].forEach(function (p) {
+      /* BELOW THE EYES AND CLEAR OF THE MOUTH. The eyes reach F.y + 11.5 and
+         the mouth runs from F.y + 18 across x plus or minus 6, so the only
+         room on the nose is a narrow band at 14 to 16; everything else goes
+         out onto the cheeks, where the mouth is nowhere near. */
+      [[-28, 17], [-21, 14], [-23, 22], [-15, 19], [-14, 26],
+       [28, 17], [21, 14], [23, 22], [15, 19], [14, 26],
+       [-4, 15], [4, 15]].forEach(function (p) {
         disc(ctx, F.x + p[0], F.y + p[1], 2.1);
       });
       return;
@@ -967,7 +1000,7 @@
     if (kind === "top") {
       var lk = Object.assign({}, L, { top: id, clothes: null });
       drawSleeves(ctx, lk);
-      ctx.fillStyle = hsl(id, 34, 52);
+      ctx.fillStyle = hsl(id, 26, 56);
       bodyPath(ctx); ctx.fill();
       drawHands(ctx, skin, false);
       return;
@@ -991,9 +1024,10 @@
          of trousers is what "no outfit" looks like, and an empty tile is not. */
       var ck = Object.assign({}, L, { clothes: id });
       drawLegs(ctx, id, ck, skin);
+      if (ck.feet) drawFeet(ctx, ck.feet, ck);
       drawUnder(ctx, id, ck);
       drawSleeves(ctx, ck);
-      ctx.fillStyle = hsl(L.top, 34, 52);
+      ctx.fillStyle = hsl(L.top, 26, 56);
       bodyPath(ctx); ctx.fill();
       drawOver(ctx, id, ck);
       drawCollar(ctx, ck);
@@ -1066,17 +1100,19 @@
     if (h.mode === "hood") drawHood(ctx, L.flower, L);
     else drawSprout(ctx, L.flower, L);
 
+    /* THE SHOES GO ON BEFORE THE SHORTS, so a boot's shaft passes behind the
+       hem rather than over it: a trouser leg covers the top of a boot. */
     drawLegs(ctx, L.clothes, L, skin);
-    drawUnder(ctx, L.clothes, L);
     if (L.feet) drawFeet(ctx, L.feet, L);
     else {
-      ctx.fillStyle = hsl(L.top, 16, 22);
+      ctx.fillStyle = hsl(L.top, 14, 26);
       rr(ctx, LEG.lx - 7, LEG.foot + 2, 28, 18, 8);
       rr(ctx, LEG.rx - 5, LEG.foot + 2, 28, 18, 8);
     }
+    drawUnder(ctx, L.clothes, L);
 
     drawSleeves(ctx, L);
-    ctx.fillStyle = hsl(L.top, 34, 52);
+    ctx.fillStyle = hsl(L.top, 26, 56);
     bodyPath(ctx); ctx.fill();
     drawOver(ctx, L.clothes, L);
     drawCollar(ctx, L);
