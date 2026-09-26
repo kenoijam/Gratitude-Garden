@@ -87,6 +87,20 @@
   var SHAPES = ["Fringe", "Parted", "Side part", "Bob", "Long",
                 "Cropped", "Curly", "Wavy", "Braids"];
   var TOPS = [172, 210, 275, 332, 45, 18];
+  /* SIX COLOURS, AND EVERY GARMENT AND ACCESSORY PICKS FROM THEM. Each one
+     carried a hard-coded colour before, so a gardener was a figure in their
+     own hue with a fixed blue dungaree and a fixed brown boot stuck on. Each
+     `WEAR` entry names the one it starts in, and `look.tints` overrides it
+     per slot; picking a different item in that slot clears the override, so
+     a new garment always arrives in the colour it was drawn for. */
+  var TINTS = [
+    { h: 214, s: 30, l: 48, name: "Denim" },
+    { h: 42,  s: 34, l: 84, name: "Cream" },
+    { h: 142, s: 22, l: 42, name: "Sage" },
+    { h: 18,  s: 42, l: 50, name: "Clay" },
+    { h: 322, s: 24, l: 56, name: "Plum" },
+    { h: 44,  s: 52, l: 60, name: "Ochre" }
+  ];
 
   /* CLOTHING IS ONE CHOICE, NOT A LAYER PLUS A LEG. It was "over the clothes"
      and "on the legs" as two slots, which let somebody build a cardigan with
@@ -95,20 +109,20 @@
      figure, and `bare` says whether the legs are skin below it. */
   var WEAR = {
     plain:   { slot: "clothes", name: "Plain",     bare: false },
-    dungas:  { slot: "clothes", name: "Dungarees", bare: false },
-    apron:   { slot: "clothes", name: "Apron",     bare: false },
-    cardi:   { slot: "clothes", name: "Cardigan",  bare: false },
-    skirt:   { slot: "clothes", name: "Skirt",     bare: true  },
-    shorts:  { slot: "clothes", name: "Shorts",    bare: true  },
-    scarf:   { slot: "neck",  name: "Scarf" },
-    satchel: { slot: "neck",  name: "Satchel" },
-    boots:   { slot: "feet",  name: "Boots" },
-    clogs:   { slot: "feet",  name: "Clogs" },
-    wellies: { slot: "feet",  name: "Wellies" },
-    can:     { slot: "hold",  name: "Watering can" },
-    trowel:  { slot: "hold",  name: "Trowel" },
-    specs:   { slot: "face",  name: "Glasses" },
-    shades:  { slot: "face",  name: "Sunglasses" }
+    dungas:  { slot: "clothes", name: "Dungarees", bare: false, tint: 0 },
+    apron:   { slot: "clothes", name: "Apron",     bare: false, tint: 1 },
+    cardi:   { slot: "clothes", name: "Cardigan",  bare: false, tint: 2 },
+    skirt:   { slot: "clothes", name: "Skirt",     bare: true,  tint: 4 },
+    shorts:  { slot: "clothes", name: "Shorts",    bare: true,  tint: 0 },
+    scarf:   { slot: "neck",  name: "Scarf",        tint: 3 },
+    satchel: { slot: "neck",  name: "Satchel",      tint: 3 },
+    boots:   { slot: "feet",  name: "Boots",        tint: 3 },
+    clogs:   { slot: "feet",  name: "Clogs",        tint: 5 },
+    wellies: { slot: "feet",  name: "Wellies",      tint: 2 },
+    can:     { slot: "hold",  name: "Watering can", tint: 2 },
+    trowel:  { slot: "hold",  name: "Trowel",       tint: 3 },
+    specs:   { slot: "face",  name: "Glasses",      tint: 3 },
+    shades:  { slot: "face",  name: "Sunglasses",   tint: 0 }
   };
   var SLOTS = ["clothes", "neck", "feet", "hold", "face"];
   var STEP_SLOTS = { top: ["clothes"], wear: ["neck", "feet", "hold", "face"] };
@@ -122,8 +136,23 @@
 
   var DEFAULT_LOOK = {
     name: "", skin: 0, hair: 0, hairCol: 0, flower: "daisy", top: 172,
-    clothes: "plain", neck: null, feet: null, hold: null, face: null
+    clothes: "plain", neck: null, feet: null, hold: null, face: null,
+    tints: {}
   };
+
+  /* the colour an item is wearing: its own default unless this look has
+     overridden that slot */
+  function tintOf(L, slot) {
+    var item = WEAR[L[slot]];
+    if (!item || item.tint == null) return TINTS[0];
+    var i = (L.tints && L.tints[slot] != null) ? L.tints[slot] : item.tint;
+    return TINTS[i] || TINTS[item.tint];
+  }
+  function tone(T, dl, ds) {
+    return hsl(T.h, Math.max(0, T.s + (ds || 0)),
+               Math.max(8, Math.min(96, T.l + (dl || 0))));
+  }
+  function tintable(id) { return !!(WEAR[id] && WEAR[id].tint != null); }
 
   /* ---------------------------------------------------------- geometry
      A LARGE HEAD ON A SMALL BODY, which is the reference's proportion. The
@@ -133,7 +162,14 @@
      THE HANDS ARE 113 FROM THE FACE'S MIDDLE against the flower's 84, so a
      held thing is never swallowed by a petal at any size. */
   var W = 240, H = 360;
-  var FACE = { x: 120, y: 124, r: 44 };
+  /* A ROUNDED OVAL, NOT A CIRCLE, and slightly wide. Every one of the
+     references draws the face that way and it is a large part of why they
+     read as cute; a circle reads as a ball. */
+  var FACE = { x: 120, y: 124, r: 44, rx: 46, ry: 43 };
+  /* THE BONNET SITS BACK OFF THE BROW. The flower is drawn eight pixels
+     above the face rather than centred on it, so more of the crown shows
+     above the forehead, which is how a hood is actually worn. */
+  var HOOD_DY = -8, CROWN = { rx: 57, ry: 55 };
   /* THE TORSO IS A BELL, not a rounded rectangle, and that is most of what
      made the figure read as boxy. It narrows to 58 at the shoulders and
      flares to 80 at the hips, which is the shape both soft-character
@@ -203,15 +239,44 @@
     ctx.save(); bodyPath(ctx); ctx.clip(); fn(); ctx.restore();
   }
 
+  function facePath(ctx) {
+    ctx.beginPath();
+    ctx.ellipse(FACE.x, FACE.y, FACE.rx, FACE.ry, 0, 0, Math.PI * 2);
+  }
+
   function hoodOf(id) { return HOOD[BLOOMS[id] ? id : "daisy"]; }
   function bloomOf(id) { return BLOOMS[id] || BLOOMS.daisy; }
 
+  /* THE FLOWER IS A BONNET, NOT A RING OF PETALS, and the SOLID CROWN is
+     what makes it one. This is the thing that had been missing through four
+     rounds of hair: the reference hood is ONE continuous soft shape with a
+     face nestled in an opening, and ours was separate petals with gaps
+     between them and a circle of skin floating in the middle. There was no
+     opening for hair to sit inside, so every attempt read as a patch stuck
+     on either the face or the petals.
+     The crown is a filled ellipse in the flower's own colour behind the
+     bloom, closing the gaps between the petal bases; the RIM is a deeper
+     ring round the face, which is what says the face is INSIDE the bonnet
+     rather than resting on it. Both are the flower's colour, so a species
+     still looks like itself. */
   function drawHood(ctx, id) {
     var h = hoodOf(id), b = bloomOf(id);
     if (typeof window.drawSpeciesBloom !== "function") return;
     ctx.save();
-    ctx.translate(FACE.x, FACE.y + h.dy);
+    ctx.translate(FACE.x, FACE.y + h.dy + HOOD_DY);
+    ctx.fillStyle = hsl(b.hue, b.sat, Math.max(14, b.light - 5));
+    ctx.beginPath();
+    ctx.ellipse(0, 0, CROWN.rx, CROWN.ry, 0, 0, Math.PI * 2);
+    ctx.fill();
     window.drawSpeciesBloom(ctx, id, h.R, b.hue, b.sat, b.light);
+    ctx.restore();
+    ctx.save();
+    ctx.translate(FACE.x, FACE.y + h.dy + HOOD_DY);
+    ctx.strokeStyle = hsl(b.hue, Math.min(100, b.sat + 6), Math.max(12, b.light - 16));
+    ctx.lineWidth = 7;
+    ctx.beginPath();
+    ctx.ellipse(0, 6, FACE.rx + 5, FACE.ry + 5, 0, 0, Math.PI * 2);
+    ctx.stroke();
     ctx.restore();
   }
 
@@ -247,137 +312,133 @@
   }
 
   /* ---------------------------------------------------------- the hair
-     TWO PASSES, AND EACH HAS A DIFFERENT JOB. `drawHairBack` is what falls
-     OUT of the flower onto the shoulders, which is what the hood reference
-     shows: a bob's two tails, a braid, a long length. It is painted after the
-     flower and after the body, because that is where it lands, and it starts
-     high enough that the face covers where it leaves the head.
-     `drawHairFront` is the fringe and the piece down each cheek, clipped to
-     the face so it can never sit on a petal. A solid mass drawn over the
-     whole flower was tried and read as a flat dark patch stuck on it. */
+     ONE MASS THAT FILLS THE BONNET'S OPENING, which is the reference drawing
+     exactly. `drawHairBack` paints a solid shape a little larger than the
+     face over the crown, plus a strand down each side; the face is then
+     painted on top of it, which is what CUTS the opening and leaves the hair
+     as a frame round it. `drawHairFront` is the fringe alone, clipped to the
+     face, over the top.
+
+     Four earlier versions failed and all four failed the same way, because
+     there was no opening to sit in: hair clipped to the face read as painted
+     onto it, and hair over the flower read as a flat dark patch stuck on the
+     petals. The crown is what fixed the hair. */
+  function strand(ctx, k, toY, w, flick, wave) {
+    var F = FACE, x = F.x + k * (F.rx - 6), top = F.y - 34;
+    ctx.beginPath();
+    ctx.moveTo(x - w, top);
+    ctx.lineTo(x + w, top);
+    if (wave) {
+      ctx.quadraticCurveTo(x + w + 7 * k, (top + toY) / 2, x + w - 3 * k, toY - 6);
+      ctx.quadraticCurveTo(x + 2 * k, toY + 6, x - w - 2 * k, toY - 10);
+      ctx.quadraticCurveTo(x - w - 5 * k, (top + toY) / 2, x - w, top);
+    } else {
+      ctx.lineTo(x + w + flick * k, toY - 12);
+      ctx.quadraticCurveTo(x + w + flick * k, toY, x + w + flick * k - 10 * k, toY);
+      ctx.lineTo(x - w + 9, toY);
+      ctx.quadraticCurveTo(x - w, toY, x - w, toY - 12);
+    }
+    ctx.closePath(); ctx.fill();
+  }
+
   function drawHairBack(ctx, look) {
-    var c = HAIRS[look.hairCol] || HAIRS[0], d = shade(c, 0.82), F = FACE, i;
-    var TOP = F.y - 30;
+    var c = HAIRS[look.hairCol] || HAIRS[0], d = shade(c, 0.8), F = FACE, i, k;
     ctx.fillStyle = c;
-    /* NARROW, AND BESIDE THE FACE RATHER THAN OVER THE SHOULDERS. At 32
-       across and hanging to the collarbone these were two dark curtains that
-       buried the arms, the scarf and half the flower. A tail that falls out
-       of a hood is a hand's width of hair, not a cape. */
-    function fall(toY, wid, wave) {          /* a length down each side */
-      [-1, 1].forEach(function (k) {
-        var x = F.x + k * 33;
-        ctx.beginPath();
-        ctx.moveTo(x - wid, TOP);
-        ctx.lineTo(x + wid, TOP);
-        if (wave) {
-          ctx.quadraticCurveTo(x + wid + 7 * k, (TOP + toY) / 2, x + wid - 3 * k, toY);
-          ctx.quadraticCurveTo(x, toY + 9, x - wid - 2 * k, toY - 4);
-          ctx.quadraticCurveTo(x - wid - 5 * k, (TOP + toY) / 2, x - wid, TOP);
-        } else {
-          ctx.lineTo(x + wid - 2, toY - 8);
-          ctx.quadraticCurveTo(x + wid - 2, toY, x + wid - 10, toY);
-          ctx.lineTo(x - wid + 10, toY);
-          ctx.quadraticCurveTo(x - wid + 2, toY, x - wid + 2, toY - 8);
-        }
-        ctx.closePath(); ctx.fill();
-      });
+
+    /* the mass in the opening */
+    if (look.hair === 5) {                             /* cropped, tight */
+      ctx.beginPath();
+      ctx.ellipse(F.x, F.y - 7, F.rx + 3, F.ry + 3, 0, 0, Math.PI * 2); ctx.fill();
+    } else if (look.hair === 6) {                       /* curly, bumpy */
+      ctx.beginPath();
+      ctx.ellipse(F.x, F.y - 4, F.rx + 4, F.ry + 4, 0, 0, Math.PI * 2); ctx.fill();
+      for (i = 0; i < 13; i++) {
+        var a = Math.PI * (0.8 + (i / 12) * 1.4);
+        disc(ctx, F.x + Math.cos(a) * (F.rx + 3), F.y - 4 + Math.sin(a) * (F.ry + 3), 11);
+      }
+    } else {
+      ctx.beginPath();
+      ctx.ellipse(F.x, F.y - 4, F.rx + 7, F.ry + 7, 0, 0, Math.PI * 2); ctx.fill();
     }
-    if (look.hair === 3) fall(F.y + 46, 12, false);            /* bob */
-    if (look.hair === 4) fall(F.y + 78, 14, false);            /* long */
-    if (look.hair === 6) {                                     /* curly */
-      [-1, 1].forEach(function (k) {
-        for (i = 0; i < 3; i++) disc(ctx, F.x + k * (31 + (i % 2) * 4), F.y + 6 + i * 14, 11);
-      });
+
+    /* and what hangs out of it. The BOB FLICKS OUT at the bottom, which is
+       the detail the hood reference turns on: two little ends showing under
+       the edge are what say there is a person inside. */
+    if (look.hair === 0) { strand(ctx, -1, F.y + 30, 12, 0); strand(ctx, 1, F.y + 30, 12, 0); }
+    if (look.hair === 1) { strand(ctx, -1, F.y + 38, 12, 0); strand(ctx, 1, F.y + 38, 12, 0); }
+    if (look.hair === 2) { strand(ctx, -1, F.y + 26, 10, 0); strand(ctx, 1, F.y + 44, 13, 0); }
+    if (look.hair === 3) { strand(ctx, -1, F.y + 48, 14, 9); strand(ctx, 1, F.y + 48, 14, 9); }
+    if (look.hair === 4) { strand(ctx, -1, F.y + 84, 15, 0); strand(ctx, 1, F.y + 84, 15, 0); }
+    if (look.hair === 7) { strand(ctx, -1, F.y + 76, 13, 0, true); strand(ctx, 1, F.y + 76, 13, 0, true); }
+    if (look.hair === 6) {
+      for (k = -1; k <= 1; k += 2) {
+        for (i = 0; i < 3; i++) disc(ctx, F.x + k * (F.rx - 2 + (i % 2) * 4), F.y + 16 + i * 13, 11);
+      }
     }
-    if (look.hair === 7) fall(F.y + 72, 13, true);             /* wavy */
-    if (look.hair === 8) {                                     /* braids */
-      [-1, 1].forEach(function (k) {
-        var x = F.x + k * 35;
-        ctx.fillStyle = c; rr(ctx, x - 10, TOP, 20, 42, 9);
-        ctx.fillStyle = d; rr(ctx, x - 8, F.y + 14, 16, 9, 4);
+    if (look.hair === 8) {                                    /* braids */
+      for (k = -1; k <= 1; k += 2) {
+        var x = F.x + k * (F.rx - 5);
+        ctx.fillStyle = c; rr(ctx, x - 11, F.y - 34, 22, 52, 9);
+        ctx.fillStyle = d; rr(ctx, x - 9, F.y + 20, 18, 9, 4);
         for (i = 0; i < 3; i++) {
           ctx.fillStyle = i % 2 ? d : c;
-          disc(ctx, x, F.y + 30 + i * 14, 10 - i * 1.2);
+          disc(ctx, x, F.y + 36 + i * 14, 10 - i * 1.2);
         }
-      });
+      }
       ctx.fillStyle = c;
     }
   }
 
+  /* THE FRINGE ALONE, clipped to the face, so it can never reach the petals.
+     The silhouette is the mass's job; this only says where the hairline
+     falls. */
   function drawHairFront(ctx, look) {
-    var c = HAIRS[look.hairCol] || HAIRS[0], d = shade(c, 0.84), F = FACE, i;
-    var TOP = F.y - F.r - 6, L = F.x - F.r, R = F.x + F.r;
+    var c = HAIRS[look.hairCol] || HAIRS[0], F = FACE, i;
+    var TOP = F.y - F.ry - 8, L = F.x - F.rx, R = F.x + F.rx;
     ctx.save();
-    ctx.beginPath(); ctx.arc(F.x, F.y, F.r, 0, Math.PI * 2); ctx.clip();
+    facePath(ctx); ctx.clip();
     ctx.fillStyle = c;
 
     function brow(lowY) {
       ctx.beginPath();
       ctx.moveTo(L, lowY); ctx.lineTo(L, TOP); ctx.lineTo(R, TOP); ctx.lineTo(R, lowY);
     }
-    /* a panel down each side; the clip turns a rectangle into a crescent */
-    function cheeks(w, toY) {
-      ctx.fillRect(L, F.y - 30, w, toY - (F.y - 30));
-      ctx.fillRect(R - w, F.y - 30, w, toY - (F.y - 30));
-    }
-
-    if (look.hair === 0) {                            /* a blunt fringe */
-      brow(F.y + 2);
-      var n = 5, step = (F.r * 2) / n;
+    if (look.hair === 0 || look.hair === 3) {          /* a blunt fringe */
+      brow(F.y + 1);
+      var n = 5, step = (F.rx * 2) / n;
       for (i = n; i > 0; i--) {
-        ctx.arc(L + step * (i - 0.5), F.y + 2, step / 2, 0, Math.PI, true);
+        ctx.arc(L + step * (i - 0.5), F.y + 1, step / 2, 0, Math.PI, true);
       }
       ctx.closePath(); ctx.fill();
-      cheeks(11, F.y + 20);
-    } else if (look.hair === 1) {                  /* parted in the middle */
-      brow(F.y + 8);
-      ctx.quadraticCurveTo(F.x + 26, F.y - 16, F.x + 4, F.y - 12);
-      ctx.lineTo(F.x - 4, F.y - 12);
-      ctx.quadraticCurveTo(F.x - 26, F.y - 16, L, F.y + 8);
+    } else if (look.hair === 1 || look.hair === 8) {   /* a centre parting */
+      brow(F.y + 7);
+      ctx.quadraticCurveTo(F.x + 27, F.y - 17, F.x + 4, F.y - 13);
+      ctx.lineTo(F.x - 4, F.y - 13);
+      ctx.quadraticCurveTo(F.x - 27, F.y - 17, L, F.y + 7);
       ctx.closePath(); ctx.fill();
-      cheeks(11, F.y + 26);
-    } else if (look.hair === 2) {                /* a deep side parting */
-      brow(F.y + 6);
-      ctx.quadraticCurveTo(F.x + 18, F.y - 4, F.x - 2, F.y - 14);
-      ctx.quadraticCurveTo(F.x - 22, F.y - 22, L, F.y - 16);
+    } else if (look.hair === 2) {                   /* a deep side parting */
+      brow(F.y + 5);
+      ctx.quadraticCurveTo(F.x + 18, F.y - 5, F.x - 2, F.y - 15);
+      ctx.quadraticCurveTo(F.x - 22, F.y - 23, L, F.y - 17);
       ctx.closePath(); ctx.fill();
-      ctx.fillRect(L, F.y - 30, 9, 40);
-      ctx.fillRect(R - 15, F.y - 30, 15, 60);
-    } else if (look.hair === 3) {                 /* a bob, to the jaw */
-      brow(F.y + 2); ctx.closePath(); ctx.fill();
-      cheeks(17, F.y + F.r);
-    } else if (look.hair === 4) {                       /* long, no fringe */
-      brow(F.y - 6);
-      ctx.quadraticCurveTo(F.x, F.y - 22, L, F.y - 6);
+    } else if (look.hair === 4) {                        /* long, no fringe */
+      brow(F.y - 8);
+      ctx.quadraticCurveTo(F.x, F.y - 24, L, F.y - 8);
       ctx.closePath(); ctx.fill();
-      cheeks(21, F.y + F.r);
     } else if (look.hair === 5) {                 /* cropped, a high line */
-      brow(F.y - 14);
-      ctx.quadraticCurveTo(F.x + 28, F.y - 26, F.x, F.y - 27);
-      ctx.quadraticCurveTo(F.x - 28, F.y - 26, L, F.y - 14);
+      brow(F.y - 15);
+      ctx.quadraticCurveTo(F.x + 29, F.y - 27, F.x, F.y - 28);
+      ctx.quadraticCurveTo(F.x - 29, F.y - 27, L, F.y - 15);
       ctx.closePath(); ctx.fill();
-      cheeks(7, F.y - 6);
-    } else if (look.hair === 6) {                     /* curly, all bumps */
-      brow(F.y - 6); ctx.closePath(); ctx.fill();
-      for (i = 0; i < 6; i++) disc(ctx, L + 8 + i * 15, F.y - 6, i % 2 ? 13 : 10);
-      for (i = 0; i < 4; i++) {
-        disc(ctx, L + 8, F.y + 2 + i * 13, 11);
-        disc(ctx, R - 8, F.y + 2 + i * 13, 11);
-      }
-    } else if (look.hair === 7) {                    /* wavy, a soft edge */
-      brow(F.y + 6);
-      ctx.quadraticCurveTo(F.x + 26, F.y + 10, F.x + 14, F.y - 8);
-      ctx.quadraticCurveTo(F.x, F.y + 8, F.x - 16, F.y - 8);
-      ctx.quadraticCurveTo(F.x - 28, F.y + 10, L, F.y + 6);
+    } else if (look.hair === 6) {                     /* curly, bumpy edge */
+      brow(F.y - 7); ctx.closePath(); ctx.fill();
+      for (i = 0; i < 6; i++) disc(ctx, L + 9 + i * 15, F.y - 7, i % 2 ? 13 : 10);
+    } else {                                           /* wavy, soft edge */
+      brow(F.y + 5);
+      ctx.quadraticCurveTo(F.x + 26, F.y + 9, F.x + 14, F.y - 9);
+      ctx.quadraticCurveTo(F.x, F.y + 7, F.x - 16, F.y - 9);
+      ctx.quadraticCurveTo(F.x - 28, F.y + 9, L, F.y + 5);
       ctx.closePath(); ctx.fill();
-      cheeks(14, F.y + F.r);
-    } else {                                        /* braids, centre part */
-      brow(F.y + 2);
-      ctx.quadraticCurveTo(F.x + 24, F.y - 14, F.x + 3, F.y - 11);
-      ctx.lineTo(F.x - 3, F.y - 11);
-      ctx.quadraticCurveTo(F.x - 24, F.y - 14, L, F.y + 2);
-      ctx.closePath(); ctx.fill();
-      cheeks(11, F.y + 18);
     }
     ctx.restore();
   }
@@ -397,19 +458,17 @@
 
   function drawOver(ctx, id, L) {
     var B = BODY, cx = B.cx, t = B.top, b = B.bottom;
+    var T = tintOf(L, "clothes");
+    var main = tone(T), dark = tone(T, -13), pale = tone(T, 11, -6);
     if (id === "dungas") {
-      /* TROUSERS WITH A BIB, NOT A BIB ALONE. One rounded panel with two
-         short straps was the same picture as the apron beside it, and a
-         picker may not show the same picture twice. */
-      var den = hsl(214, 32, 46), dark = hsl(214, 32, 37);
       inBody(ctx, function () {
-        ctx.fillStyle = den;
+        ctx.fillStyle = main;
         ctx.fillRect(cx - 50, t + 44, 100, b - t);
         rr(ctx, cx - 19, t + 18, 38, 30, 7);
-        ctx.strokeStyle = den; ctx.lineWidth = 8; ctx.lineCap = "round";
+        ctx.strokeStyle = main; ctx.lineWidth = 8; ctx.lineCap = "round";
         ctx.beginPath(); ctx.moveTo(cx - 15, t + 22); ctx.lineTo(cx - 19, t + 2); ctx.stroke();
         ctx.beginPath(); ctx.moveTo(cx + 15, t + 22); ctx.lineTo(cx + 19, t + 2); ctx.stroke();
-        ctx.fillStyle = "#e8d9a8";
+        ctx.fillStyle = pale;
         disc(ctx, cx - 15, t + 24, 3.4);
         disc(ctx, cx + 15, t + 24, 3.4);
         ctx.strokeStyle = dark; ctx.lineWidth = 2;
@@ -417,37 +476,29 @@
       });
     }
     if (id === "apron") {
-      /* A BIB, TWO NECK STRAPS, A WAIST TIE AND A POCKET. A plain trapezoid
-         is a shape rather than a garment: the tie says it is fastened on and
-         the pocket says it is worked in. */
-      var pale = "#f7edd7", band = "#ded0a6";
       inBody(ctx, function () {
-        ctx.strokeStyle = pale; ctx.lineWidth = 6; ctx.lineCap = "round";
+        ctx.strokeStyle = main; ctx.lineWidth = 6; ctx.lineCap = "round";
         ctx.beginPath(); ctx.moveTo(cx - 12, t + 16); ctx.lineTo(cx - 17, t - 2); ctx.stroke();
         ctx.beginPath(); ctx.moveTo(cx + 12, t + 16); ctx.lineTo(cx + 17, t - 2); ctx.stroke();
-        ctx.fillStyle = pale;
+        ctx.fillStyle = main;
         rr(ctx, cx - 16, t + 12, 32, 26, 5);
         ctx.beginPath();
         ctx.moveTo(cx - 22, t + 36); ctx.lineTo(cx + 22, t + 36);
         ctx.lineTo(cx + 36, b + 2); ctx.lineTo(cx - 36, b + 2);
         ctx.closePath(); ctx.fill();
-        ctx.fillStyle = band;
+        ctx.fillStyle = dark;
         ctx.fillRect(cx - 50, t + 34, 100, 10);
         rr(ctx, cx - 15, t + 58, 30, 20, 4);
-        ctx.strokeStyle = band; ctx.lineWidth = 2;
+        ctx.strokeStyle = dark; ctx.lineWidth = 2;
         ctx.beginPath(); ctx.moveTo(cx, t + 58); ctx.lineTo(cx, t + 78); ctx.stroke();
       });
     }
     if (id === "cardi") {
-      /* OPEN DOWN THE MIDDLE, which is the whole of what a cardigan is. The
-         gap showing the top underneath separates it from a jumper and the two
-         lapels separate it from a waistcoat. */
-      var w1 = hsl((L.top + 34) % 360, 26, 64), w2 = hsl((L.top + 34) % 360, 26, 52);
       inBody(ctx, function () {
-        ctx.fillStyle = w1;
+        ctx.fillStyle = main;
         ctx.fillRect(cx - 50, t, 37, b - t + 4);
         ctx.fillRect(cx + 13, t, 37, b - t + 4);
-        ctx.fillStyle = w2;
+        ctx.fillStyle = dark;
         [1, -1].forEach(function (k) {
           ctx.beginPath();
           ctx.moveTo(cx + k * 13, t);
@@ -455,7 +506,7 @@
           ctx.quadraticCurveTo(cx + k * 24, t + 22, cx + k * 11, t + 34);
           ctx.closePath(); ctx.fill();
         });
-        ctx.fillStyle = "#f4ead0";
+        ctx.fillStyle = pale;
         [0, 1, 2].forEach(function (i) { disc(ctx, cx - 9, t + 44 + i * 18, 3.6); });
       });
     }
@@ -464,7 +515,7 @@
          already is where it begins and carrying that flare on past the hem.
          Started at a fixed width it was a triangle stuck to a torso. */
       var y0 = b - 36, w0 = halfAt(y0), bw = B.botW / 2;
-      ctx.fillStyle = hsl(L.top, 30, 42);
+      ctx.fillStyle = main;
       ctx.beginPath();
       ctx.moveTo(cx - w0, y0);
       ctx.lineTo(cx + w0, y0);
@@ -472,21 +523,25 @@
       ctx.quadraticCurveTo(cx, b + 27, cx - bw - 13, b + 18);
       ctx.bezierCurveTo(cx - bw - 15, b + 8, cx - bw - 10, b - 8, cx - w0, y0);
       ctx.closePath(); ctx.fill();
+      ctx.fillStyle = dark;
+      ctx.beginPath();
+      ctx.moveTo(cx - bw - 13, b + 18);
+      ctx.quadraticCurveTo(cx, b + 27, cx + bw + 13, b + 18);
+      ctx.quadraticCurveTo(cx, b + 20, cx - bw - 13, b + 18);
+      ctx.closePath(); ctx.fill();
     }
     if (id === "shorts") {
-      /* THE BODY'S OWN LOWER THIRD, with a turned hem and an inseam. It was a
-         wide block laid across the hips, which is a NAPPY: what makes the eye
-         say trouser is that the garment is the shape of the thing wearing it
-         and has a split up the middle. */
-      var s1 = hsl(L.top, 26, 38), s2 = hsl(L.top, 26, 29);
-      inBody(ctx, function () {
-        ctx.fillStyle = s1;
-        ctx.fillRect(cx - 50, b - 44, 100, 50);
-        ctx.fillStyle = s2;
-        ctx.fillRect(cx - 50, b - 11, 100, 14);
-        ctx.strokeStyle = s2; ctx.lineWidth = 3;
-        ctx.beginPath(); ctx.moveTo(cx, b - 22); ctx.lineTo(cx, b); ctx.stroke();
-      });
+      /* TWO SHORT LEGS HANGING OUT FROM UNDER THE HEM, with bare shins below.
+         Every earlier version put the shorts ON the torso, as a band across
+         the hips or as its lower third in another tone, and both read as
+         something else: a nappy, then a dress with a dark hem. A trouser is
+         a thing that comes out from under a top, so that is where it goes. */
+      ctx.fillStyle = main;
+      rr(ctx, LEG.lx - 7, b - 12, 30, 34, 11);
+      rr(ctx, LEG.rx - 5, b - 12, 30, 34, 11);
+      ctx.fillStyle = dark;
+      rr(ctx, LEG.lx - 8, b + 12, 32, 10, 5);
+      rr(ctx, LEG.rx - 6, b + 12, 32, 10, 5);
     }
   }
 
@@ -495,7 +550,7 @@
      worn and the top otherwise. `holding` puts a thumb across the handle of
      what is carried, so the grip is a thing you can see. */
   function sleeveTone(L) {
-    return L.clothes === "cardi" ? hsl((L.top + 34) % 360, 26, 64) : hsl(L.top, 34, 52);
+    return L.clothes === "cardi" ? tone(tintOf(L, "clothes")) : hsl(L.top, 34, 52);
   }
   function armPoints(k) {
     return {
@@ -503,12 +558,19 @@
       hx: BODY.cx + k * ARM.hx, hy: BODY.top + ARM.hy
     };
   }
-  function drawArms(ctx, L, skin, holding) {
+  /* THE SLEEVES ARE PAINTED BEFORE THE TORSO and the hands after it. Drawn
+     last they went straight over the dungaree bib and its braces, which is
+     the wrong way round: a garment goes on over a shoulder. Behind the body
+     the joint is hidden, every garment sits on top of it, and the hands are
+     outside the silhouette anyway so nothing covers them. */
+  function drawSleeves(ctx, L) {
     ctx.strokeStyle = sleeveTone(L); ctx.lineWidth = 19; ctx.lineCap = "round";
     [-1, 1].forEach(function (k) {
       var a = armPoints(k);
       ctx.beginPath(); ctx.moveTo(a.sx, a.sy); ctx.lineTo(a.hx, a.hy - 6); ctx.stroke();
     });
+  }
+  function drawHands(ctx, skin, holding) {
     ctx.fillStyle = skin;
     [-1, 1].forEach(function (k) {
       var a = armPoints(k);
@@ -528,14 +590,14 @@
      hook, then a key; the satchel was a LADLE; the dungarees were the apron
      again; the trowel was a paintbrush. */
   function drawNeck(ctx, id, L) {
-    var cx = BODY.cx, y = BODY.top + 2;
+    var cx = BODY.cx, y = BODY.top + 2, T = tintOf(L, "neck");
     if (id === "scarf") {
-      var h = (L.top + 180) % 360;
+      var h = T.h;
       /* A BAND, A KNOT, AND TWO TAILS HANGING FROM THE MIDDLE. Every failed
          version hung the ends off ONE edge, so the picture had a head and a
          handle. Centred under the knot it is symmetrical, and a symmetrical
          thing with fringe on the bottom of it is a scarf. */
-      ctx.fillStyle = hsl(h, 40, 58);
+      ctx.fillStyle = tone(T);
       ctx.beginPath();
       ctx.moveTo(cx - 32, y - 6);
       ctx.quadraticCurveTo(cx, y + 8, cx + 32, y - 6);
@@ -543,9 +605,9 @@
       ctx.quadraticCurveTo(cx, y + 22, cx - 32, y + 8);
       ctx.closePath(); ctx.fill();
       [[-15, 38, 52], [2, 28, 62]].forEach(function (t) {
-        ctx.fillStyle = hsl(h, 40, t[2]);
+        ctx.fillStyle = hsl(T.h, T.s, t[2] === 52 ? T.l - 6 : T.l + 4);
         rr(ctx, cx + t[0], y + 12, 14, t[1], 7);
-        ctx.strokeStyle = hsl(h, 40, 44); ctx.lineWidth = 2.4; ctx.lineCap = "round";
+        ctx.strokeStyle = tone(T, -14); ctx.lineWidth = 2.4; ctx.lineCap = "round";
         [0, 1, 2].forEach(function (i) {
           ctx.beginPath();
           ctx.moveTo(cx + t[0] + 3 + i * 4.5, y + 10 + t[1]);
@@ -553,20 +615,24 @@
           ctx.stroke();
         });
       });
-      ctx.fillStyle = hsl(h, 44, 52);
+      ctx.fillStyle = tone(T, -6);
       rr(ctx, cx - 13, y + 1, 26, 18, 8);
     }
     if (id === "satchel") {
+      /* ON THE LEFT HIP. It hung on the right, which is where the right hand
+         and anything carried already are, so the bag came out behind the arm
+         and a held trowel on top of it. */
+      ctx.save(); ctx.translate(2 * cx, 0); ctx.scale(-1, 1);
       /* A CURVED STRAP AND A LARGE FLAPPED BAG. Straight and thin to a small
          box it was a LADLE: a straight handle ending in a bowl is a spoon,
          whatever colour it is. */
-      ctx.strokeStyle = "#a9794f"; ctx.lineWidth = 6; ctx.lineCap = "round";
+      ctx.strokeStyle = tone(T, -12); ctx.lineWidth = 6; ctx.lineCap = "round";
       ctx.beginPath();
       ctx.moveTo(cx - 24, y + 2);
       ctx.quadraticCurveTo(cx - 6, y + 36, cx + 20, y + 42);
       ctx.stroke();
-      ctx.fillStyle = "#c08f5f"; rr(ctx, cx + 3, y + 38, 44, 36, 10);
-      ctx.fillStyle = "#a9794f";
+      ctx.fillStyle = tone(T); rr(ctx, cx + 3, y + 38, 44, 36, 10);
+      ctx.fillStyle = tone(T, -12);
       ctx.beginPath();
       ctx.moveTo(cx + 3, y + 48);
       ctx.lineTo(cx + 3, y + 44);
@@ -574,52 +640,53 @@
       ctx.lineTo(cx + 47, y + 56);
       ctx.quadraticCurveTo(cx + 25, y + 62, cx + 3, y + 56);
       ctx.closePath(); ctx.fill();
-      ctx.fillStyle = "#6f4c2e"; rr(ctx, cx + 20, y + 53, 10, 10, 3);
+      ctx.fillStyle = tone(T, -24); rr(ctx, cx + 20, y + 53, 10, 10, 3);
+      ctx.restore();
     }
   }
 
-  function drawFeet(ctx, id) {
-    var y = LEG.foot;
+  function drawFeet(ctx, id, L) {
+    var y = LEG.foot, T = tintOf(L, "feet");
     if (id === "boots") {
       /* A SHAFT, A CUFF, A FOOT AND A SOLE. Two blocks read as two blocks. */
-      ctx.fillStyle = "#7a5438";
+      ctx.fillStyle = tone(T);
       rr(ctx, LEG.lx - 2, y - 26, 20, 34, 7);
       rr(ctx, LEG.rx - 2, y - 26, 20, 34, 7);
-      ctx.fillStyle = "#5d3f28";
+      ctx.fillStyle = tone(T, -12);
       rr(ctx, LEG.lx - 4, y - 30, 24, 11, 5);
       rr(ctx, LEG.rx - 4, y - 30, 24, 11, 5);
-      ctx.fillStyle = "#7a5438";
+      ctx.fillStyle = tone(T);
       rr(ctx, LEG.lx - 8, y + 2, 30, 16, 7);
       rr(ctx, LEG.rx - 4, y + 2, 30, 16, 7);
-      ctx.fillStyle = "#3f2c1d";
+      ctx.fillStyle = tone(T, -24);
       rr(ctx, LEG.lx - 9, y + 13, 32, 8, 4);
       rr(ctx, LEG.rx - 5, y + 13, 32, 8, 4);
     }
     if (id === "clogs") {
       /* A WOODEN SOLE AND A ROUNDED TOE. Two beige pills read as pebbles. */
-      ctx.fillStyle = "#9d7b46";
+      ctx.fillStyle = tone(T, -18);
       rr(ctx, LEG.lx - 9, y + 12, 32, 10, 4);
       rr(ctx, LEG.rx - 5, y + 12, 32, 10, 4);
-      ctx.fillStyle = "#e7cfa2";
+      ctx.fillStyle = tone(T, 18, -10);
       rr(ctx, LEG.lx - 8, y - 2, 30, 18, 9);
       rr(ctx, LEG.rx - 4, y - 2, 30, 18, 9);
-      ctx.fillStyle = "#c9a870";
+      ctx.fillStyle = tone(T, 4, -8);
       rr(ctx, LEG.lx - 8, y - 4, 16, 12, 6);
       rr(ctx, LEG.rx + 8, y - 4, 16, 12, 6);
     }
     if (id === "wellies") {
       /* TALL, and the height is the point: it is the one boot you can see
          from across a garden. The rolled top is what says rubber. */
-      ctx.fillStyle = "#4e7f5e";
+      ctx.fillStyle = tone(T);
       rr(ctx, LEG.lx - 3, y - 46, 22, 54, 9);
       rr(ctx, LEG.rx - 3, y - 46, 22, 54, 9);
-      ctx.fillStyle = "#3c6349";
+      ctx.fillStyle = tone(T, -11);
       rr(ctx, LEG.lx - 5, y - 50, 26, 12, 6);
       rr(ctx, LEG.rx - 5, y - 50, 26, 12, 6);
-      ctx.fillStyle = "#4e7f5e";
+      ctx.fillStyle = tone(T);
       rr(ctx, LEG.lx - 9, y + 2, 31, 17, 8);
       rr(ctx, LEG.rx - 5, y + 2, 31, 17, 8);
-      ctx.fillStyle = "#2e4b38";
+      ctx.fillStyle = tone(T, -20);
       rr(ctx, LEG.lx - 10, y + 14, 33, 8, 4);
       rr(ctx, LEG.rx - 6, y + 14, 33, 8, 4);
     }
@@ -755,16 +822,17 @@
       var hk = { hair: id, hairCol: L.hairCol };
       drawHairBack(ctx, hk);
       ctx.fillStyle = skin;
-      disc(ctx, FACE.x, FACE.y, FACE.r);
+      facePath(ctx); ctx.fill();
       drawHairFront(ctx, hk);
       drawFace(ctx);
       return;
     }
     if (kind === "top") {
       var lk = Object.assign({}, L, { top: id, clothes: "plain" });
+      drawSleeves(ctx, lk);
       ctx.fillStyle = hsl(id, 34, 52);
       bodyPath(ctx); ctx.fill();
-      drawArms(ctx, lk, skin, false);
+      drawHands(ctx, skin, false);
       return;
     }
     var slot = WEAR[id] && WEAR[id].slot;
@@ -772,15 +840,16 @@
       /* THE WHOLE LOWER FIGURE, so Plain is a picture too: a body and a pair
          of trousers is what "no outfit" looks like, and an empty tile is not. */
       var ck = Object.assign({}, L, { clothes: id });
-      drawLegs(ctx, id, L, skin);
+      drawLegs(ctx, id, ck, skin);
+      drawSleeves(ctx, ck);
       ctx.fillStyle = hsl(L.top, 34, 52);
       bodyPath(ctx); ctx.fill();
-      drawOver(ctx, id, L);
-      drawArms(ctx, ck, skin, false);
+      drawOver(ctx, id, ck);
+      drawHands(ctx, skin, false);
       return;
     }
     if (slot === "neck") drawNeck(ctx, id, L);
-    if (slot === "feet") drawFeet(ctx, id);
+    if (slot === "feet") drawFeet(ctx, id, L);
     if (slot === "hold") {
       /* ONE HAND, NOT TWO. Fitted, a pair spans eighty pixels of empty space
          with a can in the middle of it, so the tile came out as a small
@@ -845,23 +914,24 @@
     else drawSprout(ctx, L.flower);
 
     drawLegs(ctx, L.clothes, L, skin);
-    if (L.feet) drawFeet(ctx, L.feet);
+    if (L.feet) drawFeet(ctx, L.feet, L);
     else {
       ctx.fillStyle = hsl(L.top, 16, 22);
       rr(ctx, LEG.lx - 7, LEG.foot + 2, 28, 18, 8);
       rr(ctx, LEG.rx - 5, LEG.foot + 2, 28, 18, 8);
     }
 
+    drawSleeves(ctx, L);
     ctx.fillStyle = hsl(L.top, 34, 52);
     bodyPath(ctx); ctx.fill();
     drawOver(ctx, L.clothes, L);
     if (L.neck) drawNeck(ctx, L.neck, L);
     if (L.hold) drawHold(ctx, L.hold);
-    drawArms(ctx, L, skin, !!L.hold);
+    drawHands(ctx, skin, !!L.hold);
 
     drawHairBack(ctx, L);
     ctx.fillStyle = skin;
-    disc(ctx, FACE.x, FACE.y, FACE.r);
+    facePath(ctx); ctx.fill();
     drawHairFront(ctx, L);
     drawFace(ctx);
     if (L.face) drawFaceWear(ctx, L.face);
