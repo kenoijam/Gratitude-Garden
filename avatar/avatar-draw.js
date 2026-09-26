@@ -109,20 +109,20 @@
      figure, and `bare` says whether the legs are skin below it. */
   var WEAR = {
     plain:   { slot: "clothes", name: "Plain",     bare: false },
-    dungas:  { slot: "clothes", name: "Dungarees", bare: false, tint: 0 },
-    apron:   { slot: "clothes", name: "Apron",     bare: false, tint: 1 },
-    cardi:   { slot: "clothes", name: "Cardigan",  bare: false, tint: 2 },
-    skirt:   { slot: "clothes", name: "Skirt",     bare: true,  tint: 4 },
-    shorts:  { slot: "clothes", name: "Shorts",    bare: true,  tint: 0 },
-    scarf:   { slot: "neck",  name: "Scarf",        tint: 3 },
-    satchel: { slot: "neck",  name: "Satchel",      tint: 3 },
-    boots:   { slot: "feet",  name: "Boots",        tint: 3 },
-    clogs:   { slot: "feet",  name: "Clogs",        tint: 5 },
-    wellies: { slot: "feet",  name: "Wellies",      tint: 2 },
-    can:     { slot: "hold",  name: "Watering can", tint: 2 },
-    trowel:  { slot: "hold",  name: "Trowel",       tint: 3 },
-    specs:   { slot: "face",  name: "Glasses",      tint: 3 },
-    shades:  { slot: "face",  name: "Sunglasses",   tint: 0 }
+    dungas:  { slot: "clothes", name: "Dungarees", bare: false, tint: 0, tints: [0, 2, 3] },
+    apron:   { slot: "clothes", name: "Apron",     bare: false, tint: 1, tints: [1, 2, 4] },
+    cardi:   { slot: "clothes", name: "Cardigan",  bare: false, tint: 2, tints: [2, 4, 5] },
+    skirt:   { slot: "clothes", name: "Skirt",     bare: true,  tint: 4, tints: [4, 0, 2] },
+    shorts:  { slot: "clothes", name: "Shorts",    bare: true,  tint: 0, tints: [0, 3, 2] },
+    scarf:   { slot: "neck",  name: "Scarf",        tint: 3, tints: [3, 4, 2] },
+    satchel: { slot: "neck",  name: "Satchel",      tint: 3, tints: [3, 0, 5] },
+    boots:   { slot: "feet",  name: "Boots",        tint: 3, tints: [3, 0, 2] },
+    clogs:   { slot: "feet",  name: "Clogs",        tint: 5, tints: [5, 3, 1] },
+    wellies: { slot: "feet",  name: "Wellies",      tint: 2, tints: [2, 0, 4] },
+    can:     { slot: "hold",  name: "Watering can", tint: 2, tints: [2, 0, 5] },
+    trowel:  { slot: "hold",  name: "Trowel",       tint: 3, tints: [3, 2, 0] },
+    specs:   { slot: "face",  name: "Glasses",      tint: 3, tints: [3, 0, 4] },
+    shades:  { slot: "face",  name: "Sunglasses",   tint: 0, tints: [0, 3, 4] }
   };
   var SLOTS = ["clothes", "neck", "feet", "hold", "face"];
   var STEP_SLOTS = { top: ["clothes"], wear: ["neck", "feet", "hold", "face"] };
@@ -152,7 +152,11 @@
     return hsl(T.h, Math.max(0, T.s + (ds || 0)),
                Math.max(8, Math.min(96, T.l + (dl || 0))));
   }
-  function tintable(id) { return !!(WEAR[id] && WEAR[id].tint != null); }
+  function tintable(id) { return !!(WEAR[id] && WEAR[id].tints); }
+  /* THE THREE COLOURS AN ITEM OFFERS. Three rather than the whole palette,
+     because six denims of a dungaree is a paint chart and three is a choice;
+     each item names the three that suit what it is. */
+  function tintsFor(id) { return (WEAR[id] && WEAR[id].tints) || []; }
 
   /* ---------------------------------------------------------- geometry
      A LARGE HEAD ON A SMALL BODY, which is the reference's proportion. The
@@ -162,14 +166,26 @@
      THE HANDS ARE 113 FROM THE FACE'S MIDDLE against the flower's 84, so a
      held thing is never swallowed by a petal at any size. */
   var W = 240, H = 360;
-  /* A ROUNDED OVAL, NOT A CIRCLE, and slightly wide. Every one of the
-     references draws the face that way and it is a large part of why they
-     read as cute; a circle reads as a ball. */
-  var FACE = { x: 120, y: 124, r: 44, rx: 46, ry: 43 };
-  /* THE BONNET SITS BACK OFF THE BROW. The flower is drawn eight pixels
-     above the face rather than centred on it, so more of the crown shows
-     above the forehead, which is how a hood is actually worn. */
-  var HOOD_DY = -8, CROWN = { rx: 57, ry: 55 };
+  /* THE HEAD IS BUILT THE WAY THE HOOD REFERENCES ARE, in three rings from
+     the outside in, and getting this wrong is what broke five rounds of hair.
+
+       HEAD   the centre the bonnet and its opening are struck from
+       CROWN  the solid shape of the bonnet, with the petals radiating off it
+       OPEN   the FACE OPENING cut in that bonnet
+       FACE   the skin, sat LOW in the opening, which leaves the rest of the
+              opening for the hair to fill
+
+     That last line is the whole trick. In every reference the hair is a solid
+     mass filling the opening, and the face is a smaller oval sitting low
+     inside it, so what is left over reads as a fringe across the brow and a
+     piece down each cheek WITHOUT any of it having to be drawn as hair. Ours
+     had no opening at all, only a circle of skin on a ring of petals, so hair
+     could only ever be painted onto the face or onto the flower. */
+  var HEAD = { x: 120, y: 120 };
+  var CROWN = { rx: 66, ry: 63 };
+  var OPEN = { rx: 55, ry: 53 };
+  var FACE = { x: 120, y: 128, rx: 44, ry: 45, r: 44 };
+
   /* THE TORSO IS A BELL, not a rounded rectangle, and that is most of what
      made the figure read as boxy. It narrows to 58 at the shoulders and
      flares to 80 at the hips, which is the shape both soft-character
@@ -243,39 +259,38 @@
     ctx.beginPath();
     ctx.ellipse(FACE.x, FACE.y, FACE.rx, FACE.ry, 0, 0, Math.PI * 2);
   }
+  function openPath(ctx) {
+    ctx.beginPath();
+    ctx.ellipse(HEAD.x, HEAD.y, OPEN.rx, OPEN.ry, 0, 0, Math.PI * 2);
+  }
 
   function hoodOf(id) { return HOOD[BLOOMS[id] ? id : "daisy"]; }
   function bloomOf(id) { return BLOOMS[id] || BLOOMS.daisy; }
 
   /* THE FLOWER IS A BONNET, NOT A RING OF PETALS, and the SOLID CROWN is
-     what makes it one. This is the thing that had been missing through four
-     rounds of hair: the reference hood is ONE continuous soft shape with a
-     face nestled in an opening, and ours was separate petals with gaps
-     between them and a circle of skin floating in the middle. There was no
-     opening for hair to sit inside, so every attempt read as a patch stuck
-     on either the face or the petals.
-     The crown is a filled ellipse in the flower's own colour behind the
-     bloom, closing the gaps between the petal bases; the RIM is a deeper
-     ring round the face, which is what says the face is INSIDE the bonnet
-     rather than resting on it. Both are the flower's colour, so a species
-     still looks like itself. */
+     what makes it one. The reference hood is ONE continuous soft shape with a
+     face nestled in an opening; ours was separate petals with gaps between
+     them. The crown closes those gaps, the petals become the ears and trim on
+     it, and the RIM is a deeper ring round the opening, which is what says
+     the face is INSIDE the bonnet rather than resting on it. */
   function drawHood(ctx, id) {
     var h = hoodOf(id), b = bloomOf(id);
     if (typeof window.drawSpeciesBloom !== "function") return;
     ctx.save();
-    ctx.translate(FACE.x, FACE.y + h.dy + HOOD_DY);
-    ctx.fillStyle = hsl(b.hue, b.sat, Math.max(14, b.light - 5));
+    ctx.translate(HEAD.x, HEAD.y + h.dy);
+    ctx.fillStyle = hsl(b.hue, b.sat, Math.max(14, b.light - 4));
     ctx.beginPath();
     ctx.ellipse(0, 0, CROWN.rx, CROWN.ry, 0, 0, Math.PI * 2);
     ctx.fill();
     window.drawSpeciesBloom(ctx, id, h.R, b.hue, b.sat, b.light);
-    ctx.restore();
-    ctx.save();
-    ctx.translate(FACE.x, FACE.y + h.dy + HOOD_DY);
-    ctx.strokeStyle = hsl(b.hue, Math.min(100, b.sat + 6), Math.max(12, b.light - 16));
-    ctx.lineWidth = 7;
+    ctx.fillStyle = hsl(b.hue, b.sat, Math.max(14, b.light - 4));
     ctx.beginPath();
-    ctx.ellipse(0, 6, FACE.rx + 5, FACE.ry + 5, 0, 0, Math.PI * 2);
+    ctx.ellipse(0, 0, CROWN.rx - 3, CROWN.ry - 3, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = hsl(b.hue, Math.min(100, b.sat + 8), Math.max(12, b.light - 17));
+    ctx.lineWidth = 6;
+    ctx.beginPath();
+    ctx.ellipse(0, 0, OPEN.rx + 3, OPEN.ry + 3, 0, 0, Math.PI * 2);
     ctx.stroke();
     ctx.restore();
   }
@@ -287,13 +302,13 @@
      reference characters have no cowl either. */
   function drawSprout(ctx, id) {
     var h = hoodOf(id);
-    var top = FACE.y - FACE.r - 6;
+    var top = HEAD.y - CROWN.ry + 4;
     ctx.strokeStyle = "#5fae72"; ctx.lineWidth = 6; ctx.lineCap = "round";
-    ctx.beginPath(); ctx.moveTo(FACE.x, top + 14); ctx.lineTo(FACE.x, top - h.stem); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(HEAD.x, top + 16); ctx.lineTo(HEAD.x, top - h.stem); ctx.stroke();
     ctx.fillStyle = "#79c48a";
     [-1, 1].forEach(function (k) {
       ctx.save();
-      ctx.translate(FACE.x, top - h.stem * 0.45);
+      ctx.translate(HEAD.x, top - h.stem * 0.45);
       ctx.scale(k, 1);
       ctx.beginPath();
       ctx.moveTo(0, 0);
@@ -305,142 +320,164 @@
     var b = BLOOMS[id];
     if (typeof window.drawSpeciesBloom === "function") {
       ctx.save();
-      ctx.translate(FACE.x, top - h.stem + h.dy);
+      ctx.translate(HEAD.x, top - h.stem + h.dy);
       window.drawSpeciesBloom(ctx, id, h.R, b.hue, b.sat, b.light);
       ctx.restore();
     }
   }
 
   /* ---------------------------------------------------------- the hair
-     ONE MASS THAT FILLS THE BONNET'S OPENING, which is the reference drawing
-     exactly. `drawHairBack` paints a solid shape a little larger than the
-     face over the crown, plus a strand down each side; the face is then
-     painted on top of it, which is what CUTS the opening and leaves the hair
-     as a frame round it. `drawHairFront` is the fringe alone, clipped to the
-     face, over the top.
+     THE MASS FILLS THE OPENING AND THE FACE IS CUT LOW INTO IT. That is the
+     whole construction and it is taken straight off the hood references: the
+     opening is filled solid with hair, the face oval is drawn on top of it
+     sitting low, and what is left over IS the fringe across the brow and the
+     piece down each cheek. None of that has to be drawn as hair, which is why
+     every previous attempt came out boxy: they were drawing hair-shaped
+     rectangles and lines into a space that had no edge of its own.
 
-     Four earlier versions failed and all four failed the same way, because
-     there was no opening to sit in: hair clipped to the face read as painted
-     onto it, and hair over the flower read as a flat dark patch stuck on the
-     petals. The crown is what fixed the hair. */
-  function strand(ctx, k, toY, w, flick, wave) {
-    var F = FACE, x = F.x + k * (F.rx - 6), top = F.y - 34;
-    ctx.beginPath();
-    ctx.moveTo(x - w, top);
-    ctx.lineTo(x + w, top);
-    if (wave) {
-      ctx.quadraticCurveTo(x + w + 7 * k, (top + toY) / 2, x + w - 3 * k, toY - 6);
-      ctx.quadraticCurveTo(x + 2 * k, toY + 6, x - w - 2 * k, toY - 10);
-      ctx.quadraticCurveTo(x - w - 5 * k, (top + toY) / 2, x - w, top);
-    } else {
-      ctx.lineTo(x + w + flick * k, toY - 12);
-      ctx.quadraticCurveTo(x + w + flick * k, toY, x + w + flick * k - 10 * k, toY);
-      ctx.lineTo(x - w + 9, toY);
-      ctx.quadraticCurveTo(x - w, toY, x - w, toY - 12);
-    }
-    ctx.closePath(); ctx.fill();
-  }
+     ANYTHING LONGER THAN THE FACE GOES BEHIND THE FLOWER. `drawHairLong`
+     paints before the bonnet, so a plait or a length is hidden by the crown
+     and the petals and emerges at the bonnet's lower corners, which is
+     exactly what the bear, the chick, the penguin and the cat all do. */
+  var HAIR_LONG = {
+    2: { to: 74,  w: 13, one: 1 },                      /* side part */
+    3: { to: 76,  w: 15 },                              /* bob */
+    4: { to: 104, w: 17 },                              /* long */
+    7: { to: 98,  w: 15, wave: true },                  /* wavy */
+    8: { plait: true, to: 100 }                         /* braids */
+  };
 
-  function drawHairBack(ctx, look) {
-    var c = HAIRS[look.hairCol] || HAIRS[0], d = shade(c, 0.8), F = FACE, i, k;
-    ctx.fillStyle = c;
-
-    /* the mass in the opening */
-    if (look.hair === 5) {                             /* cropped, tight */
-      ctx.beginPath();
-      ctx.ellipse(F.x, F.y - 7, F.rx + 3, F.ry + 3, 0, 0, Math.PI * 2); ctx.fill();
-    } else if (look.hair === 6) {                       /* curly, bumpy */
-      ctx.beginPath();
-      ctx.ellipse(F.x, F.y - 4, F.rx + 4, F.ry + 4, 0, 0, Math.PI * 2); ctx.fill();
-      for (i = 0; i < 13; i++) {
-        var a = Math.PI * (0.8 + (i / 12) * 1.4);
-        disc(ctx, F.x + Math.cos(a) * (F.rx + 3), F.y - 4 + Math.sin(a) * (F.ry + 3), 11);
-      }
-    } else {
-      ctx.beginPath();
-      ctx.ellipse(F.x, F.y - 4, F.rx + 7, F.ry + 7, 0, 0, Math.PI * 2); ctx.fill();
-    }
-
-    /* and what hangs out of it. The BOB FLICKS OUT at the bottom, which is
-       the detail the hood reference turns on: two little ends showing under
-       the edge are what say there is a person inside. */
-    if (look.hair === 0) { strand(ctx, -1, F.y + 30, 12, 0); strand(ctx, 1, F.y + 30, 12, 0); }
-    if (look.hair === 1) { strand(ctx, -1, F.y + 38, 12, 0); strand(ctx, 1, F.y + 38, 12, 0); }
-    if (look.hair === 2) { strand(ctx, -1, F.y + 26, 10, 0); strand(ctx, 1, F.y + 44, 13, 0); }
-    if (look.hair === 3) { strand(ctx, -1, F.y + 48, 14, 9); strand(ctx, 1, F.y + 48, 14, 9); }
-    if (look.hair === 4) { strand(ctx, -1, F.y + 84, 15, 0); strand(ctx, 1, F.y + 84, 15, 0); }
-    if (look.hair === 7) { strand(ctx, -1, F.y + 76, 13, 0, true); strand(ctx, 1, F.y + 76, 13, 0, true); }
-    if (look.hair === 6) {
-      for (k = -1; k <= 1; k += 2) {
-        for (i = 0; i < 3; i++) disc(ctx, F.x + k * (F.rx - 2 + (i % 2) * 4), F.y + 16 + i * 13, 11);
-      }
-    }
-    if (look.hair === 8) {                                    /* braids */
-      for (k = -1; k <= 1; k += 2) {
-        var x = F.x + k * (F.rx - 5);
-        ctx.fillStyle = c; rr(ctx, x - 11, F.y - 34, 22, 52, 9);
-        ctx.fillStyle = d; rr(ctx, x - 9, F.y + 20, 18, 9, 4);
+  function drawHairLong(ctx, look) {
+    var spec = HAIR_LONG[look.hair];
+    if (!spec) return;
+    var c = HAIRS[look.hairCol] || HAIRS[0], d = shade(c, 0.8), i, k;
+    for (k = -1; k <= 1; k += 2) {
+      if (spec.one && k !== spec.one) continue;
+      var x = HEAD.x + k * 52, top = HEAD.y - 20, end = HEAD.y + spec.to;
+      if (spec.plait) {
+        ctx.fillStyle = c;
+        rr(ctx, x - 12, top, 24, 58, 11);
+        ctx.fillStyle = d;
+        rr(ctx, x - 10, HEAD.y + 34, 20, 9, 4);
         for (i = 0; i < 3; i++) {
           ctx.fillStyle = i % 2 ? d : c;
-          disc(ctx, x, F.y + 36 + i * 14, 10 - i * 1.2);
+          disc(ctx, x, HEAD.y + 50 + i * 16, 11 - i * 1.4);
         }
+        continue;
       }
       ctx.fillStyle = c;
+      ctx.beginPath();
+      ctx.moveTo(x - spec.w, top);
+      ctx.lineTo(x + spec.w, top);
+      if (spec.wave) {
+        ctx.quadraticCurveTo(x + spec.w + 9 * k, (top + end) / 2, x + spec.w - 4 * k, end - 8);
+        ctx.quadraticCurveTo(x, end + 8, x - spec.w - 3 * k, end - 12);
+        ctx.quadraticCurveTo(x - spec.w - 6 * k, (top + end) / 2, x - spec.w, top);
+      } else {
+        ctx.lineTo(x + spec.w, end - 14);
+        ctx.quadraticCurveTo(x + spec.w, end, x + spec.w - 12, end);
+        ctx.lineTo(x - spec.w + 12, end);
+        ctx.quadraticCurveTo(x - spec.w, end, x - spec.w, end - 14);
+      }
+      ctx.closePath(); ctx.fill();
     }
   }
 
-  /* THE FRINGE ALONE, clipped to the face, so it can never reach the petals.
-     The silhouette is the mass's job; this only says where the hairline
-     falls. */
-  function drawHairFront(ctx, look) {
+  /* THE MASS, clipped to the opening, and the face cut low into it by the
+     caller. Only CROPPED differs: its mass stops above the ear line, so the
+     opening shows bonnet at the sides rather than hair. */
+  function drawHairMass(ctx, look) {
+    var c = HAIRS[look.hairCol] || HAIRS[0], i, a;
+    ctx.save();
+    openPath(ctx); ctx.clip();
+    ctx.fillStyle = c;
+    if (look.hair === 5) {
+      ctx.beginPath();
+      ctx.ellipse(HEAD.x, HEAD.y - 6, OPEN.rx - 5, OPEN.ry - 9, 0, 0, Math.PI * 2);
+      ctx.fill();
+    } else if (look.hair === 6) {                /* curly, a scalloped mass */
+      ctx.fillRect(HEAD.x - OPEN.rx, HEAD.y - OPEN.ry, OPEN.rx * 2, OPEN.ry * 2);
+      ctx.restore();
+      ctx.save();
+      ctx.fillStyle = c;
+      for (i = 0; i < 14; i++) {
+        a = Math.PI * (0.78 + (i / 13) * 1.44);
+        disc(ctx, HEAD.x + Math.cos(a) * (OPEN.rx - 4),
+                  HEAD.y + Math.sin(a) * (OPEN.ry - 4), 12);
+      }
+    } else {
+      ctx.fillRect(HEAD.x - OPEN.rx, HEAD.y - OPEN.ry, OPEN.rx * 2, OPEN.ry * 2);
+    }
+    ctx.restore();
+  }
+
+  /* THE HAIRLINE, clipped to the face, and it is the ONLY thing that differs
+     between the nine once the mass is doing the framing. */
+  function drawFringe(ctx, look) {
     var c = HAIRS[look.hairCol] || HAIRS[0], F = FACE, i;
-    var TOP = F.y - F.ry - 8, L = F.x - F.rx, R = F.x + F.rx;
+    var TOP = F.y - F.ry - 6, L = F.x - F.rx, R = F.x + F.rx;
     ctx.save();
     facePath(ctx); ctx.clip();
     ctx.fillStyle = c;
-
     function brow(lowY) {
       ctx.beginPath();
       ctx.moveTo(L, lowY); ctx.lineTo(L, TOP); ctx.lineTo(R, TOP); ctx.lineTo(R, lowY);
     }
     if (look.hair === 0 || look.hair === 3) {          /* a blunt fringe */
-      brow(F.y + 1);
+      brow(F.y - 10);
       var n = 5, step = (F.rx * 2) / n;
       for (i = n; i > 0; i--) {
-        ctx.arc(L + step * (i - 0.5), F.y + 1, step / 2, 0, Math.PI, true);
+        ctx.arc(L + step * (i - 0.5), F.y - 10, step / 2, 0, Math.PI, true);
       }
       ctx.closePath(); ctx.fill();
     } else if (look.hair === 1 || look.hair === 8) {   /* a centre parting */
-      brow(F.y + 7);
-      ctx.quadraticCurveTo(F.x + 27, F.y - 17, F.x + 4, F.y - 13);
-      ctx.lineTo(F.x - 4, F.y - 13);
-      ctx.quadraticCurveTo(F.x - 27, F.y - 17, L, F.y + 7);
+      brow(F.y - 4);
+      ctx.quadraticCurveTo(F.x + 26, F.y - 24, F.x + 4, F.y - 21);
+      ctx.lineTo(F.x - 4, F.y - 21);
+      ctx.quadraticCurveTo(F.x - 26, F.y - 24, L, F.y - 4);
       ctx.closePath(); ctx.fill();
-    } else if (look.hair === 2) {                   /* a deep side parting */
-      brow(F.y + 5);
-      ctx.quadraticCurveTo(F.x + 18, F.y - 5, F.x - 2, F.y - 15);
-      ctx.quadraticCurveTo(F.x - 22, F.y - 23, L, F.y - 17);
+    } else if (look.hair === 2) {                 /* a deep side parting */
+      brow(F.y - 6);
+      ctx.quadraticCurveTo(F.x + 18, F.y - 15, F.x - 2, F.y - 24);
+      ctx.quadraticCurveTo(F.x - 22, F.y - 31, L, F.y - 25);
       ctx.closePath(); ctx.fill();
-    } else if (look.hair === 4) {                        /* long, no fringe */
-      brow(F.y - 8);
-      ctx.quadraticCurveTo(F.x, F.y - 24, L, F.y - 8);
+    } else if (look.hair === 4) {                       /* long, a soft line */
+      brow(F.y - 18);
+      ctx.quadraticCurveTo(F.x, F.y - 32, L, F.y - 18);
       ctx.closePath(); ctx.fill();
     } else if (look.hair === 5) {                 /* cropped, a high line */
-      brow(F.y - 15);
-      ctx.quadraticCurveTo(F.x + 29, F.y - 27, F.x, F.y - 28);
-      ctx.quadraticCurveTo(F.x - 29, F.y - 27, L, F.y - 15);
+      brow(F.y - 24);
+      ctx.quadraticCurveTo(F.x + 28, F.y - 35, F.x, F.y - 36);
+      ctx.quadraticCurveTo(F.x - 28, F.y - 35, L, F.y - 24);
       ctx.closePath(); ctx.fill();
     } else if (look.hair === 6) {                     /* curly, bumpy edge */
-      brow(F.y - 7); ctx.closePath(); ctx.fill();
-      for (i = 0; i < 6; i++) disc(ctx, L + 9 + i * 15, F.y - 7, i % 2 ? 13 : 10);
+      brow(F.y - 18); ctx.closePath(); ctx.fill();
+      for (i = 0; i < 6; i++) disc(ctx, L + 9 + i * 15, F.y - 18, i % 2 ? 12 : 9);
     } else {                                           /* wavy, soft edge */
-      brow(F.y + 5);
-      ctx.quadraticCurveTo(F.x + 26, F.y + 9, F.x + 14, F.y - 9);
-      ctx.quadraticCurveTo(F.x, F.y + 7, F.x - 16, F.y - 9);
-      ctx.quadraticCurveTo(F.x - 28, F.y + 9, L, F.y + 5);
+      brow(F.y - 6);
+      ctx.quadraticCurveTo(F.x + 25, F.y - 3, F.x + 13, F.y - 20);
+      ctx.quadraticCurveTo(F.x, F.y - 5, F.x - 15, F.y - 20);
+      ctx.quadraticCurveTo(F.x - 27, F.y - 3, L, F.y - 6);
       ctx.closePath(); ctx.fill();
     }
     ctx.restore();
+  }
+
+  /* TWO SMALL EARS at the sides of the opening. Every one of the hood
+     references has them and they are most of why those heads read as heads
+     rather than as discs; they sit OVER the hair, at the face's own edge. */
+  function drawEars(ctx, skin) {
+    var F = FACE;
+    [-1, 1].forEach(function (k) {
+      ctx.fillStyle = skin;
+      ctx.beginPath();
+      ctx.ellipse(F.x + k * (F.rx - 1), F.y + 4, 8, 11, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = shade(skin, 0.86); ctx.lineWidth = 1.8;
+      ctx.beginPath();
+      ctx.arc(F.x + k * (F.rx - 1), F.y + 4, 4, -0.6, 2.4);
+      ctx.stroke();
+    });
   }
 
   /* ------------------------------------------------------ the clothing
@@ -537,11 +574,11 @@
          something else: a nappy, then a dress with a dark hem. A trouser is
          a thing that comes out from under a top, so that is where it goes. */
       ctx.fillStyle = main;
-      rr(ctx, LEG.lx - 7, b - 12, 30, 34, 11);
-      rr(ctx, LEG.rx - 5, b - 12, 30, 34, 11);
+      rr(ctx, LEG.lx - 7, b - 4, 30, 32, 11);
+      rr(ctx, LEG.rx - 5, b - 4, 30, 32, 11);
       ctx.fillStyle = dark;
-      rr(ctx, LEG.lx - 8, b + 12, 32, 10, 5);
-      rr(ctx, LEG.rx - 6, b + 12, 32, 10, 5);
+      rr(ctx, LEG.lx - 8, b + 18, 32, 10, 5);
+      rr(ctx, LEG.rx - 6, b + 18, 32, 10, 5);
     }
   }
 
@@ -820,10 +857,12 @@
     }
     if (kind === "hair") {
       var hk = { hair: id, hairCol: L.hairCol };
-      drawHairBack(ctx, hk);
+      drawHairLong(ctx, hk);
+      drawHairMass(ctx, hk);
       ctx.fillStyle = skin;
       facePath(ctx); ctx.fill();
-      drawHairFront(ctx, hk);
+      drawFringe(ctx, hk);
+      drawEars(ctx, skin);
       drawFace(ctx);
       return;
     }
@@ -836,6 +875,16 @@
       return;
     }
     var slot = WEAR[id] && WEAR[id].slot;
+    /* A TILE SHOWS ITS OWN COLOUR, not the one the worn item is set to. The
+       tint is stored per SLOT, so without this every tile in a row repainted
+       itself in whatever the chosen garment had been changed to and the row
+       came out as six of the same colour. */
+    if (slot) {
+      var tk = Object.assign({}, L, { tints: Object.assign({}, L.tints || {}) });
+      if (tk[slot] !== id) delete tk.tints[slot];
+      tk[slot] = id;
+      L = tk;
+    }
     if (slot === "clothes") {
       /* THE WHOLE LOWER FIGURE, so Plain is a picture too: a body and a pair
          of trousers is what "no outfit" looks like, and an empty tile is not. */
@@ -910,6 +959,7 @@
     var skin = SKINS[L.skin] || SKINS[0];
     var h = hoodOf(L.flower);
 
+    drawHairLong(ctx, L);
     if (h.mode === "hood") drawHood(ctx, L.flower);
     else drawSprout(ctx, L.flower);
 
@@ -929,10 +979,11 @@
     if (L.hold) drawHold(ctx, L.hold);
     drawHands(ctx, skin, !!L.hold);
 
-    drawHairBack(ctx, L);
+    drawHairMass(ctx, L);
     ctx.fillStyle = skin;
     facePath(ctx); ctx.fill();
-    drawHairFront(ctx, L);
+    drawFringe(ctx, L);
+    drawEars(ctx, skin);
     drawFace(ctx);
     if (L.face) drawFaceWear(ctx, L.face);
 
@@ -943,6 +994,7 @@
     paint: paint, icon: icon, SKINS: SKINS, HAIRS: HAIRS, SHAPES: SHAPES,
     TOPS: TOPS, WEAR: WEAR, SLOTS: SLOTS, STEP_SLOTS: STEP_SLOTS,
     SLOT_LABEL: SLOT_LABEL, NO_NONE: NO_NONE, BLOOMS: BLOOMS, HOOD: HOOD,
+    TINTS: TINTS, tintable: tintable, tintsFor: tintsFor, tone: tone,
     SPECIES_ORDER: SPECIES_ORDER, DEFAULT_LOOK: DEFAULT_LOOK, W: W, H: H
   };
 })();

@@ -148,6 +148,10 @@
       ids.forEach(function (id) {
         row.appendChild(pic("wear", id, slot === "clothes" ? 46 : 38, A.WEAR[id].name, look[slot] === id, function () {
           look[slot] = (look[slot] === id && !A.NO_NONE[slot]) ? null : id;
+          /* PICKING A DIFFERENT ITEM CLEARS THE COLOUR, so a new garment
+             always arrives in the one it was drawn for rather than inheriting
+             whatever the last thing in that slot happened to be wearing. */
+          if (look.tints) delete look.tints[slot];
           buildWearables(); paint();
         }));
       });
@@ -157,7 +161,34 @@
         }));
       }
       host.appendChild(row);
+      colourRow(host, slot);
     });
+  }
+  /* THREE COLOURS PER ITEM, in a row under the slot that has one chosen.
+     They are drawn as the real tone the garment is painted in, so a swatch is
+     exactly what picking it does. */
+  function colourRow(host, slot) {
+    var id = look[slot];
+    if (!id || !A.tintable(id)) return;
+    var opts = A.tintsFor(id);
+    var row = document.createElement("div");
+    row.className = "av-tints";
+    opts.forEach(function (ti) {
+      var b = document.createElement("button");
+      b.type = "button";
+      var on = (look.tints && look.tints[slot] != null)
+        ? look.tints[slot] === ti : A.WEAR[id].tint === ti;
+      b.className = "av-tint" + (on ? " is-on" : "");
+      b.style.background = A.tone(A.TINTS[ti]);
+      b.setAttribute("aria-label", A.TINTS[ti].name);
+      b.addEventListener("click", function () {
+        if (!look.tints) look.tints = {};
+        look.tints[slot] = ti;
+        buildWearables(); paint();
+      });
+      row.appendChild(b);
+    });
+    host.appendChild(row);
   }
   /* THE CLOTHING IS ON THE CLOTHES STEP AND THE REST ON CARRYING, which is a
      rebalance rather than a rename: Carrying was four rows of tiles against a

@@ -138,6 +138,13 @@ button, a, [role="button"], summary, label[for] { touch-action: manipulation; }
 .av-grid-wear { gap: 8px; }
 .av-grid-wear .av-tile { padding: 7px 4px; gap: 5px; }
 .av-grid-wear .av-tile span { font-size: .71rem; }
+/* the three colours an item comes in, under the row that chose it */
+.av-tints { display: flex; gap: 8px; margin-top: 8px; }
+.av-tint {
+  width: 30px; height: 30px; border-radius: 50%; padding: 0; cursor: pointer;
+  border: 1.5px solid #bde0d6; font: inherit;
+}
+.av-tint.is-on { border-color: #26a69a; box-shadow: 0 0 0 2px #fff, 0 0 0 3.5px #26a69a; }
 
 /* ── keepsakes ─────────────────────────────────────────────────────────── */
 .av-keeps { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }

@@ -1252,25 +1252,35 @@ Headings on the garden pages come from two places. `.gg-title` and `#tips-card h
 - **TWO SMALL HANDS AND NO ARMS.** That is what "arms behind the body" means here and what the sprout characters do: a rounded hand at each side with the limb hidden. It also removes the stick arms, which read as twigs.
 - **THE LEGS ARE 25 APART, NOT 19, and that is the shoes' doing rather than the legs'.** At 19 the two shoes were 26 wide on centres 19 apart, so they overlapped by 6 and the feet read as one dark block. The leg spacing is set by whatever has to stand on it.
 - **ACCESSORIES, NOT KEEPSAKES.** Nothing is earned, nothing is locked and nothing is tied to a species: the flower on the head already carries the garden, and eight locked tiles were a reward system bolted onto a dressing up screen. Eight accessories across four slots (`neck`, `body`, `feet`, `hold`), **one per slot**, so two choices can never fight over the same place on the figure. Four small rows rather than one grid of eight, because a grid says "pick some of these" where the truth is "pick one of each".
-**ONE LAYER RULE: THE FLOWER FIRST, THEN THE BODY, THEN THE HEAD.** A hood is behind whoever is wearing it, so its lower petals go behind the shoulders, and everything worn on the torso is simply on the torso. **Three passes were needed to get there and all three are worth knowing, because each failed differently.**
+**ONE LAYER RULE: THE FLOWER FIRST, THEN THE BODY, THEN THE HEAD.** A hood is behind whoever is wearing it, so its lower petals go behind the shoulders, and everything worn on the torso is simply on the torso. Three arrangements were tried before this and each failed differently: the flower behind at the old proportions read as a fan propped up; the flower in FRONT made an apron look printed onto the petals; separating them left the two sprout species with their heads floating, and the neck grown to fix that was worse. **A RING FLOWER ALWAYS REACHES BELOW THE CHIN** and no proportion avoids it, since for petals to show around a face of radius 44 the bloom has to be bigger than 44.
 
-- **Flower behind, at the old proportions**: its lower petals were cut off by a large torso and it read as a fan propped behind somebody.
-- **Flower in FRONT of the body**: an apron came out looking printed onto the petals, and the verdict was that the figure was "all over the place with the layers". It was.
-- **Separated so they barely overlapped**: it worked for the six hood species and left the two SPROUT species with their heads floating above their shoulders, since a tulip has no petals to fill that gap. The neck grown to fix that was worse than the disease.
-- **What works is the head sitting ON the body, the way every reference builds it, with the flower behind.** The cost is that the torso covers the middle of the flower's lower half, and it is small: the torso is 80 wide against a flower of 168, so the petals run clear to 208 down both sides. **A RING FLOWER ALWAYS REACHES BELOW THE CHIN** and there is no proportion that avoids it: for petals to show around a face of radius 44 the bloom has to be bigger than 44.
-- It is also what lets hair fall out of the flower onto the shoulders, which needs the hair painted after it.
+**THE HEAD IS BUILT IN THREE RINGS, AND GETTING THIS WRONG BROKE FIVE ROUNDS OF HAIR.**
+
+| | what it is |
+|---|---|
+| `HEAD` | the centre the bonnet and its opening are struck from |
+| `CROWN` | the SOLID shape of the bonnet, 66 by 63, with the petals radiating off it |
+| `OPEN` | the FACE OPENING cut in that bonnet, 55 by 53 |
+| `FACE` | the skin, 44 by 45, sat LOW in the opening |
+
+- **THE LAST LINE IS THE WHOLE TRICK.** In every hood reference the hair is a solid mass FILLING the opening and the face is a smaller oval sitting low inside it, so what is left over reads as a fringe across the brow and a piece down each cheek **without any of it having to be drawn as hair**. Ours had no opening at all, only a circle of skin on a ring of petals, so hair could only ever be painted onto the face or onto the flower. Five versions were tried that way and the verdict on the last was "boxy", which is exactly what drawing hair-shaped rectangles into a space with no edge of its own produces.
+- **THE SOLID CROWN is what makes the flower a bonnet** rather than a ring of petals. It closes the gaps between the petal bases, the petals become the ears and trim on it, and the RIM, a deeper ring round the opening, is what says the face is INSIDE the bonnet rather than resting on it.
+- **ANYTHING LONGER THAN THE FACE GOES BEHIND THE FLOWER.** `drawHairLong` paints before the bonnet, so a plait or a length is hidden by the crown and the petals and emerges at the bonnet's LOWER CORNERS, which is what the bear, the chick, the penguin and the cat in the reference sheet all do.
+- **The order on the head is therefore**: long hair, flower, body, then the mass clipped to the opening, the face oval, the fringe clipped to the face, the ears, the marks.
+- **TWO SMALL EARS at the sides of the opening.** Every one of the hood references has them and they are most of why those heads read as heads rather than as discs.
+- **Buns and a ponytail still cannot exist**, since both are defined by what sits above and outside the head, where the flower is. The nine are Fringe, Parted, Side part, Bob, Long, Cropped, Curly, Wavy, Braids.
+
+**THREE COLOURS PER ITEM, not a single fixed one and not the whole palette.** Every garment and accessory carried a hard-coded colour, so a gardener was a figure in their own hue with a fixed blue dungaree and a fixed brown boot stuck on. `TINTS` holds six, each `WEAR` entry names the three that suit it and the one it starts in, and `look.tints` overrides per SLOT.
+
+- **Six denims of a dungaree is a paint chart and three is a choice**, which is why each item names three rather than offering all six.
+- **Picking a different item CLEARS the colour**, so a new garment always arrives in the one it was drawn for rather than inheriting whatever the last thing in that slot was changed to.
+- **A TILE SHOWS ITS OWN COLOUR, not the worn item's.** The tint is stored per slot, so without stripping it in `loose` every tile in a row repainted itself in whatever the chosen garment had been changed to, and the row came out as six of the same colour.
 
 **THE TORSO IS A BELL, not a rounded rectangle, and that is most of what made the figure read as boxy.** It narrows to 58 at the shoulders and flares to 80 at the hips. `bodyPath` draws it and `halfAt(y)` gives its half width at any height, so a hem, a waistband or a cardigan panel can follow the shape rather than being a rectangle laid across it.
 
 - **EVERY GARMENT ON THE TORSO IS DRAWN THROUGH THE BELL'S OWN CLIP** (`inBody`), which keeps a bib or a panel inside the silhouette without any of them having to know the shape. **The skirt is the one exception**, since it flares past the hem on purpose, and it starts at the width the body already is where it begins: started at a fixed width it was a triangle stuck to a torso.
-- **THE SHORTS ARE THE BODY'S OWN LOWER THIRD**, with a turned hem and an inseam. A wide block laid across the hips is a **nappy**: what makes the eye say trouser is that the garment is the shape of the thing wearing it and has a split up the middle.
+- **THE SHORTS HANG OUT FROM UNDER THE HEM**, two short legs with a turned cuff and bare shins below. Every version drawn ON the torso read as something else: a wide block across the hips is a **nappy**, and its lower third in another tone is a dress with a dark hem. A trouser is a thing that comes out from under a top, so that is where it goes.
 - **SHORT STUB ARMS off the shoulders**, in the sleeve's own colour (the cardigan's when one is worn, the top's otherwise), ending in a round hand. Two hands alone at the body's edge read as beads stuck on the sides and gave a carried trowel nothing to belong to.
-
-**THE HAIR IS TWO PASSES AND EACH HAS A DIFFERENT JOB.** `drawHairBack` is what falls OUT of the flower onto the shoulders, which is what the hood reference shows: a bob's two tails, a braid, a long length. It is painted after the flower and after the body, because that is where it lands, and it starts high enough that the face covers where it leaves the head. `drawHairFront` is the fringe and the piece down each cheek, clipped to the face so it can never sit on a petal.
-
-- **A solid mass drawn over the whole flower was tried and read as a flat dark patch stuck on it.** So was hair confined entirely inside the face, which made the nine styles nine brow lines.
-- **THE FALLING LENGTHS ARE NARROW, 24 across, and stop at the collarbone.** At 32 across and hanging further they were two dark curtains that buried the arms, the scarf and half the flower. A tail that falls out of a hood is a hand's width of hair, not a cape.
-- **Buns and a ponytail still cannot exist here**, since both are defined entirely by what sits outside and above the head, where the flower is. The nine are Fringe, Parted, Side part, Bob, Long, Cropped, Curly, Wavy, Braids.
 
 **CLOTHING IS ONE CHOICE, NOT A LAYER PLUS A LEG.** It was "over the clothes" and "on the legs" as two slots, which let somebody build a cardigan with a skirt and shorts under an apron, and most of those combinations looked like an accident rather than an outfit. Six entries, each dressing the whole figure: Plain, Dungarees, Apron, Cardigan, Skirt, Shorts. `bare` says whether the legs are skin below it.
 
