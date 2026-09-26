@@ -46,17 +46,37 @@
   var SPECIES_ORDER = ["daisy", "tulip", "rose", "sunflower",
                        "lily", "peony", "poppy", "lavender"];
 
-  /* FEW AND BIG, which is the reference's whole character: five petals, not
-     sixteen. The count still separates the species (a lily has five broad
-     ones, a sunflower ten narrower), and `w`/`h` are the petal's own half
-     width and half length so a rose can be round and a lily pointed. */
+  /* THE HOOD IS THE SPECIES' OWN 2D DRAWING, sat behind the face, and that
+     is the third answer to this and the one that holds. It was stylised
+     petals for a while (a count, a half width and a tip number), which read
+     as a RING OF SEPARATE BLOBS: the petal bases sat at radius 56 against a
+     face of 44, so a bare twelve pixel ring showed between the flower and
+     the head, and at eight petals nothing touched its neighbour either.
+
+     Drawing the real bloom fixes all three faults at once and cannot drift
+     from the product. `R` per species is chosen so the petal TIPS land at
+     about 96 from the middle and everything the species keeps in its centre
+     falls inside the face's own 44:
+
+       daisy      16 petals, bases at 0.12R, gold centre at 0.20R
+       sunflower  18 petals; its disc is 0.675R, so R is set to leave that
+                  disc a three pixel rim round the face rather than the dark
+                  collar it became at a larger radius
+       rose       five rings of wide petals, lightening inward, centre 0.17R
+       peony      ten outer alternating two lengths and two tones, six inner
+       poppy      four deep petals on the axes and four brighter at 45, which
+                  is what closes the gaps the four alone leave
+       lily       six broad pointed tepals, throat at 0.39R
+
+     `dy` is the peony's alone: its painted box is deliberately asymmetric,
+     0.08R high, so it needs pushing down to sit centred on the face. */
   var HOOD = {
-    daisy:     { mode: "hood", n: 8,  w: 25, h: 40, r: 56, tip: 0.75 },
-    sunflower: { mode: "hood", n: 11, w: 20, h: 44, r: 56, tip: 0.6 },
-    rose:      { mode: "hood", n: 6,  w: 34, h: 38, r: 52, tip: 1 },
-    peony:     { mode: "hood", n: 7,  w: 31, h: 40, r: 54, tip: 0.95 },
-    poppy:     { mode: "hood", n: 6,  w: 33, h: 40, r: 53, tip: 1 },
-    lily:      { mode: "hood", n: 5,  w: 28, h: 46, r: 56, tip: 0.5 },
+    daisy:     { mode: "hood",   R: 96, dy: 0 },
+    sunflower: { mode: "hood",   R: 70, dy: 0 },
+    rose:      { mode: "hood",   R: 95, dy: 0 },
+    peony:     { mode: "hood",   R: 96, dy: 8 },
+    poppy:     { mode: "hood",   R: 96, dy: 0 },
+    lily:      { mode: "hood",   R: 89, dy: 0 },
     tulip:     { mode: "sprout", stem: 30, R: 25, dy: 0 },
     lavender:  { mode: "sprout", stem: 16, R: 21, dy: 0 }
   };
@@ -111,37 +131,15 @@
     ctx.closePath(); ctx.fill();
   }
 
-  /* ONE PETAL, drawn from the centre outward: a rounded blob whose tip can be
-     pulled to a point, so the same routine gives a rose's round petal and a
-     lily's narrow one. `tip` 1 is fully round and 0.5 is a point. */
-  function petal(ctx, w, h, tip) {
-    ctx.beginPath();
-    ctx.moveTo(0, 0);
-    ctx.bezierCurveTo(-w, -h * 0.18, -w * tip, -h * 0.86, 0, -h);
-    ctx.bezierCurveTo(w * tip, -h * 0.86, w, -h * 0.18, 0, 0);
-    ctx.closePath();
-  }
-
   function hoodOf(id) { return HOOD[BLOOMS[id] ? id : "daisy"]; }
+  function bloomOf(id) { return BLOOMS[id] || BLOOMS.daisy; }
 
   function drawHood(ctx, id) {
-    var h = hoodOf(id), b = BLOOMS[id] || BLOOMS.daisy;
-    var fill = hsl(b.hue, b.sat, b.light);
-    var edge = hsl(b.hue, Math.min(100, b.sat + 8), Math.max(12, b.light - 16));
+    var h = hoodOf(id), b = bloomOf(id);
+    if (typeof window.drawSpeciesBloom !== "function") return;
     ctx.save();
-    ctx.translate(FACE.x, FACE.y);
-    for (var i = 0; i < h.n; i++) {
-      ctx.save();
-      ctx.rotate((i / h.n) * Math.PI * 2);
-      ctx.translate(0, -h.r);
-      petal(ctx, h.w, h.h, h.tip);
-      ctx.fillStyle = fill; ctx.fill();
-      /* the reference outlines every petal, which is what keeps a ring of
-         one colour from reading as a single blob */
-      ctx.strokeStyle = edge; ctx.lineWidth = 3; ctx.lineJoin = "round";
-      ctx.stroke();
-      ctx.restore();
-    }
+    ctx.translate(FACE.x, FACE.y + h.dy);
+    window.drawSpeciesBloom(ctx, id, h.R, b.hue, b.sat, b.light);
     ctx.restore();
   }
 
@@ -229,28 +227,89 @@
   }
 
   /* ------------------------------------------------------ the accessories */
+  /* THE ACCESSORIES ARE DRAWN TO READ ON THEIR OWN, not only in place. A
+     tile shows the piece alone, so anything that leaned on the figure around
+     it to be named turned into something else: the scarf was a bar with one
+     tab hanging off it and read as a MALLET, and the satchel was a straight
+     diagonal strap with a box at the end and read as a LADLE. Both are drawn
+     with the details that name them now, which costs nothing on the gardener
+     and is the whole of the tile. */
   function drawNeck(ctx, id, L) {
     var y = FACE.y + FACE.r - 4;
     if (id === "scarf") {
-      ctx.fillStyle = hsl((L.top + 180) % 360, 40, 58);
-      rr(ctx, FACE.x - 34, y, 68, 22, 11);
-      ctx.fillStyle = hsl((L.top + 180) % 360, 40, 50);
-      rr(ctx, FACE.x + 6, y + 16, 18, 40, 9);
+      var h = (L.top + 180) % 360;
+      /* A BAND, A KNOT, AND TWO TAILS HANGING FROM THE MIDDLE. It took three
+         goes. A band with one tab off the side was a MALLET; a band with both
+         tails off the side was a coat HOOK; an outlined ring with the tails
+         off it was a KEY. All three failed the same way, by hanging the ends
+         off one edge, so the picture had a head and a handle. Centred under
+         the knot it is symmetrical, and a symmetrical thing with fringe on
+         the bottom of it is a scarf. */
+      ctx.fillStyle = hsl(h, 40, 58);
+      ctx.beginPath();
+      ctx.moveTo(FACE.x - 35, y - 5);
+      ctx.quadraticCurveTo(FACE.x, y + 9, FACE.x + 35, y - 5);
+      ctx.lineTo(FACE.x + 35, y + 9);
+      ctx.quadraticCurveTo(FACE.x, y + 23, FACE.x - 35, y + 9);
+      ctx.closePath(); ctx.fill();
+      var tail = [[-17, 46, 52], [2, 36, 62]];
+      tail.forEach(function (t) {
+        ctx.fillStyle = hsl(h, 40, t[2]);
+        rr(ctx, FACE.x + t[0], y + 14, 15, t[1], 7);
+        ctx.strokeStyle = hsl(h, 40, 44); ctx.lineWidth = 2.4; ctx.lineCap = "round";
+        [0, 1, 2].forEach(function (i) {
+          ctx.beginPath();
+          ctx.moveTo(FACE.x + t[0] + 3 + i * 5, y + 12 + t[1]);
+          ctx.lineTo(FACE.x + t[0] + 3 + i * 5, y + 19 + t[1]);
+          ctx.stroke();
+        });
+      });
+      ctx.fillStyle = hsl(h, 44, 52);
+      rr(ctx, FACE.x - 15, y + 2, 30, 21, 9);
     }
     if (id === "satchel") {
-      ctx.strokeStyle = "#a9794f"; ctx.lineWidth = 7; ctx.lineCap = "round";
-      ctx.beginPath(); ctx.moveTo(FACE.x - 22, y + 4); ctx.lineTo(FACE.x + 30, y + 58); ctx.stroke();
-      ctx.fillStyle = "#c08f5f"; rr(ctx, FACE.x + 18, y + 52, 34, 28, 8);
-      ctx.fillStyle = "#a9794f"; rr(ctx, FACE.x + 18, y + 52, 34, 10, 5);
+      /* A CURVED STRAP AND A LARGE FLAPPED BAG. Straight and thin to a small
+         box it was a LADLE: a straight handle ending in a bowl is the shape
+         of a spoon, whatever colour it is. The curve and the flap and buckle
+         are what put it back. */
+      ctx.strokeStyle = "#a9794f"; ctx.lineWidth = 6; ctx.lineCap = "round";
+      ctx.beginPath();
+      ctx.moveTo(FACE.x - 26, y + 2);
+      ctx.quadraticCurveTo(FACE.x - 6, y + 40, FACE.x + 24, y + 46);
+      ctx.stroke();
+      ctx.fillStyle = "#c08f5f"; rr(ctx, FACE.x + 6, y + 42, 48, 40, 10);
+      ctx.fillStyle = "#a9794f";
+      ctx.beginPath();
+      ctx.moveTo(FACE.x + 6, y + 52);
+      ctx.lineTo(FACE.x + 6, y + 48);
+      ctx.quadraticCurveTo(FACE.x + 30, y + 40, FACE.x + 54, y + 48);
+      ctx.lineTo(FACE.x + 54, y + 60);
+      ctx.quadraticCurveTo(FACE.x + 30, y + 66, FACE.x + 6, y + 60);
+      ctx.closePath(); ctx.fill();
+      ctx.fillStyle = "#6f4c2e"; rr(ctx, FACE.x + 25, y + 57, 10, 10, 3);
     }
   }
   function drawBody(ctx, id, L) {
     if (id === "dungas") {
-      ctx.fillStyle = hsl(214, 32, 46);
-      rr(ctx, BODY.x + 10, BODY.y + 22, BODY.w - 20, BODY.h - 14, 10);
-      ctx.strokeStyle = hsl(214, 32, 46); ctx.lineWidth = 7; ctx.lineCap = "round";
-      ctx.beginPath(); ctx.moveTo(BODY.x + 20, BODY.y + 24); ctx.lineTo(BODY.x + 24, BODY.y + 4); ctx.stroke();
-      ctx.beginPath(); ctx.moveTo(BODY.x + BODY.w - 20, BODY.y + 24); ctx.lineTo(BODY.x + BODY.w - 24, BODY.y + 4); ctx.stroke();
+      /* TROUSERS WITH A BIB, NOT A BIB ALONE. Drawn as one rounded panel with
+         two short straps it was the same picture as the apron in the tile
+         beside it, which is the one thing a picker may not do. The leg split
+         and the two buttoned braces are what tell them apart. */
+      var den = hsl(214, 32, 46), dark = hsl(214, 32, 38);
+      ctx.fillStyle = den;
+      rr(ctx, BODY.x + 8, BODY.y + 52, 26, BODY.h - 52, 8);
+      rr(ctx, BODY.x + 38, BODY.y + 52, 26, BODY.h - 52, 8);
+      rr(ctx, BODY.x + 8, BODY.y + 50, 56, 26, 8);
+      rr(ctx, BODY.x + 18, BODY.y + 24, 36, 32, 7);
+      ctx.strokeStyle = den; ctx.lineWidth = 7; ctx.lineCap = "round";
+      ctx.beginPath(); ctx.moveTo(BODY.x + 22, BODY.y + 26); ctx.lineTo(BODY.x + 16, BODY.y + 2); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(BODY.x + 50, BODY.y + 26); ctx.lineTo(BODY.x + 56, BODY.y + 2); ctx.stroke();
+      ctx.fillStyle = "#e8d9a8";
+      [[BODY.x + 22, BODY.y + 28], [BODY.x + 50, BODY.y + 28]].forEach(function (p) {
+        ctx.beginPath(); ctx.arc(p[0], p[1], 3.4, 0, Math.PI * 2); ctx.fill();
+      });
+      ctx.strokeStyle = dark; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(BODY.x + 36, BODY.y + 76); ctx.lineTo(BODY.x + 36, BODY.y + BODY.h); ctx.stroke();
     }
     if (id === "apron") {
       ctx.fillStyle = "#f3e7cd";
@@ -274,9 +333,13 @@
       rr(ctx, 120, y + 12, 26, 12, 6);
     }
     if (id === "clogs") {
-      ctx.fillStyle = "#d9b98a";
-      rr(ctx, 94, y + 4, 26, 18, 8);
-      rr(ctx, 120, y + 4, 26, 18, 8);
+      /* a sole and a rounded toe, or two beige pills read as pebbles */
+      ctx.fillStyle = "#e3c79c";
+      rr(ctx, 94, y + 2, 26, 16, 8);
+      rr(ctx, 120, y + 2, 26, 16, 8);
+      ctx.fillStyle = "#b9955f";
+      rr(ctx, 94, y + 14, 26, 8, 4);
+      rr(ctx, 120, y + 14, 26, 8, 4);
     }
   }
   function drawHold(ctx, id) {
@@ -297,6 +360,133 @@
       ctx.moveTo(hx - 12, hy + 16); ctx.quadraticCurveTo(hx - 4, hy + 42, hx + 4, hy + 16);
       ctx.closePath(); ctx.fill();
     }
+  }
+
+  /* THREE MARKS AND THAT IS THE WHOLE BUDGET, which is the sticker set's own
+     economy. The eyes sit BELOW the hairline or the fringe swallows them.
+     It is its own function so a hair TILE can draw a real head rather than a
+     coloured shape nobody can name. */
+  function drawFace(ctx) {
+    ctx.fillStyle = "rgba(233,137,147,0.45)";
+    ctx.beginPath(); ctx.ellipse(FACE.x - 28, FACE.y + 15, 10, 6.5, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(FACE.x + 28, FACE.y + 15, 10, 6.5, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = "#3a2f2a";
+    ctx.beginPath(); ctx.ellipse(FACE.x - 14, FACE.y + 5, 5, 6.5, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(FACE.x + 14, FACE.y + 5, 5, 6.5, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = "#3a2f2a"; ctx.lineWidth = 2.6; ctx.lineCap = "round";
+    ctx.beginPath();
+    ctx.moveTo(FACE.x - 6, FACE.y + 20);
+    ctx.quadraticCurveTo(FACE.x, FACE.y + 26, FACE.x + 6, FACE.y + 20);
+    ctx.stroke();
+  }
+
+  /* ------------------------------------------------- the picker pictures
+     A TILE DRAWS THE REAL THING, through the very routines that put it on the
+     gardener, so the picture in the grid can never promise something else.
+     Words alone were the fault: four rows reading Scarf, Satchel, None and
+     Dungarees, Apron, None are eleven words and no pictures on a page whose
+     whole subject is how somebody looks.
+
+     EVERY ICON IS FITTED, NOT DRAWN TO A BOX. The piece is painted alone at
+     figure size, its painted pixels are measured, and exactly that box is
+     scaled into the tile. That is the bouquet's `fitThumb` rule and it is
+     what makes a trowel, a pair of boots and a whole lavender spike read at
+     one weight; sized by their boxes instead, the trowel is a speck beside a
+     pair of dungarees. */
+  var scratch = null;
+  function pad() {
+    if (!scratch) {
+      scratch = document.createElement("canvas");
+      scratch.width = W; scratch.height = H;
+    }
+    return scratch;
+  }
+  function paintedBox(cv) {
+    var ctx = cv.getContext("2d");
+    var d = ctx.getImageData(0, 0, cv.width, cv.height).data;
+    var x0 = 1e9, y0 = 1e9, x1 = -1, y1 = -1, x, y, a;
+    for (y = 0; y < cv.height; y++) {
+      for (x = 0; x < cv.width; x++) {
+        a = d[(y * cv.width + x) * 4 + 3];
+        if (a > 10) {
+          if (x < x0) x0 = x;
+          if (x > x1) x1 = x;
+          if (y < y0) y0 = y;
+          if (y > y1) y1 = y;
+        }
+      }
+    }
+    return x1 < 0 ? null : { x: x0, y: y0, w: x1 - x0 + 1, h: y1 - y0 + 1 };
+  }
+
+  /* one piece, alone, in the figure's own coordinates */
+  function loose(ctx, kind, id, L) {
+    if (kind === "flower") {
+      var h = hoodOf(id), b = bloomOf(id);
+      if (typeof window.drawSpeciesBloom !== "function") return;
+      ctx.save();
+      ctx.translate(FACE.x, FACE.y);
+      window.drawSpeciesBloom(ctx, id, h.mode === "hood" ? 44 : 40, b.hue, b.sat, b.light);
+      ctx.restore();
+      return;
+    }
+    if (kind === "hair") {
+      ctx.fillStyle = SKINS[L.skin] || SKINS[0];
+      ctx.beginPath(); ctx.arc(FACE.x, FACE.y, FACE.r, 0, Math.PI * 2); ctx.fill();
+      drawHair(ctx, { hair: id, hairCol: L.hairCol });
+      drawFace(ctx);
+      return;
+    }
+    if (kind === "top") {
+      /* the BODY'S OWN SHAPE in that colour rather than a square of it, so
+         the row reads as six jumpers and not six paint chips */
+      ctx.fillStyle = hsl(id, 34, 52);
+      rr(ctx, BODY.x, BODY.y, BODY.w, BODY.h, BODY.r);
+      ctx.fillStyle = SKINS[L.skin] || SKINS[0];
+      ctx.beginPath(); ctx.arc(HAND.l.x, HAND.l.y, 14, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(HAND.r.x, HAND.r.y, 14, 0, Math.PI * 2); ctx.fill();
+      return;
+    }
+    var slot = WEAR[id] && WEAR[id].slot;
+    if (slot === "neck") drawNeck(ctx, id, L);
+    else if (slot === "body") drawBody(ctx, id, L);
+    else if (slot === "feet") drawFeet(ctx, id, L);
+    else if (slot === "hold") drawHold(ctx, id);
+  }
+
+  function blank(px) {
+    var c = document.createElement("canvas");
+    var dpr = Math.min(2, window.devicePixelRatio || 1);
+    c.width = Math.round(px * dpr); c.height = Math.round(px * dpr);
+    c.style.width = px + "px"; c.style.height = px + "px";
+    c.getContext("2d").setTransform(dpr, 0, 0, dpr, 0, 0);
+    return c;
+  }
+
+  function icon(kind, id, px, look) {
+    var c = blank(px), ctx = c.getContext("2d");
+    if (kind === "none") {
+      /* nothing in this slot has nothing to draw, so it gets a mark rather
+         than a picture: an empty ring, which is what an empty slot is */
+      var m = px * 0.3;
+      ctx.strokeStyle = "#bde0d6"; ctx.lineWidth = 2;
+      ctx.setLineDash([4, 4]);
+      ctx.beginPath(); ctx.arc(px / 2, px / 2, m, 0, Math.PI * 2); ctx.stroke();
+      ctx.setLineDash([]);
+      return c;
+    }
+    var L = Object.assign({}, DEFAULT_LOOK, look || {});
+    var s = pad(), sx = s.getContext("2d");
+    sx.setTransform(1, 0, 0, 1, 0, 0);
+    sx.clearRect(0, 0, W, H);
+    loose(sx, kind, id, L);
+    var box = paintedBox(s);
+    if (!box) return c;
+    var k = (px * 0.88) / Math.max(box.w, box.h);
+    ctx.drawImage(s, box.x, box.y, box.w, box.h,
+                  (px - box.w * k) / 2, (px - box.h * k) / 2,
+                  box.w * k, box.h * k);
+    return c;
   }
 
   /* ---------------------------------------------------------- assembly */
@@ -347,26 +537,14 @@
     ctx.beginPath(); ctx.arc(FACE.x, FACE.y, FACE.r, 0, Math.PI * 2); ctx.fill();
     drawHair(ctx, L);
 
-    /* THREE MARKS AND THAT IS THE WHOLE BUDGET, which is the sticker set's own
-       economy. The eyes sit BELOW the hairline or the fringe swallows them. */
-    ctx.fillStyle = "rgba(233,137,147,0.45)";
-    ctx.beginPath(); ctx.ellipse(FACE.x - 28, FACE.y + 15, 10, 6.5, 0, 0, Math.PI * 2); ctx.fill();
-    ctx.beginPath(); ctx.ellipse(FACE.x + 28, FACE.y + 15, 10, 6.5, 0, 0, Math.PI * 2); ctx.fill();
-    ctx.fillStyle = "#3a2f2a";
-    ctx.beginPath(); ctx.ellipse(FACE.x - 14, FACE.y + 5, 5, 6.5, 0, 0, Math.PI * 2); ctx.fill();
-    ctx.beginPath(); ctx.ellipse(FACE.x + 14, FACE.y + 5, 5, 6.5, 0, 0, Math.PI * 2); ctx.fill();
-    ctx.strokeStyle = "#3a2f2a"; ctx.lineWidth = 2.6; ctx.lineCap = "round";
-    ctx.beginPath();
-    ctx.moveTo(FACE.x - 6, FACE.y + 20);
-    ctx.quadraticCurveTo(FACE.x, FACE.y + 26, FACE.x + 6, FACE.y + 20);
-    ctx.stroke();
+    drawFace(ctx);
 
     ctx.restore();
   }
 
   window.AvatarDraw = {
     paint: paint, SKINS: SKINS, HAIRS: HAIRS, SHAPES: SHAPES, TOPS: TOPS,
-    WEAR: WEAR, SLOTS: SLOTS, BLOOMS: BLOOMS, HOOD: HOOD,
+    WEAR: WEAR, SLOTS: SLOTS, BLOOMS: BLOOMS, HOOD: HOOD, icon: icon,
     SPECIES_ORDER: SPECIES_ORDER, DEFAULT_LOOK: DEFAULT_LOOK, W: W, H: H
   };
 })();

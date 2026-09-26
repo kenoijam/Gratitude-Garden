@@ -34,23 +34,6 @@
     A.paint(ctx, look, c.height);
     $("avShowName").textContent = look.name || "";
   }
-  function thumb(species, px) {
-    var c = document.createElement("canvas");
-    var dpr = Math.min(2, window.devicePixelRatio || 1);
-    c.width = px * dpr; c.height = px * dpr;
-    c.style.width = px + "px"; c.style.height = px + "px";
-    var ctx = c.getContext("2d");
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    var b = A.BLOOMS[species];
-    ctx.save();
-    ctx.translate(px / 2, px / 2);
-    if (typeof window.drawSpeciesBloom === "function") {
-      window.drawSpeciesBloom(ctx, species, px * 0.34, b.hue, b.sat, b.light);
-    }
-    ctx.restore();
-    return c;
-  }
-
   /* --------------------------------------------------------------- build */
   function buildSteps() {
     var ol = $("avSteps");
@@ -82,21 +65,38 @@
     s.textContent = text;
     return s;
   }
+  /* A PICTURE AND ITS NAME, and the picture is drawn by the figure's own
+     routines through `AvatarDraw.icon`, so a tile cannot show one thing and
+     put another on the gardener. Colours stay as swatches: a swatch already
+     IS a picture of a colour, and a face drawn four times in four skins says
+     nothing a square of the skin does not. */
+  function pic(kind, id, px, text, on, onPick) {
+    var box = document.createDocumentFragment();
+    box.appendChild(A.icon(kind, id, px, look));
+    if (text) box.appendChild(label(text));
+    var b = document.createElement("button");
+    b.type = "button";
+    b.className = "av-tile" + (on ? " is-on" : "");
+    b.appendChild(box);
+    b.addEventListener("click", onPick);
+    return b;
+  }
 
   function buildSkin() {
     var g = $("avSkin"); g.innerHTML = "";
     A.SKINS.forEach(function (c, i) {
       g.appendChild(tile(look.skin === i, swatch(c), function () {
-        look.skin = i; buildSkin(); paint();
+        look.skin = i; buildSkin(); buildHair(); buildTop(); buildWear(); paint();
       }));
     });
   }
+  /* The hair SHAPES are drawn on a real head in the skin and colour already
+     chosen, because Fringe, Bob and Parted are three words for three
+     silhouettes and only the silhouette tells them apart. */
   function buildHair() {
     var sh = $("avHairShape"); sh.innerHTML = "";
     A.SHAPES.forEach(function (n, i) {
-      var box = document.createElement("span");
-      box.appendChild(label(n));
-      sh.appendChild(tile(look.hair === i, box, function () {
+      sh.appendChild(pic("hair", i, 52, n, look.hair === i, function () {
         look.hair = i; buildHair(); paint();
       }));
     });
@@ -113,19 +113,14 @@
   function buildFlower() {
     var g = $("avFlower"); g.innerHTML = "";
     A.SPECIES_ORDER.forEach(function (id) {
-      var box = document.createElement("span");
-      box.appendChild(thumb(id, 46));
-      box.appendChild(label(A.BLOOMS[id].name));
-      box.style.display = "flex";
-      box.style.flexDirection = "column";
-      box.style.alignItems = "center";
-      box.style.gap = "6px";
-      g.appendChild(tile(look.flower === id, box, function () {
-        look.flower = id; buildFlower(); paint();
-      }));
+      g.appendChild(pic("flower", id, 48, A.BLOOMS[id].name, look.flower === id,
+        function () { look.flower = id; buildFlower(); paint(); }));
     });
+    /* THE TEST IS `=== "sprout"`, and it used to be `!== "ring"`. No species
+       has ever been called `ring`, so the line fired on all eight and told
+       somebody picking a rose that a rose has no ring of petals. */
     var h = A.HOOD[look.flower];
-    $("avFlowerNote").textContent = (h && h.mode !== "ring")
+    $("avFlowerNote").textContent = (h && h.mode === "sprout")
       ? A.BLOOMS[look.flower].name + " has no ring of petals to sit inside, so it grows from the head instead."
       : "";
   }
@@ -133,8 +128,8 @@
   function buildTop() {
     var g = $("avTop"); g.innerHTML = "";
     A.TOPS.forEach(function (h) {
-      g.appendChild(tile(look.top === h, swatch("hsl(" + h + ",34%,52%)"), function () {
-        look.top = h; buildTop(); paint();
+      g.appendChild(pic("top", h, 56, "", look.top === h, function () {
+        look.top = h; buildTop(); buildWear(); paint();
       }));
     });
   }
@@ -150,19 +145,16 @@
                           feet: "On the feet", hold: "In hand" }[slot];
       g.appendChild(lab);
       var row = document.createElement("div");
-      row.className = "av-grid av-grid-3";
+      row.className = "av-grid av-grid-3 av-grid-wear";
       Object.keys(A.WEAR).forEach(function (id) {
         if (A.WEAR[id].slot !== slot) return;
-        var box = document.createElement("span");
-        box.appendChild(label(A.WEAR[id].name));
-        row.appendChild(tile(look[slot] === id, box, function () {
-          look[slot] = (look[slot] === id) ? null : id;
-          buildWear(); paint();
-        }));
+        row.appendChild(pic("wear", id, 38, A.WEAR[id].name, look[slot] === id,
+          function () {
+            look[slot] = (look[slot] === id) ? null : id;
+            buildWear(); paint();
+          }));
       });
-      var none = document.createElement("span");
-      none.appendChild(label("None"));
-      row.appendChild(tile(!look[slot], none, function () {
+      row.appendChild(pic("none", slot, 38, "None", !look[slot], function () {
         look[slot] = null; buildWear(); paint();
       }));
       g.appendChild(row);

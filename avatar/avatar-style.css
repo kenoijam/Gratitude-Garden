@@ -123,6 +123,13 @@ button, a, [role="button"], summary, label[for] { touch-action: manipulation; }
 .av-tile span { font-size: .76rem; }
 .av-swatch { width: 100%; aspect-ratio: 1; border-radius: 10px; }
 .av-tile canvas { display: block; }
+/* FOUR ROWS OF PICTURES IS A TALLER STEP THAN FOUR ROWS OF WORDS, and the
+   Carrying step ran its buttons off the foot of the window the moment the
+   tiles gained art. The pictures stay; the box around each one is tightened
+   instead, which is the cheaper of the two. */
+.av-grid-wear { gap: 8px; }
+.av-grid-wear .av-tile { padding: 7px 4px; gap: 5px; }
+.av-grid-wear .av-tile span { font-size: .71rem; }
 
 /* ── keepsakes ─────────────────────────────────────────────────────────── */
 .av-keeps { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
