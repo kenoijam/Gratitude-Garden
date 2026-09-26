@@ -231,50 +231,59 @@ body { padding-left: 0 !important; }
 }
 .ho:hover .ho-name, .ho:focus-visible .ho-name { opacity: 1; transform: translateY(0); }
 
-/* THEY STAND AROUND THE COPY, not in a row under it. An arc along the bottom
-   was the first layout and it read as a shelf: three things queued up with a
-   screen of empty sky over them. The reference scatters its objects AROUND
-   something in the middle, and here the thing in the middle is the sentence.
-   Two flank it and one stands below, which is a triangle rather than a row.
+/* THE COPY AND THE OBJECTS BOTH FOLLOW THE WINDOW, and the fixed 540 they
+   replace is a bug worth recording. The headline's size is a `clamp` on `vw`
+   while the copy was capped at a constant, so the WIDER the window the more
+   lines the title wrapped to: measured, two lines at 1024 and FOUR at about
+   1400, which is what "crowded in the middle" was. The same constant left
+   lanes of about 430px either side holding a 122px object, which is what
+   "looks empty" was. One cause, both complaints.
 
-   THE LOWEST IS THE LARGEST, because on a horizon higher up the screen means
-   further away. Written the other way round it failed twice: a raised middle
-   read as the far object being the big one, and its top blooms ran into the
-   last line of the subtitle.
+   `--copy-w` is a share of the window with a ceiling, `--lane` is what is
+   left beside it, and everything else is derived from those two, so the two
+   can no longer disagree. */
+[data-hero] {
+  --copy-w: min(640px, 46vw);
+  --lane: calc((100vw - var(--copy-w)) / 2);
+}
+[data-hero] .hero-text-block { max-width: var(--copy-w); }
+/* and the title comes down with it, so it sits on TWO lines at every width */
+[data-hero] .hero-title { font-size: clamp(1.95rem, 3.5vw, 3.05rem); }
 
-   THEY OVERLAP THE MEADOW, they do not hover above it. The bottom one's
-   shadow lands on the ground the meadow's own flowers grow out of; at 27
-   percent there was a band of empty sky under it and it read as floating in
-   front of the garden rather than standing in it. */
-/* THE COPY HAS TO NARROW WHEN THINGS STAND AROUND IT, and that is arithmetic
-   rather than taste. `.hero-text-block` is 740px wide, so at a 1024 window it
-   spans 142 to 882 and leaves 142px a side for objects that are 177 wide:
-   measured, each one overlapped the subtitle by 141px. At 540 the lanes are
-   242 wide and the objects clear the text by about 20px. This is scoped to
-   the draft, so the live hero keeps its full measure. */
-[data-hero] .hero-text-block { max-width: 540px; }
-.ho-personal { left: 13%; bottom: 38%; --ho-w: 124px; }
-.ho-bouquet  { left: 87%; bottom: 38%; --ho-w: 122px; }
-.ho-shared   { left: 50%; bottom: 11%; --ho-w: 180px; }
+/* EACH FLANKING OBJECT IS CENTRED IN ITS OWN LANE, so it can never overlap the
+   copy however the window changes, and it moves outward exactly as fast as the
+   copy's edge does.
+   THE RIGHT HAND PAIR ARE ANCHORED BY `right`, NOT by `left: 100vw - ...`.
+   `100vw` counts the scrollbar and `innerWidth` does not, so a right edge
+   computed from it lands about 15px past the window. Anchoring each side to
+   its own edge cancels that. */
+.ho { --ho-w: clamp(112px, calc(var(--lane) * 0.62), 258px); }
+.ho-personal, .ho-shared  { left: calc(var(--lane) / 2); }
+.ho-bouquet, .ho-gardener { left: auto; right: calc(var(--lane) / 2);
+                            transform: translateX(50%); }
+/* TWO TO A LANE, staggered, which is what fills the height. One to a lane with
+   a third at the foot left the whole lower half empty. The two gardens read
+   down the left and the two things you make read down the right. */
+.ho-personal { bottom: 54%; }
+.ho-shared   { bottom: 14%; --ho-w: clamp(130px, calc(var(--lane) * 0.74), 300px); }
+.ho-bouquet  { bottom: 54%; }
+.ho-gardener { bottom: 14%; }
 
 /* TWO CLOUDS, NOT FIVE. The five were searched so the sky is never empty for
-   more than 8 seconds, which is right for a hero that is mostly sky; with
-   three objects, a sun, birds, motes and a meadow in it the same five are
-   three too many. The two kept are one from each speed group, so they still
-   overtake each other rather than reading as printed on a sheet. */
+   more than 8 seconds, which is right for a hero that is mostly sky; with four
+   objects, a sun, birds, motes and a meadow in it the same five are three too
+   many. The two kept are one from each speed group, so they still overtake
+   each other rather than reading as printed on a sheet. */
 [data-hero] .cloud-3, [data-hero] .cloud-4, [data-hero] .cloud-5 { display: none; }
 
 /* ?hero=3: the headline goes and the wordmark is the only type on the page */
 [data-hero="3"] .hero-text-block { display: none; }
-[data-hero="3"] .ho-personal, [data-hero="3"] .ho-bouquet { bottom: 40%; }
 
 /* ?hero=4: NO GARDEN BEHIND THE OBJECTS. The meadow is eleven flowers, three
    hills, a ground, butterflies and motes, and every one of them is a detailed
-   thing competing with the three detailed things in front of it. Without it
-   the hero is the sky gradient alone, which already ends in cream at the
-   foot, so the objects stand on a pale surface with their own soft shadows
-   under them. That is the reference's arrangement: objects lying on an empty
-   ground, and nothing else in the picture.
+   thing competing with the detailed things in front of it. Without it the hero
+   is the sky gradient alone, which already ends in cream at the foot, so the
+   objects stand on a pale surface with their own soft shadows under them.
 
    THE COPY NEEDS ITS SECOND AUTO MARGIN BACK. `.hero` is a flex column and
    `.hero-text-block` is centred by having `margin-top: auto` against the
@@ -283,9 +292,6 @@ body { padding-left: 0 !important; }
    of the hero instead. */
 [data-hero="4"] .meadow-scene { display: none; }
 [data-hero="4"] .hero-text-block { margin-bottom: auto; }
-[data-hero="4"] .ho-personal { bottom: 34%; }
-[data-hero="4"] .ho-bouquet  { bottom: 34%; }
-[data-hero="4"] .ho-shared   { bottom: 9%; }
 
 .hero-mark {
   position: absolute; top: 30px; left: 40px; z-index: 6; text-decoration: none;
@@ -294,6 +300,16 @@ body { padding-left: 0 !important; }
 }
 .hero-mark em { font-style: italic; color: var(--teal); }
 [data-hero] .hero-mark { display: block; }
+
+/* THE SUN MOVES TO THE TOP CENTRE, and it has to. It lives at `right: 10%`,
+   which is the middle of the right hand LANE, so the object standing there had
+   the sun's rays glowing through it: measured, the bouquet spanned 799 to 972
+   against a sun at 812 to 944. The corner is not available once the lanes are
+   in use, and the top centre was empty anyway, so it fills the one part of the
+   picture nothing else reaches. */
+[data-hero] .hero-sun {
+  top: 40px; right: auto; left: 50%; transform: translateX(-50%);
+}
 
 /* NO CURSOR RULE HERE. `a` is already in garden-cursor.js's clickable list,
    so these take the sparkle pointer for free, and a `cursor: pointer` written
@@ -315,17 +331,30 @@ body { padding-left: 0 !important; }
 @media (max-width: 1000px) {
   /* one row along the foot, since three points of an arc need width the
      phone does not have, and the copy above them grows taller as it wraps */
-  /* A TRIANGLE NEEDS WIDTH, so below 1000 the two that flank the copy on a
-     laptop drop back into a row under it. The breakpoint was 900 and that was
-     too low: the collision above happens the moment the lanes fall under
-     about 210px, which is a window of roughly 1000 with a 540 copy. */
+  /* LANES NEED WIDTH A PHONE HAS NOT GOT. Below 1000 the copy takes the
+     column back and the four objects fall into two rows of two under it. */
+  [data-hero] { --copy-w: 92vw; }
   [data-hero] .hero-text-block { max-width: 740px; }
-  .ho-personal { left: 16%; bottom: 25%; --ho-w: 76px; }
-  .ho-shared   { left: 50%; bottom: 16%; --ho-w: 116px; }
-  .ho-bouquet  { left: 84%; bottom: 25%; --ho-w: 74px; }
-  [data-hero="3"] .ho-personal, [data-hero="3"] .ho-bouquet { bottom: 30%; }
-  [data-hero="4"] .ho-personal, [data-hero="4"] .ho-bouquet { bottom: 30%; }
-  [data-hero="4"] .ho-shared { bottom: 12%; }
+  [data-hero] .hero-title { font-size: clamp(1.7rem, 9vw, 2.6rem); }
+  .ho { --ho-w: clamp(64px, 20vw, 104px); }
+  .ho-shared { --ho-w: clamp(84px, 26vw, 140px); }
+  .ho-personal, .ho-shared { left: 24%; }
+  .ho-bouquet, .ho-gardener { left: auto; right: 24%; transform: translateX(50%); }
+  /* THE COPY GOES TO THE TOP AND THE OBJECTS FILL BELOW IT. On a laptop the
+     copy is centred by auto margins top and bottom and the objects stand
+     either side of it in their own lanes. A phone has no lanes, so the same
+     centring dropped the copy straight through the upper pair: measured, the
+     title ran to y 560 with the pot and the bouquet starting at 452, and both
+     labels landed on the subtitle. */
+  [data-hero] .hero-text-block { margin-top: 90px; margin-bottom: auto; }
+  /* 31, not 34: at 34 the upper row's art began 11px under the subtitle */
+  .ho-personal, .ho-bouquet { bottom: 31%; }
+  .ho-shared, .ho-gardener  { bottom: 5%; }
+  /* the corner is free again with no lanes in it, and a sun in the middle of
+     a phone's sky sits behind the headline */
+  [data-hero] .hero-sun {
+    left: auto; right: -18px; top: 18px; transform: none; width: 104px; height: 104px;
+  }
   .hero-mark { top: 18px; left: 18px; font-size: 1.05rem; }
   .ho-name { font-size: .82rem; margin-top: 6px; }
   .ho::after { bottom: 20px; height: 9px; }
