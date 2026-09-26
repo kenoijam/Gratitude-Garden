@@ -139,11 +139,14 @@
       lab.textContent = A.SLOT_LABEL[slot];
       host.appendChild(lab);
       var ids = Object.keys(A.WEAR).filter(function (id) { return A.WEAR[id].slot === slot; });
+      /* THREE COLUMNS WHEN THE COUNT DIVIDES BY THREE, four otherwise, so no
+         row ever ends in an orphan tile: six outfits fall 3 and 3, four feet
+         fall 4, three fall 3. */
       var n = ids.length + (A.NO_NONE[slot] ? 0 : 1);
       var row = document.createElement("div");
-      row.className = "av-grid av-grid-wear av-grid-" + (n > 3 ? 4 : 3);
+      row.className = "av-grid av-grid-wear av-grid-" + (n % 3 === 0 ? 3 : 4);
       ids.forEach(function (id) {
-        row.appendChild(pic("wear", id, 38, A.WEAR[id].name, look[slot] === id, function () {
+        row.appendChild(pic("wear", id, slot === "clothes" ? 46 : 38, A.WEAR[id].name, look[slot] === id, function () {
           look[slot] = (look[slot] === id && !A.NO_NONE[slot]) ? null : id;
           buildWearables(); paint();
         }));
