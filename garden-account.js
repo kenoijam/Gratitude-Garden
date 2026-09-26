@@ -155,6 +155,13 @@
     '.ga-av{width:32px;height:32px;border-radius:50%;flex:0 0 auto;display:flex;' +
       'align-items:center;justify-content:center;font-size:14px;font-weight:700;' +
       'color:snow;background:#8fcfbe;}' +
+    /* A GARDENER STANDS ON THE GARDEN'S OWN SKY, not on the initial's teal
+       disc: the figure is already teal about the middle and the two merged.
+       `overflow:hidden` is what makes the circle a crop rather than a frame. */
+    '.ga-av[data-gardener]{background:#e1f7f7;overflow:hidden;}' +
+    '.ga-me{display:flex;align-items:center;gap:10px;margin-top:8px;}' +
+    '.ga-me .ga-av{width:40px;height:40px;}' +
+    '.ga-me-lines{min-width:0;}' +
     '.ga-who{flex:1 1 auto;min-width:0;}' +
     '.ga-who b{display:block;font-size:14px;color:#0f5132;overflow:hidden;' +
       'text-overflow:ellipsis;white-space:nowrap;}' +
@@ -598,10 +605,64 @@
     panel.setAttribute("aria-hidden", "true");
   }
 
+  /* THEIR GARDENER IF THEY HAVE BUILT ONE, their initial if they have not.
+     NEVER A DEFAULT FIGURE in place of a missing one, or every friend who has
+     not been near the build page appears to have made the same gardener.
+     It is guarded three ways because this module loads on pages that may not
+     carry the drawing at all: the landing page has `garden-account.js` in its
+     head and `avatar-draw.js` only further down. */
+  function avatarFor(p, name, px) {
+    var box = el("div", "ga-av");
+    var look = p && p.look;
+    if (look && window.GardenGardener && window.GardenGardener.bubble &&
+        window.AvatarDraw && typeof window.drawSpeciesBloom === "function") {
+      box.setAttribute("data-gardener", "1");
+      box.appendChild(window.GardenGardener.bubble(look, px));
+    } else {
+      box.textContent = initial(name);
+    }
+    return box;
+  }
+
+  /* YOUR OWN GARDENER SITS AT THE HEAD OF THE PANEL, which is where it
+     belongs: a gardener is who you ARE rather than a fourth place to go, so
+     this is the door to the build page on every page that carries the panel
+     and nothing new has to be added to any garden's chrome.
+     THIS IS THE DOOR FOR SOMEBODY WITH AN ACCOUNT, AND ONLY THEM. Signed
+     out, that same button opens the sign in card rather than this panel, so
+     nothing here is ever reached; the landing page's own gardener section is
+     the door for everybody else. It still reads the look through
+     `GardenGardener.get()` rather than off `profile`, which is one line
+     rather than two paths: that already resolves the account first and this
+     browser second, so the panel never has to know which it got. */
+  function showMyGardener() {
+    if (!panelWho || !panelWho.parentNode) return;
+    var old = panelWho.parentNode.querySelector(".ga-me");
+    if (old) old.remove();
+    var G = window.GardenGardener;
+    if (!G) return;
+    var mine = G.get();
+    var box = el("div", "ga-me");
+    /* NO BUBBLE AT ALL when there is neither a gardener nor a name to take an
+       initial from. `initial("")` answers "?", and a question mark in a
+       circle beside "Build your gardener" reads as something having failed
+       rather than as something not made yet. */
+    var who = profile ? (profile.username || "") : "";
+    if (mine || who) box.appendChild(avatarFor({ look: mine }, who, 40));
+    var lines = el("div", "ga-me-lines");
+    var lk = el("a", "ga-rename-link",
+      mine ? "Change your gardener" : "Build your gardener");
+    lk.href = G.href();
+    lk.style.paddingLeft = "0";
+    lines.appendChild(lk);
+    box.appendChild(lines);
+    panelWho.parentNode.appendChild(box);
+  }
+
   function personRow(item, actions) {
     var row = el("div", "ga-row");
     var name = shownName(item.profile) || "Someone";
-    row.appendChild(el("div", "ga-av", initial(name)));
+    row.appendChild(avatarFor(item.profile, name, 32));
     var who = el("div", "ga-who");
     var b = el("b", null, name);
     who.appendChild(b);
@@ -735,6 +796,7 @@
       ch.addEventListener("click", openRename);
       panelWho.appendChild(ch);
     }
+    showMyGardener();
 
     if (!me) {
       panelBody.innerHTML = "";

@@ -30,6 +30,24 @@
   <!-- The day by day log. Loaded after the account module, whose client it
        borrows for the parts that follow somebody between devices. -->
   <script src="../garden-journal.js"></script>
+
+  <!-- THE GARDENER, and it is three tags rather than one. `avatar-draw.js`
+       draws the figure and `garden-gardener.js` decides whose it is; the
+       bouquet's own file is here because the flower they wear is the REAL
+       2D bloom, `drawSpeciesBloom`, which takes a raw 2D context and needs
+       no p5. `boot()` returns immediately when #bqBuilder is absent, the
+       same guard the landing page has relied on for a long time.
+       IT COSTS 227KB, against the 898KB of p5 and the 231KB of p5.party
+       already on this page, and the alternative is an EIGHTH hand-ported
+       copy of the flower maths, which is the one thing this project's
+       central rule forbids.
+       They are in the HEAD, not at the foot of the body, because the sketch
+       is INJECTED once the session check resolves and that is a network
+       race: on a warm cache it can resolve before the body has finished
+       parsing. -->
+  <script src="../bouquet/bouquet-sketch.js"></script>
+  <script src="../avatar/avatar-draw.js"></script>
+  <script src="../garden-gardener.js"></script>
   <meta charset="UTF-8">
   <!-- THE VIEWPORT META, and it is load bearing rather than boilerplate.
        Without it a phone lays this page out at 980 CSS pixels and scales the

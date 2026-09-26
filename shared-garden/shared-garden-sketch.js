@@ -540,6 +540,43 @@ circle(x + W * 0.456 + b2 / 2, y + W * 0.052 + b2 / 2, b2);
 }
 }
 
+/* ------------------------------------------------------------- the gardener
+   ONLY YOURS, AND ONLY BESIDE YOUR OWN FLOWER. Twenty gardeners standing in
+   one meadow is a lobby rather than a garden, which is the conclusion the 3D
+   exploration reached and wrote down: what is left of somebody who was here
+   for a minute is their flower, not a figure of them.
+
+   NO FLOWER, NO GARDENER. The build page's first screen says they "stand
+   beside the flower you planted that day", so on a day you have not planted
+   there is nothing for them to stand beside.
+
+   They paint before `drawForegroundHill()`, so the hill buries their feet the
+   way it buries a stem. */
+function sharedHillTop(x) {
+  /* the SAME expression `drawForegroundHill` draws its edge with, lift and
+     all, so the feet follow the ground rather than a guess at it */
+  return height * 0.76 - noise(x * 0.004, 321.45) * 20;
+}
+function drawGardener() {
+  if (!window.GardenGardener || !window.GardenGardener.has()) return;
+  if (!window.AvatarDraw || typeof window.drawSpeciesBloom !== "function") return;
+  let mine = null;
+  for (const f of flowers) {
+    if (!f.isMyFlower) continue;
+    if (!mine || (f.createdIndex || 0) > (mine.createdIndex || 0)) mine = f;
+  }
+  if (!mine) return;
+  const h = Math.max(96, Math.min(Math.min(height * 0.19, width * 0.34), 180));
+  /* BESIDE IT ON WHICHEVER SIDE HAS ROOM. Standing always to the left puts
+     a gardener half off the screen whenever somebody's flower lands near the
+     left edge, and a phone is 375 wide. */
+  const gap = h * 0.55;
+  const gx = Math.max(gap, Math.min(width - gap,
+    mine.x < width / 2 ? mine.x + gap : mine.x - gap));
+  window.GardenGardener.paintAt(drawingContext, null, gx,
+    sharedHillTop(gx) + h * 0.10, h);
+}
+
 function drawForegroundHill() {
 noStroke();
 
@@ -2627,6 +2664,7 @@ drawFlowersBloomsOnly("mid");
 drawGround();
 drawFlowersStemsOnly("front");
 drawFlowersGrowingOnly("front");
+drawGardener();
 drawForegroundHill();
 drawFlowersBloomsOnly("front");
 

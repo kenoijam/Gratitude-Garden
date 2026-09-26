@@ -569,6 +569,38 @@ function drawHillsFront() {
   endShape(CLOSE);
 }
 
+/* ------------------------------------------------------------- the gardener
+   YOUR GARDENER STANDS IN THE GARDEN, which is the promise the build page
+   has always made on its first screen and nothing kept until now.
+
+   THEY PAINT BEFORE `drawForegroundHill()`, so the hill buries their feet
+   exactly the way it buries a stem, and AFTER the front row, so they stand
+   in front of the flowers rather than among them. `drawAllDates()` runs
+   later still, so a gardener can never hide a date label.
+
+   BOTTOM CENTRE, because it is the only quadrant with nothing in it: the
+   Garden Tips card owns bottom left, the friends button bottom right, and
+   the daily note and the four round icons own the top. */
+function gardenerHillTop(x) {
+  /* the SAME expression `drawForegroundHill` draws its edge with, so the
+     feet follow the ground rather than a guess at where it is */
+  return height * 0.75 - noise(x * 0.002, 321.45) * height * 0.02;
+}
+function drawGardener() {
+  if (!window.GardenGardener || !window.GardenGardener.has()) return;
+  if (!window.AvatarDraw || typeof window.drawSpeciesBloom !== "function") return;
+  /* SIZED AGAINST THE SMALLER OF THE TWO DIMENSIONS. Taken off the height
+     alone a phone drew somebody 154 tall in a window 375 wide, which is 41
+     percent of it: a person filling the garden they are standing in. */
+  var h = Math.max(96, Math.min(Math.min(height * 0.19, width * 0.34), 180));
+  var gx = width * 0.5;
+  /* SUNK BY A TENTH OF THEIR OWN HEIGHT, so what the hill covers is the
+     shoes and a little ankle whatever size the window is. A fixed pixel
+     amount buries a phone gardener to the knee. */
+  var gy = gardenerHillTop(gx) + h * 0.10;
+  window.GardenGardener.paintAt(drawingContext, null, gx, gy, h);
+}
+
 function drawForegroundHill() {
   noStroke();
   fill("#7ec4b4");
@@ -3412,6 +3444,7 @@ function draw() {
   drawFlowersStemsOnly("front");
   drawFlowersGrowingOnly("front");
   drawFlowersBloomsOnly("front");
+  drawGardener();
   drawForegroundHill();
   drawAllDates();
   /* The butterflies and the motes go on LAST, over the flowers and over the
