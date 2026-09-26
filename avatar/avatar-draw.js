@@ -1,38 +1,38 @@
 /* =========================================================================
    avatar-draw.js  -  your gardener, drawn from a row of numbers
 
-   A LOOK IS DATA, and that is the whole design rather than an implementation
-   detail. `{name, skin, hair, hairCol, flower, top, shoulders, held}` is very
-   nearly the shape `garden3d/avatar-kit.js` already builds a 3D avatar from,
-   so one saved row renders as a flat drawing here and as a figure in the 3D
-   exploration. A row of numbers survives being saved against an account and
-   read back next year; a picture does not. **Change one of these lists and
-   change the other.**
+   A LOOK IS DATA: `{name, skin, hair, hairCol, flower, top, neck, body, feet,
+   hold}`. A row of numbers survives being saved against an account and read
+   back next year; a picture does not.
 
-   THREE REFERENCES, AND EACH ONE ANSWERS A DIFFERENT QUESTION:
-     the body      a flat vector people set: shoulders, arms, legs, shoes
-     the face      a sticker set of round characters: dot eyes, blush, nothing
-     the hood      "Fruits Kids", where a child's face sits inside the fruit
+   FOUR REFERENCES, AND EACH ANSWERS A DIFFERENT QUESTION:
+     the body      a flat vector people set, but SMALL under a large head
+     the face      a sticker set: two dots, two cheeks, a mouth, nothing else
+     the hood      a child's face inside a flower of five big rounded petals
+     the sprout    two soft 3D characters whose flower GROWS out of the head
 
-   THE FLOWER IS WORN AS A HOOD AND IT IS NOT A KEEPSAKE. Every gardener wears
-   one and the species is part of the LOOK, chosen on its own step, which is
-   what makes the figure part of the garden rather than a person standing in
-   it. The head slot is therefore spoken for, so the three keepsakes that used
-   to live there moved out: one keepsake per species still holds, four at the
-   shoulders and four carried.
+   THE PETALS ARE STYLISED, NOT THE SPECIES DRAWING, and that reverses an
+   earlier decision on purpose. The hood used to be `drawSpeciesBloom` at a
+   large radius, which could not drift from the product but could never look
+   like the reference either: a daisy hood came out as sixteen narrow petals
+   and the sunflower's brown disc ringed the face like a dark collar. The
+   petal COUNT and the COLOUR still come from the species, so the eight stay
+   apart; the shape is drawn for a hood.
 
-   THE HOOD IS THE REAL SPECIES, drawn by `drawSpeciesBloom` out of
-   bouquet/bouquet-sketch.js at a large radius with the face laid over its
-   middle. So a daisy hood really is sixteen daisy petals. `SPECIES` in that
-   file is a `const` and does not reach `window`; only function declarations
-   do, which is why the rows below are written out here.
+   TWO OF THE EIGHT GROW INSTEAD OF BEING WORN. A tulip is a closed cup and
+   lavender is a spike, so neither has a ring of petals to put a face inside.
+   Worn on top they read as a chef's hat and a spiky crown, which is what the
+   sprout characters fix: a plain cowl round the face and the flower on a
+   short stem out of the crown. Those two ARE drawn by `drawSpeciesBloom`,
+   since there they are a flower on a stem, which is exactly what that
+   function draws.
    ========================================================================= */
 (function () {
   "use strict";
 
   /* THE GARDENS' palette, `defaultSat` 40 to 60 and `defaultLight` 55 to 75,
-     not the bouquet's `SPECIES` which reaches 82: a bouquet is a gift somebody
-     chose a colour for and a garden is pastel. */
+     not the bouquet's which reaches 82: a bouquet is a gift somebody chose a
+     colour for and a garden is pastel. */
   var BLOOMS = {
     daisy:     { hue: 52,  sat: 45, light: 65, name: "Daisy" },
     tulip:     { hue: 350, sat: 50, light: 60, name: "Tulip" },
@@ -46,74 +46,60 @@
   var SPECIES_ORDER = ["daisy", "tulip", "rose", "sunflower",
                        "lily", "peony", "poppy", "lavender"];
 
-  /* HOW WIDE A SPECIES PAINTS IS NOT THE SAME FOR ANY TWO OF THEM, so a hood
-     cannot be one radius. As a multiple of R the set runs tulip 0.61 of a half
-     width against the sunflower's 1.15, so one radius gives a sunflower that
-     swallows the shoulders beside a tulip narrower than the face it is meant
-     to frame. Each R below is solved so the painted hood comes out about 190
-     across, which is the face at 92 with a petal's width either side.
-
-     TWO OF THE EIGHT CANNOT BE A HOOD AT ALL, and pretending otherwise is how
-     this would have gone wrong. A tulip is a closed cup and lavender is a
-     spike: neither has a ring of petals to put a face in the middle of. They
-     are worn on TOP instead, a tulip as a bonnet and lavender as a plume, and
-     that is honest about what those two flowers are. */
+  /* FEW AND BIG, which is the reference's whole character: five petals, not
+     sixteen. The count still separates the species (a lily has five broad
+     ones, a sunflower ten narrower), and `w`/`h` are the petal's own half
+     width and half length so a rose can be round and a lily pointed. */
   var HOOD = {
-    daisy:     { mode: "ring", R: 99 },
-    sunflower: { mode: "ring", R: 84 },
-    poppy:     { mode: "ring", R: 106 },
-    peony:     { mode: "ring", R: 99 },
-    rose:      { mode: "ring", R: 96 },
-    lily:      { mode: "ring", R: 108 },
-    /* THE TULIP IS TURNED OVER. Drawn the right way up on a head it is three
-       points sticking into the air and reads as a jester's crown; inverted,
-       its cup becomes a bell with a scalloped edge, which is what a bonnet
-       is. This is also the only honest way to wear a closed flower. */
-    tulip:     { mode: "top",  R: 72, dy: -30, rot: Math.PI },
-    /* LAVENDER IS THREE SPIKES FANNED, not one. A single spike on the crown
-       reads as a party hat or a horn, which is the one thing it must not; a
-       fan of three reads as a plume and as lavender, which grows in clumps
-       anyway. It also grows UPWARD out of its origin, so the origin goes at
-       the crown and the spikes rise from there rather than being centred. */
-    lavender:  { mode: "fan", R: 38, dy: -34, spread: 0.46 }
+    daisy:     { mode: "hood", n: 8,  w: 25, h: 40, r: 56, tip: 0.75 },
+    sunflower: { mode: "hood", n: 11, w: 20, h: 44, r: 56, tip: 0.6 },
+    rose:      { mode: "hood", n: 6,  w: 34, h: 38, r: 52, tip: 1 },
+    peony:     { mode: "hood", n: 7,  w: 31, h: 40, r: 54, tip: 0.95 },
+    poppy:     { mode: "hood", n: 6,  w: 33, h: 40, r: 53, tip: 1 },
+    lily:      { mode: "hood", n: 5,  w: 28, h: 46, r: 56, tip: 0.5 },
+    tulip:     { mode: "sprout", stem: 30, R: 25, dy: 0 },
+    lavender:  { mode: "sprout", stem: 16, R: 21, dy: 0 }
   };
 
-  /* Four of each, which is a choice rather than a gesture at one, and every
-     entry is distinct at the size a garden draws a person. These are
-     `garden3d/avatar-kit.js`'s SKINS and HAIRS exactly. */
   var SKINS  = ["#f6e3cd", "#e4bd95", "#bb8354", "#76492c"];
   var HAIRS  = ["#3a2a1e", "#14131a", "#a4642f", "#d9c08a"];
-  var SHAPES = ["Fringe", "Tucked", "Long"];
-  /* the top is a HUE, so it is one number in the saved row */
+  var SHAPES = ["Fringe", "Bob", "Parted"];
   var TOPS   = [172, 210, 275, 332, 45, 18];
 
-  /* ONE KEEPSAKE PER SPECIES STILL HOLDS. The flower hood took the head, so
-     the daisy chain, the poppy pin and the sun hat moved: four at the
-     shoulders and four carried. */
-  var KEEPSAKES = {
-    chain: { slot: "shoulders", from: "daisy",     name: "Daisy garland", note: "Simplicity and joy, worn" },
-    pin:   { slot: "shoulders", from: "poppy",     name: "Poppy pin",     note: "One, worn where it shows" },
-    scarf: { slot: "shoulders", from: "lavender",  name: "Soft scarf",    note: "Calm and safety, worn" },
-    shawl: { slot: "shoulders", from: "rose",      name: "Rose shawl",    note: "Something warm at the collar" },
-    posy:  { slot: "held",      from: "lily",      name: "Lily posy",     note: "Three, carried" },
-    stem:  { slot: "held",      from: "tulip",     name: "One tulip",     note: "Carried, not planted" },
-    bunch: { slot: "held",      from: "peony",     name: "Peony posy",    note: "The fullest bloom, carried" },
-    sun:   { slot: "held",      from: "sunflower", name: "One sunflower", note: "For standing in the light" }
+  /* ACCESSORIES, NOT KEEPSAKES. They are plain things you pick: nothing is
+     earned, nothing is locked and nothing is tied to a species, because the
+     flower on the head already carries the garden. One per slot, so two
+     choices can never fight over the same place on the figure. */
+  var WEAR = {
+    scarf:  { slot: "neck", name: "Scarf" },
+    satchel:{ slot: "neck", name: "Satchel" },
+    dungas: { slot: "body", name: "Dungarees" },
+    apron:  { slot: "body", name: "Apron" },
+    boots:  { slot: "feet", name: "Boots" },
+    clogs:  { slot: "feet", name: "Clogs" },
+    can:    { slot: "hold", name: "Watering can" },
+    trowel: { slot: "hold", name: "Trowel" }
   };
-  var SLOTS = ["shoulders", "held"];
+  var SLOTS = ["neck", "body", "feet", "hold"];
 
   var DEFAULT_LOOK = {
     name: "", skin: 0, hair: 0, hairCol: 0, flower: "daisy", top: 172,
-    shoulders: null, held: null
+    neck: null, body: null, feet: null, hold: null
   };
 
   /* ---------------------------------------------------------- geometry
-     One coordinate system, 240 by 360, scaled at the end, so a caller only
-     ever chooses how big it is. */
+     A LARGE HEAD ON A SMALL BODY, which is the reference's proportion and not
+     the flat people set's: there the head is about a third of the figure, and
+     here the hood alone is wider than the body is tall. */
   var W = 240, H = 360;
-  var FACE = { x: 120, y: 108, r: 46 };
-  var BODY = { x: 74, y: 158, w: 92, h: 100, r: 20 };
-  var HAND = { l: { x: 62, y: 248 }, r: { x: 178, y: 248 } };
+  var FACE = { x: 120, y: 118, r: 44 };
+  /* THE HEAD SITS ON THE BODY, it does not hover over it. At `y: 188` the
+     face's own bottom edge was 162 and the body began 26px below it, so the
+     background showed between them and the figure read as a head balanced on
+     a separate object. The body top now overlaps the chin, which is how every
+     one of the references is built: there is no neck at all. */
+  var BODY = { x: 84, y: 156, w: 72, h: 102, r: 26 };
+  var HAND = { l: { x: 76, y: 206 }, r: { x: 164, y: 206 } };
 
   function hsl(h, s, l, a) {
     return "hsla(" + h + "," + s + "%," + l + "%," + (a == null ? 1 : a) + ")";
@@ -124,130 +110,192 @@
     ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r);
     ctx.closePath(); ctx.fill();
   }
-  function bloom(ctx, species, x, y, R, rot) {
-    var b = BLOOMS[species] || BLOOMS.daisy;
-    if (typeof window.drawSpeciesBloom !== "function") {
-      /* the page can render before the bouquet's script has parsed, and a
-         missing flower must not take the whole gardener down with it */
-      ctx.fillStyle = hsl(b.hue, b.sat, b.light);
-      ctx.beginPath(); ctx.arc(x, y, R * 0.8, 0, Math.PI * 2); ctx.fill();
-      return;
-    }
+
+  /* ONE PETAL, drawn from the centre outward: a rounded blob whose tip can be
+     pulled to a point, so the same routine gives a rose's round petal and a
+     lily's narrow one. `tip` 1 is fully round and 0.5 is a point. */
+  function petal(ctx, w, h, tip) {
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.bezierCurveTo(-w, -h * 0.18, -w * tip, -h * 0.86, 0, -h);
+    ctx.bezierCurveTo(w * tip, -h * 0.86, w, -h * 0.18, 0, 0);
+    ctx.closePath();
+  }
+
+  function hoodOf(id) { return HOOD[BLOOMS[id] ? id : "daisy"]; }
+
+  function drawHood(ctx, id) {
+    var h = hoodOf(id), b = BLOOMS[id] || BLOOMS.daisy;
+    var fill = hsl(b.hue, b.sat, b.light);
+    var edge = hsl(b.hue, Math.min(100, b.sat + 8), Math.max(12, b.light - 16));
     ctx.save();
-    ctx.translate(x, y); if (rot) ctx.rotate(rot);
-    window.drawSpeciesBloom(ctx, species, R, b.hue, b.sat, b.light);
+    ctx.translate(FACE.x, FACE.y);
+    for (var i = 0; i < h.n; i++) {
+      ctx.save();
+      ctx.rotate((i / h.n) * Math.PI * 2);
+      ctx.translate(0, -h.r);
+      petal(ctx, h.w, h.h, h.tip);
+      ctx.fillStyle = fill; ctx.fill();
+      /* the reference outlines every petal, which is what keeps a ring of
+         one colour from reading as a single blob */
+      ctx.strokeStyle = edge; ctx.lineWidth = 3; ctx.lineJoin = "round";
+      ctx.stroke();
+      ctx.restore();
+    }
     ctx.restore();
   }
 
-  /* ---------------------------------------------------------- the hood */
-  function hoodBack(ctx, look) {
-    var id = BLOOMS[look.flower] ? look.flower : "daisy";
-    var h = HOOD[id];
-    if (h.mode === "ring") { bloom(ctx, id, FACE.x, FACE.y, h.R); return; }
-    if (h.mode === "fan") {
-      [-1, 0, 1].forEach(function (k) {
-        ctx.save();
-        ctx.translate(FACE.x, FACE.y + h.dy);
-        ctx.rotate(k * h.spread);
-        bloom(ctx, id, 0, 0, k === 0 ? h.R : h.R * 0.8);
-        ctx.restore();
-      });
-      return;
+  /* A PLAIN COWL AND A STEM, for the two that cannot be a hood. The cowl is
+     what keeps all eight in one silhouette family; the flower on top is the
+     real species, since on a stem that is exactly what `drawSpeciesBloom`
+     draws. */
+  function drawSprout(ctx, id, skin) {
+    var h = hoodOf(id);
+    /* the cowl HUGS the head rather than haloing it: at +12 it read as a pale
+       disc floating behind the face */
+    ctx.fillStyle = "#fdf6e6";
+    ctx.beginPath(); ctx.arc(FACE.x, FACE.y, FACE.r + 8, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath();
+    ctx.ellipse(FACE.x, FACE.y + FACE.r, FACE.r + 2, 18, 0, 0, Math.PI * 2);
+    ctx.fill();
+    var top = FACE.y - FACE.r - 8;
+    ctx.strokeStyle = "#5fae72"; ctx.lineWidth = 6; ctx.lineCap = "round";
+    ctx.beginPath(); ctx.moveTo(FACE.x, top + 6); ctx.lineTo(FACE.x, top - h.stem); ctx.stroke();
+    /* two leaves on the stem, which is what makes it a sprout rather than a
+       flower taped to a head */
+    ctx.fillStyle = "#79c48a";
+    [-1, 1].forEach(function (k) {
+      ctx.save();
+      ctx.translate(FACE.x, top - h.stem * 0.45);
+      ctx.scale(k, 1);
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.quadraticCurveTo(15, -12, 22, 2);
+      ctx.quadraticCurveTo(12, 9, 0, 0);
+      ctx.fill();
+      ctx.restore();
+    });
+    var b = BLOOMS[id];
+    if (typeof window.drawSpeciesBloom === "function") {
+      ctx.save();
+      ctx.translate(FACE.x, top - h.stem + h.dy);
+      window.drawSpeciesBloom(ctx, id, h.R, b.hue, b.sat, b.light);
+      ctx.restore();
     }
-    bloom(ctx, id, FACE.x, FACE.y + h.dy, h.R, h.rot || 0);
   }
 
   /* ---------------------------------------------------------- the hair
-     With a hood on, hair is a FRINGE and little else, which is what the fruit
-     kids show: enough to say whose head it is and no more. It is clipped to
-     the face, so it can never spill over the petals behind it. */
-  function hair(ctx, look) {
+     Inside the hood a fringe is nearly all of it, which is what the reference
+     shows: a soft cap of colour over the brow and no more. Clipped to the
+     face, so it can never spill over the petals behind it. */
+  function drawHair(ctx, look) {
     var c = HAIRS[look.hairCol] || HAIRS[0];
+    var F = FACE;
     ctx.save();
-    ctx.beginPath();
-    ctx.arc(FACE.x, FACE.y, FACE.r, 0, Math.PI * 2);
-    ctx.clip();
+    ctx.beginPath(); ctx.arc(F.x, F.y, F.r, 0, Math.PI * 2); ctx.clip();
     ctx.fillStyle = c;
-    if (look.hair === 0) {                                     /* a fringe */
+    if (look.hair === 0) {                     /* a scalloped fringe */
       ctx.beginPath();
-      ctx.moveTo(FACE.x - FACE.r, FACE.y - 6);
-      ctx.quadraticCurveTo(FACE.x - FACE.r + 4, FACE.y - FACE.r - 6,
-                           FACE.x, FACE.y - FACE.r - 4);
-      ctx.quadraticCurveTo(FACE.x + FACE.r - 4, FACE.y - FACE.r - 6,
-                           FACE.x + FACE.r, FACE.y - 6);
-      ctx.quadraticCurveTo(FACE.x + 14, FACE.y - 20, FACE.x - 8, FACE.y - 16);
-      ctx.quadraticCurveTo(FACE.x - FACE.r + 8, FACE.y - 14, FACE.x - FACE.r, FACE.y - 6);
+      ctx.moveTo(F.x - F.r, F.y + 2);
+      ctx.lineTo(F.x - F.r, F.y - F.r);
+      ctx.lineTo(F.x + F.r, F.y - F.r);
+      ctx.lineTo(F.x + F.r, F.y + 2);
+      var n = 4, step = (F.r * 2) / n;
+      for (var i = n; i > 0; i--) {
+        ctx.arc(F.x - F.r + step * (i - 0.5), F.y + 2, step / 2, 0, Math.PI, true);
+      }
       ctx.closePath(); ctx.fill();
-    } else if (look.hair === 1) {               /* tucked back, a thin band */
+    } else if (look.hair === 1) {                /* a bob, down the sides */
       ctx.beginPath();
-      ctx.moveTo(FACE.x - FACE.r, FACE.y - 12);
-      ctx.quadraticCurveTo(FACE.x, FACE.y - FACE.r - 8, FACE.x + FACE.r, FACE.y - 12);
-      ctx.quadraticCurveTo(FACE.x, FACE.y - FACE.r + 12, FACE.x - FACE.r, FACE.y - 12);
+      ctx.moveTo(F.x - F.r, F.y + F.r);
+      ctx.lineTo(F.x - F.r, F.y - F.r);
+      ctx.lineTo(F.x + F.r, F.y - F.r);
+      ctx.lineTo(F.x + F.r, F.y + F.r);
+      ctx.lineTo(F.x + F.r - 13, F.y + F.r);
+      ctx.quadraticCurveTo(F.x + F.r - 14, F.y - 6, F.x + 12, F.y - 12);
+      ctx.quadraticCurveTo(F.x - F.r + 12, F.y - 8, F.x - F.r + 13, F.y + F.r);
       ctx.closePath(); ctx.fill();
-    } else {                              /* long, down both sides of the face */
+    } else {                                       /* parted in the middle */
       ctx.beginPath();
-      ctx.moveTo(FACE.x - FACE.r, FACE.y - 8);
-      ctx.quadraticCurveTo(FACE.x, FACE.y - FACE.r - 8, FACE.x + FACE.r, FACE.y - 8);
-      ctx.lineTo(FACE.x + FACE.r, FACE.y + FACE.r);
-      ctx.lineTo(FACE.x + FACE.r - 15, FACE.y + FACE.r);
-      ctx.quadraticCurveTo(FACE.x + FACE.r - 16, FACE.y - 10, FACE.x + 10, FACE.y - 16);
-      ctx.quadraticCurveTo(FACE.x - FACE.r + 14, FACE.y - 12, FACE.x - FACE.r + 15, FACE.y + FACE.r);
-      ctx.lineTo(FACE.x - FACE.r, FACE.y + FACE.r);
+      ctx.moveTo(F.x - F.r, F.y - 2);
+      ctx.lineTo(F.x - F.r, F.y - F.r);
+      ctx.lineTo(F.x + F.r, F.y - F.r);
+      ctx.lineTo(F.x + F.r, F.y - 2);
+      ctx.quadraticCurveTo(F.x + 16, F.y - 22, F.x, F.y - 14);
+      ctx.quadraticCurveTo(F.x - 16, F.y - 22, F.x - F.r, F.y - 2);
       ctx.closePath(); ctx.fill();
     }
     ctx.restore();
   }
 
-  /* ------------------------------------------------------- the keepsakes */
-  function drawShoulders(ctx, id) {
-    var y = FACE.y + FACE.r - 2;
-    if (id === "chain") {
-      /* a garland ROUND the collar, not on the head: the hood is there now */
-      for (var i = 0; i < 5; i++) {
-        var t = i / 4;
-        var x = FACE.x - 44 + t * 88;
-        bloom(ctx, "daisy", x, y + 10 + Math.sin(t * Math.PI) * 9, 12);
-      }
-    }
-    if (id === "pin") bloom(ctx, "poppy", FACE.x + 32, y + 22, 15);
+  /* ------------------------------------------------------ the accessories */
+  function drawNeck(ctx, id, L) {
+    var y = FACE.y + FACE.r - 4;
     if (id === "scarf") {
-      var b = BLOOMS.lavender;
-      ctx.fillStyle = hsl(b.hue, 34, 62);
-      rr(ctx, FACE.x - 40, y - 2, 80, 26, 13);
-      ctx.fillStyle = hsl(b.hue, 34, 54);
-      rr(ctx, FACE.x + 4, y + 18, 22, 48, 11);
+      ctx.fillStyle = hsl((L.top + 180) % 360, 40, 58);
+      rr(ctx, FACE.x - 34, y, 68, 22, 11);
+      ctx.fillStyle = hsl((L.top + 180) % 360, 40, 50);
+      rr(ctx, FACE.x + 6, y + 16, 18, 40, 9);
     }
-    if (id === "shawl") {
-      var r = BLOOMS.rose;
-      ctx.fillStyle = hsl(r.hue, 34, 60);
-      ctx.beginPath();
-      ctx.moveTo(FACE.x - 54, y + 6);
-      ctx.quadraticCurveTo(FACE.x, y - 10, FACE.x + 54, y + 6);
-      ctx.lineTo(FACE.x + 42, y + 58);
-      ctx.quadraticCurveTo(FACE.x, y + 72, FACE.x - 42, y + 58);
-      ctx.closePath(); ctx.fill();
-      bloom(ctx, "rose", FACE.x + 28, y + 16, 14);
+    if (id === "satchel") {
+      ctx.strokeStyle = "#a9794f"; ctx.lineWidth = 7; ctx.lineCap = "round";
+      ctx.beginPath(); ctx.moveTo(FACE.x - 22, y + 4); ctx.lineTo(FACE.x + 30, y + 58); ctx.stroke();
+      ctx.fillStyle = "#c08f5f"; rr(ctx, FACE.x + 18, y + 52, 34, 28, 8);
+      ctx.fillStyle = "#a9794f"; rr(ctx, FACE.x + 18, y + 52, 34, 10, 5);
     }
   }
-  function drawHeld(ctx, id) {
-    var spec = { posy: ["lily", 3], stem: ["tulip", 1],
-                 bunch: ["peony", 3], sun: ["sunflower", 1] }[id];
-    if (!spec) return;
-    var species = spec[0], n = spec[1];
-    var hx = HAND.r.x, hy = HAND.r.y;
-    ctx.strokeStyle = "#3f8d5c"; ctx.lineWidth = 5; ctx.lineCap = "round";
-    var i, lean;
-    for (i = 0; i < n; i++) {
-      lean = (i - (n - 1) / 2) * 0.32;
-      ctx.beginPath();
-      ctx.moveTo(hx, hy + 8);
-      ctx.lineTo(hx + Math.sin(lean) * 64, hy - Math.cos(lean) * 64);
-      ctx.stroke();
+  function drawBody(ctx, id, L) {
+    if (id === "dungas") {
+      ctx.fillStyle = hsl(214, 32, 46);
+      rr(ctx, BODY.x + 10, BODY.y + 22, BODY.w - 20, BODY.h - 14, 10);
+      ctx.strokeStyle = hsl(214, 32, 46); ctx.lineWidth = 7; ctx.lineCap = "round";
+      ctx.beginPath(); ctx.moveTo(BODY.x + 20, BODY.y + 24); ctx.lineTo(BODY.x + 24, BODY.y + 4); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(BODY.x + BODY.w - 20, BODY.y + 24); ctx.lineTo(BODY.x + BODY.w - 24, BODY.y + 4); ctx.stroke();
     }
-    for (i = 0; i < n; i++) {
-      lean = (i - (n - 1) / 2) * 0.32;
-      bloom(ctx, species, hx + Math.sin(lean) * 64, hy - Math.cos(lean) * 64,
-            n === 1 ? 20 : 16);
+    if (id === "apron") {
+      ctx.fillStyle = "#f3e7cd";
+      ctx.beginPath();
+      ctx.moveTo(BODY.x + 16, BODY.y + 20);
+      ctx.lineTo(BODY.x + BODY.w - 16, BODY.y + 20);
+      ctx.lineTo(BODY.x + BODY.w - 8, BODY.y + BODY.h);
+      ctx.lineTo(BODY.x + 8, BODY.y + BODY.h);
+      ctx.closePath(); ctx.fill();
+      ctx.fillStyle = "#e0cfa8"; rr(ctx, BODY.x + 16, BODY.y + 20, BODY.w - 32, 8, 4);
+    }
+  }
+  function drawFeet(ctx, id, L) {
+    var y = 288;
+    if (id === "boots") {
+      ctx.fillStyle = "#6b4a33";
+      rr(ctx, 97, y - 10, 22, 32, 9);
+      rr(ctx, 121, y - 10, 22, 32, 9);
+      ctx.fillStyle = "#553a28";
+      rr(ctx, 94, y + 12, 26, 12, 6);
+      rr(ctx, 120, y + 12, 26, 12, 6);
+    }
+    if (id === "clogs") {
+      ctx.fillStyle = "#d9b98a";
+      rr(ctx, 94, y + 4, 26, 18, 8);
+      rr(ctx, 120, y + 4, 26, 18, 8);
+    }
+  }
+  function drawHold(ctx, id) {
+    var hx = HAND.r.x + 12, hy = HAND.r.y + 4;
+    if (id === "can") {
+      ctx.fillStyle = "#7fb5b0"; rr(ctx, hx - 12, hy, 30, 26, 7);
+      ctx.fillStyle = "#6aa09b";
+      ctx.beginPath(); ctx.moveTo(hx + 16, hy + 6); ctx.lineTo(hx + 34, hy - 4);
+      ctx.lineTo(hx + 34, hy + 2); ctx.lineTo(hx + 17, hy + 13); ctx.closePath(); ctx.fill();
+      ctx.strokeStyle = "#6aa09b"; ctx.lineWidth = 4;
+      ctx.beginPath(); ctx.arc(hx + 3, hy - 1, 10, Math.PI, 0); ctx.stroke();
+    }
+    if (id === "trowel") {
+      ctx.strokeStyle = "#a9794f"; ctx.lineWidth = 6; ctx.lineCap = "round";
+      ctx.beginPath(); ctx.moveTo(hx - 4, hy - 4); ctx.lineTo(hx - 4, hy + 16); ctx.stroke();
+      ctx.fillStyle = "#b8bfc4";
+      ctx.beginPath();
+      ctx.moveTo(hx - 12, hy + 16); ctx.quadraticCurveTo(hx - 4, hy + 42, hx + 4, hy + 16);
+      ctx.closePath(); ctx.fill();
     }
   }
 
@@ -259,67 +307,66 @@
     ctx.scale(s, s);
     ctx.clearRect(0, 0, W, H);
 
-    var skin  = SKINS[L.skin] || SKINS[0];
+    var skin = SKINS[L.skin] || SKINS[0];
     var cloth = hsl(L.top, 34, 52);
-    var sleeve = hsl(L.top, 34, 44);
     var trouser = hsl(L.top, 20, 34);
     var shoe = hsl(L.top, 16, 22);
+    var h = hoodOf(L.flower);
 
-    /* THE HOOD GOES FIRST, behind everything, so the face and the body are
-       laid into it rather than over a flower sitting on a head. */
-    hoodBack(ctx, L);
+    if (h.mode === "hood") drawHood(ctx, L.flower);
+    else drawSprout(ctx, L.flower, skin);
 
+    /* THE LEGS ARE 25 APART, NOT 19, and that is the shoes' doing rather than
+       the legs'. At 19 the two shoes were 26 wide on centres 19 apart, so they
+       overlapped by 6 and the feet read as one dark block. The leg spacing is
+       set by whatever has to stand on it. */
     ctx.fillStyle = trouser;
-    rr(ctx, 96, 250, 22, 58, 8);
-    rr(ctx, 122, 250, 22, 58, 8);
-    ctx.fillStyle = shoe;
-    rr(ctx, 88, 300, 34, 20, 9);
-    rr(ctx, 118, 300, 34, 20, 9);
+    rr(ctx, 100, 258, 15, 36, 7);
+    rr(ctx, 125, 258, 15, 36, 7);
+    if (!L.feet) {
+      ctx.fillStyle = shoe;
+      rr(ctx, 95, 288, 24, 18, 8);
+      rr(ctx, 121, 288, 24, 18, 8);
+    }
 
     ctx.fillStyle = cloth;
     rr(ctx, BODY.x, BODY.y, BODY.w, BODY.h, BODY.r);
+    if (L.body) drawBody(ctx, L.body, L);
+    if (L.feet) drawFeet(ctx, L.feet, L);
 
-    /* ARMS EXIST FOR THE KEEPSAKES, not for the figure: four of the eight are
-       CARRIED, and a held posy with no hand under it floats beside the body
-       like a bug.
-       THE SLEEVE IS A SHADE DARKER THAN THE JUMPER. Drawn in the body's own
-       colour it lies invisibly ON the body and the only thing that shows is a
-       skin circle at each lower corner. */
-    ctx.strokeStyle = sleeve; ctx.lineWidth = 23; ctx.lineCap = "round";
-    ctx.beginPath(); ctx.moveTo(84, 176); ctx.lineTo(HAND.l.x + 4, HAND.l.y - 10); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(156, 176); ctx.lineTo(HAND.r.x - 4, HAND.r.y - 10); ctx.stroke();
+    /* TWO SMALL HANDS AND NO ARMS, which is what the sprout characters do and
+       what "arms behind the body" means here: a rounded hand at each side with
+       the limb hidden. It also removes the stick arms, which read as twigs. */
     ctx.fillStyle = skin;
-    ctx.beginPath(); ctx.arc(HAND.l.x, HAND.l.y, 13, 0, Math.PI * 2); ctx.fill();
-    ctx.beginPath(); ctx.arc(HAND.r.x, HAND.r.y, 13, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(HAND.l.x, HAND.l.y, 14, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(HAND.r.x, HAND.r.y, 14, 0, Math.PI * 2); ctx.fill();
+    if (L.hold) drawHold(ctx, L.hold);
+    if (L.neck) drawNeck(ctx, L.neck, L);
 
     ctx.fillStyle = skin;
     ctx.beginPath(); ctx.arc(FACE.x, FACE.y, FACE.r, 0, Math.PI * 2); ctx.fill();
-    hair(ctx, L);
+    drawHair(ctx, L);
 
-    /* THE FACE IS THREE MARKS AND THAT IS THE WHOLE BUDGET, which is the
-       sticker reference's own economy: two dots, two cheeks and a mouth.
-       The eyes sit BELOW the hairline or the fringe swallows them. */
+    /* THREE MARKS AND THAT IS THE WHOLE BUDGET, which is the sticker set's own
+       economy. The eyes sit BELOW the hairline or the fringe swallows them. */
     ctx.fillStyle = "rgba(233,137,147,0.45)";
-    ctx.beginPath(); ctx.ellipse(FACE.x - 30, FACE.y + 16, 11, 7, 0, 0, Math.PI * 2); ctx.fill();
-    ctx.beginPath(); ctx.ellipse(FACE.x + 30, FACE.y + 16, 11, 7, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(FACE.x - 28, FACE.y + 15, 10, 6.5, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(FACE.x + 28, FACE.y + 15, 10, 6.5, 0, 0, Math.PI * 2); ctx.fill();
     ctx.fillStyle = "#3a2f2a";
-    ctx.beginPath(); ctx.ellipse(FACE.x - 15, FACE.y + 5, 5, 6.5, 0, 0, Math.PI * 2); ctx.fill();
-    ctx.beginPath(); ctx.ellipse(FACE.x + 15, FACE.y + 5, 5, 6.5, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(FACE.x - 14, FACE.y + 5, 5, 6.5, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(FACE.x + 14, FACE.y + 5, 5, 6.5, 0, 0, Math.PI * 2); ctx.fill();
     ctx.strokeStyle = "#3a2f2a"; ctx.lineWidth = 2.6; ctx.lineCap = "round";
     ctx.beginPath();
-    ctx.moveTo(FACE.x - 6, FACE.y + 21);
-    ctx.quadraticCurveTo(FACE.x, FACE.y + 27, FACE.x + 6, FACE.y + 21);
+    ctx.moveTo(FACE.x - 6, FACE.y + 20);
+    ctx.quadraticCurveTo(FACE.x, FACE.y + 26, FACE.x + 6, FACE.y + 20);
     ctx.stroke();
-
-    if (L.shoulders) drawShoulders(ctx, L.shoulders);
-    if (L.held) drawHeld(ctx, L.held);
 
     ctx.restore();
   }
 
   window.AvatarDraw = {
     paint: paint, SKINS: SKINS, HAIRS: HAIRS, SHAPES: SHAPES, TOPS: TOPS,
-    KEEPSAKES: KEEPSAKES, SLOTS: SLOTS, BLOOMS: BLOOMS, HOOD: HOOD,
+    WEAR: WEAR, SLOTS: SLOTS, BLOOMS: BLOOMS, HOOD: HOOD,
     SPECIES_ORDER: SPECIES_ORDER, DEFAULT_LOOK: DEFAULT_LOOK, W: W, H: H
   };
 })();

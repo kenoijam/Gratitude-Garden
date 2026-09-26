@@ -21,8 +21,8 @@
 
   <main class="av-page">
     <h1 class="av-title">build your <em>gardener</em></h1>
-    <p class="av-sub">Someone to stand in your garden. Nothing here is bought
-       and nothing is timed: the keepsakes arrive as you plant.</p>
+    <p class="av-sub">Someone to stand in your garden. A flower to wear, and
+       a few things to carry.</p>
 
     <!-- SIX STEPS, the count the reference uses, and every one of them is a
          real question rather than a screen for its own sake. -->
@@ -64,9 +64,10 @@
              of petals to put a face inside and lavender is a spike. -->
         <section class="av-step" data-step="flower" hidden>
           <h2>choose your flower</h2>
-          <p class="av-note">Worn, not carried. Six of the eight ring the face
-             like a hood; the tulip sits on top as a bonnet and the lavender
-             rises behind as a plume, since neither has petals to sit inside.</p>
+          <p class="av-note">Six of the eight ring the face like a hood. The
+             tulip and the lavender have no ring of petals to sit inside, so
+             they GROW instead: a plain cowl and the flower on a short stem out
+             of the crown.</p>
           <div class="av-grid av-grid-4" id="avFlower"></div>
           <p class="av-note av-quiet" id="avFlowerNote"></p>
         </section>
@@ -78,13 +79,15 @@
           <div class="av-grid av-grid-3" id="avTop"></div>
         </section>
 
-        <section class="av-step" data-step="keep" hidden>
-          <h2>choose keepsakes</h2>
-          <p class="av-note">One for each flower you have planted, at the
-             shoulders or carried. Two can be worn at once, and the flower you
-             already chose has the head.</p>
-          <div class="av-keeps" id="avKeeps"></div>
-          <p class="av-note av-quiet" id="avKeepNote"></p>
+        <!-- ACCESSORIES, NOT KEEPSAKES. Nothing is earned, nothing is
+             locked and nothing is tied to a species: the flower on the head
+             already carries the garden, and eight locked tiles were a reward
+             system bolted onto a dressing up screen. One per slot, so two
+             choices can never fight over the same place on the figure. -->
+        <section class="av-step" data-step="wear" hidden>
+          <h2>choose what they carry</h2>
+          <p class="av-note">One of each, or none. Nothing here is earned.</p>
+          <div id="avWear"></div>
         </section>
 
         <section class="av-step" data-step="done" hidden>

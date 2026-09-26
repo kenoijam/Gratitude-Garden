@@ -18,33 +18,13 @@
     { id: "skin",   name: "Gardener" },
     { id: "flower", name: "Flower" },
     { id: "top",    name: "Clothes" },
-    { id: "keep",   name: "Keepsakes" },
+    { id: "wear",   name: "Carrying" },
     { id: "done",   name: "Done" }
   ];
   var at = 0;
   var look = Object.assign({}, A.DEFAULT_LOOK);
-  /* a DRAFT control, and it says so on the tile. Nothing is planted in a
-     fresh browser, so without it the keepsake step is eight locked tiles and
-     there is nothing to judge. It is not part of the design. */
-  var showAll = false;
 
   var $ = function (id) { return document.getElementById(id); };
-
-  /* ------------------------------------------------- what has been planted
-     The keepsakes are earned by PLANTING, which is the rule the 3D
-     exploration settled on: nothing is bought, nothing is timed and nothing
-     can be missed, so at the end of a month the gardener is wearing an
-     account of what the person noticed. */
-  function plantedSpecies() {
-    var set = {};
-    try {
-      var raw = localStorage.getItem("personal_gratitude_garden");
-      var arr = raw ? JSON.parse(raw) : [];
-      if (Array.isArray(arr)) arr.forEach(function (f) { if (f && f.species) set[f.species] = true; });
-    } catch (e) { /* a private window throws on read; an empty garden is the
-                     honest answer, not a broken page */ }
-    return set;
-  }
 
   /* --------------------------------------------------------------- paint */
   function paint() {
@@ -146,7 +126,7 @@
     });
     var h = A.HOOD[look.flower];
     $("avFlowerNote").textContent = (h && h.mode !== "ring")
-      ? A.BLOOMS[look.flower].name + " has no ring of petals to sit inside, so it is worn on top."
+      ? A.BLOOMS[look.flower].name + " has no ring of petals to sit inside, so it grows from the head instead."
       : "";
   }
 
@@ -158,58 +138,47 @@
       }));
     });
   }
-  function buildKeeps() {
-    var g = $("avKeeps"); g.innerHTML = "";
-    var planted = plantedSpecies();
-    var locked = 0;
-    Object.keys(A.KEEPSAKES).forEach(function (id) {
-      var k = A.KEEPSAKES[id];
-      var open = showAll || !!planted[k.from];
-      if (!open) locked++;
-      var b = document.createElement("button");
-      b.type = "button";
-      b.className = "av-keep" + (look[k.slot] === id ? " is-on" : "");
-      if (!open) b.disabled = true;
-      b.appendChild(thumb(k.from, 40));
-      var t = document.createElement("span");
-      var strong = document.createElement("b");
-      strong.textContent = k.name;
-      var small = document.createElement("small");
-      small.textContent = open ? k.note : "Plant a " + k.from + " to keep this";
-      t.appendChild(strong); t.appendChild(small);
-      b.appendChild(t);
-      b.addEventListener("click", function () {
-        /* TAPPING A WORN KEEPSAKE TAKES IT OFF, so a slot is never a trap. */
-        look[k.slot] = (look[k.slot] === id) ? null : id;
-        buildKeeps(); paint();
+  /* ONE PER SLOT, and picking the one already on takes it off, so a slot is
+     never a trap. Four small rows rather than one grid of eight, because a
+     grid says "pick some of these" where the truth is "pick one of each". */
+  function buildWear() {
+    var g = $("avWear"); g.innerHTML = "";
+    A.SLOTS.forEach(function (slot) {
+      var lab = document.createElement("p");
+      lab.className = "av-label";
+      lab.textContent = { neck: "Over the shoulder", body: "Over the clothes",
+                          feet: "On the feet", hold: "In hand" }[slot];
+      g.appendChild(lab);
+      var row = document.createElement("div");
+      row.className = "av-grid av-grid-3";
+      Object.keys(A.WEAR).forEach(function (id) {
+        if (A.WEAR[id].slot !== slot) return;
+        var box = document.createElement("span");
+        box.appendChild(label(A.WEAR[id].name));
+        row.appendChild(tile(look[slot] === id, box, function () {
+          look[slot] = (look[slot] === id) ? null : id;
+          buildWear(); paint();
+        }));
       });
-      g.appendChild(b);
+      var none = document.createElement("span");
+      none.appendChild(label("None"));
+      row.appendChild(tile(!look[slot], none, function () {
+        look[slot] = null; buildWear(); paint();
+      }));
+      g.appendChild(row);
     });
-    var note = $("avKeepNote");
-    note.innerHTML = "";
-    if (locked) {
-      note.appendChild(document.createTextNode(
-        locked + " still to come. They arrive as you plant. "));
-      var a = document.createElement("button");
-      a.type = "button";
-      a.className = "av-keep-all";
-      a.textContent = showAll ? "Lock them again" : "Show them all (draft control)";
-      a.addEventListener("click", function () { showAll = !showAll; buildKeeps(); });
-      note.appendChild(a);
-    } else if (showAll) {
-      note.textContent = "All eight shown. This is a draft control, not the design.";
-    }
   }
+
   function buildDone() {
     $("avDoneLine").textContent = look.name
       ? look.name + " is ready. They would stand in your personal garden, and beside your flower in the shared one."
       : "Ready. They would stand in your personal garden, and beside your flower in the shared one.";
     var row = $("avRow");
     var worn = A.SLOTS.filter(function (s) { return look[s]; })
-      .map(function (s) { return A.KEEPSAKES[look[s]].name; });
+      .map(function (s) { return A.WEAR[look[s]].name; });
     row.textContent = "skin " + look.skin + ", hair " + A.SHAPES[look.hair] +
       " in " + look.hairCol + ", " + look.flower + ", top hue " + look.top +
-      (worn.length ? ", wearing " + worn.join(" and ") : ", nothing worn yet");
+      (worn.length ? ", with " + worn.join(" and ") : ", nothing else");
   }
 
   /* ---------------------------------------------------------------- flow */
@@ -225,13 +194,13 @@
     $("avBack").disabled = at === 0;
     $("avNext").textContent = at === STEPS.length - 1 ? "start again" : "turn the page";
     if (STEPS[at].id === "flower") buildFlower();
-    if (STEPS[at].id === "keep") buildKeeps();
+    if (STEPS[at].id === "wear") buildWear();
     if (STEPS[at].id === "done") buildDone();
     paint();
   }
 
   function boot() {
-    buildSteps(); buildSkin(); buildHair(); buildFlower(); buildTop();
+    buildSteps(); buildSkin(); buildHair(); buildFlower(); buildTop(); buildWear();
     $("avName").addEventListener("input", function () {
       look.name = this.value.trim(); paint();
     });
@@ -241,7 +210,7 @@
     $("avNext").addEventListener("click", function () {
       if (at < STEPS.length - 1) { at++; }
       else { at = 0; look = Object.assign({}, A.DEFAULT_LOOK); $("avName").value = "";
-             buildSkin(); buildHair(); buildFlower(); buildTop(); }
+             buildSkin(); buildHair(); buildFlower(); buildTop(); buildWear(); }
       show();
     });
     show();
