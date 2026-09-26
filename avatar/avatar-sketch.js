@@ -90,13 +90,14 @@
       }));
     });
   }
-  /* The hair SHAPES are drawn on a real head in the skin and colour already
-     chosen, because Fringe, Bob and Parted are three words for three
-     silhouettes and only the silhouette tells them apart. */
+  /* NINE SHAPES, drawn on a real head in the skin and colour already chosen,
+     because Fringe, Bob and Parted are three words for three brow lines and
+     only a silhouette tells them apart. Nine fills a three column grid
+     exactly, so there is no orphan tile at either width. */
   function buildHair() {
     var sh = $("avHairShape"); sh.innerHTML = "";
     A.SHAPES.forEach(function (n, i) {
-      sh.appendChild(pic("hair", i, 52, n, look.hair === i, function () {
+      sh.appendChild(pic("hair", i, 46, n, look.hair === i, function () {
         look.hair = i; buildHair(); paint();
       }));
     });
@@ -125,41 +126,51 @@
       : "";
   }
 
+  /* ONE PER SLOT, and picking the one already on takes it off, so a slot is
+     never a trap. The legs are the exception and carry no None, since bare
+     legs is not something this figure offers. Small rows rather than one grid
+     of everything, because a grid says "pick some of these" where the truth
+     is "pick one of each". */
+  function slotRows(host, slots) {
+    host.innerHTML = "";
+    slots.forEach(function (slot) {
+      var lab = document.createElement("p");
+      lab.className = "av-label";
+      lab.textContent = A.SLOT_LABEL[slot];
+      host.appendChild(lab);
+      var ids = Object.keys(A.WEAR).filter(function (id) { return A.WEAR[id].slot === slot; });
+      var n = ids.length + (A.NO_NONE[slot] ? 0 : 1);
+      var row = document.createElement("div");
+      row.className = "av-grid av-grid-wear av-grid-" + (n > 3 ? 4 : 3);
+      ids.forEach(function (id) {
+        row.appendChild(pic("wear", id, 38, A.WEAR[id].name, look[slot] === id, function () {
+          look[slot] = (look[slot] === id && !A.NO_NONE[slot]) ? null : id;
+          buildWearables(); paint();
+        }));
+      });
+      if (!A.NO_NONE[slot]) {
+        row.appendChild(pic("none", slot, 38, "None", !look[slot], function () {
+          look[slot] = null; buildWearables(); paint();
+        }));
+      }
+      host.appendChild(row);
+    });
+  }
+  /* THE CLOTHING IS ON THE CLOTHES STEP AND THE REST ON CARRYING, which is a
+     rebalance rather than a rename: Carrying was four rows of tiles against a
+     Clothes step holding one row of colours, and the new slots would have
+     made that six against one. */
   function buildTop() {
     var g = $("avTop"); g.innerHTML = "";
     A.TOPS.forEach(function (h) {
-      g.appendChild(pic("top", h, 56, "", look.top === h, function () {
-        look.top = h; buildTop(); buildWear(); paint();
+      g.appendChild(pic("top", h, 54, "", look.top === h, function () {
+        look.top = h; buildWearables(); paint();
       }));
     });
+    slotRows($("avClothes"), A.STEP_SLOTS.top);
   }
-  /* ONE PER SLOT, and picking the one already on takes it off, so a slot is
-     never a trap. Four small rows rather than one grid of eight, because a
-     grid says "pick some of these" where the truth is "pick one of each". */
-  function buildWear() {
-    var g = $("avWear"); g.innerHTML = "";
-    A.SLOTS.forEach(function (slot) {
-      var lab = document.createElement("p");
-      lab.className = "av-label";
-      lab.textContent = { neck: "Over the shoulder", body: "Over the clothes",
-                          feet: "On the feet", hold: "In hand" }[slot];
-      g.appendChild(lab);
-      var row = document.createElement("div");
-      row.className = "av-grid av-grid-3 av-grid-wear";
-      Object.keys(A.WEAR).forEach(function (id) {
-        if (A.WEAR[id].slot !== slot) return;
-        row.appendChild(pic("wear", id, 38, A.WEAR[id].name, look[slot] === id,
-          function () {
-            look[slot] = (look[slot] === id) ? null : id;
-            buildWear(); paint();
-          }));
-      });
-      row.appendChild(pic("none", slot, 38, "None", !look[slot], function () {
-        look[slot] = null; buildWear(); paint();
-      }));
-      g.appendChild(row);
-    });
-  }
+  function buildWear() { slotRows($("avWear"), A.STEP_SLOTS.wear); }
+  function buildWearables() { buildTop(); buildWear(); }
 
   function buildDone() {
     $("avDoneLine").textContent = look.name
@@ -167,10 +178,10 @@
       : "Ready. They would stand in your personal garden, and beside your flower in the shared one.";
     var row = $("avRow");
     var worn = A.SLOTS.filter(function (s) { return look[s]; })
-      .map(function (s) { return A.WEAR[look[s]].name; });
+      .map(function (s) { return A.WEAR[look[s]].name.toLowerCase(); });
     row.textContent = "skin " + look.skin + ", hair " + A.SHAPES[look.hair] +
       " in " + look.hairCol + ", " + look.flower + ", top hue " + look.top +
-      (worn.length ? ", with " + worn.join(" and ") : ", nothing else");
+      ", wearing " + worn.join(", ");
   }
 
   /* ---------------------------------------------------------------- flow */
@@ -186,6 +197,7 @@
     $("avBack").disabled = at === 0;
     $("avNext").textContent = at === STEPS.length - 1 ? "start again" : "turn the page";
     if (STEPS[at].id === "flower") buildFlower();
+    if (STEPS[at].id === "top") buildTop();
     if (STEPS[at].id === "wear") buildWear();
     if (STEPS[at].id === "done") buildDone();
     paint();

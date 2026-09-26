@@ -91,6 +91,14 @@ button, a, [role="button"], summary, label[for] { touch-action: manipulation; }
 /* THE SPINE IS A BORDER, not a child, so nothing in the layout has to know
    about it and either leaf can scroll under it cleanly. */
 .av-left { border-right: 1px solid var(--rule); }
+/* THE LEFT LEAF SCROLLS RATHER THAN GROWING. A book's pages hold different
+   amounts, and the Carrying step is now five rows of pictures against the
+   Beginning step's one field; left to grow, it pushed the page turn off the
+   foot of a 1000px window, which is the one control every step needs. The
+   gardener on the right leaf stays put while the pickers move under it. */
+@media (min-width: 821px) {
+  .av-left { max-height: 66vh; overflow-y: auto; overscroll-behavior: contain; }
+}
 .av-leaf { padding: 30px 30px 34px; }
 .av-leaf h2 {
   margin: 0 0 6px; font-family: 'Fraunces', Georgia, serif; font-weight: 600;
