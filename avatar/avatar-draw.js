@@ -182,7 +182,10 @@
      had no opening at all, only a circle of skin on a ring of petals, so hair
      could only ever be painted onto the face or onto the flower. */
   var HEAD = { x: 120, y: 120 };
-  var CROWN = { rx: 66, ry: 63 };
+  /* 58 BY 56, DOWN FROM 66 BY 63. At the larger size the daisy and the
+     sunflower read as bonnets rather than as those species: the crown was
+     covering two thirds of a bloom whose tips reach 84. */
+  var CROWN = { rx: 58, ry: 56 };
   var OPEN = { rx: 55, ry: 53 };
   var FACE = { x: 120, y: 128, rx: 44, ry: 45, r: 44 };
 
@@ -270,9 +273,12 @@
   /* THE FLOWER IS A BONNET, NOT A RING OF PETALS, and the SOLID CROWN is
      what makes it one. The reference hood is ONE continuous soft shape with a
      face nestled in an opening; ours was separate petals with gaps between
-     them. The crown closes those gaps, the petals become the ears and trim on
-     it, and the RIM is a deeper ring round the opening, which is what says
-     the face is INSIDE the bonnet rather than resting on it. */
+     them. The crown closes those gaps and the petals become the ears and trim
+     on it.
+     THERE IS NO RIM ROUND THE OPENING. A deeper ring was drawn there for a
+     round, meant to say the face was inside the bonnet rather than resting on
+     it, and it read as a hoop drawn on the head. The hair's own edge does
+     that job. */
   function drawHood(ctx, id) {
     var h = hoodOf(id), b = bloomOf(id);
     if (typeof window.drawSpeciesBloom !== "function") return;
@@ -287,11 +293,6 @@
     ctx.beginPath();
     ctx.ellipse(0, 0, CROWN.rx - 3, CROWN.ry - 3, 0, 0, Math.PI * 2);
     ctx.fill();
-    ctx.strokeStyle = hsl(b.hue, Math.min(100, b.sat + 8), Math.max(12, b.light - 17));
-    ctx.lineWidth = 6;
-    ctx.beginPath();
-    ctx.ellipse(0, 0, OPEN.rx + 3, OPEN.ry + 3, 0, 0, Math.PI * 2);
-    ctx.stroke();
     ctx.restore();
   }
 
@@ -347,39 +348,54 @@
     8: { plait: true, to: 100 }                         /* braids */
   };
 
+  /* A LENGTH IS WIDE WHERE IT LEAVES THE HEAD AND NARROWS TO A ROUNDED TIP.
+     It used to be a straight-sided bar with a flat top and a squared end,
+     which is exactly what "boxy" meant: Bob, Long and Wavy came out as two
+     planks beside the head. The braids escaped it only because a stack of
+     discs cannot be square. Drawn in a right-hand frame and mirrored, so the
+     two sides cannot drift apart. */
+  function lengthPath(ctx, w, top, end, wave) {
+    var h = end - top, tip = w * 0.42;
+    ctx.beginPath();
+    ctx.moveTo(-w, top);
+    ctx.lineTo(w, top);
+    if (wave) {
+      ctx.bezierCurveTo(w + 8, top + h * 0.28, w - 6, top + h * 0.52, w + 4, top + h * 0.76);
+      ctx.quadraticCurveTo(w + 1, end, tip * 0.5, end);
+      ctx.quadraticCurveTo(-tip, end - 1, -tip - 4, top + h * 0.78);
+      ctx.bezierCurveTo(-w - 5, top + h * 0.52, -w + 2, top + h * 0.28, -w, top);
+    } else {
+      ctx.bezierCurveTo(w + 5, top + h * 0.38, w + 2, top + h * 0.74, tip, end - 5);
+      ctx.quadraticCurveTo(0, end + 7, -tip, end - 5);
+      ctx.bezierCurveTo(-w - 2, top + h * 0.74, -w - 5, top + h * 0.38, -w, top);
+    }
+    ctx.closePath();
+  }
+
   function drawHairLong(ctx, look) {
     var spec = HAIR_LONG[look.hair];
     if (!spec) return;
     var c = HAIRS[look.hairCol] || HAIRS[0], d = shade(c, 0.8), i, k;
     for (k = -1; k <= 1; k += 2) {
       if (spec.one && k !== spec.one) continue;
-      var x = HEAD.x + k * 52, top = HEAD.y - 20, end = HEAD.y + spec.to;
+      var x = HEAD.x + k * 50, top = HEAD.y - 20, end = HEAD.y + spec.to;
       if (spec.plait) {
         ctx.fillStyle = c;
-        rr(ctx, x - 12, top, 24, 58, 11);
+        rr(ctx, x - 12, top, 24, 54, 11);
         ctx.fillStyle = d;
-        rr(ctx, x - 10, HEAD.y + 34, 20, 9, 4);
+        rr(ctx, x - 10, HEAD.y + 30, 20, 9, 4);
         for (i = 0; i < 3; i++) {
           ctx.fillStyle = i % 2 ? d : c;
-          disc(ctx, x, HEAD.y + 50 + i * 16, 11 - i * 1.4);
+          disc(ctx, x, HEAD.y + 46 + i * 15, 11 - i * 1.4);
         }
         continue;
       }
+      ctx.save();
+      ctx.translate(x, 0); ctx.scale(k, 1);
       ctx.fillStyle = c;
-      ctx.beginPath();
-      ctx.moveTo(x - spec.w, top);
-      ctx.lineTo(x + spec.w, top);
-      if (spec.wave) {
-        ctx.quadraticCurveTo(x + spec.w + 9 * k, (top + end) / 2, x + spec.w - 4 * k, end - 8);
-        ctx.quadraticCurveTo(x, end + 8, x - spec.w - 3 * k, end - 12);
-        ctx.quadraticCurveTo(x - spec.w - 6 * k, (top + end) / 2, x - spec.w, top);
-      } else {
-        ctx.lineTo(x + spec.w, end - 14);
-        ctx.quadraticCurveTo(x + spec.w, end, x + spec.w - 12, end);
-        ctx.lineTo(x - spec.w + 12, end);
-        ctx.quadraticCurveTo(x - spec.w, end, x - spec.w, end - 14);
-      }
-      ctx.closePath(); ctx.fill();
+      lengthPath(ctx, spec.w, top, end, spec.wave);
+      ctx.fill();
+      ctx.restore();
     }
   }
 
@@ -423,12 +439,15 @@
       ctx.beginPath();
       ctx.moveTo(L, lowY); ctx.lineTo(L, TOP); ctx.lineTo(R, TOP); ctx.lineTo(R, lowY);
     }
-    if (look.hair === 0 || look.hair === 3) {          /* a blunt fringe */
-      brow(F.y - 10);
-      var n = 5, step = (F.rx * 2) / n;
-      for (i = n; i > 0; i--) {
-        ctx.arc(L + step * (i - 0.5), F.y - 10, step / 2, 0, Math.PI, true);
-      }
+    if (look.hair === 0 || look.hair === 3) {
+      /* A SOFT FRINGE WITH TWO GENTLE POINTS IN IT, which is the first
+         reference's. Five hard scallops read as a cog. */
+      ctx.beginPath();
+      ctx.moveTo(L, F.y - 24);
+      ctx.lineTo(L, TOP); ctx.lineTo(R, TOP); ctx.lineTo(R, F.y - 24);
+      ctx.quadraticCurveTo(F.x + 25, F.y - 3, F.x + 11, F.y - 15);
+      ctx.quadraticCurveTo(F.x, F.y - 1, F.x - 12, F.y - 15);
+      ctx.quadraticCurveTo(F.x - 26, F.y - 3, L, F.y - 24);
       ctx.closePath(); ctx.fill();
     } else if (look.hair === 1 || look.hair === 8) {   /* a centre parting */
       brow(F.y - 4);
@@ -493,6 +512,42 @@
     rr(ctx, LEG.rx, LEG.top, LEG.w, LEG.bottom - LEG.top, 8);
   }
 
+  /* a scalloped edge, for a hem that should read as frilled */
+  function frill(ctx, x0, x1, y, n, colour) {
+    var step = (x1 - x0) / n, i;
+    ctx.fillStyle = colour;
+    for (i = 0; i < n; i++) {
+      ctx.beginPath();
+      ctx.arc(x0 + step * (i + 0.5), y, step / 2, 0, Math.PI);
+      ctx.fill();
+    }
+    ctx.fillRect(x0, y - 4, x1 - x0, 5);
+  }
+
+  /* A COLLAR ON EVERY OUTFIT. Almost every garment in both references has
+     one, and it is the cheapest thing there is for making a flat shape read
+     as clothing: two small rounded flaps either side of the neck, in the
+     cream the references all use. BUTTONS AND A POCKET go on the outfits
+     that would otherwise have no detail at all. */
+  function drawCollar(ctx, L) {
+    var B = BODY, cx = B.cx, t = B.top;
+    ctx.fillStyle = "#fdf6e6";
+    [-1, 1].forEach(function (k) {
+      ctx.beginPath();
+      ctx.moveTo(cx, t - 1);
+      ctx.quadraticCurveTo(cx + k * 20, t - 2, cx + k * 17, t + 7);
+      ctx.quadraticCurveTo(cx + k * 12, t + 16, cx, t + 11);
+      ctx.closePath(); ctx.fill();
+    });
+  }
+  function drawTrim(ctx, L) {
+    var B = BODY, cx = B.cx, t = B.top, b = B.bottom;
+    ctx.fillStyle = "#fdf6e6";
+    [0, 1].forEach(function (i) { disc(ctx, cx, t + 24 + i * 15, 3.4); });
+    ctx.fillStyle = hsl(L.top, 34, 45);
+    rr(ctx, cx + 8, b - 40, 22, 17, 5);
+  }
+
   function drawOver(ctx, id, L) {
     var B = BODY, cx = B.cx, t = B.top, b = B.bottom;
     var T = tintOf(L, "clothes");
@@ -526,6 +581,7 @@
         ctx.fillStyle = dark;
         ctx.fillRect(cx - 50, t + 34, 100, 10);
         rr(ctx, cx - 15, t + 58, 30, 20, 4);
+        frill(ctx, cx - 38, cx + 38, b - 3, 5, dark);
         ctx.strokeStyle = dark; ctx.lineWidth = 2;
         ctx.beginPath(); ctx.moveTo(cx, t + 58); ctx.lineTo(cx, t + 78); ctx.stroke();
       });
@@ -560,25 +616,25 @@
       ctx.quadraticCurveTo(cx, b + 27, cx - bw - 13, b + 18);
       ctx.bezierCurveTo(cx - bw - 15, b + 8, cx - bw - 10, b - 8, cx - w0, y0);
       ctx.closePath(); ctx.fill();
-      ctx.fillStyle = dark;
-      ctx.beginPath();
-      ctx.moveTo(cx - bw - 13, b + 18);
-      ctx.quadraticCurveTo(cx, b + 27, cx + bw + 13, b + 18);
-      ctx.quadraticCurveTo(cx, b + 20, cx - bw - 13, b + 18);
-      ctx.closePath(); ctx.fill();
+      /* A FRILLED HEM, which the pinafore in the doll reference has: six
+         shallow scallops along the bottom in a deeper tone. */
+      frill(ctx, cx - bw - 13, cx + bw + 13, b + 19, 6, dark);
     }
+    if (id === "plain" || id === "skirt" || id === "shorts") drawTrim(ctx, L);
     if (id === "shorts") {
       /* TWO SHORT LEGS HANGING OUT FROM UNDER THE HEM, with bare shins below.
          Every earlier version put the shorts ON the torso, as a band across
          the hips or as its lower third in another tone, and both read as
          something else: a nappy, then a dress with a dark hem. A trouser is
          a thing that comes out from under a top, so that is where it goes. */
+      /* TWENTY PIXELS UP INSIDE THE TORSO, not four. At four the body's hem
+         only just met them and the two read as separate objects touching. */
       ctx.fillStyle = main;
-      rr(ctx, LEG.lx - 7, b - 4, 30, 32, 11);
-      rr(ctx, LEG.rx - 5, b - 4, 30, 32, 11);
+      rr(ctx, LEG.lx - 7, b - 20, 30, 46, 11);
+      rr(ctx, LEG.rx - 5, b - 20, 30, 46, 11);
       ctx.fillStyle = dark;
-      rr(ctx, LEG.lx - 8, b + 18, 32, 10, 5);
-      rr(ctx, LEG.rx - 6, b + 18, 32, 10, 5);
+      rr(ctx, LEG.lx - 8, b + 16, 32, 10, 5);
+      rr(ctx, LEG.rx - 6, b + 16, 32, 10, 5);
     }
   }
 
@@ -879,9 +935,12 @@
        tint is stored per SLOT, so without this every tile in a row repainted
        itself in whatever the chosen garment had been changed to and the row
        came out as six of the same colour. */
+    /* A TILE DRAWS THE ITEM AND THE COLOUR IT IS ASKED FOR, so the caller
+       sets `tints[slot]` for the variant it wants and the tile paints exactly
+       that. Without pinning the slot to `id` here, a tile drew whatever the
+       gardener happened to be wearing. */
     if (slot) {
       var tk = Object.assign({}, L, { tints: Object.assign({}, L.tints || {}) });
-      if (tk[slot] !== id) delete tk.tints[slot];
       tk[slot] = id;
       L = tk;
     }
@@ -894,6 +953,7 @@
       ctx.fillStyle = hsl(L.top, 34, 52);
       bodyPath(ctx); ctx.fill();
       drawOver(ctx, id, ck);
+      drawCollar(ctx, ck);
       drawHands(ctx, skin, false);
       return;
     }
@@ -975,6 +1035,7 @@
     ctx.fillStyle = hsl(L.top, 34, 52);
     bodyPath(ctx); ctx.fill();
     drawOver(ctx, L.clothes, L);
+    drawCollar(ctx, L);
     if (L.neck) drawNeck(ctx, L.neck, L);
     if (L.hold) drawHold(ctx, L.hold);
     drawHands(ctx, skin, !!L.hold);

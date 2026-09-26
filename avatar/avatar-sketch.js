@@ -139,57 +139,53 @@
       lab.textContent = A.SLOT_LABEL[slot];
       host.appendChild(lab);
       var ids = Object.keys(A.WEAR).filter(function (id) { return A.WEAR[id].slot === slot; });
-      /* THREE COLUMNS WHEN THE COUNT DIVIDES BY THREE, four otherwise, so no
-         row ever ends in an orphan tile: six outfits fall 3 and 3, four feet
-         fall 4, three fall 3. */
-      var n = ids.length + (A.NO_NONE[slot] ? 0 : 1);
       var row = document.createElement("div");
-      row.className = "av-grid av-grid-wear av-grid-" + (n % 3 === 0 ? 3 : 4);
+      row.className = "av-grid av-grid-wear av-grid-4";
       ids.forEach(function (id) {
-        row.appendChild(pic("wear", id, slot === "clothes" ? 46 : 38, A.WEAR[id].name, look[slot] === id, function () {
-          look[slot] = (look[slot] === id && !A.NO_NONE[slot]) ? null : id;
-          /* PICKING A DIFFERENT ITEM CLEARS THE COLOUR, so a new garment
-             always arrives in the one it was drawn for rather than inheriting
-             whatever the last thing in that slot happened to be wearing. */
-          if (look.tints) delete look.tints[slot];
-          buildWearables(); paint();
-        }));
+        var tints = A.tintsFor(id);
+        if (!tints.length) { row.appendChild(variant(slot, id, null)); return; }
+        tints.forEach(function (ti) { row.appendChild(variant(slot, id, ti)); });
       });
       if (!A.NO_NONE[slot]) {
         row.appendChild(pic("none", slot, 38, "None", !look[slot], function () {
-          look[slot] = null; buildWearables(); paint();
+          look[slot] = null;
+          if (look.tints) delete look.tints[slot];
+          buildWearables(); paint();
         }));
       }
       host.appendChild(row);
-      colourRow(host, slot);
     });
   }
-  /* THREE COLOURS PER ITEM, in a row under the slot that has one chosen.
-     They are drawn as the real tone the garment is painted in, so a swatch is
-     exactly what picking it does. */
-  function colourRow(host, slot) {
-    var id = look[slot];
-    if (!id || !A.tintable(id)) return;
-    var opts = A.tintsFor(id);
-    var row = document.createElement("div");
-    row.className = "av-tints";
-    opts.forEach(function (ti) {
-      var b = document.createElement("button");
-      b.type = "button";
-      var on = (look.tints && look.tints[slot] != null)
-        ? look.tints[slot] === ti : A.WEAR[id].tint === ti;
-      b.className = "av-tint" + (on ? " is-on" : "");
-      b.style.background = A.tone(A.TINTS[ti]);
-      b.setAttribute("aria-label", A.TINTS[ti].name);
-      b.addEventListener("click", function () {
+  /* EVERY COLOUR IS ITS OWN TILE: three Boots, then three Wellies. It was a
+     swatch row under whichever item was chosen, which put the colours a step
+     away from the choice and hid them until something was picked. */
+  function wornTint(slot, id) {
+    return (look.tints && look.tints[slot] != null)
+      ? look.tints[slot] : A.WEAR[id].tint;
+  }
+  function variant(slot, id, ti) {
+    var on = look[slot] === id && (ti == null || wornTint(slot, id) === ti);
+    var shown = Object.assign({}, look, { tints: Object.assign({}, look.tints || {}) });
+    if (ti != null) shown.tints[slot] = ti;
+    var b = document.createElement("button");
+    b.type = "button";
+    b.className = "av-tile" + (on ? " is-on" : "");
+    b.appendChild(A.icon("wear", id, 38, shown));
+    b.appendChild(label(A.WEAR[id].name));
+    b.addEventListener("click", function () {
+      if (on && !A.NO_NONE[slot]) {
+        look[slot] = null;
+        if (look.tints) delete look.tints[slot];
+      } else {
+        look[slot] = id;
         if (!look.tints) look.tints = {};
-        look.tints[slot] = ti;
-        buildWearables(); paint();
-      });
-      row.appendChild(b);
+        if (ti == null) delete look.tints[slot]; else look.tints[slot] = ti;
+      }
+      buildWearables(); paint();
     });
-    host.appendChild(row);
+    return b;
   }
+
   /* THE CLOTHING IS ON THE CLOTHES STEP AND THE REST ON CARRYING, which is a
      rebalance rather than a rename: Carrying was four rows of tiles against a
      Clothes step holding one row of colours, and the new slots would have

@@ -1259,27 +1259,35 @@ Headings on the garden pages come from two places. `.gg-title` and `#tips-card h
 | | what it is |
 |---|---|
 | `HEAD` | the centre the bonnet and its opening are struck from |
-| `CROWN` | the SOLID shape of the bonnet, 66 by 63, with the petals radiating off it |
+| `CROWN` | the SOLID shape of the bonnet, 58 by 56, with the petals radiating off it |
 | `OPEN` | the FACE OPENING cut in that bonnet, 55 by 53 |
 | `FACE` | the skin, 44 by 45, sat LOW in the opening |
 
 - **THE LAST LINE IS THE WHOLE TRICK.** In every hood reference the hair is a solid mass FILLING the opening and the face is a smaller oval sitting low inside it, so what is left over reads as a fringe across the brow and a piece down each cheek **without any of it having to be drawn as hair**. Ours had no opening at all, only a circle of skin on a ring of petals, so hair could only ever be painted onto the face or onto the flower. Five versions were tried that way and the verdict on the last was "boxy", which is exactly what drawing hair-shaped rectangles into a space with no edge of its own produces.
-- **THE SOLID CROWN is what makes the flower a bonnet** rather than a ring of petals. It closes the gaps between the petal bases, the petals become the ears and trim on it, and the RIM, a deeper ring round the opening, is what says the face is INSIDE the bonnet rather than resting on it.
+- **THE SOLID CROWN is what makes the flower a bonnet** rather than a ring of petals. It closes the gaps between the petal bases and the petals become the ears and trim on it.
+- **THERE IS NO RIM ROUND THE OPENING.** A deeper ring was drawn there for a round, meant to say the face was inside the bonnet, and it read as **a hoop drawn on the head**. The hair's own edge does that job.
+- **The crown came down from 66 by 63 to 58 by 56.** At the larger size it covered two thirds of a bloom whose tips reach 84, so the daisy and the sunflower read as bonnets rather than as those species.
+- **A LENGTH IS WIDE WHERE IT LEAVES THE HEAD AND NARROWS TO A ROUNDED TIP.** Straight-sided bars with a flat top and a squared end are exactly what **"boxy"** meant: Bob, Long and Wavy came out as two planks beside the head, and the braids escaped it only because a stack of discs cannot be square. `lengthPath` is drawn in a right-hand frame and mirrored, so the two sides cannot drift apart.
+- **THE FRINGE IS SOFT WITH TWO GENTLE POINTS**, off the fruit-kid reference. Five hard scallops read as a cog.
 - **ANYTHING LONGER THAN THE FACE GOES BEHIND THE FLOWER.** `drawHairLong` paints before the bonnet, so a plait or a length is hidden by the crown and the petals and emerges at the bonnet's LOWER CORNERS, which is what the bear, the chick, the penguin and the cat in the reference sheet all do.
 - **The order on the head is therefore**: long hair, flower, body, then the mass clipped to the opening, the face oval, the fringe clipped to the face, the ears, the marks.
 - **TWO SMALL EARS at the sides of the opening.** Every one of the hood references has them and they are most of why those heads read as heads rather than as discs.
 - **Buns and a ponytail still cannot exist**, since both are defined by what sits above and outside the head, where the flower is. The nine are Fringe, Parted, Side part, Bob, Long, Cropped, Curly, Wavy, Braids.
 
+**EVERY COLOUR IS ITS OWN TILE: three Boots, then three Wellies.** It was a swatch row that appeared under whichever item was chosen, which put the colours a step away from the choice and hid them until something was picked. Four columns at 38px with the item's name under each tile, so three Boots read as three Boots.
+
 **THREE COLOURS PER ITEM, not a single fixed one and not the whole palette.** Every garment and accessory carried a hard-coded colour, so a gardener was a figure in their own hue with a fixed blue dungaree and a fixed brown boot stuck on. `TINTS` holds six, each `WEAR` entry names the three that suit it and the one it starts in, and `look.tints` overrides per SLOT.
 
 - **Six denims of a dungaree is a paint chart and three is a choice**, which is why each item names three rather than offering all six.
 - **Picking a different item CLEARS the colour**, so a new garment always arrives in the one it was drawn for rather than inheriting whatever the last thing in that slot was changed to.
-- **A TILE SHOWS ITS OWN COLOUR, not the worn item's.** The tint is stored per slot, so without stripping it in `loose` every tile in a row repainted itself in whatever the chosen garment had been changed to, and the row came out as six of the same colour.
+- **A TILE DRAWS THE ITEM AND THE COLOUR IT IS ASKED FOR.** The tint is stored per SLOT, so `loose` pins the slot to the tile's own id and the caller sets `tints[slot]` for the variant it wants. Without that, every tile in a row repainted itself in whatever the gardener was wearing.
 
 **THE TORSO IS A BELL, not a rounded rectangle, and that is most of what made the figure read as boxy.** It narrows to 58 at the shoulders and flares to 80 at the hips. `bodyPath` draws it and `halfAt(y)` gives its half width at any height, so a hem, a waistband or a cardigan panel can follow the shape rather than being a rectangle laid across it.
 
 - **EVERY GARMENT ON THE TORSO IS DRAWN THROUGH THE BELL'S OWN CLIP** (`inBody`), which keeps a bib or a panel inside the silhouette without any of them having to know the shape. **The skirt is the one exception**, since it flares past the hem on purpose, and it starts at the width the body already is where it begins: started at a fixed width it was a triangle stuck to a torso.
 - **THE SHORTS HANG OUT FROM UNDER THE HEM**, two short legs with a turned cuff and bare shins below. Every version drawn ON the torso read as something else: a wide block across the hips is a **nappy**, and its lower third in another tone is a dress with a dark hem. A trouser is a thing that comes out from under a top, so that is where it goes.
+- **A COLLAR ON EVERY OUTFIT, and buttons and a pocket on the ones that had no detail of their own.** Almost every garment in both clothing references has a collar and it is the cheapest thing there is for making a flat shape read as clothing. The skirt and the apron take a **frilled hem**, which is the pinafore's.
+- **THE SHORTS GO TWENTY PIXELS UP INSIDE THE TORSO**, not four: at four the body's hem only just met them and the two read as separate objects touching.
 - **SHORT STUB ARMS off the shoulders**, in the sleeve's own colour (the cardigan's when one is worn, the top's otherwise), ending in a round hand. Two hands alone at the body's edge read as beads stuck on the sides and gave a carried trowel nothing to belong to.
 
 **CLOTHING IS ONE CHOICE, NOT A LAYER PLUS A LEG.** It was "over the clothes" and "on the legs" as two slots, which let somebody build a cardigan with a skirt and shorts under an apron, and most of those combinations looked like an accident rather than an outfit. Six entries, each dressing the whole figure: Plain, Dungarees, Apron, Cardigan, Skirt, Shorts. `bare` says whether the legs are skin below it.
