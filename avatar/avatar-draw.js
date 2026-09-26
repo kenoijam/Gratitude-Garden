@@ -130,34 +130,28 @@
      figure was re-measured so the flower and the torso meet rather than
      overlap: the face sits at 120 and the flower reaches 204, and the body
      starts at 184 and runs to 272.
-     THE HANDS ARE 117 FROM THE FACE'S MIDDLE against the flower's 84, so a
+     THE HANDS ARE 113 FROM THE FACE'S MIDDLE against the flower's 84, so a
      held thing is never swallowed by a petal at any size. */
   var W = 240, H = 360;
-  var FACE = { x: 120, y: 120, r: 44 };
-  var BODY = { x: 84, y: 184, w: 72, h: 88, r: 24 };
-  /* THE HANDS TUCK INTO THE BODY'S EDGE rather than sitting beside it. At 76
-     and 164 against a body of 84 to 156 they overlapped by six pixels and
-     read as two pale blobs floating at the sides; at ten they are part of
-     the shape. */
-  /* THE HANDS TUCK INTO THE BODY'S EDGE rather than sitting beside it. At 76
-     and 164 against a body of 84 to 156 they overlapped it by six pixels and
-     read as two pale blobs floating at the sides; at ten they are part of the
-     silhouette. */
-  var HAND = { l: { x: 80, y: 228 }, r: { x: 160, y: 228 } };
+  var FACE = { x: 120, y: 124, r: 44 };
+  /* THE TORSO IS A BELL, not a rounded rectangle, and that is most of what
+     made the figure read as boxy. It narrows to 58 at the shoulders and
+     flares to 80 at the hips, which is the shape both soft-character
+     references use; it also gives a skirt and a hem somewhere honest to
+     start, and it stops the arms reading as stuck onto a box.
+     THE TOP TUCKS UNDER THE CHIN at 162 against a face reaching 168, so
+     there is no neck. There was one for a pass, and twenty pixels of it
+     under an 88 pixel head was a giraffe. */
+  var BODY = { cx: 120, top: 162, bottom: 260, topW: 58, botW: 80 };
+  /* SHORT STUB ARMS, not two hands floating at the sides. They come off the
+     shoulders in the clothing's own colour and end in a round hand, which is
+     what gives a carried trowel something to belong to. */
+  var ARM = { sx: 22, sy: 22, hx: 42, hy: 64, r: 13 };
   /* 30 APART because of the SHOES, not the legs: at 19 the two shoes were 26
      wide on centres 19 apart, so they overlapped and read as one dark block.
-     They run UP INSIDE the body from 260 rather than starting at its hem, so
+     They run UP INSIDE the body from 250 rather than starting at its hem, so
      the figure is one shape rather than two objects touching. */
-  var LEG = { top: 260, bottom: 308, w: 16, lx: 97, rx: 127, foot: 298 };
-  /* A SHORT NECK, AND IT EXISTS FOR THE TWO SPROUT SPECIES. Separating the
-     flower from the torso left twenty pixels between the chin at 164 and the
-     shoulders at 184; for the six hoods that band is full of petals, but a
-     tulip and a lavender have nothing down there, so their heads floated free
-     of the body. It is drawn FIRST, so the head covers its top, the body
-     covers its bottom and the petals cover all of it on the six that have
-     them. Twenty visible pixels is a neck; the forty the first attempt left
-     was a giraffe. */
-  var NECK = { w: 30, top: 156, bottom: 192 };
+  var LEG = { top: 250, bottom: 302, w: 16, lx: 97, rx: 127, foot: 294 };
 
   function hsl(h, s, l, a) {
     return "hsla(" + h + "," + s + "%," + l + "%," + (a == null ? 1 : a) + ")";
@@ -176,6 +170,37 @@
   }
   function disc(ctx, x, y, r) {
     ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill();
+  }
+
+  /* the bell's own outline, and the half width at any height along it, so a
+     hem, a waistband or a cardigan panel can follow the shape rather than
+     being a rectangle laid across it */
+  function bodyPath(ctx) {
+    var B = BODY, cx = B.cx, t = B.top, b = B.bottom;
+    var tw = B.topW / 2, bw = B.botW / 2;
+    ctx.beginPath();
+    ctx.moveTo(cx - tw, t + 16);
+    ctx.quadraticCurveTo(cx - tw + 1, t, cx - tw + 16, t);
+    ctx.lineTo(cx + tw - 16, t);
+    ctx.quadraticCurveTo(cx + tw - 1, t, cx + tw, t + 16);
+    ctx.bezierCurveTo(cx + tw + 7, t + 52, cx + bw, b - 44, cx + bw, b - 20);
+    ctx.quadraticCurveTo(cx + bw, b, cx + bw - 20, b);
+    ctx.lineTo(cx - bw + 20, b);
+    ctx.quadraticCurveTo(cx - bw, b, cx - bw, b - 20);
+    ctx.bezierCurveTo(cx - bw, b - 44, cx - tw - 7, t + 52, cx - tw, t + 16);
+    ctx.closePath();
+  }
+  function halfAt(y) {
+    var B = BODY;
+    var t = Math.max(0, Math.min(1, (y - B.top) / (B.bottom - B.top)));
+    return (B.topW + (B.botW - B.topW) * t) / 2;
+  }
+  /* EVERY GARMENT ON THE TORSO IS DRAWN THROUGH THE BELL'S OWN CLIP, which is
+     what keeps a bib or a panel inside the silhouette without any of them
+     having to know the shape. The skirt is the one exception, since it flares
+     past the hem on purpose. */
+  function inBody(ctx, fn) {
+    ctx.save(); bodyPath(ctx); ctx.clip(); fn(); ctx.restore();
   }
 
   function hoodOf(id) { return HOOD[BLOOMS[id] ? id : "daisy"]; }
@@ -222,18 +247,70 @@
   }
 
   /* ---------------------------------------------------------- the hair
-     ALL OF IT IS CLIPPED TO THE FACE, so it can never sit on a petal. Each
-     style is a mass across the brow plus a panel down each cheek; clipped to
-     the circle those panels become crescents hugging the face, which is what
-     hair looks like inside a hood. */
-  function drawHair(ctx, look) {
+     TWO PASSES, AND EACH HAS A DIFFERENT JOB. `drawHairBack` is what falls
+     OUT of the flower onto the shoulders, which is what the hood reference
+     shows: a bob's two tails, a braid, a long length. It is painted after the
+     flower and after the body, because that is where it lands, and it starts
+     high enough that the face covers where it leaves the head.
+     `drawHairFront` is the fringe and the piece down each cheek, clipped to
+     the face so it can never sit on a petal. A solid mass drawn over the
+     whole flower was tried and read as a flat dark patch stuck on it. */
+  function drawHairBack(ctx, look) {
+    var c = HAIRS[look.hairCol] || HAIRS[0], d = shade(c, 0.82), F = FACE, i;
+    var TOP = F.y - 30;
+    ctx.fillStyle = c;
+    /* NARROW, AND BESIDE THE FACE RATHER THAN OVER THE SHOULDERS. At 32
+       across and hanging to the collarbone these were two dark curtains that
+       buried the arms, the scarf and half the flower. A tail that falls out
+       of a hood is a hand's width of hair, not a cape. */
+    function fall(toY, wid, wave) {          /* a length down each side */
+      [-1, 1].forEach(function (k) {
+        var x = F.x + k * 33;
+        ctx.beginPath();
+        ctx.moveTo(x - wid, TOP);
+        ctx.lineTo(x + wid, TOP);
+        if (wave) {
+          ctx.quadraticCurveTo(x + wid + 7 * k, (TOP + toY) / 2, x + wid - 3 * k, toY);
+          ctx.quadraticCurveTo(x, toY + 9, x - wid - 2 * k, toY - 4);
+          ctx.quadraticCurveTo(x - wid - 5 * k, (TOP + toY) / 2, x - wid, TOP);
+        } else {
+          ctx.lineTo(x + wid - 2, toY - 8);
+          ctx.quadraticCurveTo(x + wid - 2, toY, x + wid - 10, toY);
+          ctx.lineTo(x - wid + 10, toY);
+          ctx.quadraticCurveTo(x - wid + 2, toY, x - wid + 2, toY - 8);
+        }
+        ctx.closePath(); ctx.fill();
+      });
+    }
+    if (look.hair === 3) fall(F.y + 46, 12, false);            /* bob */
+    if (look.hair === 4) fall(F.y + 78, 14, false);            /* long */
+    if (look.hair === 6) {                                     /* curly */
+      [-1, 1].forEach(function (k) {
+        for (i = 0; i < 3; i++) disc(ctx, F.x + k * (31 + (i % 2) * 4), F.y + 6 + i * 14, 11);
+      });
+    }
+    if (look.hair === 7) fall(F.y + 72, 13, true);             /* wavy */
+    if (look.hair === 8) {                                     /* braids */
+      [-1, 1].forEach(function (k) {
+        var x = F.x + k * 35;
+        ctx.fillStyle = c; rr(ctx, x - 10, TOP, 20, 42, 9);
+        ctx.fillStyle = d; rr(ctx, x - 8, F.y + 14, 16, 9, 4);
+        for (i = 0; i < 3; i++) {
+          ctx.fillStyle = i % 2 ? d : c;
+          disc(ctx, x, F.y + 30 + i * 14, 10 - i * 1.2);
+        }
+      });
+      ctx.fillStyle = c;
+    }
+  }
+
+  function drawHairFront(ctx, look) {
     var c = HAIRS[look.hairCol] || HAIRS[0], d = shade(c, 0.84), F = FACE, i;
     var TOP = F.y - F.r - 6, L = F.x - F.r, R = F.x + F.r;
     ctx.save();
     ctx.beginPath(); ctx.arc(F.x, F.y, F.r, 0, Math.PI * 2); ctx.clip();
     ctx.fillStyle = c;
 
-    /* the crown down to a brow line, left open for the caller to close */
     function brow(lowY) {
       ctx.beginPath();
       ctx.moveTo(L, lowY); ctx.lineTo(L, TOP); ctx.lineTo(R, TOP); ctx.lineTo(R, lowY);
@@ -259,17 +336,17 @@
       ctx.quadraticCurveTo(F.x - 26, F.y - 16, L, F.y + 8);
       ctx.closePath(); ctx.fill();
       cheeks(11, F.y + 26);
-    } else if (look.hair === 2) {              /* a deep side parting */
+    } else if (look.hair === 2) {                /* a deep side parting */
       brow(F.y + 6);
       ctx.quadraticCurveTo(F.x + 18, F.y - 4, F.x - 2, F.y - 14);
       ctx.quadraticCurveTo(F.x - 22, F.y - 22, L, F.y - 16);
       ctx.closePath(); ctx.fill();
       ctx.fillRect(L, F.y - 30, 9, 40);
       ctx.fillRect(R - 15, F.y - 30, 15, 60);
-    } else if (look.hair === 3) {         /* a bob, cheeks to the jaw */
+    } else if (look.hair === 3) {                 /* a bob, to the jaw */
       brow(F.y + 2); ctx.closePath(); ctx.fill();
       cheeks(17, F.y + F.r);
-    } else if (look.hair === 4) {      /* long, no fringe, filling the sides */
+    } else if (look.hair === 4) {                       /* long, no fringe */
       brow(F.y - 6);
       ctx.quadraticCurveTo(F.x, F.y - 22, L, F.y - 6);
       ctx.closePath(); ctx.fill();
@@ -293,40 +370,24 @@
       ctx.quadraticCurveTo(F.x, F.y + 8, F.x - 16, F.y - 8);
       ctx.quadraticCurveTo(F.x - 28, F.y + 10, L, F.y + 6);
       ctx.closePath(); ctx.fill();
-      ctx.beginPath();
-      [-1, 1].forEach(function (k) {
-        var x = F.x + k * (F.r - 8);
-        ctx.moveTo(x + k * 9, F.y - 10);
-        ctx.quadraticCurveTo(x - k * 7, F.y + 6, x + k * 5, F.y + 22);
-        ctx.quadraticCurveTo(x - k * 6, F.y + 36, x + k * 9, F.y + 48);
-        ctx.lineTo(x + k * 22, F.y + 48);
-        ctx.lineTo(x + k * 22, F.y - 10);
-      });
-      ctx.fill();
-    } else {                                   /* braids down the cheeks */
+      cheeks(14, F.y + F.r);
+    } else {                                        /* braids, centre part */
       brow(F.y + 2);
       ctx.quadraticCurveTo(F.x + 24, F.y - 14, F.x + 3, F.y - 11);
       ctx.lineTo(F.x - 3, F.y - 11);
       ctx.quadraticCurveTo(F.x - 24, F.y - 14, L, F.y + 2);
       ctx.closePath(); ctx.fill();
-      cheeks(10, F.y + 6);
-      [-1, 1].forEach(function (k) {
-        var x = F.x + k * (F.r - 8);
-        ctx.fillStyle = d; rr(ctx, x - 8, F.y + 4, 16, 8, 4);
-        for (i = 0; i < 3; i++) {
-          ctx.fillStyle = i % 2 ? d : c;
-          disc(ctx, x, F.y + 18 + i * 13, 10 - i * 1.4);
-        }
-      });
-      ctx.fillStyle = c;
+      cheeks(11, F.y + 18);
     }
     ctx.restore();
   }
 
   /* ------------------------------------------------------ the clothing
-     ONE OUTFIT DRESSES THE WHOLE FIGURE. `legs` runs before the torso so the
-     tops of the legs are buried and the figure is one shape; `over` runs
-     after it and holds whatever lies on the chest or the hips. */
+     ONE OUTFIT DRESSES THE WHOLE FIGURE, and every piece of it is drawn
+     through the bell's own clip so nothing can hang outside the silhouette.
+     The skirt is the one exception, since it flares past the hem on purpose:
+     BOTH IT AND THE SHORTS GROW OUT OF THE BODY'S OWN LINE rather than being
+     laid across the hips, which is what made the old shorts read as a nappy. */
   function drawLegs(ctx, id, L, skin) {
     var w = WEAR[id] || WEAR.plain;
     ctx.fillStyle = w.bare ? skin : hsl(L.top, 20, 34);
@@ -335,90 +396,128 @@
   }
 
   function drawOver(ctx, id, L) {
-    var B = BODY;
+    var B = BODY, cx = B.cx, t = B.top, b = B.bottom;
     if (id === "dungas") {
       /* TROUSERS WITH A BIB, NOT A BIB ALONE. One rounded panel with two
          short straps was the same picture as the apron beside it, and a
-         picker may not show the same picture twice. The leg split and the two
-         buttoned braces are what tell them apart. */
+         picker may not show the same picture twice. */
       var den = hsl(214, 32, 46), dark = hsl(214, 32, 37);
-      ctx.fillStyle = den;
-      rr(ctx, B.x + 8, B.y + 44, 26, B.h - 42, 8);
-      rr(ctx, B.x + 38, B.y + 44, 26, B.h - 42, 8);
-      rr(ctx, B.x + 8, B.y + 42, 56, 24, 8);
-      rr(ctx, B.x + 18, B.y + 20, 36, 28, 7);
-      ctx.strokeStyle = den; ctx.lineWidth = 7; ctx.lineCap = "round";
-      ctx.beginPath(); ctx.moveTo(B.x + 22, B.y + 22); ctx.lineTo(B.x + 16, B.y + 2); ctx.stroke();
-      ctx.beginPath(); ctx.moveTo(B.x + 50, B.y + 22); ctx.lineTo(B.x + 56, B.y + 2); ctx.stroke();
-      ctx.fillStyle = "#e8d9a8";
-      disc(ctx, B.x + 22, B.y + 24, 3.4);
-      disc(ctx, B.x + 50, B.y + 24, 3.4);
-      ctx.strokeStyle = dark; ctx.lineWidth = 2;
-      ctx.beginPath(); ctx.moveTo(B.x + 36, B.y + 66); ctx.lineTo(B.x + 36, B.y + B.h); ctx.stroke();
+      inBody(ctx, function () {
+        ctx.fillStyle = den;
+        ctx.fillRect(cx - 50, t + 44, 100, b - t);
+        rr(ctx, cx - 19, t + 18, 38, 30, 7);
+        ctx.strokeStyle = den; ctx.lineWidth = 8; ctx.lineCap = "round";
+        ctx.beginPath(); ctx.moveTo(cx - 15, t + 22); ctx.lineTo(cx - 19, t + 2); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(cx + 15, t + 22); ctx.lineTo(cx + 19, t + 2); ctx.stroke();
+        ctx.fillStyle = "#e8d9a8";
+        disc(ctx, cx - 15, t + 24, 3.4);
+        disc(ctx, cx + 15, t + 24, 3.4);
+        ctx.strokeStyle = dark; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.moveTo(cx, b - 26); ctx.lineTo(cx, b); ctx.stroke();
+      });
     }
     if (id === "apron") {
       /* A BIB, TWO NECK STRAPS, A WAIST TIE AND A POCKET. A plain trapezoid
          is a shape rather than a garment: the tie says it is fastened on and
          the pocket says it is worked in. */
       var pale = "#f7edd7", band = "#ded0a6";
-      ctx.strokeStyle = pale; ctx.lineWidth = 6; ctx.lineCap = "round";
-      ctx.beginPath(); ctx.moveTo(B.x + 26, B.y + 18); ctx.lineTo(B.x + 21, B.y + 1); ctx.stroke();
-      ctx.beginPath(); ctx.moveTo(B.x + 46, B.y + 18); ctx.lineTo(B.x + 51, B.y + 1); ctx.stroke();
-      ctx.fillStyle = pale;
-      rr(ctx, B.x + 21, B.y + 14, 30, 26, 5);
-      ctx.beginPath();
-      ctx.moveTo(B.x + 13, B.y + 38);
-      ctx.lineTo(B.x + B.w - 13, B.y + 38);
-      ctx.lineTo(B.x + B.w - 5, B.y + B.h + 2);
-      ctx.lineTo(B.x + 5, B.y + B.h + 2);
-      ctx.closePath(); ctx.fill();
-      ctx.fillStyle = band;
-      rr(ctx, B.x + 6, B.y + 36, B.w - 12, 10, 5);
-      rr(ctx, B.x + 22, B.y + 58, 28, 20, 4);
-      ctx.strokeStyle = band; ctx.lineWidth = 2;
-      ctx.beginPath(); ctx.moveTo(B.x + 36, B.y + 58); ctx.lineTo(B.x + 36, B.y + 78); ctx.stroke();
+      inBody(ctx, function () {
+        ctx.strokeStyle = pale; ctx.lineWidth = 6; ctx.lineCap = "round";
+        ctx.beginPath(); ctx.moveTo(cx - 12, t + 16); ctx.lineTo(cx - 17, t - 2); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(cx + 12, t + 16); ctx.lineTo(cx + 17, t - 2); ctx.stroke();
+        ctx.fillStyle = pale;
+        rr(ctx, cx - 16, t + 12, 32, 26, 5);
+        ctx.beginPath();
+        ctx.moveTo(cx - 22, t + 36); ctx.lineTo(cx + 22, t + 36);
+        ctx.lineTo(cx + 36, b + 2); ctx.lineTo(cx - 36, b + 2);
+        ctx.closePath(); ctx.fill();
+        ctx.fillStyle = band;
+        ctx.fillRect(cx - 50, t + 34, 100, 10);
+        rr(ctx, cx - 15, t + 58, 30, 20, 4);
+        ctx.strokeStyle = band; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.moveTo(cx, t + 58); ctx.lineTo(cx, t + 78); ctx.stroke();
+      });
     }
     if (id === "cardi") {
       /* OPEN DOWN THE MIDDLE, which is the whole of what a cardigan is. The
          gap showing the top underneath separates it from a jumper and the two
          lapels separate it from a waistcoat. */
-      var w1 = hsl((L.top + 34) % 360, 26, 64), w2 = hsl((L.top + 34) % 360, 26, 53);
-      ctx.fillStyle = w1;
-      rr(ctx, B.x - 3, B.y + 4, 31, B.h - 2, 12);
-      rr(ctx, B.x + B.w - 28, B.y + 4, 31, B.h - 2, 12);
-      ctx.fillStyle = w2;
-      [[1, B.x + 28], [-1, B.x + B.w - 28]].forEach(function (s) {
-        ctx.beginPath();
-        ctx.moveTo(s[1], B.y + 4);
-        ctx.lineTo(s[1] - s[0] * 20, B.y + 4);
-        ctx.quadraticCurveTo(s[1] - s[0] * 11, B.y + 24, s[1] - s[0] * 2, B.y + 34);
-        ctx.closePath(); ctx.fill();
+      var w1 = hsl((L.top + 34) % 360, 26, 64), w2 = hsl((L.top + 34) % 360, 26, 52);
+      inBody(ctx, function () {
+        ctx.fillStyle = w1;
+        ctx.fillRect(cx - 50, t, 37, b - t + 4);
+        ctx.fillRect(cx + 13, t, 37, b - t + 4);
+        ctx.fillStyle = w2;
+        [1, -1].forEach(function (k) {
+          ctx.beginPath();
+          ctx.moveTo(cx + k * 13, t);
+          ctx.lineTo(cx + k * 32, t);
+          ctx.quadraticCurveTo(cx + k * 24, t + 22, cx + k * 11, t + 34);
+          ctx.closePath(); ctx.fill();
+        });
+        ctx.fillStyle = "#f4ead0";
+        [0, 1, 2].forEach(function (i) { disc(ctx, cx - 9, t + 44 + i * 18, 3.6); });
       });
-      ctx.fillStyle = "#f4ead0";
-      [0, 1, 2].forEach(function (i) { disc(ctx, B.x + 25, B.y + 46 + i * 18, 3.6); });
     }
     if (id === "skirt") {
+      /* IT CONTINUES THE BELL'S OWN LINE, starting at the width the body
+         already is where it begins and carrying that flare on past the hem.
+         Started at a fixed width it was a triangle stuck to a torso. */
+      var y0 = b - 36, w0 = halfAt(y0), bw = B.botW / 2;
       ctx.fillStyle = hsl(L.top, 30, 42);
       ctx.beginPath();
-      ctx.moveTo(B.x + 8, B.y + B.h - 28);
-      ctx.lineTo(B.x + B.w - 8, B.y + B.h - 28);
-      ctx.quadraticCurveTo(B.x + B.w + 10, B.y + B.h + 14, B.x + B.w + 4, B.y + B.h + 20);
-      ctx.lineTo(B.x - 4, B.y + B.h + 20);
-      ctx.quadraticCurveTo(B.x - 10, B.y + B.h + 14, B.x + 8, B.y + B.h - 28);
+      ctx.moveTo(cx - w0, y0);
+      ctx.lineTo(cx + w0, y0);
+      ctx.bezierCurveTo(cx + bw + 10, b - 8, cx + bw + 15, b + 8, cx + bw + 13, b + 18);
+      ctx.quadraticCurveTo(cx, b + 27, cx - bw - 13, b + 18);
+      ctx.bezierCurveTo(cx - bw - 15, b + 8, cx - bw - 10, b - 8, cx - w0, y0);
       ctx.closePath(); ctx.fill();
     }
     if (id === "shorts") {
-      /* TWO SHORT LEGS WITH A HEM, not one band across the hips. Drawn as a
-         single panel they read as underwear: the split up the middle and the
-         turned cuff are what make the eye say trouser. */
+      /* THE BODY'S OWN LOWER THIRD, with a turned hem and an inseam. It was a
+         wide block laid across the hips, which is a NAPPY: what makes the eye
+         say trouser is that the garment is the shape of the thing wearing it
+         and has a split up the middle. */
       var s1 = hsl(L.top, 26, 38), s2 = hsl(L.top, 26, 29);
-      ctx.fillStyle = s1;
-      rr(ctx, B.x + 5, B.y + B.h - 26, B.w - 10, 28, 10);
-      rr(ctx, LEG.lx - 5, B.y + B.h - 12, 26, 24, 9);
-      rr(ctx, LEG.rx - 4, B.y + B.h - 12, 26, 24, 9);
-      ctx.fillStyle = s2;
-      rr(ctx, LEG.lx - 6, B.y + B.h + 4, 28, 9, 4);
-      rr(ctx, LEG.rx - 5, B.y + B.h + 4, 28, 9, 4);
+      inBody(ctx, function () {
+        ctx.fillStyle = s1;
+        ctx.fillRect(cx - 50, b - 44, 100, 50);
+        ctx.fillStyle = s2;
+        ctx.fillRect(cx - 50, b - 11, 100, 14);
+        ctx.strokeStyle = s2; ctx.lineWidth = 3;
+        ctx.beginPath(); ctx.moveTo(cx, b - 22); ctx.lineTo(cx, b); ctx.stroke();
+      });
+    }
+  }
+
+  /* ARMS: a stub sleeve off each shoulder ending in a round hand, drawn in
+     whatever the sleeve's own colour is, which is the cardigan when one is
+     worn and the top otherwise. `holding` puts a thumb across the handle of
+     what is carried, so the grip is a thing you can see. */
+  function sleeveTone(L) {
+    return L.clothes === "cardi" ? hsl((L.top + 34) % 360, 26, 64) : hsl(L.top, 34, 52);
+  }
+  function armPoints(k) {
+    return {
+      sx: BODY.cx + k * ARM.sx, sy: BODY.top + ARM.sy,
+      hx: BODY.cx + k * ARM.hx, hy: BODY.top + ARM.hy
+    };
+  }
+  function drawArms(ctx, L, skin, holding) {
+    ctx.strokeStyle = sleeveTone(L); ctx.lineWidth = 19; ctx.lineCap = "round";
+    [-1, 1].forEach(function (k) {
+      var a = armPoints(k);
+      ctx.beginPath(); ctx.moveTo(a.sx, a.sy); ctx.lineTo(a.hx, a.hy - 6); ctx.stroke();
+    });
+    ctx.fillStyle = skin;
+    [-1, 1].forEach(function (k) {
+      var a = armPoints(k);
+      disc(ctx, a.hx, a.hy, ARM.r);
+    });
+    if (holding) {
+      var r = armPoints(1);
+      ctx.fillStyle = shade(skin, 0.93);
+      rr(ctx, r.hx - 12, r.hy - 4, 21, 9, 4.5);
     }
   }
 
@@ -429,7 +528,7 @@
      hook, then a key; the satchel was a LADLE; the dungarees were the apron
      again; the trowel was a paintbrush. */
   function drawNeck(ctx, id, L) {
-    var y = BODY.y - 4;
+    var cx = BODY.cx, y = BODY.top + 2;
     if (id === "scarf") {
       var h = (L.top + 180) % 360;
       /* A BAND, A KNOT, AND TWO TAILS HANGING FROM THE MIDDLE. Every failed
@@ -438,24 +537,24 @@
          thing with fringe on the bottom of it is a scarf. */
       ctx.fillStyle = hsl(h, 40, 58);
       ctx.beginPath();
-      ctx.moveTo(FACE.x - 34, y - 4);
-      ctx.quadraticCurveTo(FACE.x, y + 10, FACE.x + 34, y - 4);
-      ctx.lineTo(FACE.x + 34, y + 10);
-      ctx.quadraticCurveTo(FACE.x, y + 24, FACE.x - 34, y + 10);
+      ctx.moveTo(cx - 32, y - 6);
+      ctx.quadraticCurveTo(cx, y + 8, cx + 32, y - 6);
+      ctx.lineTo(cx + 32, y + 8);
+      ctx.quadraticCurveTo(cx, y + 22, cx - 32, y + 8);
       ctx.closePath(); ctx.fill();
-      [[-16, 40, 52], [2, 30, 62]].forEach(function (t) {
+      [[-15, 38, 52], [2, 28, 62]].forEach(function (t) {
         ctx.fillStyle = hsl(h, 40, t[2]);
-        rr(ctx, FACE.x + t[0], y + 14, 15, t[1], 7);
+        rr(ctx, cx + t[0], y + 12, 14, t[1], 7);
         ctx.strokeStyle = hsl(h, 40, 44); ctx.lineWidth = 2.4; ctx.lineCap = "round";
         [0, 1, 2].forEach(function (i) {
           ctx.beginPath();
-          ctx.moveTo(FACE.x + t[0] + 3 + i * 5, y + 12 + t[1]);
-          ctx.lineTo(FACE.x + t[0] + 3 + i * 5, y + 19 + t[1]);
+          ctx.moveTo(cx + t[0] + 3 + i * 4.5, y + 10 + t[1]);
+          ctx.lineTo(cx + t[0] + 3 + i * 4.5, y + 17 + t[1]);
           ctx.stroke();
         });
       });
       ctx.fillStyle = hsl(h, 44, 52);
-      rr(ctx, FACE.x - 14, y + 3, 28, 19, 8);
+      rr(ctx, cx - 13, y + 1, 26, 18, 8);
     }
     if (id === "satchel") {
       /* A CURVED STRAP AND A LARGE FLAPPED BAG. Straight and thin to a small
@@ -463,19 +562,19 @@
          whatever colour it is. */
       ctx.strokeStyle = "#a9794f"; ctx.lineWidth = 6; ctx.lineCap = "round";
       ctx.beginPath();
-      ctx.moveTo(FACE.x - 26, y + 4);
-      ctx.quadraticCurveTo(FACE.x - 6, y + 38, FACE.x + 22, y + 44);
+      ctx.moveTo(cx - 24, y + 2);
+      ctx.quadraticCurveTo(cx - 6, y + 36, cx + 20, y + 42);
       ctx.stroke();
-      ctx.fillStyle = "#c08f5f"; rr(ctx, FACE.x + 4, y + 40, 46, 38, 10);
+      ctx.fillStyle = "#c08f5f"; rr(ctx, cx + 3, y + 38, 44, 36, 10);
       ctx.fillStyle = "#a9794f";
       ctx.beginPath();
-      ctx.moveTo(FACE.x + 4, y + 50);
-      ctx.lineTo(FACE.x + 4, y + 46);
-      ctx.quadraticCurveTo(FACE.x + 27, y + 38, FACE.x + 50, y + 46);
-      ctx.lineTo(FACE.x + 50, y + 58);
-      ctx.quadraticCurveTo(FACE.x + 27, y + 64, FACE.x + 4, y + 58);
+      ctx.moveTo(cx + 3, y + 48);
+      ctx.lineTo(cx + 3, y + 44);
+      ctx.quadraticCurveTo(cx + 25, y + 36, cx + 47, y + 44);
+      ctx.lineTo(cx + 47, y + 56);
+      ctx.quadraticCurveTo(cx + 25, y + 62, cx + 3, y + 56);
       ctx.closePath(); ctx.fill();
-      ctx.fillStyle = "#6f4c2e"; rr(ctx, FACE.x + 22, y + 55, 10, 10, 3);
+      ctx.fillStyle = "#6f4c2e"; rr(ctx, cx + 20, y + 53, 10, 10, 3);
     }
   }
 
@@ -532,9 +631,9 @@
      the way they did when they were drawn off to one side. The order is the
      other half of it: the object is painted, then the palm over its handle,
      then a thumb across the handle, so the grip is a thing you can see. */
-  var GRIP = { x: HAND.r.x, y: HAND.r.y };
+  function grip() { var a = armPoints(1); return { x: a.hx, y: a.hy }; }
   function drawHold(ctx, id) {
-    var x = GRIP.x, y = GRIP.y;
+    var g = grip(), x = g.x, y = g.y;
     if (id === "can") {
       ctx.fillStyle = "#58908c"; rr(ctx, x - 6, y - 22, 12, 40, 5);
       ctx.fillStyle = "#7fb5b0"; rr(ctx, x - 19, y + 14, 38, 32, 9);
@@ -562,19 +661,6 @@
       ctx.closePath(); ctx.fill();
       ctx.strokeStyle = "#a2abb2"; ctx.lineWidth = 2; ctx.lineCap = "round";
       ctx.beginPath(); ctx.moveTo(x, y + 25); ctx.lineTo(x, y + 44); ctx.stroke();
-    }
-  }
-
-  /* TWO SMALL HANDS AND NO ARMS, which is what the sprout characters do and
-     what "arms behind the body" means here: a rounded hand at each side with
-     the limb hidden. It also removes the stick arms, which read as twigs. */
-  function drawHands(ctx, skin, holding) {
-    ctx.fillStyle = skin;
-    disc(ctx, HAND.l.x, HAND.l.y, 14);
-    disc(ctx, HAND.r.x, HAND.r.y, 14);
-    if (holding) {
-      ctx.fillStyle = shade(skin, 0.93);
-      rr(ctx, HAND.r.x - 13, HAND.r.y - 4, 22, 9, 4.5);
     }
   }
 
@@ -666,25 +752,31 @@
       return;
     }
     if (kind === "hair") {
+      var hk = { hair: id, hairCol: L.hairCol };
+      drawHairBack(ctx, hk);
       ctx.fillStyle = skin;
       disc(ctx, FACE.x, FACE.y, FACE.r);
-      drawHair(ctx, { hair: id, hairCol: L.hairCol });
+      drawHairFront(ctx, hk);
       drawFace(ctx);
       return;
     }
     if (kind === "top") {
+      var lk = Object.assign({}, L, { top: id, clothes: "plain" });
       ctx.fillStyle = hsl(id, 34, 52);
-      rr(ctx, BODY.x, BODY.y, BODY.w, BODY.h, BODY.r);
+      bodyPath(ctx); ctx.fill();
+      drawArms(ctx, lk, skin, false);
       return;
     }
     var slot = WEAR[id] && WEAR[id].slot;
     if (slot === "clothes") {
       /* THE WHOLE LOWER FIGURE, so Plain is a picture too: a body and a pair
          of trousers is what "no outfit" looks like, and an empty tile is not. */
+      var ck = Object.assign({}, L, { clothes: id });
       drawLegs(ctx, id, L, skin);
       ctx.fillStyle = hsl(L.top, 34, 52);
-      rr(ctx, BODY.x, BODY.y, BODY.w, BODY.h, BODY.r);
+      bodyPath(ctx); ctx.fill();
       drawOver(ctx, id, L);
+      drawArms(ctx, ck, skin, false);
       return;
     }
     if (slot === "neck") drawNeck(ctx, id, L);
@@ -693,10 +785,11 @@
       /* ONE HAND, NOT TWO. Fitted, a pair spans eighty pixels of empty space
          with a can in the middle of it, so the tile came out as a small
          object between two pale dots. */
+      var g = grip();
       drawHold(ctx, id);
-      ctx.fillStyle = skin; disc(ctx, HAND.r.x, HAND.r.y, 14);
+      ctx.fillStyle = skin; disc(ctx, g.x, g.y, ARM.r);
       ctx.fillStyle = shade(skin, 0.93);
-      rr(ctx, HAND.r.x - 13, HAND.r.y - 4, 22, 9, 4.5);
+      rr(ctx, g.x - 12, g.y - 4, 21, 9, 4.5);
     }
     if (slot === "face") drawFaceWear(ctx, id);
   }
@@ -746,9 +839,11 @@
     ctx.clearRect(0, 0, W, H);
 
     var skin = SKINS[L.skin] || SKINS[0];
+    var h = hoodOf(L.flower);
 
-    ctx.fillStyle = skin;
-    rr(ctx, FACE.x - NECK.w / 2, NECK.top, NECK.w, NECK.bottom - NECK.top, 12);
+    if (h.mode === "hood") drawHood(ctx, L.flower);
+    else drawSprout(ctx, L.flower);
+
     drawLegs(ctx, L.clothes, L, skin);
     if (L.feet) drawFeet(ctx, L.feet);
     else {
@@ -758,19 +853,16 @@
     }
 
     ctx.fillStyle = hsl(L.top, 34, 52);
-    rr(ctx, BODY.x, BODY.y, BODY.w, BODY.h, BODY.r);
+    bodyPath(ctx); ctx.fill();
     drawOver(ctx, L.clothes, L);
     if (L.neck) drawNeck(ctx, L.neck, L);
     if (L.hold) drawHold(ctx, L.hold);
-    drawHands(ctx, skin, !!L.hold);
+    drawArms(ctx, L, skin, !!L.hold);
 
-    var h = hoodOf(L.flower);
-    if (h.mode === "hood") drawHood(ctx, L.flower);
-    else drawSprout(ctx, L.flower);
-
+    drawHairBack(ctx, L);
     ctx.fillStyle = skin;
     disc(ctx, FACE.x, FACE.y, FACE.r);
-    drawHair(ctx, L);
+    drawHairFront(ctx, L);
     drawFace(ctx);
     if (L.face) drawFaceWear(ctx, L.face);
 
