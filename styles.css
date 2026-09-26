@@ -202,6 +202,19 @@ body { padding-left: 0 !important; }
 .ho-lift > .ho-canvas, .ho-lift > .ho-draw {
   display: block; width: var(--ho-w, 130px); height: auto;
 }
+/* THE SECOND STATE IS STACKED, NOT SWAPPED. Canvas art cannot be animated by
+   CSS and a repaint on pointerenter is a hard cut, so the open book is a
+   second canvas laid over the shut one in the same box and the two cross
+   fade. The box is sized for the OPEN spread, so nothing changes size and the
+   label underneath never moves. */
+.ho-lift > .ho-alt {
+  position: absolute; inset: 0; width: 100%; height: auto;
+  opacity: 0; transition: opacity .3s ease;
+}
+.ho-lift > .ho-canvas:not(.ho-alt) { transition: opacity .3s ease; }
+.ho:hover .ho-lift > .ho-alt, .ho:focus-visible .ho-lift > .ho-alt { opacity: 1; }
+.ho:hover .ho-lift > .ho-canvas:not(.ho-alt),
+.ho:focus-visible .ho-lift > .ho-canvas:not(.ho-alt) { opacity: 0; }
 /* the sparkle layer sits OVER the art and matches its box, so each one keeps
    its own viewBox and the stars are never stretched */
 .ho-lift > svg.ho-spark {

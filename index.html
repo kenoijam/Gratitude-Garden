@@ -207,10 +207,18 @@
     <a class="ho ho-personal" href="personal-garden/personal-garden-index.html">
       <span class="ho-art"><span class="ho-lift">
         <canvas class="ho-canvas" data-ho="personal"></canvas>
-        <svg class="ho-spark" viewBox="0 0 200 170" aria-hidden="true" focusable="false">
-          <path d="M0-11 2.7-2.7 11 0 2.7 2.7 0 11-2.7 2.7-11 0-2.7-2.7Z" transform="translate(24 34)"/>
-          <path d="M0-8 2-2 8 0 2 2 0 8-2 2-8 0-2-2Z" transform="translate(176 52)"/>
-          <path d="M0-6 1.5-1.5 6 0 1.5 1.5 0 6-1.5 1.5-6 0-1.5-1.5Z" transform="translate(30 132)"/>
+        <!-- THE BOOK OPENS ON HOVER, and it is two canvases cross fading
+             rather than a repaint. Canvas art cannot be animated by CSS, and
+             redrawing on pointerenter would be a hard cut; two stacked
+             canvases in one box give a real fade and cost nothing to run.
+             The box is sized for the OPEN spread, so the closed book sits
+             smaller inside it and the element never changes size, which would
+             shove the label about under the cursor. -->
+        <canvas class="ho-canvas ho-alt" data-ho="personal-open"></canvas>
+        <svg class="ho-spark" viewBox="0 0 210 170" aria-hidden="true" focusable="false">
+          <path d="M0-11 2.7-2.7 11 0 2.7 2.7 0 11-2.7 2.7-11 0-2.7-2.7Z" transform="translate(22 28)"/>
+          <path d="M0-8 2-2 8 0 2 2 0 8-2 2-8 0-2-2Z" transform="translate(190 46)"/>
+          <path d="M0-6 1.5-1.5 6 0 1.5 1.5 0 6-1.5 1.5-6 0-1.5-1.5Z" transform="translate(26 140)"/>
         </svg>
       </span></span>
       <span class="ho-name">The Personal Garden</span>
@@ -2633,20 +2641,49 @@
     /* ONE FLOWER AND THE DAY YOU WROTE WITH IT. The pages are drawn first and
        the cover over them, so a sliver of paper shows along the foot, which is
        what says the thing is a book rather than a card. */
-    personal: { w: 200, h: 170, paint: function (ctx) {
-      ctx.fillStyle = '#fdf6e0'; rr(ctx, 30, 72, 152, 82, 9);
-      ctx.fillStyle = '#eadfc0'; rr(ctx, 30, 138, 152, 16, 8);
-      ctx.fillStyle = '#3d8f86'; rr(ctx, 22, 62, 154, 82, 10);
-      ctx.fillStyle = '#2c6f68'; rr(ctx, 22, 62, 22, 82, 10);
-      ctx.fillStyle = 'rgba(255,255,255,0.15)'; rr(ctx, 54, 68, 112, 7, 3.5);
+    /* PORTRAIT, NOT LANDSCAPE. It was 154 wide by 82 tall, which is the shape
+       of a paperback lying face up and reads as a box. A journal is taller
+       than it is wide. The box below is sized for the OPEN spread, so the shut
+       book stands in the middle of it with clear margin either side. */
+    personal: { w: 210, h: 170, paint: function (ctx) {
+      ctx.fillStyle = '#fdf6e0'; rr(ctx, 62, 26, 92, 128, 6);
+      ctx.fillStyle = '#eadfc0'; rr(ctx, 140, 26, 14, 128, 6);
+      ctx.fillStyle = '#3d8f86'; rr(ctx, 56, 20, 94, 128, 8);
+      ctx.fillStyle = '#2c6f68'; rr(ctx, 56, 20, 17, 128, 8);
+      ctx.fillStyle = 'rgba(255,255,255,0.15)'; rr(ctx, 80, 28, 60, 6, 3);
       /* the elastic, which is what makes it a journal rather than a book */
-      ctx.fillStyle = '#e8a3ad'; ctx.fillRect(148, 62, 7, 82);
+      ctx.fillStyle = '#e8a3ad'; ctx.fillRect(132, 20, 6, 128);
       /* A PEONY, NOT A ROSE. The 2D rose is concentric circles in one hue,
-         which at this size is a bullseye rather than a flower; the peony has
-         ten outer petals and a pale centre and still reads as a bloom. It is
-         also not one of the three on the shared patch. */
-      bloom(ctx, 'peony', 97, 102, 36, -0.2);
+         which at this size is a bullseye rather than a flower. */
+      bloom(ctx, 'peony', 104, 86, 31, -0.2);
     } },
+
+    /* THE OPEN SPREAD IS THE PERSONAL GARDEN'S OWN DAY PAGE, so the icon and
+       the thing it opens are plainly the same object: the species with a dot
+       of its colour, the two one word answers, the entry, and the photograph
+       at the foot. That is `drawDetail`'s order exactly. */
+    'personal-open': { w: 210, h: 170, paint: function (ctx) {
+      ctx.fillStyle = '#fdf6e0'; rr(ctx, 10, 26, 92, 126, 5);
+      ctx.fillStyle = '#fdf6e0'; rr(ctx, 108, 26, 92, 126, 5);
+      ctx.fillStyle = '#e6d9b4'; rr(ctx, 98, 24, 14, 130, 4);
+      ctx.fillStyle = '#3d8f86'; rr(ctx, 94, 22, 22, 134, 5);
+      /* left page: the bloom and what it stands for */
+      bloom(ctx, 'peony', 54, 62, 24);
+      ctx.fillStyle = '#2c6f68'; rr(ctx, 26, 96, 44, 7, 3.5);
+      ctx.fillStyle = '#b9c9bd'; rr(ctx, 26, 112, 56, 5, 2.5);
+      ctx.fillStyle = '#b9c9bd'; rr(ctx, 26, 126, 44, 5, 2.5);
+      /* right page: the entry, then the photograph */
+      ctx.fillStyle = '#b9c9bd';
+      [40, 54, 68, 82].forEach(function (y, i) {
+        rr(ctx, 122, y, i === 3 ? 42 : 64, 5, 2.5);
+      });
+      ctx.fillStyle = '#cfe3d6'; rr(ctx, 122, 100, 40, 40, 5);
+      ctx.fillStyle = '#9dc4ad';
+      ctx.beginPath(); ctx.arc(136, 124, 7, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.moveTo(126, 138); ctx.lineTo(144, 116);
+      ctx.lineTo(160, 138); ctx.closePath(); ctx.fill();
+    } },
+
     /* THREE DIFFERENT FLOWERS, different in SHAPE and not just in colour: a
        flat ring of narrow petals, a closed cup and a spike. The mound is drawn
        AFTER the stems so it buries their bases, which is the same order the
@@ -2654,8 +2691,12 @@
        its origin sits at the base of the spike, where the others sit at the
        middle of the bloom. */
     shared: { w: 212, h: 170, paint: function (ctx) {
-      ctx.strokeStyle = '#3f8d5c'; ctx.lineWidth = 6; ctx.lineCap = 'round';
-      [[48, 146, 48, 86], [106, 146, 106, 58], [164, 146, 164, 96]]
+      /* THICKER AND LONGER, because the blooms were far too big for them:
+         a 46 radius tulip on a 6px stem is a head on a wire. The stems are 9
+         across, the blooms have come down by about a fifth, and each carries
+         one leaf, which is what gives a stem something to be the width of. */
+      ctx.strokeStyle = '#3f8d5c'; ctx.lineWidth = 9; ctx.lineCap = 'round';
+      [[48, 150, 48, 84], [106, 150, 106, 56], [164, 150, 164, 98]]
         .forEach(function (l) {
           ctx.beginPath(); ctx.moveTo(l[0], l[1]); ctx.lineTo(l[2], l[3]); ctx.stroke();
         });
@@ -2667,9 +2708,16 @@
          multiple of R the set runs tulip 0.61 wide, daisy 0.98 and lavender
          0.39 wide by 1.06 tall, so one radius draws a big daisy beside a
          narrow tulip and a lavender nobody can see. */
-      bloom(ctx, 'daisy', 48, 86, 33);
-      bloom(ctx, 'tulip', 106, 58, 46);
-      bloom(ctx, 'lavender', 164, 96, 26);
+      ctx.fillStyle = '#4a9e68';
+      [[48, 116, -1], [106, 104, 1], [164, 124, -1]].forEach(function (l) {
+        ctx.save(); ctx.translate(l[0], l[1]); ctx.scale(l[2], 1);
+        ctx.beginPath(); ctx.moveTo(0, 0);
+        ctx.quadraticCurveTo(20, -8, 26, 6);
+        ctx.quadraticCurveTo(14, 12, 0, 0); ctx.fill(); ctx.restore();
+      });
+      bloom(ctx, 'daisy', 48, 84, 27);
+      bloom(ctx, 'tulip', 106, 56, 36);
+      bloom(ctx, 'lavender', 164, 98, 21);
     } }
   };
 
@@ -2753,6 +2801,9 @@
       var kind = c.getAttribute('data-ho');
       if (kind === 'bouquet') { if (typeof renderBouquetCanvas === 'function') paintBouquet(c); }
       else if (ART[kind]) paintDrawn(c, ART[kind]);
+      /* an unknown data-ho is a markup slip rather than something to ignore
+         silently, since the canvas would then sit there blank and sized */
+      else if (window.console) console.warn('hero object with no art:', kind);
     });
   }
 
