@@ -108,7 +108,6 @@
      like an accident rather than an outfit. Each entry here dresses the WHOLE
      figure, and `bare` says whether the legs are skin below it. */
   var WEAR = {
-    plain:   { slot: "clothes", name: "Plain",     bare: false },
     dungas:  { slot: "clothes", name: "Dungarees", bare: false, tint: 0, tints: [0, 2, 3] },
     apron:   { slot: "clothes", name: "Apron",     bare: false, tint: 1, tints: [1, 2, 4] },
     cardi:   { slot: "clothes", name: "Cardigan",  bare: false, tint: 2, tints: [2, 4, 5] },
@@ -116,13 +115,16 @@
     shorts:  { slot: "clothes", name: "Shorts",    bare: true,  tint: 0, tints: [0, 3, 2] },
     scarf:   { slot: "neck",  name: "Scarf",        tint: 3, tints: [3, 4, 2] },
     satchel: { slot: "neck",  name: "Satchel",      tint: 3, tints: [3, 0, 5] },
+    pack:    { slot: "neck",  name: "Backpack",     tint: 0, tints: [0, 3, 2] },
     boots:   { slot: "feet",  name: "Boots",        tint: 3, tints: [3, 0, 2] },
     clogs:   { slot: "feet",  name: "Clogs",        tint: 5, tints: [5, 3, 1] },
     wellies: { slot: "feet",  name: "Wellies",      tint: 2, tints: [2, 0, 4] },
     can:     { slot: "hold",  name: "Watering can", tint: 2, tints: [2, 0, 5] },
     trowel:  { slot: "hold",  name: "Trowel",       tint: 3, tints: [3, 2, 0] },
+    basket:  { slot: "hold",  name: "Trug basket",  tint: 5, tints: [5, 3, 2] },
     specs:   { slot: "face",  name: "Glasses",      tint: 3, tints: [3, 0, 4] },
-    shades:  { slot: "face",  name: "Sunglasses",   tint: 0, tints: [0, 3, 4] }
+    shades:  { slot: "face",  name: "Sunglasses",   tint: 0, tints: [0, 3, 4] },
+    freckles:{ slot: "face",  name: "Freckles",     tint: 3, tints: [3, 5, 0] }
   };
   var SLOTS = ["clothes", "neck", "feet", "hold", "face"];
   var STEP_SLOTS = { top: ["clothes"], wear: ["neck", "feet", "hold", "face"] };
@@ -130,13 +132,16 @@
     clothes: "What they wear", neck: "Over the shoulder",
     feet: "On the feet", hold: "In hand", face: "On the face"
   };
-  /* Clothing carries no None, because Plain IS the none and a gardener with
-     an empty clothes slot would have nothing on below the waist. */
-  var NO_NONE = { clothes: true };
+  /* THERE ARE NO None TILES ANY MORE. Every slot is three items in three
+     colours, nine tiles in three clean rows, and tapping the one already
+     chosen takes it off. `plain` went with them: an empty clothes slot IS the
+     plain body, whose colour is the row of six directly above, so a Plain
+     tile was that same choice printed twice. */
+  var NO_NONE = {};
 
   var DEFAULT_LOOK = {
     name: "", skin: 0, hair: 0, hairCol: 0, flower: "daisy", top: 172,
-    clothes: "plain", neck: null, feet: null, hold: null, face: null,
+    clothes: null, neck: null, feet: null, hold: null, face: null,
     tints: {}
   };
 
@@ -354,20 +359,27 @@
      planks beside the head. The braids escaped it only because a stack of
      discs cannot be square. Drawn in a right-hand frame and mirrored, so the
      two sides cannot drift apart. */
-  function lengthPath(ctx, w, top, end, wave) {
-    var h = end - top, tip = w * 0.42;
+  /* A LENGTH GROWS OUT OF THE CROWN, it does not stand beside the head. It
+     was a shape struck at a fixed offset from the middle with a flat top, so
+     however it was tapered it still read as a plank parked at the ear. It now
+     starts as a POINT up at the scalp, swings out past the jaw and tapers to
+     a rounded tip, which is the line hair actually falls in. Drawn in a
+     right-hand frame around the head's own centre and mirrored, so the two
+     sides cannot drift apart. */
+  function lengthPath(ctx, len, wave) {
+    var y0 = HEAD.y - 46, end = HEAD.y + len, mid = (y0 + end) / 2;
     ctx.beginPath();
-    ctx.moveTo(-w, top);
-    ctx.lineTo(w, top);
+    ctx.moveTo(8, y0);
     if (wave) {
-      ctx.bezierCurveTo(w + 8, top + h * 0.28, w - 6, top + h * 0.52, w + 4, top + h * 0.76);
-      ctx.quadraticCurveTo(w + 1, end, tip * 0.5, end);
-      ctx.quadraticCurveTo(-tip, end - 1, -tip - 4, top + h * 0.78);
-      ctx.bezierCurveTo(-w - 5, top + h * 0.52, -w + 2, top + h * 0.28, -w, top);
+      ctx.bezierCurveTo(46, y0 + 8, 62, HEAD.y + 4, 48, mid + 12);
+      ctx.bezierCurveTo(40, mid + 32, 60, end - 22, 50, end - 10);
+      ctx.quadraticCurveTo(44, end + 8, 33, end - 8);
+      ctx.bezierCurveTo(40, end - 30, 22, mid + 8, 30, HEAD.y + 6);
+      ctx.bezierCurveTo(32, HEAD.y - 16, 22, y0 + 12, 8, y0);
     } else {
-      ctx.bezierCurveTo(w + 5, top + h * 0.38, w + 2, top + h * 0.74, tip, end - 5);
-      ctx.quadraticCurveTo(0, end + 7, -tip, end - 5);
-      ctx.bezierCurveTo(-w - 2, top + h * 0.74, -w - 5, top + h * 0.38, -w, top);
+      ctx.bezierCurveTo(46, y0 + 8, 58, HEAD.y + 8, 52, end - 14);
+      ctx.quadraticCurveTo(47, end + 8, 35, end - 7);
+      ctx.bezierCurveTo(30, HEAD.y + 24, 26, HEAD.y - 10, 8, y0);
     }
     ctx.closePath();
   }
@@ -378,24 +390,22 @@
     var c = HAIRS[look.hairCol] || HAIRS[0], d = shade(c, 0.8), i, k;
     for (k = -1; k <= 1; k += 2) {
       if (spec.one && k !== spec.one) continue;
-      var x = HEAD.x + k * 50, top = HEAD.y - 20, end = HEAD.y + spec.to;
-      if (spec.plait) {
-        ctx.fillStyle = c;
-        rr(ctx, x - 12, top, 24, 54, 11);
-        ctx.fillStyle = d;
-        rr(ctx, x - 10, HEAD.y + 30, 20, 9, 4);
-        for (i = 0; i < 3; i++) {
-          ctx.fillStyle = i % 2 ? d : c;
-          disc(ctx, x, HEAD.y + 46 + i * 15, 11 - i * 1.4);
-        }
-        continue;
-      }
       ctx.save();
-      ctx.translate(x, 0); ctx.scale(k, 1);
+      ctx.translate(HEAD.x, 0); ctx.scale(k, 1);
       ctx.fillStyle = c;
-      lengthPath(ctx, spec.w, top, end, spec.wave);
+      /* A PIGTAIL IS GATHERED AT THE TOP, so its upper section is the same
+         curve as any other length, run only as far as the tie. Drawn as a
+         rounded rectangle parked at the side it had a flat top and no root. */
+      lengthPath(ctx, spec.plait ? 26 : spec.to, spec.wave);
       ctx.fill();
       ctx.restore();
+      if (!spec.plait) continue;
+      var tx = HEAD.x + k * 43;
+      ctx.fillStyle = d; rr(ctx, tx - 10, HEAD.y + 22, 20, 9, 4);
+      for (i = 0; i < 3; i++) {
+        ctx.fillStyle = i % 2 ? d : c;
+        disc(ctx, tx, HEAD.y + 38 + i * 15, 11 - i * 1.4);
+      }
     }
   }
 
@@ -506,7 +516,7 @@
      BOTH IT AND THE SHORTS GROW OUT OF THE BODY'S OWN LINE rather than being
      laid across the hips, which is what made the old shorts read as a nappy. */
   function drawLegs(ctx, id, L, skin) {
-    var w = WEAR[id] || WEAR.plain;
+    var w = WEAR[id] || { bare: false };
     ctx.fillStyle = w.bare ? skin : hsl(L.top, 20, 34);
     rr(ctx, LEG.lx, LEG.top, LEG.w, LEG.bottom - LEG.top, 8);
     rr(ctx, LEG.rx, LEG.top, LEG.w, LEG.bottom - LEG.top, 8);
@@ -620,22 +630,22 @@
          shallow scallops along the bottom in a deeper tone. */
       frill(ctx, cx - bw - 13, cx + bw + 13, b + 19, 6, dark);
     }
-    if (id === "plain" || id === "skirt" || id === "shorts") drawTrim(ctx, L);
-    if (id === "shorts") {
-      /* TWO SHORT LEGS HANGING OUT FROM UNDER THE HEM, with bare shins below.
-         Every earlier version put the shorts ON the torso, as a band across
-         the hips or as its lower third in another tone, and both read as
-         something else: a nappy, then a dress with a dark hem. A trouser is
-         a thing that comes out from under a top, so that is where it goes. */
-      /* TWENTY PIXELS UP INSIDE THE TORSO, not four. At four the body's hem
-         only just met them and the two read as separate objects touching. */
-      ctx.fillStyle = main;
-      rr(ctx, LEG.lx - 7, b - 20, 30, 46, 11);
-      rr(ctx, LEG.rx - 5, b - 20, 30, 46, 11);
-      ctx.fillStyle = dark;
-      rr(ctx, LEG.lx - 8, b + 16, 32, 10, 5);
-      rr(ctx, LEG.rx - 6, b + 16, 32, 10, 5);
-    }
+    if (!id || id === "skirt" || id === "shorts") drawTrim(ctx, L);
+  }
+
+  /* THE SHORTS ARE PAINTED BEFORE THE TORSO, which is what finally joins
+     them to it: the body's own hem lies over their top and the two read as
+     one shape with legs coming out. Drawn after the body they sat on it, and
+     however far up they started the join was a line across the hips. */
+  function drawUnder(ctx, id, L) {
+    if (id !== "shorts") return;
+    var b = BODY.bottom, T = tintOf(L, "clothes");
+    ctx.fillStyle = tone(T);
+    rr(ctx, LEG.lx - 7, b - 34, 30, 60, 11);
+    rr(ctx, LEG.rx - 5, b - 34, 30, 60, 11);
+    ctx.fillStyle = tone(T, -13);
+    rr(ctx, LEG.lx - 8, b + 16, 32, 10, 5);
+    rr(ctx, LEG.rx - 6, b + 16, 32, 10, 5);
   }
 
   /* ARMS: a stub sleeve off each shoulder ending in a round hand, drawn in
@@ -736,6 +746,22 @@
       ctx.fillStyle = tone(T, -24); rr(ctx, cx + 20, y + 53, 10, 10, 3);
       ctx.restore();
     }
+    if (id === "pack") {
+      /* ONLY THE STRAPS SHOW FROM THE FRONT, which is the whole of what a
+         backpack looks like on a figure facing you: two bands over the
+         shoulders, a buckle on each and a clip across the chest. */
+      ctx.strokeStyle = tone(T); ctx.lineWidth = 9; ctx.lineCap = "round";
+      [-1, 1].forEach(function (k) {
+        ctx.beginPath();
+        ctx.moveTo(cx + k * 15, y - 2);
+        ctx.quadraticCurveTo(cx + k * 20, y + 26, cx + k * 19, y + 52);
+        ctx.stroke();
+      });
+      ctx.fillStyle = tone(T, -16);
+      [-1, 1].forEach(function (k) { rr(ctx, cx + k * 20 - 7, y + 30, 14, 8, 3); });
+      ctx.strokeStyle = tone(T, -16); ctx.lineWidth = 5;
+      ctx.beginPath(); ctx.moveTo(cx - 19, y + 18); ctx.lineTo(cx + 19, y + 18); ctx.stroke();
+    }
   }
 
   function drawFeet(ctx, id, L) {
@@ -792,8 +818,8 @@
      other half of it: the object is painted, then the palm over its handle,
      then a thumb across the handle, so the grip is a thing you can see. */
   function grip() { var a = armPoints(1); return { x: a.hx, y: a.hy }; }
-  function drawHold(ctx, id) {
-    var g = grip(), x = g.x, y = g.y;
+  function drawHold(ctx, id, L) {
+    var g = grip(), x = g.x, y = g.y, T = tintOf(L, "hold");
     if (id === "can") {
       ctx.fillStyle = "#58908c"; rr(ctx, x - 6, y - 22, 12, 40, 5);
       ctx.fillStyle = "#7fb5b0"; rr(ctx, x - 19, y + 14, 38, 32, 9);
@@ -805,6 +831,26 @@
       ctx.fillStyle = "#58908c";
       ctx.beginPath(); ctx.ellipse(x + 39, y + 13, 5, 8, 0.5, 0, Math.PI * 2); ctx.fill();
       ctx.fillStyle = "#6aa09b"; rr(ctx, x - 19, y + 14, 38, 8, 4);
+    }
+    if (id === "basket") {
+      /* A SHALLOW OVAL ON A HANDLE, which is what a trug is and what neither
+         of the other two carried things looks like. */
+      ctx.strokeStyle = tone(T, -16); ctx.lineWidth = 6; ctx.lineCap = "round";
+      ctx.beginPath(); ctx.arc(x, y + 30, 22, Math.PI * 1.04, Math.PI * 1.96); ctx.stroke();
+      ctx.fillStyle = tone(T);
+      ctx.beginPath();
+      ctx.moveTo(x - 27, y + 30);
+      ctx.quadraticCurveTo(x, y + 66, x + 27, y + 30);
+      ctx.closePath(); ctx.fill();
+      ctx.fillStyle = tone(T, -14);
+      rr(ctx, x - 29, y + 25, 58, 10, 5);
+      ctx.strokeStyle = tone(T, -12); ctx.lineWidth = 2;
+      [-13, 0, 13].forEach(function (dx) {
+        ctx.beginPath();
+        ctx.moveTo(x + dx, y + 36);
+        ctx.lineTo(x + dx * 0.62, y + 55);
+        ctx.stroke();
+      });
     }
     if (id === "trowel") {
       /* A FAT SHORT HANDLE AND A BROAD SCOOP. A narrow handle longer than its
@@ -824,8 +870,19 @@
     }
   }
 
-  function drawFaceWear(ctx, id) {
-    var F = FACE, y = F.y + 5;
+  function drawFaceWear(ctx, id, L) {
+    var F = FACE, y = F.y + 5, T = tintOf(L, "face");
+    if (id === "freckles") {
+      /* A SCATTER ACROSS THE NOSE AND BOTH CHEEKS, over the blush so they
+         read as on the skin. The only one of the three that is not eyewear. */
+      ctx.fillStyle = hsl(T.h, Math.min(60, T.s + 10), Math.max(28, T.l - 20), 0.55);
+      [[-24, 12], [-17, 17], [-10, 11], [-18, 7],
+       [24, 12], [17, 17], [10, 11], [18, 7],
+       [-4, 20], [4, 20]].forEach(function (p) {
+        disc(ctx, F.x + p[0], F.y + p[1], 2.1);
+      });
+      return;
+    }
     if (id === "specs") {
       ctx.strokeStyle = "#4a3a30"; ctx.lineWidth = 3; ctx.lineJoin = "round";
       [-1, 1].forEach(function (k) {
@@ -923,7 +980,7 @@
       return;
     }
     if (kind === "top") {
-      var lk = Object.assign({}, L, { top: id, clothes: "plain" });
+      var lk = Object.assign({}, L, { top: id, clothes: null });
       drawSleeves(ctx, lk);
       ctx.fillStyle = hsl(id, 34, 52);
       bodyPath(ctx); ctx.fill();
@@ -949,6 +1006,7 @@
          of trousers is what "no outfit" looks like, and an empty tile is not. */
       var ck = Object.assign({}, L, { clothes: id });
       drawLegs(ctx, id, ck, skin);
+      drawUnder(ctx, id, ck);
       drawSleeves(ctx, ck);
       ctx.fillStyle = hsl(L.top, 34, 52);
       bodyPath(ctx); ctx.fill();
@@ -964,12 +1022,12 @@
          with a can in the middle of it, so the tile came out as a small
          object between two pale dots. */
       var g = grip();
-      drawHold(ctx, id);
+      drawHold(ctx, id, L);
       ctx.fillStyle = skin; disc(ctx, g.x, g.y, ARM.r);
       ctx.fillStyle = shade(skin, 0.93);
       rr(ctx, g.x - 12, g.y - 4, 21, 9, 4.5);
     }
-    if (slot === "face") drawFaceWear(ctx, id);
+    if (slot === "face") drawFaceWear(ctx, id, L);
   }
 
   function blank(px) {
@@ -1024,6 +1082,7 @@
     else drawSprout(ctx, L.flower);
 
     drawLegs(ctx, L.clothes, L, skin);
+    drawUnder(ctx, L.clothes, L);
     if (L.feet) drawFeet(ctx, L.feet, L);
     else {
       ctx.fillStyle = hsl(L.top, 16, 22);
@@ -1037,7 +1096,7 @@
     drawOver(ctx, L.clothes, L);
     drawCollar(ctx, L);
     if (L.neck) drawNeck(ctx, L.neck, L);
-    if (L.hold) drawHold(ctx, L.hold);
+    if (L.hold) drawHold(ctx, L.hold, L);
     drawHands(ctx, skin, !!L.hold);
 
     drawHairMass(ctx, L);
@@ -1046,7 +1105,7 @@
     drawFringe(ctx, L);
     drawEars(ctx, skin);
     drawFace(ctx);
-    if (L.face) drawFaceWear(ctx, L.face);
+    if (L.face) drawFaceWear(ctx, L.face, L);
 
     ctx.restore();
   }

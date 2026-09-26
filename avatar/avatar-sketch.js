@@ -140,19 +140,14 @@
       host.appendChild(lab);
       var ids = Object.keys(A.WEAR).filter(function (id) { return A.WEAR[id].slot === slot; });
       var row = document.createElement("div");
-      row.className = "av-grid av-grid-wear av-grid-4";
+      /* THREE COLUMNS, so each item's three colours is exactly one row: three
+         Boots, then three Clogs, then three Wellies. */
+      row.className = "av-grid av-grid-wear av-grid-3";
       ids.forEach(function (id) {
         var tints = A.tintsFor(id);
         if (!tints.length) { row.appendChild(variant(slot, id, null)); return; }
         tints.forEach(function (ti) { row.appendChild(variant(slot, id, ti)); });
       });
-      if (!A.NO_NONE[slot]) {
-        row.appendChild(pic("none", slot, 38, "None", !look[slot], function () {
-          look[slot] = null;
-          if (look.tints) delete look.tints[slot];
-          buildWearables(); paint();
-        }));
-      }
       host.appendChild(row);
     });
   }
@@ -170,10 +165,10 @@
     var b = document.createElement("button");
     b.type = "button";
     b.className = "av-tile" + (on ? " is-on" : "");
-    b.appendChild(A.icon("wear", id, 38, shown));
+    b.appendChild(A.icon("wear", id, 42, shown));
     b.appendChild(label(A.WEAR[id].name));
     b.addEventListener("click", function () {
-      if (on && !A.NO_NONE[slot]) {
+      if (on) {
         look[slot] = null;
         if (look.tints) delete look.tints[slot];
       } else {
