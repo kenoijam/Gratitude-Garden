@@ -16,7 +16,11 @@
 
   <!-- One cursor for the whole project: a leaf at rest, a bloom over
        anything clickable. -->
-  <script src="garden-cursor.js"></script>
+  <!-- data-trail asks that shared file for the sparkle trail, the way
+       garden-music.js is asked for a mood on its own tag. Only this page sets
+       it: the gardens already carry butterflies, birds, motes and a planting
+       burst, and a trail there is one moving thing too many. -->
+  <script src="garden-cursor.js" data-trail="1"></script>
   <!-- One flower opening while the page gets ready. Loaded on all four, not
        just the slow one: a loader that appears on a single page reads as that
        page being broken. It caps itself, so it can never outlive its page. -->
@@ -179,6 +183,11 @@
        Flat fills and no outlines, which is how the meadow behind them is
        painted; a line drawn object would read as belonging to another page.
        ================================================================== -->
+  <!-- A SMALL WORDMARK, which is what the reference puts in that corner. It
+       is the only type on ?hero=3, where the headline is gone; on ?hero=2 it
+       sits above a centred headline and simply names the place. -->
+  <a class="hero-mark" href="#home">Gratitude <em>Garden</em></a>
+
   <div class="hero-objects" aria-label="Where you can go">
 
     <!-- ONE POT, ONE BLOOM: the personal garden is private and takes one

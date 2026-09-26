@@ -1172,7 +1172,14 @@ Headings on the garden pages come from two places. `.gg-title` and `#tips-card h
 
 ### The hero objects, behind `?hero=2`
 
-**A DRAFT, off unless the page is opened with `?hero=2`**, which a small script at the top of `<body>` reads into `data-hero` on `<html>`. Promoting it is deleting that one gate; dropping it is deleting the block. The three places become three objects standing in the meadow: a pot with one bloom, a patch with three, and a wrapped bouquet.
+**TWO DRAFTS ON ONE GATE, `?hero=2` and `?hero=3`**, which a small script at the top of `<body>` reads into `data-hero` on `<html>`. Promoting one is deleting that gate; dropping both is deleting the block. The three places become three objects standing in the meadow: a pot with one bloom, a patch with three, and a wrapped bouquet.
+
+- **`?hero=2` keeps the copy in the MIDDLE with the objects AROUND it.** An arc along the bottom was the first layout and it read as a shelf: three things queued up with a screen of empty sky over them. The reference scatters its objects around something in the middle, and here the thing in the middle is the sentence. Two flank it and one stands below, which is a triangle rather than a row.
+- **`?hero=3` is the same scene with no headline at all**, the wordmark being the only type on the page, which is the reference exactly.
+- **A SMALL WORDMARK top left**, `.hero-mark`, which is what uncomfyworld puts in that corner. It is the only words on `?hero=3` and simply names the place on `?hero=2`.
+- **TWO CLOUDS, NOT FIVE, on both.** The five were searched so the sky is never empty for more than 8 seconds, which is right for a hero that is mostly sky; with three objects, a sun, birds, motes and a meadow in it the same five are three too many. The two kept are one from each speed group, so they still overtake each other rather than reading as printed on a sheet.
+- **THE COPY NARROWS TO 540 WHEN THINGS STAND AROUND IT, and that is arithmetic rather than taste.** `.hero-text-block` is 740px, so at a 1024 window it spans 142 to 882 and leaves 142px a side for objects 177 wide: measured, each one overlapped the subtitle by **141px**. At 540 the lanes are 242 wide and the objects clear the text by 21 and 22. It is scoped to the draft, so the live hero keeps its full measure.
+- **The row fallback moved from 900 to 1000.** The collision happens the moment a lane falls under about 210px, which is a window of roughly 1000 against a 540 copy, so below that the two that flank the copy drop back into a row under it.
 
 - **`z-index: 4` IS THE ONLY VALUE THAT WORKS.** The clouds and the sun are at 2, the birds at 3 and the copy at 5, and the meadow canvas is in normal flow with no z-index of its own. So 4 puts the objects in front of the meadow and behind the headline, which is what standing IN the garden means here.
 - **The layer is `pointer-events: none` and each object takes its events back.** A full width sheet over the hero would swallow every tap on the meadow, and a tap on a flower there throws the gardens' own sparkle burst.
@@ -1187,6 +1194,19 @@ Headings on the garden pages come from two places. `.gg-title` and `#tips-card h
 - **`@media (hover: none)` shows every label and every sparkle.** The reference gets away with hiding its names because a book and an envelope say what they are; a pot and a patch of ground do not say which garden they open.
 - **No `cursor` rule is written for these.** `a` is already in `garden-cursor.js`'s clickable list so they take the sparkle pointer for free, and a rule here would lose to it anyway, since every rule that file writes carries `!important`.
 - **The hero still carries no button**, and that is not broken by this. The rule was that a button which only scrolls further down the same page is doing what a scroll and the side nav already do; these go to another page.
+
+### The cursor trail
+
+**`garden-cursor.js` grew a third thing, opt in with `data-trail` on its own script tag**, the way `garden-music.js` is asked for a mood on its. `document.currentScript` is captured at the top of the file, since it is only valid while that file is being parsed.
+
+- **IT IS AN ADDITION, NOT A REPLACEMENT.** The two cursor shapes stay exactly as they are, because they do a job the trail cannot: the flower at rest and the sparkle over a control are the site's only signal for what can be pressed, and that took several rounds to settle.
+- **THE SPARKLE IS THE PROJECT'S OWN**, four outer points with the inner corners at 0.35 of the radius, which is `drawNewestSparkles` exactly. A trail in any other shape would be a fifth kind of sparkle on a site that has one.
+- **ONLY `index.html` ASKS FOR IT.** The gardens already carry butterflies, birds, motes and a planting burst, and a trail there is one moving thing too many.
+- **A DARK LINE INSIDE A WARM FILL**, which is the argument the cursor itself is built on: no single colour works on every ground this page has. On cream the gold body measures about 1.1 against the paper and the dark edge is what draws it; on the dark teal band the edge vanishes and the gold body carries it.
+- **A STILL POINTER SPAWNS NOTHING.** Without the 15px distance gate a pointer resting on a control piles a sparkle on the same pixel every frame and the trail becomes a bright blob sitting under the hand.
+- **THE LOOP RUNS ONLY WHILE SOMETHING IS ALIVE**, and stops when the last sparkle dies. A permanent `requestAnimationFrame` on a page that already paints six sticky canvases is a cost for nothing.
+- **`z-index: 99999` and `pointer-events: none`.** A trail that stopped at a modal would read as the pointer going behind it, and with no pointer events there is nothing it can ever intercept.
+- **Off entirely under `(hover: none)` and `(prefers-reduced-motion: reduce)`**, and it ignores `pointerType === "touch"`: a touch screen has no pointer to trail.
 
 ### `avatar/`, build your gardener
 

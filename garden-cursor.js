@@ -45,6 +45,12 @@
 (function () {
   "use strict";
 
+  /* This page's own script tag, read the way `garden-music.js` reads its
+     `data-mood`: one shared file, and each page says on the tag what it wants
+     from it. `document.currentScript` is only valid while this file is being
+     parsed, so it is captured here and nowhere later. */
+  var TAG = document.currentScript;
+
   var STYLE_ID = "gg-cursor-style";
   var INK = "%231d6466";        /* the outline, dark teal, url encoded */
   /* The favicon's own blue. It was 47, the palette's butter yellow, which is
@@ -504,6 +510,129 @@
   }
 
   apply(DEFAULT_HUE);
+
+  /* ==================================================================
+     THE TRAIL, opt in with `data-trail` on this file's own script tag.
+
+     IT IS AN ADDITION, NOT A REPLACEMENT. The two cursor shapes stay exactly
+     as they are, because they do a job the trail cannot: the flower at rest
+     and the sparkle over a control are this site's only signal for what can
+     be pressed, and that took several rounds to settle. The trail is the
+     charm on top of it.
+
+     THE SPARKLE IS THE PROJECT'S OWN, four outer points with the inner
+     corners at 0.35 of the radius, which is `drawNewestSparkles` exactly: the
+     shape the gardens throw when a flower is planted, the shape the landing
+     page's drifting motes are drawn as, and the shape the hero objects wear
+     on hover. A trail in some other shape would be a fifth kind of sparkle on
+     a site that has one.
+
+     ONLY THE LANDING PAGE ASKS FOR IT. The gardens already carry butterflies,
+     birds, motes and a planting burst, and a trail there is one moving thing
+     too many.
+     ================================================================== */
+  var TRAIL = TAG && TAG.getAttribute("data-trail");
+
+  function startTrail() {
+    if (!TRAIL || !window.matchMedia || !document.body) return;
+    /* a touch screen has no pointer to trail, and reduced motion has opted
+       out of exactly this kind of thing */
+    if (window.matchMedia("(hover: none)").matches) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+    var LIFE = 780, GAP = 15, CAP = 26;
+    var c = document.createElement("canvas");
+    c.id = "gg-trail";
+    c.setAttribute("aria-hidden", "true");
+    /* ABOVE EVERYTHING AND CLICKABLE BY NOTHING. A trail that stopped at a
+       modal would read as the pointer going behind it, and with
+       pointer-events none there is nothing it can ever intercept. */
+    c.style.cssText = "position:fixed;inset:0;width:100%;height:100%;" +
+      "pointer-events:none;z-index:99999;";
+    document.body.appendChild(c);
+    var ctx = c.getContext("2d");
+
+    var dpr = 1, W = 0, H = 0;
+    function size() {
+      dpr = Math.min(2, window.devicePixelRatio || 1);
+      W = window.innerWidth; H = window.innerHeight;
+      c.width = Math.round(W * dpr); c.height = Math.round(H * dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+    size();
+    window.addEventListener("resize", size);
+
+    var live = [], lastX = null, lastY = null, running = false;
+
+    function star(x, y, r, rot) {
+      ctx.beginPath();
+      for (var i = 0; i < 8; i++) {
+        var a = rot + i * Math.PI / 4;
+        var rad = (i % 2 === 0) ? r : r * 0.35;
+        var px = x + Math.cos(a) * rad, py = y + Math.sin(a) * rad;
+        if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+      }
+      ctx.closePath();
+    }
+
+    function frame() {
+      var now = performance.now();
+      ctx.clearRect(0, 0, W, H);
+      var keep = [];
+      for (var i = 0; i < live.length; i++) {
+        var p = live[i];
+        var t = (now - p.born) / LIFE;
+        if (t >= 1) continue;
+        keep.push(p);
+        var x = p.x + p.vx * t * 46, y = p.y + p.vy * t * 46 - t * t * 16;
+        /* it fades on a curve rather than in a straight line, so a sparkle is
+           plainly there for most of its life and then goes quickly */
+        var a = Math.pow(1 - t, 1.6);
+        var r = p.r * (1 - t * 0.5);
+        /* A DARK LINE INSIDE A WARM FILL, which is the argument the cursor
+           itself is built on: no single colour works on every ground this
+           page has. On cream the gold body measures about 1.1 against the
+           paper and the dark edge is what draws it; on the dark teal band the
+           edge vanishes and the gold body carries it. */
+        star(x, y, r, p.rot + t * 1.1);
+        ctx.fillStyle = "rgba(251,228,132," + (a * 0.92).toFixed(3) + ")";
+        ctx.fill();
+        ctx.lineWidth = 1.1;
+        ctx.strokeStyle = "rgba(20,73,75," + (a * 0.5).toFixed(3) + ")";
+        ctx.stroke();
+      }
+      live = keep;
+      if (live.length) { requestAnimationFrame(frame); }
+      else { running = false; ctx.clearRect(0, 0, W, H); }
+    }
+
+    window.addEventListener("pointermove", function (e) {
+      if (e.pointerType === "touch") return;
+      if (lastX === null) { lastX = e.clientX; lastY = e.clientY; return; }
+      var dx = e.clientX - lastX, dy = e.clientY - lastY;
+      var d = Math.sqrt(dx * dx + dy * dy);
+      /* A STILL POINTER SPAWNS NOTHING. Without the distance gate, a pointer
+         resting on a control piles a sparkle on the same pixel every frame
+         and the trail becomes a bright blob sitting under the hand. */
+      if (d < GAP) return;
+      lastX = e.clientX; lastY = e.clientY;
+      live.push({
+        x: e.clientX, y: e.clientY, born: performance.now(),
+        r: 5 + Math.random() * 4.5, rot: Math.random() * Math.PI,
+        /* it drifts the way the pointer was already going, gently, and rises */
+        vx: (dx / d) * (0.1 + Math.random() * 0.14),
+        vy: (dy / d) * (0.1 + Math.random() * 0.14) - 0.12
+      });
+      if (live.length > CAP) live.splice(0, live.length - CAP);
+      /* THE LOOP RUNS ONLY WHILE SOMETHING IS ALIVE. A permanent rAF on a page
+         that already paints six sticky canvases is a cost for nothing. */
+      if (!running) { running = true; requestAnimationFrame(frame); }
+    }, { passive: true });
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", startTrail);
+  } else { startTrail(); }
 
   window.GardenCursor = {
     /* The personal garden calls this with the hue of its newest flower. Any

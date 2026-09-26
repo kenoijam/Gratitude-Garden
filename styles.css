@@ -155,8 +155,11 @@ body { padding-left: 0 !important; }
    with no z-index of its own. So 4 puts the objects in front of the meadow
    and the sky and behind the headline, which is what standing IN the garden
    means here. */
-.hero-objects { display: none; }
-[data-hero="2"] .hero-objects {
+.hero-objects, .hero-mark { display: none; }
+/* TWO DRAFTS ON ONE GATE. ?hero=2 keeps the copy in the middle with the
+   objects around it; ?hero=3 is the same scene with no headline at all, which
+   is the reference exactly. Everything below is shared by both. */
+[data-hero="2"] .hero-objects, [data-hero="3"] .hero-objects {
   display: block; position: absolute; inset: 0; z-index: 4;
   /* the layer must not eat the meadow's own taps: a flower in it pops the
      gardens' sparkle burst, and a full width sheet over the top would
@@ -223,21 +226,51 @@ body { padding-left: 0 !important; }
 }
 .ho:hover .ho-name, .ho:focus-visible .ho-name { opacity: 1; transform: translateY(0); }
 
-/* THE MIDDLE ONE STANDS NEAREST, so it is the lowest and the largest and the
-   outer two sit back and smaller. It was written the other way round first,
-   with the middle raised, and that failed twice over: on a horizon higher up
-   the screen means further away, so a raised middle read as the far object
-   being the big one, and its top blooms ran into the last line of the
-   subtitle. Lowest and largest also puts the arc's weight where the eye
-   already is. */
-/* THEY OVERLAP THE MEADOW, they do not hover above it. At 27 and 17 percent
-   there was a band of empty sky between the objects and the grass and they
-   read as floating in front of the garden rather than standing in it. Dropped
-   until each one's shadow lands on the ground the meadow's own flowers grow
-   out of. */
-.ho-personal { left: 17%; bottom: 19%; --ho-w: 118px; }
-.ho-shared   { left: 50%; bottom: 10%; --ho-w: 186px; }
-.ho-bouquet  { left: 83%; bottom: 19%; --ho-w: 116px; }
+/* THEY STAND AROUND THE COPY, not in a row under it. An arc along the bottom
+   was the first layout and it read as a shelf: three things queued up with a
+   screen of empty sky over them. The reference scatters its objects AROUND
+   something in the middle, and here the thing in the middle is the sentence.
+   Two flank it and one stands below, which is a triangle rather than a row.
+
+   THE LOWEST IS THE LARGEST, because on a horizon higher up the screen means
+   further away. Written the other way round it failed twice: a raised middle
+   read as the far object being the big one, and its top blooms ran into the
+   last line of the subtitle.
+
+   THEY OVERLAP THE MEADOW, they do not hover above it. The bottom one's
+   shadow lands on the ground the meadow's own flowers grow out of; at 27
+   percent there was a band of empty sky under it and it read as floating in
+   front of the garden rather than standing in it. */
+/* THE COPY HAS TO NARROW WHEN THINGS STAND AROUND IT, and that is arithmetic
+   rather than taste. `.hero-text-block` is 740px wide, so at a 1024 window it
+   spans 142 to 882 and leaves 142px a side for objects that are 177 wide:
+   measured, each one overlapped the subtitle by 141px. At 540 the lanes are
+   242 wide and the objects clear the text by about 20px. This is scoped to
+   the draft, so the live hero keeps its full measure. */
+[data-hero="2"] .hero-text-block { max-width: 540px; }
+.ho-personal { left: 13%; bottom: 38%; --ho-w: 124px; }
+.ho-bouquet  { left: 87%; bottom: 38%; --ho-w: 122px; }
+.ho-shared   { left: 50%; bottom: 11%; --ho-w: 180px; }
+
+/* TWO CLOUDS, NOT FIVE. The five were searched so the sky is never empty for
+   more than 8 seconds, which is right for a hero that is mostly sky; with
+   three objects, a sun, birds, motes and a meadow in it the same five are
+   three too many. The two kept are one from each speed group, so they still
+   overtake each other rather than reading as printed on a sheet. */
+[data-hero="2"] .cloud-3, [data-hero="2"] .cloud-4, [data-hero="2"] .cloud-5,
+[data-hero="3"] .cloud-3, [data-hero="3"] .cloud-4, [data-hero="3"] .cloud-5 { display: none; }
+
+/* ?hero=3: the headline goes and the wordmark is the only type on the page */
+[data-hero="3"] .hero-text-block { display: none; }
+[data-hero="3"] .ho-personal, [data-hero="3"] .ho-bouquet { bottom: 40%; }
+
+.hero-mark {
+  position: absolute; top: 30px; left: 40px; z-index: 6; text-decoration: none;
+  font-family: 'Fraunces', 'Georgia', serif; font-variation-settings: 'SOFT' 50, 'WONK' 0;
+  font-weight: 600; font-size: 1.24rem; color: var(--darkteal); letter-spacing: .01em;
+}
+.hero-mark em { font-style: italic; color: var(--teal); }
+[data-hero="2"] .hero-mark, [data-hero="3"] .hero-mark { display: block; }
 
 /* NO CURSOR RULE HERE. `a` is already in garden-cursor.js's clickable list,
    so these take the sparkle pointer for free, and a `cursor: pointer` written
@@ -256,12 +289,19 @@ body { padding-left: 0 !important; }
   .ho:hover .ho-art svg, .ho:focus-visible .ho-art svg { transform: none; }
   .ho:hover .ho-spark path, .ho:focus-visible .ho-spark path { animation: none; }
 }
-@media (max-width: 900px) {
+@media (max-width: 1000px) {
   /* one row along the foot, since three points of an arc need width the
      phone does not have, and the copy above them grows taller as it wraps */
+  /* A TRIANGLE NEEDS WIDTH, so below 1000 the two that flank the copy on a
+     laptop drop back into a row under it. The breakpoint was 900 and that was
+     too low: the collision above happens the moment the lanes fall under
+     about 210px, which is a window of roughly 1000 with a 540 copy. */
+  [data-hero="2"] .hero-text-block { max-width: 740px; }
   .ho-personal { left: 16%; bottom: 25%; --ho-w: 76px; }
-  .ho-shared   { left: 50%; bottom: 17%; --ho-w: 116px; }
+  .ho-shared   { left: 50%; bottom: 16%; --ho-w: 116px; }
   .ho-bouquet  { left: 84%; bottom: 25%; --ho-w: 74px; }
+  [data-hero="3"] .ho-personal, [data-hero="3"] .ho-bouquet { bottom: 30%; }
+  .hero-mark { top: 18px; left: 18px; font-size: 1.05rem; }
   .ho-name { font-size: .82rem; margin-top: 6px; }
   .ho::after { bottom: 20px; height: 9px; }
 }
