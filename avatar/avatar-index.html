@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Build your gardener</title>
+  <link rel="icon" href="../favicon.png">
+  <link rel="stylesheet" href="avatar-style.css">
+  <script src="../garden-cursor.js"></script>
+</head>
+<body>
+  <!-- The house SVG has to be here, not added later: `swapHomeIcon` in
+       garden-cursor.js REPLACES an existing svg inside this link and returns
+       if it finds none, so a text only Home becomes an empty 34px circle on a
+       phone, where the shared rule shrinks the pill to a circle and the word
+       has nowhere to go. -->
+  <a id="back-to-home" href="../index.html" aria-label="Home">
+    <svg width="15" height="15" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M2 7.1 8 2.2l6 4.9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M3.5 6.6V13a.7.7 0 0 0 .7.7h2.4V10a.7.7 0 0 1 .7-.7h1.4a.7.7 0 0 1 .7.7v3.7h2.4a.7.7 0 0 0 .7-.7V6.6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <span class="av-home-word">Home</span>
+  </a>
+
+  <main class="av-page">
+    <h1 class="av-title">build your <em>gardener</em></h1>
+    <p class="av-sub">Someone to stand in your garden. Nothing here is bought
+       and nothing is timed: the keepsakes arrive as you plant.</p>
+
+    <!-- SIX STEPS, the count the reference uses, and every one of them is a
+         real question rather than a screen for its own sake. -->
+    <ol class="av-steps" id="avSteps"></ol>
+
+    <!-- A BOOK, two leaves and a spine. The left leaf asks, the right leaf
+         shows, and the gardener never leaves the page while you dress them:
+         choosing a hat while the wearer is somewhere else is choosing blind. -->
+    <div class="av-book">
+      <div class="av-leaf av-left">
+        <section class="av-step" data-step="begin">
+          <h2>the beginning</h2>
+          <p class="av-note">What shall we call them? You can leave this empty
+             and they will simply be your gardener.</p>
+          <label class="av-field">
+            <span>A name</span>
+            <input id="avName" type="text" maxlength="18" placeholder="Your gardener">
+          </label>
+          <p class="av-note av-quiet">They will stand in your personal garden,
+             and in the shared garden they stand beside the flower you planted
+             that day.</p>
+        </section>
+
+        <section class="av-step" data-step="skin" hidden>
+          <h2>choose a skin</h2>
+          <p class="av-note">Four, because every one of them has to read at the
+             size a garden draws a person.</p>
+          <div class="av-grid av-grid-4" id="avSkin"></div>
+        </section>
+
+        <section class="av-step" data-step="hair" hidden>
+          <h2>choose the hair</h2>
+          <p class="av-note">A shape, then a colour.</p>
+          <div class="av-grid av-grid-3" id="avHairShape"></div>
+          <p class="av-label">Colour</p>
+          <div class="av-grid av-grid-4" id="avHairCol"></div>
+        </section>
+
+        <section class="av-step" data-step="top" hidden>
+          <h2>choose what they wear</h2>
+          <p class="av-note">One hue, which is all the saved row carries. The
+             tones come from the garden.</p>
+          <div class="av-grid av-grid-3" id="avTop"></div>
+        </section>
+
+        <section class="av-step" data-step="keep" hidden>
+          <h2>choose keepsakes</h2>
+          <p class="av-note">One for each flower you have planted, across three
+             places: head, shoulders and carried. Three can be worn at once.</p>
+          <div class="av-keeps" id="avKeeps"></div>
+          <p class="av-note av-quiet" id="avKeepNote"></p>
+        </section>
+
+        <section class="av-step" data-step="done" hidden>
+          <h2>your gardener</h2>
+          <p class="av-note" id="avDoneLine"></p>
+          <div class="av-row-list" id="avRow"></div>
+          <p class="av-note av-quiet">A look is a row of numbers, which is why
+             it can be saved to an account, sent to a shared garden and read
+             back next year. The same row builds the figure in the 3D
+             exploration.</p>
+        </section>
+      </div>
+
+      <div class="av-leaf av-right">
+        <div class="av-stage">
+          <canvas id="avCanvas" width="560" height="840" aria-label="Your gardener"></canvas>
+          <p class="av-name" id="avShowName"></p>
+        </div>
+      </div>
+    </div>
+
+    <div class="av-nav">
+      <button class="av-back" id="avBack" type="button">back</button>
+      <button class="av-next" id="avNext" type="button">turn the page</button>
+    </div>
+    <p class="av-draft">A draft. Nothing here is saved yet.</p>
+  </main>
+
+  <!-- THE BOUQUET'S OWN DRAWING CODE, for the keepsake blooms. `boot()`
+       returns immediately when #bqBuilder is absent, which is the same guard
+       that lets the landing page load this file, and `drawSpeciesBloom` takes
+       a raw 2D context and needs no p5. A daisy chain is not an eighth copy
+       of the flower maths. -->
+  <script src="../bouquet/bouquet-sketch.js"></script>
+  <script src="avatar-draw.js"></script>
+  <script src="avatar-sketch.js"></script>
+  <script src="../garden-music.js" data-mood="calm"></script>
+</body>
+</html>
