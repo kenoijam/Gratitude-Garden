@@ -66,7 +66,13 @@
     daisy:     { mode: "hood",   R: 84, dy: 0 },
     sunflower: { mode: "hood",   R: 62, dy: 0 },
     rose:      { mode: "hood",   R: 83, dy: 0 },
-    peony:     { mode: "hood",   R: 84, dy: 7 },
+    /* THE PEONY IS 92, NOT 84, and it is the one species that needs its own
+       figure for a reason that is written down: its painted box runs -1.00 to
+       +0.84 of R, so at the same R as the others it stood 154 tall against
+       their 168 and read as a smaller flower on the same head. 92 puts its
+       span back on theirs; `dy` is 0.08 R, the amount its own drawing sits
+       above its origin. */
+    peony:     { mode: "hood",   R: 92, dy: 7 },
     poppy:     { mode: "hood",   R: 84, dy: 0 },
     lily:      { mode: "hood",   R: 78, dy: 0 },
     tulip:     { mode: "sprout", stem: 26, R: 22, dy: 0 },
@@ -120,6 +126,7 @@
     wellies: { slot: "feet",  name: "Wellies",      tint: 2, tints: [2, 0, 4] },
     can:     { slot: "hold",  name: "Watering can", tint: 2 },
     trowel:  { slot: "hold",  name: "Trowel",       tint: 3 },
+    basket:  { slot: "hold",  name: "Basket",       tint: 3 },
     specs:   { slot: "face",  name: "Glasses",      tint: 3 },
     shades:  { slot: "face",  name: "Sunglasses",   tint: 0 },
     freckles:{ slot: "face",  name: "Freckles",     tint: 3 }
@@ -356,7 +363,11 @@
   var HAIR_LONG = {
     1: { to: 74 },                                      /* bob */
     2: { to: 104 },                                     /* long */
-    3: { to: 98, wave: true },                          /* wavy */
+    /* WAVY IS 112, LONGER THAN LONG. The crown is the wider of the two
+       shapes down to y 176, so a wave can only begin below that, and at 98
+       there were only forty pixels of hair left to wave in: it came out as a
+       second Long. */
+    3: { to: 112, wave: true },                         /* wavy */
     4: { plait: true },                                 /* braids */
     5: { buns: true }                                   /* bunches */
   };
@@ -374,26 +385,56 @@
      a rounded tip, which is the line hair actually falls in. Drawn in a
      right-hand frame around the head's own centre and mirrored, so the two
      sides cannot drift apart. */
+  /* IT LEAVES THE HEAD AT THE HEAD'S WIDEST POINT, and that is what closed
+     the dip. The path used to start at x 8 near the top and only reach 52 by
+     the jaw, while the crown is 58 wide from about y 100 to y 140, so the
+     silhouette ran: crown out to 58, crown curving back in, and the length
+     picking up again at 52. The maximum of a shape narrowing and a shape
+     widening has a MINIMUM where they cross, which is a notch about eight
+     pixels deep at the ear, and no amount of tapering the length could have
+     removed it. The first bezier is now a quarter of the crown's own ellipse
+     (controls at 0.5523 of each radius, the usual circle approximation), so
+     the hair runs out along the head and falls from there. */
   function lengthPath(ctx, len, wave) {
-    var y0 = HEAD.y - 46, end = HEAD.y + len, mid = (y0 + end) / 2;
+    var y0 = HEAD.y - CROWN.ry, end = HEAD.y + len, mid = (y0 + end) / 2;
     ctx.beginPath();
-    ctx.moveTo(8, y0);
+    ctx.moveTo(0, y0);
+    ctx.bezierCurveTo(32, y0, CROWN.rx, HEAD.y - 31, CROWN.rx, HEAD.y + 2);
     if (wave) {
-      ctx.bezierCurveTo(46, y0 + 8, 62, HEAD.y + 4, 48, mid + 12);
-      ctx.bezierCurveTo(40, mid + 32, 60, end - 22, 50, end - 10);
-      ctx.quadraticCurveTo(44, end + 8, 33, end - 8);
-      ctx.bezierCurveTo(40, end - 30, 22, mid + 8, 30, HEAD.y + 6);
-      ctx.bezierCurveTo(32, HEAD.y - 16, 22, y0 + 12, 8, y0);
+      /* THE WAVES START BELOW THE CROWN. Down to y 176 the crown is still
+         the wider of the two, so an inward swing up there would cut back into
+         the head and put the notch straight back. Both swings are measured
+         against the crown's own half width at that height: 55 against 49 at
+         y 150, 53 against 41 at y 160. */
+      ctx.bezierCurveTo(58, HEAD.y + 30, 46, HEAD.y + 56, 54, HEAD.y + 76);
+      ctx.bezierCurveTo(60, HEAD.y + 92, 44, end - 18, 50, end - 8);
+      ctx.quadraticCurveTo(44, end + 10, 32, end - 6);
+      ctx.bezierCurveTo(38, end - 28, 22, mid + 8, 30, HEAD.y + 6);
+      ctx.bezierCurveTo(32, HEAD.y - 20, 24, y0 + 12, 0, y0);
     } else {
-      ctx.bezierCurveTo(46, y0 + 8, 58, HEAD.y + 8, 52, end - 14);
+      ctx.bezierCurveTo(58, HEAD.y + 36, 56, end - 32, 52, end - 14);
       ctx.quadraticCurveTo(47, end + 8, 35, end - 7);
-      ctx.bezierCurveTo(30, HEAD.y + 24, 26, HEAD.y - 10, 8, y0);
+      ctx.bezierCurveTo(30, HEAD.y + 24, 26, HEAD.y - 10, 0, y0);
     }
     ctx.closePath();
   }
 
+  /* THE HEAD AND THE HAIR ARE ONE SHAPE. The crown is filled in the hair's
+     own colour before anything else, so there is no seam where the top of the
+     head stops being head and starts being hair: the lengths grow out of a
+     solid mass rather than being hung on either side of one. It paints before
+     the flower, so on the six ring species the bonnet covers all of it and
+     nothing changes; on the tulip and the lavender, which wear their flower on
+     a stem and have no bonnet, it IS the top of the head. */
+  function drawCrown(ctx, look) {
+    ctx.fillStyle = HAIRS[look.hairCol] || HAIRS[0];
+    ctx.beginPath();
+    ctx.ellipse(HEAD.x, HEAD.y, CROWN.rx, CROWN.ry, 0, 0, Math.PI * 2);
+    ctx.fill();
+  }
   function drawHairLong(ctx, look) {
     var spec = HAIR_LONG[look.back];
+    drawCrown(ctx, look);
     if (!spec) return;
     var c = HAIRS[look.hairCol] || HAIRS[0], d = shade(c, 0.8), i, k;
     for (k = -1; k <= 1; k += 2) {
@@ -551,9 +592,15 @@
      The skirt is the one exception, since it flares past the hem on purpose:
      BOTH IT AND THE SHORTS GROW OUT OF THE BODY'S OWN LINE rather than being
      laid across the hips, which is what made the old shorts read as a nappy. */
+  /* THE TROUSERS DO NOT FOLLOW THE TOP. They were `hsl(L.top, 16, 38)`, so
+     a blue top put the legs in a blue that is the Denim tint almost exactly,
+     and a Denim welly then vanished into them: one colour from the hem to the
+     sole. They are a warm stone now, which is what work trousers are and what
+     no tint in the palette sits on. */
+  var TROUSER = hsl(30, 9, 44);
   function drawLegs(ctx, id, L, skin) {
     var w = WEAR[id] || { bare: false };
-    ctx.fillStyle = w.bare ? skin : hsl(L.top, 16, 38);
+    ctx.fillStyle = w.bare ? skin : TROUSER;
     rr(ctx, LEG.lx, LEG.top, LEG.w, LEG.bottom - LEG.top, 8);
     rr(ctx, LEG.rx, LEG.top, LEG.w, LEG.bottom - LEG.top, 8);
   }
@@ -875,6 +922,51 @@
       ctx.strokeStyle = "#a2abb2"; ctx.lineWidth = 2; ctx.lineCap = "round";
       ctx.beginPath(); ctx.moveTo(x, y + 25); ctx.lineTo(x, y + 44); ctx.stroke();
     }
+    if (id === "basket") {
+      /* A DEEP BASKET WITH AN ARCHED HANDLE THROUGH THE FIST. The trug that
+         was cut was a shallow dark oval, and a wide flat curve reads as a
+         HAMMOCK whatever is drawn round it. What names this one is DEPTH: a
+         wall taller than the mouth is wide, a woven course across it, and a
+         rim with the handle's feet disappearing under it.
+         The arch's top sits just above the grip so the hand closes round it,
+         which is the same rule the can and the trowel follow: a handle that
+         does not pass through the fist floats beside the arm. */
+      /* THE CONTROL POINT IS AT y - 70 TO PUT THE ARCH AT y - 21. A
+         quadratic passes nowhere near its control: its top sits at a quarter,
+         a half and a quarter of the three points, so a control at y - 22
+         drew an arch topping out at y - 3, which is inside a fist of radius
+         13 and therefore invisible. It was there and could not be seen. */
+      ctx.strokeStyle = "#a9794f"; ctx.lineWidth = 7;
+      ctx.lineCap = "round"; ctx.lineJoin = "round";
+      ctx.beginPath();
+      ctx.moveTo(x - 20, y + 28);
+      ctx.quadraticCurveTo(x, y - 70, x + 20, y + 28);
+      ctx.stroke();
+      ctx.fillStyle = "#c79a5f";
+      ctx.beginPath();
+      ctx.moveTo(x - 26, y + 20);
+      ctx.lineTo(x + 26, y + 20);
+      ctx.quadraticCurveTo(x + 24, y + 54, x + 14, y + 60);
+      ctx.lineTo(x - 14, y + 60);
+      ctx.quadraticCurveTo(x - 24, y + 54, x - 26, y + 20);
+      ctx.closePath(); ctx.fill();
+      /* the weave: three courses and the uprights between them, drawn inside
+         the wall so the basket has something in it besides colour */
+      ctx.save();
+      ctx.clip();
+      ctx.strokeStyle = "#a9794f"; ctx.lineWidth = 2.6;
+      [31, 41, 51].forEach(function (dy) {
+        ctx.beginPath();
+        ctx.moveTo(x - 28, y + dy); ctx.lineTo(x + 28, y + dy); ctx.stroke();
+      });
+      ctx.lineWidth = 2.2;
+      [-17, -6, 6, 17].forEach(function (dx) {
+        ctx.beginPath();
+        ctx.moveTo(x + dx, y + 24); ctx.lineTo(x + dx, y + 60); ctx.stroke();
+      });
+      ctx.restore();
+      ctx.fillStyle = "#8a5f3c"; rr(ctx, x - 28, y + 15, 56, 11, 5.5);
+    }
   }
 
   function drawFaceWear(ctx, id, L) {
@@ -885,14 +977,17 @@
       ctx.fillStyle = hsl(T.h, Math.min(60, T.s + 10), Math.max(28, T.l - 20), 0.55);
       /* THEY SIT BELOW THE EYE LINE. The eyes reach F.y + 11.5, so anything
          above that lands ON them, which is where the first set was. */
-      /* BELOW THE EYES AND CLEAR OF THE MOUTH. The eyes reach F.y + 11.5 and
-         the mouth runs from F.y + 18 across x plus or minus 6, so the only
-         room on the nose is a narrow band at 14 to 16; everything else goes
-         out onto the cheeks, where the mouth is nowhere near. */
-      [[-28, 17], [-21, 14], [-23, 22], [-15, 19], [-14, 26],
-       [28, 17], [21, 14], [23, 22], [15, 19], [14, 26],
-       [-4, 15], [4, 15]].forEach(function (p) {
-        disc(ctx, F.x + p[0], F.y + p[1], 2.1);
+      /* EIGHT SMALL ONES ACROSS THE NOSE AND THE INNER CHEEK, not twelve
+         spread to the edge of the face. They reached x plus or minus 28 at
+         radius 2.1, which on a face of 44 is the whole width of it, and at
+         that size a freckle reads as a spot.
+         BELOW THE EYES AND CLEAR OF THE MOUTH: the eyes reach F.y + 11.5 and
+         the mouth runs from F.y + 18 across x plus or minus 6, so the band
+         sits at 13 to 24 and stays outside that. */
+      [[-4, 13], [4, 13],
+       [-21, 15], [-14, 19], [-17, 25],
+       [21, 15], [14, 19], [17, 25]].forEach(function (p) {
+        disc(ctx, F.x + p[0], F.y + p[1], 1.4);
       });
       return;
     }
