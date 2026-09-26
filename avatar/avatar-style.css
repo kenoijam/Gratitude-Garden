@@ -106,6 +106,17 @@ button, a, [role="button"], summary, label[for] { touch-action: manipulation; }
 }
 .av-note { margin: 0 0 18px; font-size: .92rem; line-height: 1.6; color: #2f6260; }
 .av-quiet { color: #6c8f8d; font-size: .86rem; }
+/* START AGAIN IS A TEXT LINK, NOT A BUTTON, and the weight is the point: it
+   sits on the same page as "keep this gardener" and must never compete with
+   it. The project's own cursor already treats a <button> as something to
+   press, which is why it stays a button rather than becoming an anchor. */
+.av-plain {
+  margin: 10px 0 0; padding: 0; border: 0; background: none;
+  font: inherit; font-size: .86rem; color: #6c8f8d;
+  text-decoration: underline; text-underline-offset: 3px;
+}
+.av-plain:hover { color: #2c6d6b; }
+@media (hover: none) { .av-plain:hover { color: #6c8f8d; } }
 .av-label { margin: 18px 0 8px; font-size: .74rem; letter-spacing: .1em;
   text-transform: uppercase; color: #8aa9a7; font-weight: 700; }
 

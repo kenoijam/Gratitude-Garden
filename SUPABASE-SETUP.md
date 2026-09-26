@@ -718,3 +718,36 @@ garden itself wrote.
 Until this is run, the Add a photo button still appears for somebody signed
 in and the upload quietly fails, which costs the entry nothing: the flower and
 the words are written either way. Nothing else on any page depends on it.
+
+## Step 9: keeping a gardener
+
+"Build your gardener" makes a figure out of a row of numbers: a skin, a
+fringe, a back, a hair colour, a flower and its hue, and what they are
+wearing and carrying. That row is what stands in your personal garden, beside
+your flower in the shared one, and next to your name in the friends list.
+
+**This is ONE line**, and it is safe to run more than once.
+
+```sql
+alter table public.profiles
+  add column if not exists look jsonb;
+```
+
+**There is no new policy, and that is not an oversight.** `profiles` already
+carries `auth.uid() = id` on update, which is the same rule that stops anybody
+renaming anybody else, and it covers this column the moment it exists. It is
+also what makes a gardener safe to show: a friend's look is readable because
+their username already is, and writable only by them.
+
+**It goes on `profiles` rather than on `gardens`, and the reason is the shared
+garden.** That page has no garden row at all, for anybody, because planting
+there needs no account. It does have profiles, and `garden-account.js` already
+selects them to build the friends list, so putting the look here is what makes
+a friend's gardener arrive with the name it is drawn beside instead of costing
+a query each.
+
+Until this is run, **nothing breaks and nobody is told off**. A gardener is
+kept in this browser instead, under `gg_gardener`, exactly as it is for
+somebody with no account at all; the console says so once, naming this step,
+and never again. The only thing missing is that the gardener does not follow
+you between devices and your friends cannot see them.

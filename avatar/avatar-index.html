@@ -6,6 +6,11 @@
   <title>Build your gardener</title>
   <link rel="icon" href="../favicon.png">
   <link rel="stylesheet" href="avatar-style.css">
+  <!-- NOTHING MAY GO ABOVE THE DOCTYPE. Two Supabase tags were once put up
+       there and quietly dropped all four pages into quirks mode. -->
+  <script src="../config.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+  <script src="../garden-account.js" data-chip="top"></script>
   <script src="../garden-cursor.js"></script>
 </head>
 <body>
@@ -109,6 +114,11 @@
              it can be saved to an account, sent to a shared garden and read
              back next year. The same row builds the figure in the 3D
              exploration.</p>
+          <p class="av-note" id="avKeptLine" hidden></p>
+          <!-- START AGAIN IS QUIETER THAN KEEP, and separate from it. It used
+               to BE the last button, so the only way off the last page was to
+               throw the gardener away. -->
+          <button class="av-plain" id="avReset" type="button">start again from nothing</button>
         </section>
       </div>
 
@@ -124,7 +134,7 @@
       <button class="av-back" id="avBack" type="button">back</button>
       <button class="av-next" id="avNext" type="button">turn the page</button>
     </div>
-    <p class="av-draft">A draft. Nothing here is saved yet.</p>
+    <p class="av-draft" id="avDraft"></p>
   </main>
 
   <!-- THE BOUQUET'S OWN DRAWING CODE, for the keepsake blooms. `boot()`
@@ -134,6 +144,7 @@
        of the flower maths. -->
   <script src="../bouquet/bouquet-sketch.js"></script>
   <script src="avatar-draw.js"></script>
+  <script src="../garden-gardener.js"></script>
   <script src="avatar-sketch.js"></script>
   <script src="../garden-music.js" data-mood="calm"></script>
 </body>

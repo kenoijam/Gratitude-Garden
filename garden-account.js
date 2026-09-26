@@ -472,8 +472,16 @@
         ids[r.requester_id === me.id ? r.addressee_id : r.requester_id] = 1;
       });
       var list = Object.keys(ids);
+      /* `select("*")` RATHER THAN NAMING THE COLUMNS, and that is a guard
+         rather than laziness. The friends list wants `look` so a gardener
+         arrives with the name it is drawn beside, and Supabase answers a
+         query naming a column that does not exist with a 400 and an error
+         OBJECT, not a throw: on any project where Step 9 has not been run,
+         naming it would empty `pr.data` and take every friend's NAME down
+         with it. A star selects whatever the table actually has.
+         `loadProfile` has always done this, for the same reason. */
       var who = list.length
-        ? sb.from("profiles").select("id,username,display_name").in("id", list)
+        ? sb.from("profiles").select("*").in("id", list)
         : Promise.resolve({ data: [] });
       return Promise.resolve(who).then(function (pr) {
         var byId = {};
@@ -494,7 +502,7 @@
   function searchPeople(q) {
     q = String(q || "").trim();
     if (q.length < 2) return Promise.resolve([]);
-    return sb.from("profiles").select("id,username,display_name")
+    return sb.from("profiles").select("*")
       .ilike("username", "%" + q + "%").limit(8)
       .then(function (res) {
         return (res.data || []).filter(function (p) { return !me || p.id !== me.id; });

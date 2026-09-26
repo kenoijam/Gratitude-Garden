@@ -1204,13 +1204,11 @@
      it, then the flower, then the face and its hair. Nothing paints over the
      flower and the flower hides nothing, because the proportions above leave
      them six pixels of overlap instead of fifty-eight. */
-  function paint(ctx, look, size) {
-    var L = Object.assign({}, DEFAULT_LOOK, look || {});
-    var s = (size || 300) / H;
-    ctx.save();
-    ctx.scale(s, s);
-    ctx.clearRect(0, 0, W, H);
-
+  /* THE FIGURE, AT ITS NATURAL SIZE, IN THE CALLER'S OWN TRANSFORM. It does
+     not scale and it does not clear, because the two callers want opposite
+     things there: the picker owns its canvas and wants it wiped, and a garden
+     wants somebody stood on ground that is already painted. */
+  function paintFigure(ctx, L) {
     var skin = SKINS[L.skin] || SKINS[0];
     var h = hoodOf(L.flower);
 
@@ -1245,12 +1243,44 @@
     drawEars(ctx, skin);
     drawFace(ctx);
     if (L.face) drawFaceWear(ctx, L.face, L);
+  }
 
+  function paint(ctx, look, size) {
+    var L = Object.assign({}, DEFAULT_LOOK, look || {});
+    var s = (size || 300) / H;
+    ctx.save();
+    ctx.scale(s, s);
+    ctx.clearRect(0, 0, W, H);
+    paintFigure(ctx, L);
+    ctx.restore();
+  }
+
+  /* STANDING SOMEBODY ON GROUND SOMEBODY ELSE PAINTED. `cx` is where the
+     middle of them goes and `footY` is where the SOLE lands, which is the
+     only anchor a garden can use: a figure hung by its top edge would sink or
+     float as the flower on its head changed height.
+     `FOOT` is 316, the lowest pixel any shoe reaches: a plain shoe ends at
+     `LEG.foot + 20` and a welly's sole at `LEG.foot + 22`, and taking the
+     larger means a gardener in wellies stands on the ground rather than in
+     it. It is a CONSTANT rather than a measured box, because measuring means
+     reading back 86,000 pixels and this runs inside a sixty frame draw loop.
+     `h` IS THE WHOLE BOX, NOT THE PAINTED HEIGHT, so every species comes out
+     the same person: fitting what is painted to one height would give a tulip
+     gardener, whose flower grows up on a stem, a smaller body than a daisy
+     one, whose flower rings the face. */
+  var FOOT = LEG.foot + 22;
+  function paintAt(ctx, look, cx, footY, h) {
+    var L = Object.assign({}, DEFAULT_LOOK, look || {});
+    var s = (h || 120) / H;
+    ctx.save();
+    ctx.translate(cx - (W / 2) * s, footY - FOOT * s);
+    ctx.scale(s, s);
+    paintFigure(ctx, L);
     ctx.restore();
   }
 
   window.AvatarDraw = {
-    paint: paint, icon: icon, SKINS: SKINS, HAIRS: HAIRS,
+    paint: paint, paintAt: paintAt, icon: icon, SKINS: SKINS, HAIRS: HAIRS,
     FRINGES: FRINGES, BACKS: BACKS,
     TOPS: TOPS, WEAR: WEAR, SLOTS: SLOTS, STEP_SLOTS: STEP_SLOTS,
     SLOT_LABEL: SLOT_LABEL, NO_NONE: NO_NONE, BLOOMS: BLOOMS, HOOD: HOOD,

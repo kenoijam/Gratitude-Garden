@@ -22,11 +22,21 @@
     { id: "done",   name: "Done" }
   ];
   var at = 0;
-  var look = Object.assign({}, A.DEFAULT_LOOK);
+  /* THE PAGE OPENS ON WHO YOU ALREADY ARE. `GardenGardener` hands back this
+     browser's copy at once and an account's a moment later, so a first
+     visitor gets the default and everybody else gets themselves. */
+  var G = window.GardenGardener;
+  var look = Object.assign({}, A.DEFAULT_LOOK, (G && G.get()) || {});
+  /* TOUCHED IS WHAT STOPS AN ACCOUNT ARRIVING MID-EDIT AND OVERWRITING THE
+     WORK. The session check is a network round trip, so somebody can have
+     picked a flower before it resolves, and a gardener that reverted under
+     the hand choosing it would be the worst bug on the page. */
+  var touched = false;
 
   var $ = function (id) { return document.getElementById(id); };
 
   /* --------------------------------------------------------------- paint */
+  function touch() { touched = true; }
   function paint() {
     var c = $("avCanvas");
     var ctx = c.getContext("2d");
@@ -237,7 +247,9 @@
       lis[i].classList.toggle("is-done", i < at);
     }
     $("avBack").disabled = at === 0;
-    $("avNext").textContent = at === STEPS.length - 1 ? "start again" : "turn the page";
+    $("avNext").textContent = at === STEPS.length - 1 ? "keep this gardener" : "turn the page";
+    $("avReset").hidden = at !== STEPS.length - 1;
+    if (at !== STEPS.length - 1) $("avKeptLine").hidden = true;
     if (STEPS[at].id === "flower") buildFlower();
     if (STEPS[at].id === "top") buildTop();
     if (STEPS[at].id === "wear") buildWear();
@@ -245,7 +257,45 @@
     paint();
   }
 
+  /* KEEPING IT IS THE LAST PAGE'S JOB, and it says so rather than saying
+     nothing. Without an account this is the browser; with one it is the
+     account, and `GardenGardener` is the only thing that knows which. */
+  function keep() {
+    if (!G) return;
+    G.save(Object.assign({}, look));
+    var line = $("avKeptLine");
+    line.hidden = false;
+    line.textContent = window.GardenAccount && window.GardenAccount.user()
+      ? "Kept on your account. They will follow you between devices."
+      : "Kept in this browser. Sign in from a garden and they follow you between devices.";
+  }
+
   function boot() {
+    /* ONE LISTENER FOR EVERY PICK, rather than a `touched = true` added to
+       each of the nine builders and forgotten in the tenth. */
+    document.querySelector(".av-left").addEventListener("click", touch, true);
+    $("avName").addEventListener("input", touch);
+
+    if (G) {
+      G.onChange(function (saved) {
+        if (!saved || touched) return;
+        look = Object.assign({}, A.DEFAULT_LOOK, saved);
+        $("avName").value = look.name || "";
+        buildSkin(); buildHair(); buildFlower(); buildTop(); buildWear(); paint();
+      });
+      $("avDraft").textContent = G.has()
+        ? "Your gardener is kept. Nothing else on this page is."
+        : "Nothing is kept until you reach the last page.";
+    } else {
+      $("avDraft").textContent = "A draft. Nothing here is saved yet.";
+    }
+    $("avReset").addEventListener("click", function () {
+      at = 0; touched = true;
+      look = Object.assign({}, A.DEFAULT_LOOK);
+      $("avName").value = ""; $("avKeptLine").hidden = true;
+      buildSkin(); buildHair(); buildFlower(); buildTop(); buildWear();
+      show();
+    });
     buildSteps(); buildSkin(); buildHair(); buildFlower(); buildTop(); buildWear();
     $("avFlowerHue").addEventListener("input", function () {
       look.flowerHue = +this.value; paint();
@@ -257,10 +307,11 @@
       if (at > 0) { at--; show(); }
     });
     $("avNext").addEventListener("click", function () {
-      if (at < STEPS.length - 1) { at++; }
-      else { at = 0; look = Object.assign({}, A.DEFAULT_LOOK); $("avName").value = "";
-             buildSkin(); buildHair(); buildFlower(); buildTop(); buildWear(); }
-      show();
+      /* THE LAST PAGE KEEPS THE GARDENER, it does not throw them away. It
+         used to reset the whole look, so the only thing the final button did
+         was undo the six pages that led to it. */
+      if (at < STEPS.length - 1) { at++; show(); }
+      else keep();
     });
     show();
   }
