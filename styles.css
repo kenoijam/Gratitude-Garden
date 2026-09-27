@@ -452,6 +452,11 @@ section { padding: 5rem 5rem; }
 .feature-icon { width: 40px; height: 40px; flex-shrink: 0; display: block; margin-top: 2px; }
 .feature-title { font-family: 'Fraunces','Georgia',serif; font-size: 1rem; color: var(--darkteal); margin-bottom: 0.2rem; }
 .feature-desc { font-family: Arial,Helvetica,sans-serif; font-size: 0.85rem; color: var(--teal); line-height: 1.55; }
+/* A LINK IN A FEATURE CARD GOES DARKER, NOT BLUER. `--teal` is already at the
+   edge of readable at this size, and the browser's own link blue is the one
+   colour on this page that belongs to nothing. Underlined, because colour
+   alone is not a link. */
+.feature-desc a { color: var(--darkteal); text-decoration: underline; text-underline-offset: 2px; }
 
 /* ── GARDENS ── */
 /* White, and this was measured rather than chosen. The three cards are a dark
@@ -848,7 +853,54 @@ canvas.flower-canvas { position: absolute; top: 0; left: 0; width: 100%; height:
 .wisdom { background: var(--darkteal); position: relative; overflow: hidden; padding-top: 140px; padding-bottom: 100px; }
 /* the curve above is the colour of whatever section sits above it, bleeding
    down into the dark teal. The flower guide is pale blue. */
-.wisdom::before { content: ''; position: absolute; top: -60px; left: 50%; transform: translateX(-50%); width: 110%; height: 100px; background: var(--cream); border-radius: 0 0 50% 50%; }
+/* THE CURVE IS ALWAYS THE COLOUR OF THE SECTION ABOVE, and the section
+   above Wisdom is the gardener now, not the flower guide. Miss this and the
+   dark teal gets a cream roll off a pale blue section. */
+.wisdom::before { content: ''; position: absolute; top: -60px; left: 50%; transform: translateX(-50%); width: 110%; height: 100px; background: var(--lightsky); border-radius: 0 0 50% 50%; }
+
+/* ---------------------------------------------------------- the gardener
+   PALE BLUE, which is what keeps the page alternating: cream above it and
+   dark teal below. Its own curve is therefore cream. The clearance is the
+   page's standard 100px, measured from the first PAINTED child rather than
+   read off the padding, since .gardener-inner carries no margin of its own. */
+.gardener {
+  background: var(--lightsky);
+  padding: 116px 2rem 100px;
+  position: relative;
+  overflow: hidden;
+  text-align: center;
+}
+.gardener::before {
+  content: ''; position: absolute; top: -60px; left: 50%; transform: translateX(-50%);
+  width: 110%; height: 100px; background: var(--cream); border-radius: 0 0 50% 50%;
+}
+/* POSITIONED WITH A Z-INDEX, or the curve paints straight over the copy.
+   Every section that carries one needs this; .catalogue-header and
+   .wisdom-inner already do. */
+.gardener-inner { position: relative; z-index: 1; max-width: 900px; margin: 0 auto; }
+.gardener-inner .section-desc { max-width: 620px; margin-left: auto; margin-right: auto; }
+/* FOUR ACROSS AT EVERY WIDTH DOWN TO THE PHONE, where it falls to two by two.
+   A fixed count rather than auto-fit, which is the rule every other grid on
+   this page follows after auto-fit left uneven rows as the column narrowed. */
+.gardener-row {
+  display: grid; grid-template-columns: repeat(4, 1fr);
+  gap: 1.2rem; margin: 2.2rem auto 2.4rem; max-width: 760px;
+}
+.gardener-card {
+  background: snow; border-radius: 18px; padding: 14px 10px 12px;
+  box-shadow: 0 8px 32px rgba(29,100,102,0.10);
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  min-width: 0;
+}
+/* A CANVAS IS A BAD GRID ITEM: it carries an intrinsic width, so as a grid
+   item it becomes its column's minimum and 1fr stops dividing the row
+   evenly. `min-width: 0` on the card and `display: block` here is the same
+   fix the bouquet's tiles and the landing page's card canvases needed. */
+.gardener-card canvas { display: block; width: 100%; height: auto; }
+.gardener-name {
+  font-size: .82rem; color: #2f6260; font-weight: 700;
+  letter-spacing: .02em;
+}
 /* No `::after` here. Every join on the page is a section curving DOWN into the
    one below, so the closing section carries this one on its own top instead;
    the tips section used to be the only one with a curve on both edges, and the
@@ -1839,4 +1891,20 @@ button, a, [role="button"], summary, input[type="range"], label[for] {
   input[type="date"], textarea, select {
     font-size: 16px !important;
   }
+}
+
+/* --------------------------------------------------- the gardener, on a phone
+   LAST in the file, like every other phone block in this project. A later
+   rule beats an earlier one at equal specificity, so a phone override written
+   above the base declaration it is overriding does nothing at all, silently,
+   and that trap has now been hit on four separate stylesheets here. */
+@media (max-width: 768px) {
+  /* 56px of clearance rather than 100, which is what every other curved
+     section takes there. The curve dips 40px INTO the section, so the padding
+     and the clearance are not the same number. */
+  .gardener { padding: 72px 1.5rem 56px; }
+  /* TWO BY TWO. Four across a 375 wide screen gives each gardener about 78px
+     of column, at which the flower on their head is a dozen pixels and the
+     row reads as four smudges. */
+  .gardener-row { grid-template-columns: 1fr 1fr; gap: 1rem; max-width: 340px; }
 }

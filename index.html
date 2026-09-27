@@ -89,6 +89,20 @@
       <circle cx="12" cy="12" r="3.2" fill="#fbe484"/>
     </svg>
   </a>
+  <!-- A FLOWER-HEADED PERSON, which is what the gardener IS: the same five
+       petals the Flowers glyph above uses, struck round a head rather than
+       round a centre, over a bell of a body. -->
+  <a href="#gardener" class="side-nav-item" data-section="gardener" data-label="Gardener">
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <ellipse cx="12" cy="4.6" rx="2" ry="3" fill="#429288" opacity="0.85"/>
+      <ellipse cx="12" cy="4.6" rx="2" ry="3" fill="#429288" opacity="0.85" transform="rotate(72 12 7.6)"/>
+      <ellipse cx="12" cy="4.6" rx="2" ry="3" fill="#429288" opacity="0.85" transform="rotate(144 12 7.6)"/>
+      <ellipse cx="12" cy="4.6" rx="2" ry="3" fill="#429288" opacity="0.85" transform="rotate(216 12 7.6)"/>
+      <ellipse cx="12" cy="4.6" rx="2" ry="3" fill="#429288" opacity="0.85" transform="rotate(288 12 7.6)"/>
+      <circle cx="12" cy="7.6" r="3.1" fill="#fbe484"/>
+      <path d="M8.6 20v-4.1a3.4 3.4 0 0 1 6.8 0V20z" fill="#429288" opacity="0.85"/>
+    </svg>
+  </a>
   <a href="#wisdom" class="side-nav-item" data-section="wisdom" data-label="Tips">
     <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M9 21h6M12 3a6 6 0 0 1 6 6c0 2.2-1.2 4.1-3 5.2V17a1 1 0 0 1-1 1h-4a1 1 0 0 1-1-1v-2.8C7.2 13.1 6 11.2 6 9a6 6 0 0 1 6-6z" stroke="#429288" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
   </a>
@@ -953,7 +967,12 @@
         <svg class="feature-icon" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="15" cy="13" r="5.4" fill="#b7e4e7" stroke="#429288" stroke-width="2"/><path d="M5.6 29c0-5.2 4.2-8.4 9.4-8.4 2.2 0 4.2.6 5.8 1.6" stroke="#429288" stroke-width="2" stroke-linecap="round" fill="none"/><circle cx="25.5" cy="24.5" r="5.5" fill="#fbe484" stroke="#429288" stroke-width="1.8"/><path d="M25.5 22v5M23 24.5h5" stroke="#1d6466" stroke-width="1.8" stroke-linecap="round"/></svg>
         <div class="feature-card-text">
           <div class="feature-title">Your account</div>
-          <p class="feature-desc">One name across both gardens, and the friends you send bouquets to.</p>
+          <!-- THE GARDENER IS NAMED HERE rather than in a fifth card. A
+               gardener is who you ARE, which is what this card is about, and
+               the grid is two by two so a fifth would orphan a tile. -->
+          <p class="feature-desc">One name across both gardens, the friends you
+             send bouquets to, and a <a href="avatar/avatar-index.html">gardener</a>
+             of your own to stand in them.</p>
         </div>
       </div>
 
@@ -1195,6 +1214,38 @@
   </div>
 </div>
 
+
+<!-- THE GARDENER, AND THIS GAP IS THE ONLY ONE IT FITS IN. Every section is
+     one flat colour and every join is a curve painted in the colour ABOVE, so
+     a new section has to keep the alternation going. The run here is cream
+     then dark teal, and pale blue slots between them; going in higher up, say
+     between the gardens and the flower guide, would push the FLOWER GUIDE
+     onto pale blue, and its eight tiles are white with a --sky border that
+     simply vanishes on that ground.
+     ADDING A SECTION IS FIVE EDITS, NOT FOUR: this markup, the .side-nav-item
+     and its data-section, the sectionIds array that drives the scroll spy,
+     the styles, AND the SECTIONS array further down that builds the
+     per-section sparkle canvases. -->
+<section class="gardener" id="gardener">
+  <div class="gardener-inner">
+    <span class="section-label reveal">Who stands in it</span>
+    <h2 class="section-title reveal">Build your <em>gardener</em></h2>
+    <p class="section-desc reveal">Someone to stand in your garden, wearing a
+       flower of their own. They keep you company in your personal garden and
+       stand beside what you plant in the shared one.</p>
+    <!-- FOUR EXAMPLES, DRAWN BY THE REAL CODE. They are unlike each other in
+         flower, hair and outfit rather than being one gardener in four
+         colours, which is what says the thing is customisable; and painted by
+         AvatarDraw itself they cannot drift from what the build page makes,
+         the same rule the bouquet card already follows. -->
+    <div class="gardener-row reveal" id="gardenerRow"></div>
+    <!-- NOT "Build your gardener" again. The title directly above it already
+         says that, and a button repeating the heading it sits under tells
+         nobody anything they have not just read. -->
+    <a class="btn btn-primary reveal" href="avatar/avatar-index.html">Build yours</a>
+  </div>
+</section>
+
 <!-- FIX 5: Garden Wisdom, "garden" em now yellow on dark bg -->
 <section class="wisdom" id="wisdom">
   <div class="wisdom-inner">
@@ -1328,7 +1379,7 @@
   document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
 
   // FIX 7: Side nav active state tracking
-  const sectionIds = ['home','about','gardens','flowers','wisdom','start'];
+  const sectionIds = ['home','about','gardens','flowers','gardener','wisdom','start'];
   const sectionEls = sectionIds.map(id => document.getElementById(id)).filter(Boolean);
   const sideItems = document.querySelectorAll('.side-nav-item');
   function updateSideNav() {
@@ -2600,6 +2651,88 @@
 })();
 </script>
 <script src="bouquet/bouquet-sketch.js"></script>
+<!-- THE GARDENER'S OWN DRAWING, after the bouquet's because the flower they
+     wear is `drawSpeciesBloom` out of that file. `garden-gardener.js` is here
+     rather than in the head so the friends panel's avatars can find
+     `AvatarDraw`; `garden-account.js` in the head builds that panel only on
+     demand, so by the time anybody opens it all three are loaded. -->
+<script src="avatar/avatar-draw.js"></script>
+<script src="garden-gardener.js"></script>
+<script>
+/* FOUR EXAMPLE GARDENERS, PAINTED BY THE REAL CODE, so the row cannot drift
+   from what the build page actually makes. That is the same rule the bouquet
+   card follows by calling `renderBouquetCanvas`, and the reason neither is an
+   illustration OF the product.
+
+   THEY ARE UNLIKE EACH OTHER IN FLOWER, HAIR AND OUTFIT rather than being one
+   gardener in four colours. A row of one figure recoloured says the thing has
+   a palette; a row of four different people says it can be built. Every one
+   uses a different fringe, a different back, a different species (one of them
+   a SPROUT, since those two wear their flower on a stem and look unlike the
+   other six) and a different thing to carry.
+
+   PAINTED ON ARRIVAL AND ON WIDTH CHANGES ONLY, never on a scroll-driven
+   resize: a phone fires `resize` on a height change alone every time its
+   address bar slides away. */
+(function () {
+  var ROW = [
+    { name: 'Wren',  look: { skin: 1, fringe: 0, back: 2, hairCol: 1, flower: 'daisy',
+        top: 172, clothes: 'dungas', feet: 'boots', hold: 'trowel' } },
+    { name: 'Poppy', look: { skin: 5, fringe: 2, back: 4, hairCol: 4, flower: 'poppy',
+        top: 196, clothes: 'apron', feet: 'clogs', neck: 'scarf', face: 'freckles' } },
+    { name: 'Sol',   look: { skin: 3, fringe: 5, back: 0, hairCol: 9, flower: 'tulip',
+        top: 44,  clothes: 'shorts', feet: 'wellies', hold: 'basket' } },
+    { name: 'Ash',   look: { skin: 7, fringe: 1, back: 5, hairCol: 7, flower: 'peony',
+        top: 280, clothes: 'cardi', feet: 'boots', neck: 'satchel', face: 'specs' } }
+  ];
+
+  function paint() {
+    var row = document.getElementById('gardenerRow');
+    if (!row || !window.AvatarDraw || typeof window.drawSpeciesBloom !== 'function') return;
+    if (!row.children.length) {
+      ROW.forEach(function (g) {
+        var card = document.createElement('div');
+        card.className = 'gardener-card';
+        card.appendChild(document.createElement('canvas'));
+        var n = document.createElement('span');
+        n.className = 'gardener-name';
+        n.textContent = g.name;
+        card.appendChild(n);
+        row.appendChild(card);
+      });
+    }
+    [].forEach.call(row.children, function (card, i) {
+      var c = card.querySelector('canvas');
+      /* A CANVAS IN A BOX THAT HAS NOT BEEN LAID OUT MEASURES ZERO, and this
+         section can be reached before the fonts settle. Sized from the CARD
+         rather than from a guess at the column, the same rule the bouquet's
+         tile canvases follow. */
+      var w = card.clientWidth - 20;
+      if (w <= 0) return;
+      var h = Math.round(w * 1.25);
+      var dpr = Math.min(2, window.devicePixelRatio || 1);
+      c.width = Math.round(w * dpr); c.height = Math.round(h * dpr);
+      c.style.height = h + 'px';
+      var x = c.getContext('2d');
+      x.setTransform(dpr, 0, 0, dpr, 0, 0);
+      x.clearRect(0, 0, w, h);
+      window.AvatarDraw.paintAt(x, ROW[i].look, w / 2, h * 0.97, h * 1.05);
+    });
+  }
+
+  window.__paintGardeners = paint;
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function () { setTimeout(paint, 160); });
+  } else { setTimeout(paint, 160); }
+  window.addEventListener('load', function () { setTimeout(paint, 120); });
+  var lastW = window.innerWidth;
+  window.addEventListener('resize', function () {
+    if (window.innerWidth === lastW) return;
+    lastW = window.innerWidth;
+    paint();
+  });
+})();
+</script>
 <script>
 /* =========================================================================
    THE HERO OBJECTS' ART, painted by the project's own code.
@@ -3037,7 +3170,7 @@
        was the part that read as clutter. */
     var SECTIONS = [
       ['.about', false], ['.gardens', false], ['.catalogue', false],
-      ['.wisdom', true], ['.cta', false], ['footer', true]
+      ['.gardener', false], ['.wisdom', true], ['.cta', false], ['footer', true]
     ];
 
     var live = [];        /* { el, canvas, ctx, dark, index } */
