@@ -986,6 +986,39 @@ footer::before {
   width: 110%; height: 100px; background: var(--lightsky); border-radius: 0 0 50% 50%;
 }
 .footer-top, .footer-bottom { position: relative; z-index: 1; }
+
+/* ------------------------------------------------- the perched gardeners
+   TWO ON THE WHOLE PAGE AND NO MORE. It already carries eleven hero flowers,
+   three card pictures, eight guide blooms and five gardeners in the band, and
+   another repeated figure past that stops being charm and starts competing.
+   NOT LINKS, no labels, and `pointer-events: none`, which is the rule already
+   written down: the flower cursor marks a CONTROL, and a large box you happen
+   to be able to click is not one. */
+.perch {
+  position: absolute; z-index: 2; pointer-events: none;
+  display: block; width: 62px; height: 78px;
+}
+/* STANDING ON THE CARD'S TOP EDGE. `bottom: 100%` puts their feet exactly on
+   it whatever the section's padding turns out to be, and that padding is set
+   in three separate places. */
+.perch-cta { right: 9%; bottom: 100%; margin-bottom: -6px; }
+/* ON THE RIGHT, because the LEFT of the rule is where the social icons end
+   and she stood on top of them. The right side above the rule is the foot of
+   the Explore column, which runs out four links earlier. */
+.perch-footer { right: 8%; bottom: 100%; margin-bottom: -4px; }
+@media (prefers-reduced-motion: no-preference) {
+  .perch { animation: perchBob 6.2s ease-in-out infinite; }
+  .perch-footer { animation-duration: 5.4s; animation-delay: -2.1s; }
+}
+@keyframes perchBob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
+}
+@media (max-width: 768px) {
+  /* GONE ON A PHONE. The column is 375 wide and every one of these would be
+     standing on copy rather than beside it. */
+  .perch { display: none; }
+}
 /* TWO COLUMNS, NOT TWO EDGES. `space-between` on a 939px row holding 403px
    of content left a 535px gulf between Gratitude Garden and Explore, so the
    footer read as two things that had drifted apart rather than as a row.

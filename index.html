@@ -1312,6 +1312,14 @@
 
 <section class="cta" id="start">
   <div class="cta-inner reveal">
+    <!-- SOMEBODY PERCHED ON THE CARD'S OWN TOP EDGE. Two of these on the page
+         and no more: it already carries eleven hero flowers, three card
+         pictures, eight guide blooms and five gardeners in the band, and
+         another repeated figure past that stops being charm and starts
+         competing. It is INSIDE the card so `bottom: 100%` puts their feet
+         exactly on its edge whatever the section's padding turns out to be,
+         and that padding is set in three separate places. -->
+    <canvas class="perch perch-cta" data-perch="0" aria-hidden="true"></canvas>
     <span class="section-label">Ready to begin?</span>
     <h2 class="section-title">Your first flower is <em>waiting</em></h2>
     <p class="section-desc">Two minutes and honesty is all it takes.</p>
@@ -1384,6 +1392,12 @@
     </details>
   </div>
   <div class="footer-bottom">
+    <!-- SOMEBODY STANDING ON THE RULE, which is the top border of this box,
+         so the canvas lives INSIDE it and `bottom: 100%` puts their feet on
+         the line. Not a link, no label, and `pointer-events: none`, which is
+         the rule already written down: the flower cursor marks a CONTROL, and
+         a large box you happen to be able to click is not one. -->
+    <canvas class="perch perch-footer" data-perch="1" aria-hidden="true"></canvas>
     <div class="footer-credit">
       <span class="footer-name-bottom">Copyright 2026 Kenisha Gabriella Wijaya</span>
     </div>
@@ -2776,16 +2790,38 @@
     });
   }
 
-  window.__paintGardeners = paint;
+  /* TWO PERCHED GARDENERS, and they are YOURS if you have built one. That is
+     what makes them worth the pixels: a stranger's figure standing on a card
+     is decoration, and your own standing there is the page remembering you.
+     Without one they fall back to a template, so the page is never bare. */
+  function perch() {
+    var A = window.AvatarDraw, G = window.GardenGardener;
+    if (!A || typeof window.drawSpeciesBloom !== 'function') return;
+    var mine = G && G.get();
+    [].forEach.call(document.querySelectorAll('.perch'), function (c) {
+      var w = c.offsetWidth, h = c.offsetHeight;
+      if (!w || !h) return;
+      var dpr = Math.min(2, window.devicePixelRatio || 1);
+      c.width = Math.round(w * dpr); c.height = Math.round(h * dpr);
+      var x = c.getContext('2d');
+      x.setTransform(dpr, 0, 0, dpr, 0, 0);
+      x.clearRect(0, 0, w, h);
+      var look = mine || A.TEMPLATES[+c.dataset.perch === 0 ? 1 : 3].look;
+      A.paintAt(x, look, w / 2, h * 0.99, h * 1.04);
+    });
+  }
+
+  window.__paintGardeners = function () { paint(); perch(); };
+  function both() { paint(); perch(); }
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', function () { setTimeout(paint, 160); });
-  } else { setTimeout(paint, 160); }
-  window.addEventListener('load', function () { setTimeout(paint, 120); });
+    document.addEventListener('DOMContentLoaded', function () { setTimeout(both, 160); });
+  } else { setTimeout(both, 160); }
+  window.addEventListener('load', function () { setTimeout(both, 120); });
   var lastW = window.innerWidth;
   window.addEventListener('resize', function () {
     if (window.innerWidth === lastW) return;
     lastW = window.innerWidth;
-    paint();
+    both();
   });
 })();
 </script>

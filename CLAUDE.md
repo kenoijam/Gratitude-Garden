@@ -478,6 +478,14 @@ footer   dark teal   <- cream curve
 
 **The closing section is PALE BLUE, and `footer::before` moves with it.** The page ran hero, cream, pale blue, cream, dark teal, cream, which made it cream twice in three with only a dark teal band between them. In pale blue the run alternates properly. The curve into the footer is painted in the colour of the section above it, so it is pale blue too; miss that and the footer gets a cream roll off a blue section. **The card's border had to change with the ground**: white on pale blue is 1.11:1 and `--sky` against that ground is 1.23, so neither drew the card's edge; it is `rgba(29,100,102,0.26)`, measured at 1.49 on the card and 1.47 on the ground.
 
+**TWO PERCHED GARDENERS ON THE WHOLE PAGE AND NO MORE.** One on the closing card's top edge and one on the footer's rule. The page already carries eleven hero flowers, three card pictures, eight guide blooms and five gardeners in the band, and another repeated figure past that stops being charm and starts competing.
+
+- **THEY ARE YOURS IF YOU HAVE BUILT ONE**, falling back to a template otherwise, which is what makes them worth the pixels: a stranger's figure standing on a card is decoration, and your own standing there is the page remembering you.
+- **NOT LINKS, no labels, `pointer-events: none`.** The rule already written down is that the flower cursor marks a CONTROL and a large box you happen to be able to click is not one.
+- **EACH ONE LIVES INSIDE THE THING IT STANDS ON** so `bottom: 100%` puts its feet exactly on that edge: the closing card rather than `.cta`, whose padding is set in three separate places, and `.footer-bottom` rather than `<footer>`, since the rule they stand on IS that box's top border.
+- **The footer's is on the RIGHT.** On the left it stood on top of the social icons; the right of that rule is the foot of the Explore column, which runs out four links earlier.
+- **Gone under 768px.** The column is 375 wide there and either of them would be standing on copy rather than beside it.
+
 **THE FOOTER'S SIGN UP MAKES AN ACCOUNT, NOT A MAILING LIST, and that is the whole reason it is there.** The uncomfyworld reference puts a newsletter field in its footer; this project has no mailing list and no backend for one, so a box asking for an email with nothing behind it would be the single control on an otherwise honest page that does not do what it says. It HAS accounts, and the footer was the one place with no way into them.
 
 - **It is a BUTTON, not a field.** An input would promise that typing in it is the thing that signs you up, and the real form has two fields and lives in `garden-account.js`.
