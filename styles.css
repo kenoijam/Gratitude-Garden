@@ -853,54 +853,75 @@ canvas.flower-canvas { position: absolute; top: 0; left: 0; width: 100%; height:
 .wisdom { background: var(--darkteal); position: relative; overflow: hidden; padding-top: 140px; padding-bottom: 100px; }
 /* the curve above is the colour of whatever section sits above it, bleeding
    down into the dark teal. The flower guide is pale blue. */
-/* THE CURVE IS ALWAYS THE COLOUR OF THE SECTION ABOVE, and the section
-   above Wisdom is the gardener now, not the flower guide. Miss this and the
-   dark teal gets a cream roll off a pale blue section. */
-.wisdom::before { content: ''; position: absolute; top: -60px; left: 50%; transform: translateX(-50%); width: 110%; height: 100px; background: var(--lightsky); border-radius: 0 0 50% 50%; }
+/* THE CURVE IS ALWAYS THE COLOUR OF THE SECTION ABOVE, and above Wisdom is
+   the flower guide's cream. It was pale blue for as long as the gardener had
+   a section of its own between them. */
+.wisdom::before { content: ''; position: absolute; top: -60px; left: 50%; transform: translateX(-50%); width: 110%; height: 100px; background: var(--cream); border-radius: 0 0 50% 50%; }
 
-/* ---------------------------------------------------------- the gardener
-   PALE BLUE, which is what keeps the page alternating: cream above it and
-   dark teal below. Its own curve is therefore cream. The clearance is the
-   page's standard 100px, measured from the first PAINTED child rather than
-   read off the padding, since .gardener-inner carries no margin of its own. */
-.gardener {
-  background: var(--lightsky);
-  padding: 116px 2rem 100px;
-  position: relative;
-  overflow: hidden;
-  text-align: center;
+/* ---------------------------------------------------- the gardener band
+   IT SHARES #gardens' GROUND rather than being a section of its own. Every
+   section on this page is one flat colour and every join is a curve painted
+   in the colour above, so a new section between the gardens and the flower
+   guide would have to be cream, which pushes the guide onto pale blue and
+   kills the --sky border on its eight white tiles. A band needs no curve, no
+   colour and no sparkle canvas of its own. */
+.gardener-band {
+  position: relative; z-index: 1;
+  max-width: 900px; margin: 72px auto 0; text-align: center;
 }
-.gardener::before {
-  content: ''; position: absolute; top: -60px; left: 50%; transform: translateX(-50%);
-  width: 110%; height: 100px; background: var(--cream); border-radius: 0 0 50% 50%;
+.gardener-h {
+  font-family: Fraunces, Georgia, serif; font-weight: 700;
+  font-variation-settings: 'SOFT' 50, 'WONK' 0;
+  font-size: clamp(1.5rem, 2.6vw, 2rem); color: var(--darkteal);
+  margin: 0 0 .6rem;
 }
-/* POSITIONED WITH A Z-INDEX, or the curve paints straight over the copy.
-   Every section that carries one needs this; .catalogue-header and
-   .wisdom-inner already do. */
-.gardener-inner { position: relative; z-index: 1; max-width: 900px; margin: 0 auto; }
-.gardener-inner .section-desc { max-width: 620px; margin-left: auto; margin-right: auto; }
-/* FOUR ACROSS AT EVERY WIDTH DOWN TO THE PHONE, where it falls to two by two.
-   A fixed count rather than auto-fit, which is the rule every other grid on
-   this page follows after auto-fit left uneven rows as the column narrowed. */
+.gardener-h em { font-style: italic; color: var(--teal); }
+.gardener-p {
+  font-family: Arial, Helvetica, sans-serif; font-size: 1rem;
+  color: #2f6260; line-height: 1.6;
+  max-width: 560px; margin: 0 auto;
+}
+/* FIVE ACROSS, a fixed count rather than auto-fit, which is the rule every
+   other grid on this page follows after auto-fit left uneven rows. */
 .gardener-row {
-  display: grid; grid-template-columns: repeat(4, 1fr);
-  gap: 1.2rem; margin: 2.2rem auto 2.4rem; max-width: 760px;
+  display: grid; grid-template-columns: repeat(5, 1fr);
+  gap: 1rem; margin: 1.8rem auto; max-width: 760px;
 }
+/* A LINK, NOT A CARD. They looked pressable and were not; each one now opens
+   the build page already wearing that gardener. No panel behind them, since
+   the band already sits on its own ground and five white cards in a row would
+   read as a second set of garden cards. */
 .gardener-card {
-  background: snow; border-radius: 18px; padding: 14px 10px 12px;
-  box-shadow: 0 8px 32px rgba(29,100,102,0.10);
-  display: flex; flex-direction: column; align-items: center; gap: 6px;
-  min-width: 0;
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  min-width: 0; text-decoration: none; padding: 6px 2px;
+  border-radius: 16px; border: 1.5px solid transparent;
+  transition: border-color .18s ease;
 }
 /* A CANVAS IS A BAD GRID ITEM: it carries an intrinsic width, so as a grid
    item it becomes its column's minimum and 1fr stops dividing the row
-   evenly. `min-width: 0` on the card and `display: block` here is the same
-   fix the bouquet's tiles and the landing page's card canvases needed. */
+   evenly. The same fix the bouquet's tiles needed. */
 .gardener-card canvas { display: block; width: 100%; height: auto; }
 .gardener-name {
-  font-size: .82rem; color: #2f6260; font-weight: 700;
-  letter-spacing: .02em;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: .82rem; color: #2f6260; font-weight: 700; letter-spacing: .02em;
 }
+/* THEY BOB, EACH ON ITS OWN PERIOD, or the five rise and fall together and
+   the row reads as the page tilting. Same rule the hero's objects follow. */
+@media (prefers-reduced-motion: no-preference) {
+  .gardener-card canvas { animation: gardenerBob 5.6s ease-in-out infinite; }
+  .gardener-card:nth-child(2) canvas { animation-duration: 6.4s; animation-delay: -1.2s; }
+  .gardener-card:nth-child(3) canvas { animation-duration: 5.2s; animation-delay: -2.6s; }
+  .gardener-card:nth-child(4) canvas { animation-duration: 6.8s; animation-delay: -0.7s; }
+  .gardener-card:nth-child(5) canvas { animation-duration: 5.9s; animation-delay: -3.3s; }
+}
+@keyframes gardenerBob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-7px); }
+}
+@media (hover: hover) {
+  .gardener-card:hover { border-color: var(--sky); }
+}
+
 /* No `::after` here. Every join on the page is a section curving DOWN into the
    one below, so the closing section carries this one on its own top instead;
    the tips section used to be the only one with a curve on both edges, and the
@@ -1893,18 +1914,15 @@ button, a, [role="button"], summary, input[type="range"], label[for] {
   }
 }
 
-/* --------------------------------------------------- the gardener, on a phone
+/* ---------------------------------------- the gardener band, on a phone
    LAST in the file, like every other phone block in this project. A later
    rule beats an earlier one at equal specificity, so a phone override written
    above the base declaration it is overriding does nothing at all, silently,
    and that trap has now been hit on four separate stylesheets here. */
 @media (max-width: 768px) {
-  /* 56px of clearance rather than 100, which is what every other curved
-     section takes there. The curve dips 40px INTO the section, so the padding
-     and the clearance are not the same number. */
-  .gardener { padding: 72px 1.5rem 56px; }
-  /* TWO BY TWO. Four across a 375 wide screen gives each gardener about 78px
-     of column, at which the flower on their head is a dozen pixels and the
-     row reads as four smudges. */
-  .gardener-row { grid-template-columns: 1fr 1fr; gap: 1rem; max-width: 340px; }
+  .gardener-band { margin-top: 44px; }
+  /* THREE AND TWO, not five. Five across a 375 wide screen gives each
+     gardener about 62px of column, at which the flower on their head is ten
+     pixels and the row reads as five smudges. */
+  .gardener-row { grid-template-columns: repeat(3, 1fr); gap: .7rem; max-width: 330px; }
 }
