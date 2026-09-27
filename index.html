@@ -1497,7 +1497,7 @@
        ordinary word in the middle of the line. */
     var words = [];
     var seen = [];
-    [].forEach.call(document.querySelectorAll('[data-wiggle], .section-title em'),
+    [].forEach.call(document.querySelectorAll('[data-wiggle], .section-title em, .gardener-h em'),
       function (w) {
         if (seen.indexOf(w) >= 0) return;
         seen.push(w);
@@ -1561,18 +1561,36 @@
         if (e.target === last) w.classList.remove('wig-run');
       });
     });
-    /* Only the words that are ON SCREEN at load run by themselves, which in
-       practice is the hero's two. Firing all seven in a chain would spend
-       four seconds animating headings nobody has scrolled to yet, and each
-       would be finished long before it was seen. The rest wait for the
-       pointer, which is the only moment they have an audience. */
-    var onLoad = words.filter(function (w) {
-      var r = w.getBoundingClientRect();
-      return r.top < window.innerHeight && r.bottom > 0;
-    });
-    onLoad.forEach(function (w, i) {
-      setTimeout(function () { run(w); }, 900 + i * 420);
-    });
+    /* EVERY WORD RUNS WHEN IT ARRIVES, which is what makes the page answer to
+       a scroll rather than only to a pointer.
+
+       The rule before this was that only the words on screen AT LOAD ran by
+       themselves and the rest waited for the pointer, because firing all
+       seven in a chain at load would spend four seconds animating headings
+       nobody had scrolled to and each would finish long before it was seen.
+       An observer is the better answer to that same problem: a word runs
+       exactly when it has an audience, it runs ONCE, and a touch screen with
+       no pointer at all finally gets them too.
+
+       The hover still works and is untouched, so a word can be replayed. */
+    var fired = [];
+    if (!window.IntersectionObserver) return;
+    var io = new IntersectionObserver(function (entries) {
+      /* Several can arrive in one callback, on a short section or a fast
+         scroll, and firing them together reads as the whole heading
+         twitching at once rather than as words springing in turn. */
+      var n = 0;
+      entries.forEach(function (en) {
+        if (!en.isIntersecting) return;
+        var w = en.target;
+        if (fired.indexOf(w) >= 0) return;
+        fired.push(w);
+        io.unobserve(w);
+        setTimeout(function () { run(w); }, 240 + n * 260);
+        n++;
+      });
+    }, { threshold: 0.55 });
+    words.forEach(function (w) { io.observe(w); });
   })();
 </script>
 
