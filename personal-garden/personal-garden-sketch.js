@@ -2154,7 +2154,16 @@ function mousePressed(event) {
      was a lot to put in front of somebody who only wanted to know which day a
      flower was; the card answers that, and its button opens the book for
      anyone who wants more. A tap on empty ground puts the card away. */
-  if (!hoveredFlower || !hoveredFlower.date) { hideFlowerCard(); return; }
+  /* THE BUTTERFLIES ARE ASKED LAST, on empty ground only, and that is a
+     choice rather than an oversight. They are drawn OVER everything, so by
+     paint order they should win; but they move and a flower does not, and
+     the flower is the point of the garden. Tapping a bloom while one happens
+     to be passing must open the bloom. */
+  if (!hoveredFlower || !hoveredFlower.date) {
+    if (window.GardenLife && GardenLife.startle(mouseX, mouseY)) return;
+    hideFlowerCard();
+    return;
+  }
   /* A SECOND PRESS ON THE SAME FLOWER PUTS THE CARD AWAY. Without it the only
      way to dismiss one was to find bare ground, which on a full garden is a
      hunt. `hoverSuppress` is what stops a mouse re-opening it on the very

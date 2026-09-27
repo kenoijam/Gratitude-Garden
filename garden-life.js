@@ -520,6 +520,9 @@
     if (!bands.length) return;
     var only = (opts && typeof opts.only === "number") ? opts.only : -1;
     var scroll = (opts && opts.scrollY) || 0;
+    /* WHERE THIS CANVAS'S OWN ORIGIN SITS ON THE PAGE, used only to record a
+       butterfly's position for `startle`. */
+    var originX = (opts && opts.originX) || 0;
     var t = clock();
     var u = unitFor(w, opts);
     var wrapW = w + 60;
@@ -570,22 +573,98 @@
       if (now[1] < -80 || now[1] > h + 80) continue;
       var soon = flyAt(f, t + 0.18, home, ay);
       var ang = Math.atan2(soon[1] - now[1], soon[0] - now[0]);
-      var open = 0.26 + 0.74 * Math.abs(Math.sin(t * f.flap + f.px));
+      /* THE WINGS GO FASTER WHILE IT IS STARTLED. The phase jumps when the
+         rate changes, and a butterfly bolting is the one moment that is
+         invisible. */
+      var sp = spookAt(f, t);
+      var fl = f.flap * (1 + 1.7 * (sp ? sp.amp : 0));
+      var open = 0.26 + 0.74 * Math.abs(Math.sin(t * fl + f.px));
       drawButterfly(ctx, now[0], now[1], ang, f.size * u, open, f.tint);
+      /* RECORDED IN PAGE SPACE, not canvas space. These canvases are sticky
+         and inset, so a point drawn at canvas x 40 is not at page x 40, and a
+         startle tested in one space against the other never matches. `meadow`
+         passes neither an origin nor a scroll, so there the three are the same
+         number and a garden can hand `startle` a plain canvas coordinate. */
+      seen(f, now[0] + originX, now[1] + scroll, f.size * u * 1.6, t);
     }
 
     ctx.restore();
+  }
+
+  /* ------------------------------------------------- startling a butterfly
+     THIS MODULE HAS NEVER HAD A HIT TEST. It draws on a raw context and knows
+     nothing about the DOM, so the only honest way to find a butterfly is the
+     one the hero's own flowers already use: the DRAW records where it painted
+     each one, rather than anything trying to re-derive a position from two
+     sines afterwards.
+
+     THE POSITION IS STORED ON THE BUTTERFLY, not pushed into a list that is
+     cleared each pass, and the landing page is why: it calls `drift` once PER
+     SECTION with `opts.only`, six times a frame, so a list cleared at the top
+     of a pass would hold only the last section's. Each butterfly carries when
+     it was last drawn instead, and a stale one is simply skipped. */
+  var flyHits = [];
+  var SPOOK = 1.5;
+  function seen(f, x, y, r, t) {
+    f._hx = x; f._hy = y; f._hr = r; f._ht = t;
+    if (flyHits.indexOf(f) >= 0) return;
+    /* A REBUILD MAKES NEW OBJECTS, so without this the list grows for ever.
+       The population is rebuilt whenever the page's shape changes, which on a
+       page that is still loading its fonts is most frames for the first
+       second: measured at 86 entries for six butterflies. Anything not drawn
+       for a second is gone. */
+    for (var i = flyHits.length - 1; i >= 0; i--) {
+      if (t - flyHits[i]._ht > 1) flyHits.splice(i, 1);
+    }
+    flyHits.push(f);
+  }
+
+  /* OUT FAST AND BACK SLOWLY, which is what a startle is: the lift is over in
+     an eighth of it and the settle takes the rest. It is an OFFSET on the
+     flight rather than a replacement for it, so the butterfly returns to its
+     own two sines instead of restarting somewhere else. */
+  function spookAt(f, t) {
+    if (!f.spook) return null;
+    var e = t - f.spook;
+    if (e < 0 || e > SPOOK) return null;
+    var p = e / SPOOK;
+    var amp = Math.min(1, p * 8) * (1 - p) * (1 - p);
+    return { amp: amp, x: f.spookX * 46 * amp, y: -64 * amp };
+  }
+
+  function startle(x, y) {
+    var now = clock(), best = null, bd = 1e9;
+    for (var i = 0; i < flyHits.length; i++) {
+      var f = flyHits[i];
+      /* NOT DRAWN THIS FRAME, NOT THERE. A butterfly whose band has scrolled
+         away, or whose section canvas has been freed, is still in this list
+         and is nowhere on the screen. */
+      if (now - f._ht > 0.4) continue;
+      var d = Math.sqrt((x - f._hx) * (x - f._hx) + (y - f._hy) * (y - f._hy));
+      /* A GENEROUS RADIUS, because a butterfly is about fourteen pixels
+         across and a fingertip is forty. */
+      if (d < f._hr + 26 && d < bd) { bd = d; best = f; }
+    }
+    if (!best) return false;
+    best.spook = now;
+    /* AWAY FROM THE FINGER, never a fixed direction. Startled toward the
+       thumb that startled it reads as a moth at a lamp. */
+    best.spookX = (best._hx - x) >= 0 ? 1 : -1;
+    return true;
   }
 
   /* Two sines of unrelated periods on each axis. One sine is an oval track
      and reads as a machine; two that do not divide into each other never
      quite repeat, which is the whole trick. */
   function flyAt(f, t, home, ay) {
+    var sp = spookAt(f, t);
     return [
       home[0] + Math.sin(t * f.wx + f.px) * f.ax
-              + Math.sin(t * f.wx * 0.41 + f.px * 1.7) * f.ax * 0.34,
+              + Math.sin(t * f.wx * 0.41 + f.px * 1.7) * f.ax * 0.34
+              + (sp ? sp.x : 0),
       home[1] + Math.sin(t * f.wy + f.py) * ay
               + Math.sin(t * f.wy * 0.57 + f.py * 1.3) * ay * 0.42
+              + (sp ? sp.y : 0)
     ];
   }
 
@@ -632,12 +711,19 @@
       var ang = Math.atan2(dy, dx);
       /* Wings shut at the top of the beat, and never fully: a butterfly with
          its wings edge on for a whole frame simply disappears. */
-      var open = 0.26 + 0.74 * Math.abs(Math.sin(t * f.flap + f.px));
+      /* THE WINGS GO FASTER WHILE IT IS STARTLED. The phase jumps when the
+         rate changes, and a butterfly bolting is the one moment that is
+         invisible. */
+      var sp = spookAt(f, t);
+      var fl = f.flap * (1 + 1.7 * (sp ? sp.amp : 0));
+      var open = 0.26 + 0.74 * Math.abs(Math.sin(t * fl + f.px));
       drawButterfly(ctx, now[0], now[1], ang, f.size * u, open, f.tint);
+      seen(f, now[0], now[1], f.size * u * 1.6, t);
     }
 
     ctx.restore();
   }
 
-  window.GardenLife = { sky: sky, meadow: meadow, drift: drift, reduced: reduced };
+  window.GardenLife = { sky: sky, meadow: meadow, drift: drift,
+                        startle: startle, reduced: reduced };
 })();

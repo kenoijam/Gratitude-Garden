@@ -3259,6 +3259,7 @@
         GardenLife.drift(rec.ctx, w, h, {
           bands: bands,
           scrollY: window.scrollY + r.top,
+          originX: r.left,
           only: rec.index
         });
       });
@@ -3282,6 +3283,19 @@
     }
     if (GardenLife.reduced) window.addEventListener('scroll', paint, { passive: true });
     else requestAnimationFrame(tick);
+
+    /* A BUTTERFLY STARTLES WITHOUT THE CANVAS TAKING THE TAP. These canvases
+       are `pointer-events: none` over the whole page, and they have to stay
+       that way: a full page sheet that took events would swallow every link,
+       card and flower under it. So the DOCUMENT listens instead, nothing is
+       prevented and nothing is stopped, and whatever was under the finger
+       still gets its click; a butterfly that happened to be there simply
+       also bolts. */
+    if (!GardenLife.reduced) {
+      document.addEventListener('pointerdown', function (e) {
+        GardenLife.startle(e.clientX + window.scrollX, e.clientY + window.scrollY);
+      }, { passive: true });
+    }
   })();
   </script>
 

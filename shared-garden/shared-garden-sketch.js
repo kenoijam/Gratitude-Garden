@@ -315,6 +315,10 @@ if (step !== "garden") return;
 if (gardenerPatted(px, py)) return;
 
 const tapped = findFlowerAt(px, py);
+/* THE BUTTERFLIES ARE ASKED LAST, on empty ground only. They are drawn OVER
+   everything, so by paint order they should win; but they move and a flower
+   does not, and the flower is the point of the garden. */
+if (!tapped && window.GardenLife && GardenLife.startle(px, py)) return;
 
 /* A SECOND PRESS ON THE SAME FLOWER PUTS THE CARD AWAY. It used to re-open it
    on the same bloom, so the only way to dismiss one was to find bare ground.
