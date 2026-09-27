@@ -996,6 +996,41 @@ footer::before {
 .footer-brand-logo {
   font-variation-settings: 'SOFT' 50, 'WONK' 0; font-family: 'Fraunces','Georgia',serif; font-size: 1.4rem; color: var(--yellow); margin-bottom: 0.9rem; display: block; text-decoration: none; }
 .footer-desc { font-family: Arial,Helvetica,sans-serif; font-size: 0.88rem; line-height: 1.75; max-width: 340px; }
+/* ------------------------------------------------- the footer's invitation
+   THE SIGN UP MAKES AN ACCOUNT, not a mailing list, so it is a BUTTON and not
+   a field: an input would promise that typing in it is the thing that signs
+   you up, and the real form has two fields and lives in the account module. */
+.footer-join {
+  display: inline-flex; align-items: center; gap: .5rem;
+  margin: 1.1rem 0 .55rem; padding: 11px 20px; min-height: 44px;
+  border: 1.5px solid rgba(255,249,227,0.5); border-radius: 50px;
+  background: none; color: var(--cream);
+  font-family: Arial, Helvetica, sans-serif; font-size: .88rem; font-weight: 700;
+  transition: background .25s, border-color .25s;
+}
+.footer-join[disabled] { opacity: .6; }
+.footer-join-note {
+  font-family: Arial, Helvetica, sans-serif; font-size: .78rem;
+  line-height: 1.6; color: rgba(255,249,227,0.55); max-width: 340px; margin: 0;
+}
+/* `.footer-col ul` ALREADY SETS `flex-direction: column` and outranks a bare
+   class, so this has to be scoped the same way or the two icons stack. */
+.footer-col ul.footer-social {
+  list-style: none; display: flex; flex-direction: row; gap: .55rem;
+  margin: 1.1rem 0 0; padding: 0; align-items: center;
+}
+.footer-social a {
+  display: flex; align-items: center; justify-content: center;
+  width: 38px; height: 38px; border-radius: 50%;
+  border: 1.5px solid rgba(255,249,227,0.3);
+  color: rgba(255,249,227,0.75);
+  transition: color .25s, border-color .25s;
+}
+@media (hover: hover) {
+  .footer-join:hover { background: rgba(255,249,227,0.1); border-color: var(--yellow); }
+  .footer-social a:hover { color: var(--yellow); border-color: var(--yellow); }
+}
+
 .footer-col h4 {
   font-variation-settings: 'SOFT' 50, 'WONK' 0; font-family: 'Fraunces','Georgia',serif; font-size: 1.4rem; font-weight: normal; color: var(--yellow); margin-bottom: 0.9rem; text-align: left; }
 /* Left aligned, like the column opposite. Ragged down their left side against

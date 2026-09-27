@@ -478,6 +478,14 @@ footer   dark teal   <- cream curve
 
 **The closing section is PALE BLUE, and `footer::before` moves with it.** The page ran hero, cream, pale blue, cream, dark teal, cream, which made it cream twice in three with only a dark teal band between them. In pale blue the run alternates properly. The curve into the footer is painted in the colour of the section above it, so it is pale blue too; miss that and the footer gets a cream roll off a blue section. **The card's border had to change with the ground**: white on pale blue is 1.11:1 and `--sky` against that ground is 1.23, so neither drew the card's edge; it is `rgba(29,100,102,0.26)`, measured at 1.49 on the card and 1.47 on the ground.
 
+**THE FOOTER'S SIGN UP MAKES AN ACCOUNT, NOT A MAILING LIST, and that is the whole reason it is there.** The uncomfyworld reference puts a newsletter field in its footer; this project has no mailing list and no backend for one, so a box asking for an email with nothing behind it would be the single control on an otherwise honest page that does not do what it says. It HAS accounts, and the footer was the one place with no way into them.
+
+- **It is a BUTTON, not a field.** An input would promise that typing in it is the thing that signs you up, and the real form has two fields and lives in `garden-account.js`.
+- **It opens `GardenAccount.openSignIn()`**, which is what the chip in the corner already opens, so there is one sign in on the page rather than two. Signed in it opens the friends panel instead, and with accounts not configured it says so on the button rather than opening nothing.
+- **Instagram is `gratitudegarden.id`**, beside the existing Linktree, as inline SVG rather than an image file: this repo ships three images in total and draws everything else in code.
+- **`.footer-col ul` ALREADY SETS `flex-direction: column`** and outranks a bare class, so the social row has to be scoped `.footer-col ul.footer-social` or the two icons stack.
+- Explore gained Build your gardener, so all four pages are named there.
+
 **THE FOOTER IS TWO COLUMNS, NOT TWO EDGES.** `.footer-top` was `justify-content: space-between` on a 939px row carrying 403px of content, which left a **535px gulf** between Gratitude Garden and Explore, and the links were `align-items: flex-end` so they were ragged down their left side against the page edge. It is an even two column grid with a 3rem gap now, both columns left aligned, and the brand description can run to 340px rather than 260 since it has half the row. Measured after: the gap between the columns is 51px.
 
 - **The vertical pair is even, and it had to be measured rather than set.** The gap above the divider is the 2.5rem margin under `.footer-top`, which reads 43px. `.footer-bottom` centres its credit in whatever is left after its padding, which adds about 12px on top, so 1.5rem read 38 and 2.5rem read 55. At **1.8rem** the gap under the divider reads 43 and matches the one above it exactly.

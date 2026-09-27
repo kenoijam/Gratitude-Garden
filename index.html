@@ -1335,6 +1335,43 @@
     <details class="footer-col footer-fold" data-fold-phone open>
       <summary><span class="footer-brand-logo">Gratitude Garden</span></summary>
       <p class="footer-desc">Turn what you're grateful for into a flower. Keep it, share it in a meadow, or wrap it up for someone else.</p>
+      <!-- THE SIGN UP MAKES AN ACCOUNT, not a mailing list, and that is the
+           whole reason it is here rather than a newsletter field. This project
+           HAS accounts: `garden-account.js` is already loaded on this page and
+           already exports the sign in card. A box asking for an email with
+           nothing behind it would be the one control on an otherwise honest
+           page that does not do what it says.
+           It is a BUTTON, not a form with an input. An input would promise
+           that typing in it is the thing that signs you up, and the real form
+           has two fields and lives in the account module. -->
+      <button type="button" class="footer-join" id="footerJoin">
+        <span>Make an account</span>
+        <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor"
+             stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M3 8h9M8.5 4 12.5 8l-4 4"/>
+        </svg>
+      </button>
+      <p class="footer-join-note">One name across both gardens, your gardener, and the friends you send bouquets to. The gardens work without one.</p>
+      <!-- WHERE ELSE THIS LIVES. The footer had no way out to anywhere, which
+           on a project with an account and a page of its own is the one place
+           somebody looks for it. -->
+      <ul class="footer-social" aria-label="Elsewhere">
+        <li><a href="https://www.instagram.com/gratitudegarden.id/" target="_blank" rel="noopener" aria-label="Gratitude Garden on Instagram">
+          <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor"
+               stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <rect x="3.2" y="3.2" width="17.6" height="17.6" rx="5"/>
+            <circle cx="12" cy="12" r="4"/>
+            <circle cx="17.1" cy="6.9" r="1.1" fill="currentColor" stroke="none"/>
+          </svg>
+        </a></li>
+        <li><a href="https://linktr.ee/kenoijam" target="_blank" rel="noopener" aria-label="Kenisha's other links">
+          <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor"
+               stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M10.4 13.6a4 4 0 0 0 5.7 0l2.8-2.8a4 4 0 0 0-5.7-5.7l-1.2 1.2"/>
+            <path d="M13.6 10.4a4 4 0 0 0-5.7 0l-2.8 2.8a4 4 0 0 0 5.7 5.7l1.2-1.2"/>
+          </svg>
+        </a></li>
+      </ul>
     </details>
     <details class="footer-col footer-fold" data-fold-phone open>
       <summary><h4>Explore</h4></summary>
@@ -1342,6 +1379,7 @@
         <li><a href="personal-garden/personal-garden-index.html" target="_self" rel="noopener">The Personal Garden</a></li>
         <li><a href="shared-garden/shared-garden-index.html" target="_self" rel="noopener">The Shared Garden</a></li>
         <li><a href="bouquet/bouquet-index.html" target="_self" rel="noopener">The Bouquet Builder</a></li>
+        <li><a href="avatar/avatar-index.html" target="_self" rel="noopener">Build your gardener</a></li>
       </ul>
     </details>
   </div>
@@ -1356,6 +1394,26 @@
 </footer>
 
 <script>
+  /* THE FOOTER'S SIGN UP OPENS THE PROJECT'S OWN ACCOUNT CARD. `openSignIn`
+     is what `garden-account.js` already exports and what the chip in the
+     corner already opens, so there is one sign in on this page rather than
+     two. If accounts are not configured the module is inert and the button
+     says so rather than opening nothing. */
+  (function () {
+    var b = document.getElementById('footerJoin');
+    if (!b) return;
+    b.addEventListener('click', function () {
+      var A = window.GardenAccount;
+      if (A && A.isLive && A.isLive() && A.openSignIn) {
+        if (A.user && A.user()) { A.openFriends(); return; }
+        A.openSignIn();
+        return;
+      }
+      b.querySelector('span').textContent = 'Accounts are not switched on yet';
+      b.disabled = true;
+    });
+  })();
+
   // Scroll reveal
   const observer = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
