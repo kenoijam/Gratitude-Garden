@@ -234,6 +234,156 @@ button, a, [role="button"], summary, label[for] { touch-action: manipulation; }
    earlier one at equal specificity, so a phone override written above the
    declaration it is overriding does nothing at all, silently. That trap has
    been hit on four separate stylesheets in this project. */
+
+/* ==========================================================  the studio
+   THE BOUQUET'S SHAPE, not its code: a rail of tabs, the figure large in the
+   middle, and the options for that tab down the right ending in one button.
+   The gardener never leaves the screen while you dress them, which is the one
+   thing the book already had right, and every tab is one press away, which
+   is the thing it did not. */
+/* `hidden` LOSES TO ANY AUTHOR RULE, because it works through the browser's
+   own stylesheet which every author rule outranks. Without this line the
+   studio's own `display: grid` keeps it on screen underneath the gallery
+   however many times the code sets `hidden`, and reading `.hidden` back
+   reports true while the thing is plainly visible. The bouquet's foot bar
+   needed the identical line. */
+.av-studio[hidden] { display: none !important; }
+.av-studio {
+  display: grid;
+  grid-template-columns: 88px minmax(0, 1fr) 348px;
+  gap: 16px;
+  align-items: stretch;
+  height: min(78vh, 680px);
+}
+/* THE TITLE STANDS DOWN ON THE STUDIO. A 44px heading and its line over a
+   screen-tall studio is 150px of the one thing the studio needs, which is
+   height. Same rule as the bouquet hiding its progress dots there. */
+html[data-av="studio"] .av-title,
+html[data-av="studio"] .av-sub { display: none; }
+
+.av-rail {
+  display: flex; flex-direction: column; gap: 6px;
+  background: var(--cream); border: 1px solid #efe6c8;
+  border-radius: 18px; padding: 10px 8px;
+}
+.av-rail-tab {
+  display: flex; flex-direction: column; align-items: center; gap: 5px;
+  padding: 10px 4px; border: 0; background: none; border-radius: 13px;
+  color: #2f6260; font: inherit; font-size: .72rem; font-weight: 700;
+  letter-spacing: .01em; line-height: 1.15; text-align: center;
+}
+.av-rail-ic {
+  display: flex; align-items: center; justify-content: center;
+  width: 34px; height: 34px; border-radius: 50%;
+  background: snow; border: 1.5px solid #bde0d6; color: #2c6d6b;
+}
+.av-rail-ic svg { width: 19px; height: 19px; }
+.av-rail-tab.is-on { background: snow; color: #0f5132; }
+.av-rail-tab.is-on .av-rail-ic { border-color: #26a69a; background: #e1f7f7; }
+
+/* A PALE SKY TO WHITE STAGE, the builder's own. Faded into cream it wrapped
+   the figure in yellow and every skin went muddy. */
+.av-studio-stage {
+  display: flex; flex-direction: column; align-items: center;
+  justify-content: center; gap: 10px; min-width: 0;
+  background: linear-gradient(170deg, #e8f7f7 0%, #f9ffff 62%);
+  border-radius: 18px; padding: 14px;
+}
+.av-studio-stage .av-stage { flex: 0 1 auto; min-height: 0; display: flex;
+  align-items: center; justify-content: center; }
+.av-studio-stage canvas { max-width: 100%; max-height: 100%; width: auto; height: auto; }
+/* THE NAME SITS BESIDE THE FIGURE rather than on a page of its own, since one
+   field never needed a screen. */
+.av-stage-name { width: min(280px, 100%); }
+.av-stage-name span { font-size: .72rem; }
+
+.av-options {
+  display: flex; flex-direction: column; min-width: 0;
+  background: var(--cream); border: 1px solid #efe6c8; border-radius: 18px;
+}
+/* THE PANEL SCROLLS INSIDE ITSELF, so the studio is one screen tall and the
+   page behind it never grows. */
+.av-opt-body { flex: 1 1 auto; overflow-y: auto; padding: 18px 18px 6px; }
+.av-pane h2 {
+  font-family: Fraunces, Georgia, serif; font-weight: 600;
+  font-variation-settings: 'SOFT' 50, 'WONK' 0;
+  font-size: 1.32rem; color: #0f5132; margin: 0 0 6px;
+}
+.av-pane > .av-note { margin: 0 0 14px; }
+.av-foot {
+  display: flex; align-items: center; gap: 10px;
+  padding: 12px 14px; border-top: 1px solid #efe6c8;
+}
+.av-sum { flex: 1 1 auto; min-width: 0; display: none; }
+.av-studio-arrow {
+  display: none; width: 38px; height: 38px; flex: 0 0 auto;
+  align-items: center; justify-content: center;
+  border-radius: 50%; border: 1.5px solid #bde0d6;
+  background: snow; color: #2c6d6b;
+}
+.av-btn {
+  flex: 1 1 auto; border: 0; border-radius: 50px; padding: 12px 18px;
+  background: #1d6466; color: var(--cream);
+  font: inherit; font-weight: 700; font-size: .95rem; min-height: 46px;
+}
+
+/* ---------------------------------------------------------- the gallery
+   FIVE READY GARDENERS AND A BLANK SIXTH, three by two, which is the
+   bouquet's template grid exactly. Build your own is IN the grid rather than
+   a link under it, so starting from nothing is one of the six choices. */
+.av-gal-h {
+  font-family: Fraunces, Georgia, serif; font-weight: 600;
+  font-variation-settings: 'SOFT' 50, 'WONK' 0;
+  font-size: 1.5rem; color: #0f5132; margin: 0 0 6px; text-align: center;
+}
+.av-gal-note { text-align: center; max-width: 480px; margin: 0 auto 26px; }
+.av-gallery {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;
+  max-width: 720px; margin: 0 auto;
+}
+.av-gal-tile {
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  background: snow; border: 1.5px solid #bde0d6; border-radius: 18px;
+  padding: 12px 10px 14px; min-width: 0;
+  font: inherit; font-size: .84rem; font-weight: 700; color: #2f6260;
+  transition: border-color .18s ease, transform .18s ease;
+}
+/* A CANVAS IS A BAD GRID ITEM: it carries an intrinsic width, so as a grid
+   item it becomes its column's minimum and 1fr stops dividing the row. */
+.av-gal-tile canvas { display: block; max-width: 100%; height: auto; }
+.av-gal-own { justify-content: center; gap: 14px; }
+.av-gal-plus {
+  display: flex; align-items: center; justify-content: center;
+  width: 62px; height: 62px; border-radius: 50%;
+  background: #e1f7f7; color: #2c6d6b; font-size: 1.9rem; font-weight: 400;
+}
+@media (hover: hover) {
+  .av-gal-tile:hover { border-color: #26a69a; transform: translateY(-2px); }
+}
+
+/* ------------------------------------------------------------- the done */
+.av-done-card {
+  max-width: 520px; margin: 40px auto; text-align: center;
+  background: var(--cream); border: 1px solid #efe6c8;
+  border-radius: 20px; padding: 30px 26px 24px;
+}
+.av-done-art { display: block; margin: 0 auto 6px; }
+.av-done-card h2 {
+  font-family: Fraunces, Georgia, serif; font-weight: 600;
+  font-variation-settings: 'SOFT' 50, 'WONK' 0;
+  font-size: 1.6rem; color: #0f5132; margin: 0 0 10px;
+}
+.av-done-acts {
+  display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;
+  margin: 22px 0 4px;
+}
+.av-btn-ghost {
+  border: 1.5px solid #bde0d6; background: snow; color: #1d6466;
+  border-radius: 50px; padding: 11px 18px; min-height: 46px;
+  display: inline-flex; align-items: center;
+  font: inherit; font-weight: 700; font-size: .9rem; text-decoration: none;
+}
+
 @media (max-width: 820px) {
   .av-page { padding: 56px 14px 60px; }
   .av-book { grid-template-columns: 1fr; min-height: 0; }
@@ -257,4 +407,77 @@ button, a, [role="button"], summary, label[for] { touch-action: manipulation; }
   .av-home-word { display: none; }
   .av-keeps { grid-template-columns: 1fr; }
   .av-grid-4 { grid-template-columns: repeat(4, 1fr); }
+}
+
+/* =============================================== the studio, on a phone
+   LAST IN THE FILE, like every phone block in this project: a later rule
+   beats an earlier one at equal specificity, so an override written above
+   the declaration it overrides does nothing at all, silently.
+
+   THE HUMATION CUSTOMISER SHAPE, which is the bouquet's on a phone: the
+   figure pinned across the top, the tabs pinned under it, the options
+   scrolling beneath, and the one button fixed at the foot. A 375px column
+   cannot hold the figure and the options at once, so the figure takes a
+   fixed band and never moves. */
+@media (max-width: 820px) {
+  /* A FLEX COLUMN WITH `order`, NOT `display: block`, and the reason is that
+     the figure and the tabs have to STICK. In source order the rail comes
+     first, which is right on a laptop where it is a left rail; on a phone the
+     picture belongs on top, and only a flex column lets the two swap without
+     moving them in the DOM. */
+  .av-studio {
+    display: flex; flex-direction: column; height: auto;
+    --av-stage-h: 32vh;
+    padding-bottom: 76px;
+  }
+  /* PINNED, because the whole point of the stage is seeing the change you
+     just made. Left to scroll, choosing a shoe means scrolling the gardener
+     off the top and back again for every tap, which is what the bouquet's
+     phone layout was rebuilt three times to stop. */
+  .av-studio-stage {
+    order: 1; position: sticky; top: 54px; z-index: 6;
+    height: var(--av-stage-h); border-radius: 16px; padding: 8px;
+    flex-direction: row; gap: 10px;
+  }
+  .av-studio-stage .av-stage { flex: 0 0 auto; height: 100%; }
+  .av-stage-name { flex: 1 1 auto; width: auto; }
+  /* THE NAMEPLATE GOES, since the field it duplicates is now beside it. On a
+     laptop it is a caption under the figure with the field below that; in a
+     row it is the same word twice. */
+  .av-studio-stage .av-name { display: none; }
+
+  /* THE RAIL LIES DOWN and scrolls sideways, five tabs across 375px, and it
+     sticks directly under the stage so a tab is always one press away. */
+  .av-rail {
+    order: 2; position: sticky; top: calc(54px + var(--av-stage-h));
+    z-index: 6;
+    flex-direction: row; gap: 4px; margin: 8px 0;
+    padding: 6px; overflow-x: auto; -webkit-overflow-scrolling: touch;
+  }
+  .av-options { order: 3; }
+  .av-rail-tab { flex: 1 0 auto; padding: 7px 8px; font-size: .68rem; }
+  .av-rail-ic { width: 28px; height: 28px; }
+  .av-rail-ic svg { width: 16px; height: 16px; }
+
+  .av-options { border: 0; background: none; }
+  .av-opt-body { overflow: visible; padding: 0; }
+
+  /* FIXED TO THE SCREEN, NOT TO THE STUDIO, which is why the studio may
+     never carry a transform: a transformed ancestor becomes the containing
+     block for `position: fixed` and the bar would land at the foot of the
+     studio instead. */
+  .av-foot {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 40;
+    background: rgba(255, 249, 227, 0.96);
+    border-top: 1px solid #efe6c8;
+    padding: 10px 14px calc(10px + env(safe-area-inset-bottom));
+  }
+  .av-studio-arrow { display: flex; }
+  .av-btn { flex: 1 1 auto; }
+
+  .av-gallery { grid-template-columns: 1fr 1fr; gap: 12px; max-width: 360px; }
+  .av-gal-h { font-size: 1.3rem; }
+  .av-done-card { margin: 20px auto; padding: 24px 18px 20px; }
+  .av-done-acts { flex-direction: column; }
+  .av-btn-ghost { justify-content: center; }
 }

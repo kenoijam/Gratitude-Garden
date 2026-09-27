@@ -164,6 +164,43 @@
      tile was that same choice printed twice. */
   var NO_NONE = {};
 
+  /* FIVE READY GARDENERS, AND THEY LIVE HERE RATHER THAN ON EITHER PAGE that
+     shows them. The landing page draws this row under the three garden cards
+     and the build page opens on the same five as a gallery, so a look written
+     in two files would be two rows that drift; `avatar-draw.js` is the one
+     file both pages already load.
+     THEY ARE UNLIKE EACH OTHER IN EVERY SLOT rather than one gardener in five
+     colours. A row of one figure recoloured says the thing has a palette; a
+     row of five different people says it can be built. Both SPROUT species
+     are here, since a flower on a stem looks unlike the six that ring a face
+     and a gallery that showed only rings would hide half the set. */
+  var TEMPLATES = [
+    { id: "wren",  name: "Wren",
+      look: { skin: 1, fringe: 0, back: 2, hairCol: 1, flower: "daisy",
+              top: 172, clothes: "dungas", feet: "boots", hold: "trowel" } },
+    { id: "poppy", name: "Poppy",
+      look: { skin: 5, fringe: 2, back: 4, hairCol: 4, flower: "poppy",
+              top: 196, clothes: "apron", feet: "clogs", neck: "scarf",
+              face: "freckles" } },
+    { id: "sol",   name: "Sol",
+      look: { skin: 3, fringe: 5, back: 0, hairCol: 9, flower: "tulip",
+              top: 44,  clothes: "shorts", feet: "wellies", hold: "basket" } },
+    { id: "ash",   name: "Ash",
+      look: { skin: 7, fringe: 1, back: 5, hairCol: 7, flower: "peony",
+              top: 280, clothes: "cardi", feet: "boots", neck: "satchel",
+              face: "specs" } },
+    { id: "fern",  name: "Fern",
+      look: { skin: 2, fringe: 3, back: 3, hairCol: 10, flower: "lavender",
+              top: 128, clothes: "skirt", feet: "clogs", hold: "can",
+              face: "shades" } }
+  ];
+  function templateOf(id) {
+    for (var i = 0; i < TEMPLATES.length; i++) {
+      if (TEMPLATES[i].id === id) return TEMPLATES[i];
+    }
+    return null;
+  }
+
   var DEFAULT_LOOK = {
     name: "", skin: 1, fringe: 0, back: 0, hairCol: 1,
     flower: "daisy", flowerHue: null, top: 172,
@@ -1293,6 +1330,7 @@
     TOPS: TOPS, WEAR: WEAR, SLOTS: SLOTS, STEP_SLOTS: STEP_SLOTS,
     SLOT_LABEL: SLOT_LABEL, NO_NONE: NO_NONE, BLOOMS: BLOOMS, HOOD: HOOD,
     TINTS: TINTS, tintable: tintable, tintsFor: tintsFor, tone: tone,
+    TEMPLATES: TEMPLATES, templateOf: templateOf,
     SPECIES_ORDER: SPECIES_ORDER, DEFAULT_LOOK: DEFAULT_LOOK, W: W, H: H
   };
 })();

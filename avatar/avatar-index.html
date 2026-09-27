@@ -24,20 +24,58 @@
     <span class="av-home-word">Home</span>
   </a>
 
-  <main class="av-page">
+  <main class="av-page" id="avPage">
     <h1 class="av-title">build your <em>gardener</em></h1>
     <p class="av-sub">Someone to stand in your garden. A flower to wear, and
        a few things to carry.</p>
 
-    <!-- SIX STEPS, the count the reference uses, and every one of them is a
-         real question rather than a screen for its own sake. -->
-    <ol class="av-steps" id="avSteps"></ol>
+    <!-- THREE SCREENS, THE SAME SHAPE AS THE BOUQUET: a gallery to start
+         from, one studio you live in, and a page that says it is kept. The
+         six page book is gone. A gardener is SAVED now, so the second visit
+         is an edit, and an edit in a book means turning five pages to reach
+         the shoes. -->
+    <section class="av-screen" data-screen="gallery">
+      <h2 class="av-gal-h">start from one of these</h2>
+      <p class="av-note av-gal-note">Change anything about them afterwards, or
+         begin with nobody and build from nothing.</p>
+      <div class="av-gallery" id="avGallery"></div>
+    </section>
 
-    <!-- A BOOK, two leaves and a spine. The left leaf asks, the right leaf
-         shows, and the gardener never leaves the page while you dress them:
-         choosing a hat while the wearer is somewhere else is choosing blind. -->
-    <div class="av-book">
-      <div class="av-leaf av-left">
+    <section class="av-screen" data-screen="done" hidden>
+      <div class="av-done-card">
+        <!-- THE GARDENER IS ON THE PAGE THAT NAMES THEM. It said "your
+             gardener" over a card with no gardener on it, which is the one
+             screen where the figure is the whole point. -->
+        <canvas class="av-done-art" id="avDoneArt" aria-hidden="true"></canvas>
+        <h2>your gardener</h2>
+        <p class="av-note" id="avDoneLine"></p>
+        <p class="av-note av-quiet">A look is a row of numbers, which is why
+           it can be saved to an account, sent to a shared garden and read
+           back next year. The same row builds the figure in the 3D
+           exploration.</p>
+        <div class="av-done-acts">
+          <a class="av-btn-ghost" href="../personal-garden/personal-garden-index.html">See them in your garden</a>
+          <button class="av-btn-ghost" id="avEdit" type="button">Keep changing them</button>
+        </div>
+        <!-- START AGAIN IS QUIETER THAN THE TWO ABOVE IT, and separate. It
+             used to be the last button on the page, so the only way off the
+             final screen was to throw the gardener away. -->
+        <button class="av-plain" id="avReset" type="button">start again from nothing</button>
+      </div>
+    </section>
+
+    <!-- THE CONTROLS LIVE HERE UNTIL `buildStudio` MOVES THEM, which is the
+         bouquet's own rule: every grid keeps its id and its listeners and
+         nothing is rewritten, so a control cannot drift from the thing that
+         built it. This wrapper is emptied and removed at boot. -->
+    <div class="av-source" id="avSource" hidden>
+        <!-- THE FIGURE AND THEIR NAME, moved into the studio's stage at boot.
+             It lives here rather than in the studio's own markup for the same
+             reason every grid does: one place builds it, one place moves it. -->
+        <div class="av-stage" id="avStage">
+          <canvas id="avCanvas" width="560" height="840" aria-label="Your gardener"></canvas>
+          <p class="av-name" id="avShowName"></p>
+        </div>
         <section class="av-step" data-step="begin">
           <h2>the beginning</h2>
           <p class="av-note">What shall we call them? You can leave this empty
@@ -50,7 +88,6 @@
              and in the shared garden they stand beside the flower you planted
              that day.</p>
         </section>
-
         <section class="av-step" data-step="skin" hidden>
           <h2>choose a gardener</h2>
           <p class="av-note">Eight skins and twelve hair colours: eight the
@@ -65,11 +102,6 @@
           <p class="av-label">Hair colour</p>
           <div class="av-grid av-grid-4" id="avHairCol"></div>
         </section>
-
-        <!-- THE FLOWER IS WORN, and it is part of the gardener rather than a
-             keepsake, which is why it gets a step of its own. Two of the eight
-             cannot be a hood and are worn on top instead: a tulip has no ring
-             of petals to put a face inside and lavender is a spike. -->
         <section class="av-step" data-step="flower" hidden>
           <h2>choose your flower</h2>
           <p class="av-note">Six of the eight ring the face like a hood. The
@@ -82,7 +114,6 @@
                  aria-label="The flower's hue">
           <p class="av-note av-quiet" id="avFlowerNote"></p>
         </section>
-
         <section class="av-step" data-step="top" hidden>
           <h2>choose what they wear</h2>
           <p class="av-note">One hue, which every other tone on the figure is
@@ -92,12 +123,6 @@
           <div class="av-grid av-grid-3" id="avTop"></div>
           <div id="avClothes"></div>
         </section>
-
-        <!-- ACCESSORIES, NOT KEEPSAKES. Nothing is earned, nothing is
-             locked and nothing is tied to a species: the flower on the head
-             already carries the garden, and eight locked tiles were a reward
-             system bolted onto a dressing up screen. One per slot, so two
-             choices can never fight over the same place on the figure. -->
         <section class="av-step" data-step="wear" hidden>
           <h2>choose what they carry</h2>
           <p class="av-note">Three of each, in three colours. Tap the one they
@@ -105,34 +130,8 @@
              nothing is tied to a species.</p>
           <div id="avWear"></div>
         </section>
-
-        <section class="av-step" data-step="done" hidden>
-          <h2>your gardener</h2>
-          <p class="av-note" id="avDoneLine"></p>
-          <p class="av-note av-quiet">A look is a row of numbers, which is why
-             it can be saved to an account, sent to a shared garden and read
-             back next year. The same row builds the figure in the 3D
-             exploration.</p>
-          <p class="av-note" id="avKeptLine" hidden></p>
-          <!-- START AGAIN IS QUIETER THAN KEEP, and separate from it. It used
-               to BE the last button, so the only way off the last page was to
-               throw the gardener away. -->
-          <button class="av-plain" id="avReset" type="button">start again from nothing</button>
-        </section>
-      </div>
-
-      <div class="av-leaf av-right">
-        <div class="av-stage">
-          <canvas id="avCanvas" width="560" height="840" aria-label="Your gardener"></canvas>
-          <p class="av-name" id="avShowName"></p>
-        </div>
-      </div>
     </div>
 
-    <div class="av-nav">
-      <button class="av-back" id="avBack" type="button">back</button>
-      <button class="av-next" id="avNext" type="button">turn the page</button>
-    </div>
     <p class="av-draft" id="avDraft"></p>
   </main>
 
