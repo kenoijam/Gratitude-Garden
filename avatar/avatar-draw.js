@@ -1086,17 +1086,67 @@
      economy. The eyes sit BELOW the hairline or the fringe swallows them. */
   function drawFace(ctx) {
     var F = FACE;
+    var winking = !!(fx && fx.wink);
     ctx.fillStyle = "rgba(233,137,147,0.45)";
     ctx.beginPath(); ctx.ellipse(F.x - 28, F.y + 15, 10, 6.5, 0, 0, Math.PI * 2); ctx.fill();
     ctx.beginPath(); ctx.ellipse(F.x + 28, F.y + 15, 10, 6.5, 0, 0, Math.PI * 2); ctx.fill();
     ctx.fillStyle = "#3a2f2a";
     ctx.beginPath(); ctx.ellipse(F.x - 14, F.y + 5, 5, 6.5, 0, 0, Math.PI * 2); ctx.fill();
-    ctx.beginPath(); ctx.ellipse(F.x + 14, F.y + 5, 5, 6.5, 0, 0, Math.PI * 2); ctx.fill();
+    /* ONE EYE SHUTS, AND IT IS AN ARC RATHER THAN A LINE. A flat dash reads
+       as a closed eye on a sleeping face; a shallow curve bending UP is what
+       a wink is, and it is the same stroke weight as the mouth so the two
+       belong to one drawing. */
+    if (winking) {
+      ctx.strokeStyle = "#3a2f2a"; ctx.lineWidth = 2.8; ctx.lineCap = "round";
+      ctx.beginPath();
+      ctx.moveTo(F.x + 8.5, F.y + 7);
+      ctx.quadraticCurveTo(F.x + 14, F.y + 1, F.x + 19.5, F.y + 7);
+      ctx.stroke();
+    } else {
+      ctx.beginPath(); ctx.ellipse(F.x + 14, F.y + 5, 5, 6.5, 0, 0, Math.PI * 2); ctx.fill();
+    }
     ctx.strokeStyle = "#3a2f2a"; ctx.lineWidth = 2.6; ctx.lineCap = "round";
     ctx.beginPath();
-    ctx.moveTo(F.x - 6, F.y + 20);
-    ctx.quadraticCurveTo(F.x, F.y + 26, F.x + 6, F.y + 20);
+    /* the smile widens a little while they are winking, or the face reads as
+       having something in its eye rather than as pleased */
+    var w = winking ? 8.5 : 6, d = winking ? 8 : 6;
+    ctx.moveTo(F.x - w, F.y + 20);
+    ctx.quadraticCurveTo(F.x, F.y + 20 + d, F.x + w, F.y + 20);
     ctx.stroke();
+  }
+
+  /* A HEART, and it rises out of the top of the head rather than out of the
+     middle of the face: the flower is on the head, so anything leaving from
+     there would be leaving the bloom. It goes up and slightly out, which is
+     the drift the gardens' own planting sparkle has. */
+  function drawHeart(ctx, t) {
+    var rise = 1 - (1 - t) * (1 - t);
+    var x = HEAD.x + 46 + t * 12;
+    var y = HEAD.y - 46 - rise * 62;
+    var r = 9 * (0.55 + 0.45 * Math.min(1, t * 3.2));
+    var a = t < 0.6 ? 1 : Math.max(0, 1 - (t - 0.6) / 0.4);
+    ctx.save();
+    ctx.globalAlpha = a;
+    ctx.fillStyle = "#e0697f";
+    ctx.beginPath();
+    ctx.moveTo(x, y + r * 0.95);
+    ctx.bezierCurveTo(x - r * 1.5, y - r * 0.2, x - r * 0.5, y - r * 1.15, x, y - r * 0.35);
+    ctx.bezierCurveTo(x + r * 0.5, y - r * 1.15, x + r * 1.5, y - r * 0.2, x, y + r * 0.95);
+    ctx.closePath(); ctx.fill();
+    ctx.restore();
+  }
+
+  /* A PAT LASTS 1100ms AND ONE FUNCTION DECIDES WHAT IT LOOKS LIKE, so the
+     studio, the landing row and the two gardens cannot drift apart on it.
+     Hand it the milliseconds since the pat and it answers with the effects,
+     or null once the pat is over. */
+  var PAT_MS = 1100;
+  function patFx(elapsed) {
+    if (elapsed == null || elapsed < 0 || elapsed > PAT_MS) return null;
+    var t = elapsed / PAT_MS;
+    /* THE EYE SHUTS FOR THE FIRST HALF, which is long enough to read at
+       garden size and short enough not to look asleep. */
+    return { wink: t < 0.48, heart: t };
   }
 
   /* ------------------------------------------------- the picker pictures
@@ -1253,6 +1303,12 @@
      not scale and it does not clear, because the two callers want opposite
      things there: the picker owns its canvas and wants it wiped, and a garden
      wants somebody stood on ground that is already painted. */
+  /* THE EFFECTS ARE MODULE STATE FOR THE LENGTH OF ONE PAINT, set by the
+     caller and cleared again on the way out. Threading them through paint,
+     paintFigure and drawFace as a parameter is four signatures changed for
+     one optional flag that only the face and the heart ever read. */
+  var fx = null;
+
   function paintFigure(ctx, L) {
     var skin = SKINS[L.skin] || SKINS[0];
     var h = hoodOf(L.flower);
@@ -1288,16 +1344,19 @@
     drawEars(ctx, skin);
     drawFace(ctx);
     if (L.face) drawFaceWear(ctx, L.face, L);
+    if (fx && fx.heart != null) drawHeart(ctx, fx.heart);
   }
 
-  function paint(ctx, look, size) {
+  function paint(ctx, look, size, effects) {
     var L = Object.assign({}, DEFAULT_LOOK, look || {});
     var s = (size || 300) / H;
+    fx = effects || null;
     ctx.save();
     ctx.scale(s, s);
     ctx.clearRect(0, 0, W, H);
     paintFigure(ctx, L);
     ctx.restore();
+    fx = null;
   }
 
   /* STANDING SOMEBODY ON GROUND SOMEBODY ELSE PAINTED. `cx` is where the
@@ -1314,18 +1373,21 @@
      gardener, whose flower grows up on a stem, a smaller body than a daisy
      one, whose flower rings the face. */
   var FOOT = LEG.foot + 22;
-  function paintAt(ctx, look, cx, footY, h) {
+  function paintAt(ctx, look, cx, footY, h, effects) {
     var L = Object.assign({}, DEFAULT_LOOK, look || {});
     var s = (h || 120) / H;
+    fx = effects || null;
     ctx.save();
     ctx.translate(cx - (W / 2) * s, footY - FOOT * s);
     ctx.scale(s, s);
     paintFigure(ctx, L);
     ctx.restore();
+    fx = null;
   }
 
   window.AvatarDraw = {
-    paint: paint, paintAt: paintAt, icon: icon, SKINS: SKINS, HAIRS: HAIRS,
+    paint: paint, paintAt: paintAt, icon: icon,
+    patFx: patFx, PAT_MS: PAT_MS, SKINS: SKINS, HAIRS: HAIRS,
     FRINGES: FRINGES, BACKS: BACKS,
     TOPS: TOPS, WEAR: WEAR, SLOTS: SLOTS, STEP_SLOTS: STEP_SLOTS,
     SLOT_LABEL: SLOT_LABEL, NO_NONE: NO_NONE, BLOOMS: BLOOMS, HOOD: HOOD,

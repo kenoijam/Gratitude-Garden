@@ -132,6 +132,25 @@
     return c;
   }
 
+  /* ------------------------------------------------------------- a pat
+     ONE CLOCK FOR THE WHOLE PROJECT. `AvatarDraw.patFx` decides what a pat
+     LOOKS like and this decides when one is running, so the studio's figure
+     and the gardener standing in either garden cannot drift apart on either
+     half of it.
+     A SECOND PAT WHILE ONE IS RUNNING RESTARTS THE CLOCK rather than
+     stacking: somebody patting a gardener repeatedly should get a wink each
+     time, not a queue of them. */
+  var patAt = 0;
+  function pat() { patAt = Date.now(); }
+  function patNow() {
+    var A = window.AvatarDraw;
+    if (!A || !A.patFx || !patAt) return null;
+    var f = A.patFx(Date.now() - patAt);
+    if (!f) patAt = 0;
+    return f;
+  }
+  function patting() { return !!patAt; }
+
   window.GardenGardener = {
     get: function () { return look; },
     has: function () { return !!look; },
@@ -142,6 +161,7 @@
       try { fn(look); } catch (e) {}
     },
     bubble: bubble,
+    pat: pat, patNow: patNow, patting: patting,
     /* the page where one is built, from wherever this was loaded */
     href: function () {
       return SELF ? SELF.replace(/[^/]*$/, "") + "avatar/avatar-index.html"

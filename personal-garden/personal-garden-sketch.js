@@ -581,6 +581,7 @@ function drawHillsFront() {
    BOTTOM CENTRE, because it is the only quadrant with nothing in it: the
    Garden Tips card owns bottom left, the friends button bottom right, and
    the daily note and the four round icons own the top. */
+var gardenerHit = null;
 function gardenerHillTop(x) {
   /* the SAME expression `drawForegroundHill` draws its edge with, so the
      feet follow the ground rather than a guess at where it is */
@@ -598,7 +599,23 @@ function drawGardener() {
      shoes and a little ankle whatever size the window is. A fixed pixel
      amount buries a phone gardener to the knee. */
   var gy = gardenerHillTop(gx) + h * 0.10;
-  window.GardenGardener.paintAt(drawingContext, null, gx, gy, h);
+  window.GardenGardener.paintAt(drawingContext, null, gx, gy, h,
+    window.GardenGardener.patNow());
+  /* WHERE THEY WERE DRAWN, kept so a tap can find them. The hit box is the
+     BODY, not the whole 360 box: most of that box is clear margin above the
+     flower, and a tap in empty sky two heads up should not pat anybody. */
+  gardenerHit = { x: gx, y: gy, w: h * 0.42, h: h * 0.72 };
+}
+/* A PAT IS A TAP ON THE GARDENER, and it is checked BEFORE the flowers: they
+   stand in front of the front row, so a bloom behind them must not answer a
+   tap that landed on a person. */
+function gardenerPatted(mx, my) {
+  var g = gardenerHit;
+  if (!g || !window.GardenGardener || !window.GardenGardener.has()) return false;
+  if (Math.abs(mx - g.x) > g.w / 2) return false;
+  if (my > g.y || my < g.y - g.h) return false;
+  window.GardenGardener.pat();
+  return true;
 }
 
 function drawForegroundHill() {
@@ -2129,6 +2146,9 @@ function mousePressed(event) {
   if (step !== "garden") return;
   var t = event && event.target;
   if (!t || String(t.tagName).toUpperCase() !== "CANVAS") return;
+  /* THE GARDENER IS ASKED FIRST. They are painted in front of the front row,
+     so a bloom behind them must not answer a tap that landed on a person. */
+  if (gardenerPatted(mouseX, mouseY)) return;
   checkHover(mouseX, mouseY);
   /* A TAP SHOWS A SMALL CARD, not the book. Going straight to the whole entry
      was a lot to put in front of somebody who only wanted to know which day a

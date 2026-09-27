@@ -66,8 +66,31 @@
     if (!c) return;
     var ctx = c.getContext("2d");
     ctx.clearRect(0, 0, c.width, c.height);
-    A.paint(ctx, look, c.height);
+    A.paint(ctx, look, c.height, G && G.patNow ? G.patNow() : null);
     $("avShowName").textContent = look.name || "";
+  }
+
+  /* A PAT ON THE HEAD, and this is the one place on the project that needs a
+     loop for it: the two gardens already redraw sixty times a second, so
+     there `patNow()` is simply read on the next frame. Here nothing is
+     moving, so a pat starts a loop and the loop stops itself the moment the
+     pat is over. A permanent `requestAnimationFrame` on a still page is a
+     cost for nothing, which is the rule the cursor trail already follows. */
+  var patting = false;
+  function patTick() {
+    paint();
+    if (G && G.patting()) { requestAnimationFrame(patTick); }
+    else { patting = false; paint(); }
+  }
+  function patHead(e) {
+    if (!G || !G.pat) return;
+    /* THE HEAD, NOT THE WHOLE FIGURE. A pat on the boots is not a pat, and
+       the canvas box is mostly clear margin either side of a narrow person. */
+    var c = $("avCanvas"), b = c.getBoundingClientRect();
+    var x = (e.clientX - b.left) / b.width, y = (e.clientY - b.top) / b.height;
+    if (x < 0.24 || x > 0.76 || y < 0.05 || y > 0.42) return;
+    G.pat();
+    if (!patting) { patting = true; requestAnimationFrame(patTick); }
   }
 
   /* --------------------------------------------------------------- tiles */
@@ -444,6 +467,7 @@
     $("avName").addEventListener("input", function () {
       touched = true; look.name = this.value.trim(); paint();
     });
+    $("avCanvas").addEventListener("pointerdown", patHead);
     $("avEdit").addEventListener("click", function () { go("studio"); });
     $("avReset").addEventListener("click", function () {
       touched = true;

@@ -310,6 +310,10 @@ return best;
 function handleGardenPointer(px, py) {
 if (step !== "garden") return;
 
+/* THE GARDENER IS ASKED FIRST, since they stand in front of the front row and
+   a bloom behind them must not answer a tap that landed on a person. */
+if (gardenerPatted(px, py)) return;
+
 const tapped = findFlowerAt(px, py);
 
 /* A SECOND PRESS ON THE SAME FLOWER PUTS THE CARD AWAY. It used to re-open it
@@ -552,6 +556,7 @@ circle(x + W * 0.456 + b2 / 2, y + W * 0.052 + b2 / 2, b2);
 
    They paint before `drawForegroundHill()`, so the hill buries their feet the
    way it buries a stem. */
+let gardenerHit = null;
 function sharedHillTop(x) {
   /* the SAME expression `drawForegroundHill` draws its edge with, lift and
      all, so the feet follow the ground rather than a guess at it */
@@ -573,8 +578,23 @@ function drawGardener() {
   const gap = h * 0.55;
   const gx = Math.max(gap, Math.min(width - gap,
     mine.x < width / 2 ? mine.x + gap : mine.x - gap));
-  window.GardenGardener.paintAt(drawingContext, null, gx,
-    sharedHillTop(gx) + h * 0.10, h);
+  const gy = sharedHillTop(gx) + h * 0.10;
+  window.GardenGardener.paintAt(drawingContext, null, gx, gy, h,
+    window.GardenGardener.patNow());
+  /* WHERE THEY WERE DRAWN, kept so a tap can find them. The hit box is the
+     BODY, not the whole 360 box: most of that box is clear margin above the
+     flower, and a tap in empty sky two heads up should not pat anybody. */
+  gardenerHit = { x: gx, y: gy, w: h * 0.42, h: h * 0.72 };
+}
+/* A PAT IS A TAP ON THE GARDENER, and it is checked BEFORE the flowers, since
+   a bloom behind them must not answer a tap that landed on a person. */
+function gardenerPatted(mx, my) {
+  const g = gardenerHit;
+  if (!g || !window.GardenGardener || !window.GardenGardener.has()) return false;
+  if (Math.abs(mx - g.x) > g.w / 2) return false;
+  if (my > g.y || my < g.y - g.h) return false;
+  window.GardenGardener.pat();
+  return true;
 }
 
 function drawForegroundHill() {
