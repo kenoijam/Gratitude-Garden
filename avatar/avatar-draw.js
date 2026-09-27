@@ -561,9 +561,17 @@
       ctx.quadraticCurveTo(F.x - 22, F.y - 12, L, F.y - 2);
       ctx.closePath(); ctx.fill();
     } else if (look.fringe === 2) {               /* a deep side parting */
+      /* THE APEX IS NOT THE JUNCTION. The two curves met at `F.x - 2`, which
+         looks central written down, but the second control sat at `F.x - 22`
+         and `F.y - 31` and dragged the actual high point out to about ten
+         pixels LEFT of it: the parting read as sitting off the side of the
+         head rather than near the middle of it. Moving both right by ten puts
+         the high point back at about `F.x - 2`, where the junction always
+         claimed it was. The same trap as the basket's handle, which is that a
+         quadratic passes nowhere near its control point. */
       brow(F.y - 6);
-      ctx.quadraticCurveTo(F.x + 18, F.y - 15, F.x - 2, F.y - 24);
-      ctx.quadraticCurveTo(F.x - 22, F.y - 31, L, F.y - 25);
+      ctx.quadraticCurveTo(F.x + 26, F.y - 15, F.x + 8, F.y - 24);
+      ctx.quadraticCurveTo(F.x - 12, F.y - 31, L, F.y - 25);
       ctx.closePath(); ctx.fill();
     } else if (look.fringe === 3) {                      /* a high line */
       brow(F.y - 24);

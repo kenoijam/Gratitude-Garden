@@ -225,15 +225,11 @@
     $("avDoneLine").textContent = look.name
       ? look.name + " is ready. They would stand in your personal garden, and beside your flower in the shared one."
       : "Ready. They would stand in your personal garden, and beside your flower in the shared one.";
-    var row = $("avRow");
-    var worn = A.SLOTS.filter(function (s) { return look[s]; })
-      .map(function (s) { return A.WEAR[look[s]].name.toLowerCase(); });
-    row.textContent = "skin " + look.skin + ", " + A.FRINGES[look.fringe] +
-      " fringe and " + A.BACKS[look.back] + " in " + look.hairCol + ", " +
-      look.flower + " at hue " +
-      (look.flowerHue == null ? A.BLOOMS[look.flower].hue : look.flowerHue) +
-      ", top hue " + look.top +
-      (worn.length ? ", wearing " + worn.join(", ") : ", nothing else");
+    /* THE ROW OF RAW NUMBERS IS GONE. It printed "skin 1, Parted fringe and
+       Wavy in 9, poppy at hue 205, top hue 210" at somebody who had just
+       made a person, which is the inside of the thing rather than the thing.
+       That a look IS a row of numbers is worth saying once, in words, and the
+       quiet note under this already says it. */
   }
 
   /* ---------------------------------------------------------------- flow */
