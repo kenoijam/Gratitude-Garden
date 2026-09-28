@@ -11,6 +11,12 @@ let step = "prompt1";
 let dayRating = "";
 let dayShaper = "";
 let journalEntry = "";
+/* THE GRATITUDE LINE, WHICH IS ITS OWN SCREEN AND ITS OWN FIELD. It is not
+   part of `journalEntry` for two reasons: the book prints them separately,
+   the ask above the writing and the writing under it, and a day written
+   before this screen existed has a journal and no gratitude, which has to
+   stay tellable from a day that simply skipped it. */
+let gratitudeText = "";
 let chosenSpecies = null;
 let chosenHue = 280;
 let flowers = [];
@@ -52,9 +58,9 @@ const NOTE_PX = 13;
 const NAME_PX_MIN = (typeof window !== "undefined" && window.innerWidth <= 768) ? 16 : 13;
 let titlePx = NAME_PX;
 
-let prompt1Wrap, prompt2Wrap, prompt3Wrap, flowerPreviewWrap, gardenWrap;
+let prompt1Wrap, prompt2Wrap, prompt3Wrap, prompt4Wrap, flowerPreviewWrap, gardenWrap;
 let continueBtn1, continueBtn2, continueBtn3;
-let journalField;
+let journalField, gratitudeField;
 let colorPickerSelect, plantBtn;
 let saveBtn, tipsCard, dailyNote;
 /* The photo picked on the journal step, held until the flower is planted. */
@@ -305,7 +311,7 @@ function markPlantedToday() {
   if (window.GardenStore) window.GardenStore.markPlanted(getTodayDate());
 }
 
-function addFlower(dayRating, dayShaper, journal, species, hue) {
+function addFlower(dayRating, dayShaper, journal, species, hue, gratitude) {
   if (hasPlantedToday()) return;
   const flowerCount = flowers.length;
   let size;
@@ -400,6 +406,11 @@ maxStem = height * lerp(0.15, 0.21, t) * stemScale;
     dayRating,
     dayShaper,
     journal,
+    /* SEPARATE FROM `journal`, not folded into it. The book prints the ask
+       above the writing, and a day planted before this screen existed carries
+       a journal and no gratitude, which has to stay tellable from a day that
+       simply left it empty. */
+    gratitude: gratitude || "",
     species,
     x,
     baseY,
@@ -439,7 +450,8 @@ maxStem = height * lerp(0.15, 0.21, t) * stemScale;
     const entry = {
       day: day, species: newFlower.species,
       hue: Math.round(newFlower.hue), sat: Math.round(newFlower.sat),
-      light: Math.round(newFlower.light), word: "", note: newFlower.journal || ""
+      light: Math.round(newFlower.light), word: "",
+      note: newFlower.journal || "", glad: newFlower.gratitude || ""
     };
     /* The photo goes up here, not when it was chosen, so one picked and then
        abandoned never reaches the database. The entry is written either way:
@@ -2619,7 +2631,9 @@ function resetPromptSelections() {
   dayRating = "";
   dayShaper = "";
   journalEntry = "";
+  gratitudeText = "";
   if (journalField) journalField.value("");
+  if (gratitudeField) gratitudeField.value("");
 
   const p1Buttons = prompt1Wrap && prompt1Wrap.elt.querySelectorAll("button");
   if (p1Buttons) p1Buttons.forEach(b => {
@@ -2949,7 +2963,7 @@ function buildUI() {
     photoNote.html("Kept with today's entry");
   });
 
-  continueBtn3 = createButton("See Your Flower").parent(card3);
+  continueBtn3 = createButton("Continue").parent(card3);
   continueBtn3.style("background", "#4db6ac");
   continueBtn3.style("color", "white");
   continueBtn3.style("border", "none");
@@ -2961,12 +2975,7 @@ function buildUI() {
   continueBtn3.style("cursor", "pointer");
   continueBtn3.style("margin-bottom", "8px");
   continueBtn3.style("pointer-events", "auto");
-  continueBtn3.mousePressed(() => {
-    chosenSpecies = chooseFlowerForMood(dayRating, dayShaper, journalEntry);
-    chosenHue = random(0, 360);
-    showStep("flowerPreview");
-    updateFlowerPreview();
-  });
+  continueBtn3.mousePressed(() => showStep("prompt4"));
 
   const backBtn3 = createButton("Back").parent(card3);
   backBtn3.style("background", "#e0e0e0");
@@ -2980,6 +2989,89 @@ function buildUI() {
   backBtn3.style("cursor", "pointer");
   backBtn3.style("pointer-events", "auto");
   backBtn3.mousePressed(() => showStep("prompt2"));
+
+  /* ------------------------------------------------- one thing you were glad of
+     THE LAST QUESTION, AND THE WHOLE POINT OF THE THREE BEFORE IT. The flow
+     asked how the day felt, what shaped it, and whether there was anything
+     else, and never once asked the thing the project is named after. It is
+     its own screen rather than a second box on the one before, because a card
+     with two text areas on it is a form, and because being last is what makes
+     it the question you leave with.
+
+     IT IS SKIPPABLE, AND THAT IS THE DESIGN RATHER THAN A CONCESSION.
+     Gratitude that has to be produced on demand to get past a screen is not
+     gratitude, it is a toll. Every word here is written to invite rather than
+     require: small is explicitly fine, and the button says the flower is
+     coming either way. */
+  prompt4Wrap = createDiv().id("prompt4-wrap").parent(root).addClass("gg-wrap");
+  prompt4Wrap.style("z-index", "100");
+  prompt4Wrap.style("pointer-events", "auto");
+
+  const cardGlad = createDiv().addClass("gg-card").parent(prompt4Wrap);
+  cardGlad.style("max-width", "460");
+  cardGlad.style("width", "min(460px, 92vw)");
+  cardGlad.style("box-sizing", "border-box");
+  cardGlad.style("padding", "24px 28px 20px 28px");
+  createElement("h3", "One thing you were glad of?")
+    .style("text-align", "center").style("color", "#0f5132")
+    .style("font-size", "23px").style("font-weight", "600")
+    .style("margin", "0 0 2px 0").parent(cardGlad);
+  createP("It can be very small. A cup of tea counts. Leave it empty if today has none in it, and plant anyway.")
+    .addClass("gg-sub").style("font-size", "13px").style("margin", "0 0 12px 0")
+    .style("text-align", "center").style("color", "#5a9e8e").parent(cardGlad);
+
+  gratitudeField = createElement("textarea").parent(cardGlad);
+  gratitudeField.attribute("maxlength", "300");
+  gratitudeField.attribute("placeholder", "Today I was glad of...");
+  gratitudeField.style("width", "100%");
+  gratitudeField.style("box-sizing", "border-box");
+  gratitudeField.style("border", "2px solid #bde0d6");
+  gratitudeField.style("border-radius", "12px");
+  gratitudeField.style("height", "112px");
+  gratitudeField.style("padding", "14px 16px");
+  gratitudeField.style("font-size", "16px");
+  gratitudeField.style("resize", "none");
+  gratitudeField.style("pointer-events", "auto");
+  gratitudeField.input(() => { gratitudeText = gratitudeField.elt.value; });
+
+  const continueBtn4 = createButton("See Your Flower").parent(cardGlad);
+  continueBtn4.style("background", "#4db6ac");
+  continueBtn4.style("color", "white");
+  continueBtn4.style("border", "none");
+  continueBtn4.style("border-radius", "12px");
+  continueBtn4.style("padding", "14px");
+  continueBtn4.style("font-size", "15px");
+  continueBtn4.style("font-weight", "700");
+  continueBtn4.style("width", "100%");
+  continueBtn4.style("cursor", "pointer");
+  continueBtn4.style("margin-bottom", "8px");
+  continueBtn4.style("pointer-events", "auto");
+  continueBtn4.mousePressed(() => {
+    /* BOTH TEXTS FEED THE CHOICE. The keyword lists in `flowerMeanings` are
+       full of gratitude words, and this is the field most likely to hit them,
+       so leaving it out would make the one question about gratitude the one
+       question with no bearing on which flower grows. The weighting is
+       untouched: it is still two per keyword found anywhere in what was
+       written. */
+    chosenSpecies = chooseFlowerForMood(dayRating, dayShaper,
+      (journalEntry + " " + gratitudeText).trim());
+    chosenHue = random(0, 360);
+    showStep("flowerPreview");
+    updateFlowerPreview();
+  });
+
+  const backBtn4 = createButton("Back").parent(cardGlad);
+  backBtn4.style("background", "#e0e0e0");
+  backBtn4.style("color", "#666");
+  backBtn4.style("border", "none");
+  backBtn4.style("border-radius", "12px");
+  backBtn4.style("padding", "12px");
+  backBtn4.style("font-size", "14px");
+  backBtn4.style("font-weight", "500");
+  backBtn4.style("width", "100%");
+  backBtn4.style("cursor", "pointer");
+  backBtn4.style("pointer-events", "auto");
+  backBtn4.mousePressed(() => showStep("prompt3"));
 
   flowerPreviewWrap = createDiv().id("flower-preview-wrap").parent(root).addClass("gg-wrap");
   flowerPreviewWrap.style("z-index", "100");
@@ -3048,13 +3140,15 @@ function buildUI() {
   plantBtn.style("margin-bottom", "8px");
   plantBtn.style("pointer-events", "auto");
   plantBtn.mousePressed(() => {
-  addFlower(dayRating, dayShaper, journalEntry, chosenSpecies, chosenHue);
+  addFlower(dayRating, dayShaper, journalEntry, chosenSpecies, chosenHue, gratitudeText);
   flowerPreviewWrap.style("display", "none");
   showStep("garden");
   dayRating = "";
   dayShaper = "";
   journalEntry = "";
+  gratitudeText = "";
   if (journalField) journalField.value("");
+  if (gratitudeField) gratitudeField.value("");
 });
 
   gardenWrap = createDiv().id("garden-wrap").parent(root);
@@ -3341,6 +3435,7 @@ function showStep(s) {
   const showPrompt1 = s === "prompt1";
   const showPrompt2 = s === "prompt2";
   const showPrompt3 = s === "prompt3";
+  const showPrompt4 = s === "prompt4";
   const showFlower  = s === "flowerPreview";
 
   if (prompt1Wrap) {
@@ -3352,6 +3447,7 @@ function showStep(s) {
   }
   if (prompt2Wrap) prompt2Wrap.elt.style.display = showPrompt2 ? "flex" : "none";
   if (prompt3Wrap) prompt3Wrap.elt.style.display = showPrompt3 ? "flex" : "none";
+  if (prompt4Wrap) prompt4Wrap.elt.style.display = showPrompt4 ? "flex" : "none";
   if (flowerPreviewWrap) flowerPreviewWrap.elt.style.display = showFlower ? "flex" : "none";
 
   gardenWrap.style("display", "block");
@@ -3542,7 +3638,8 @@ function mountJournal() {
         if (!day) return;
         out[day] = {
           day: day, species: f.species, hue: f.hue, sat: f.sat, light: f.light,
-          note: f.journal || "", mood: f.dayRating || "", shaper: f.dayShaper || "",
+          note: f.journal || "", glad: f.gratitude || "",
+          mood: f.dayRating || "", shaper: f.dayShaper || "",
           photo: f.photo || ""
         };
       });

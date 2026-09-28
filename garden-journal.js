@@ -402,6 +402,12 @@
       'justify-content:center;}' +
     '.gj-quote{font-size:14px;color:#2f6260;line-height:1.6;margin:0 0 12px;' +
       'padding-left:11px;border-left:2.5px solid #bde0d6;overflow-wrap:anywhere;}' +
+    /* THE GLAD LINE READS LOUDER THAN THE JOURNAL UNDER IT, because it is
+       the answer to the question the whole project is named after. Same
+       left rule so the two read as one block, in the garden's own teal
+       rather than the journal's grey green. */
+    '.gj-glad{font-size:15px;color:#1d6466;line-height:1.55;margin:0 0 10px;' +
+      'padding-left:11px;border-left:2.5px solid #4db6ac;overflow-wrap:anywhere;}' +
     '.gj-none{font-size:13.5px;color:#8aa9a7;line-height:1.6;margin:0;}' +
     '.gj-h{font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;' +
       'color:#8aa9a7;margin:18px 0 9px;}' +
@@ -776,6 +782,13 @@
            being wedged between a photograph and a pair of fields. */
         if (e.mood) body.appendChild(field("Mood", e.mood));
         if (e.shaper) body.appendChild(field("Shaped by", e.shaper));
+        /* GLAD OF FIRST, THEN ANYTHING ELSE, which is the order they were
+           asked for and also the order they matter in: the gratitude line is
+           what the day was FOR, and the journal is whatever else came with
+           it. A day planted before the fourth screen existed has no `glad`
+           at all and simply skips this line, which is the same thing a day
+           that left it empty does. */
+        if (e.glad) body.appendChild(el("p", "gj-glad", e.glad));
         if (e.note) body.appendChild(el("p", "gj-quote", e.note));
         if (e.photo) {
           /* The frame goes in straight away at the right size and the picture
