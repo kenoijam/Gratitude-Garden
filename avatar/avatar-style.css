@@ -149,8 +149,16 @@ button, a, [role="button"], summary, label[for] { touch-action: manipulation; }
 .av-grid-wear { gap: 8px; }
 .av-grid-wear .av-tile { padding: 7px 4px; gap: 5px; }
 .av-grid-wear .av-tile span { font-size: .71rem; }
-/* the three colours an item comes in, under the row that chose it */
-.av-tints { display: flex; gap: 8px; margin-top: 8px; }
+/* EVERY COLOUR THE CHOSEN ITEM CAN TAKE, under the row that chose it. It
+   WRAPS, because there are ten of them and a slot's row is 300px wide on a
+   phone; at `nowrap` the last four simply left the panel. */
+.av-tints {
+  display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px;
+}
+/* NOTHING CHOSEN IN THIS SLOT, so the row says what it is waiting for rather
+   than appearing out of nowhere the moment something is picked. */
+.av-tints.is-idle { margin-top: 4px; }
+.av-tints.is-idle .av-note { margin: 0; font-size: .72rem; opacity: .75; }
 .av-tint {
   width: 30px; height: 30px; border-radius: 50%; padding: 0; cursor: pointer;
   border: 1.5px solid #bde0d6; font: inherit;
@@ -166,6 +174,11 @@ button, a, [role="button"], summary, label[for] { touch-action: manipulation; }
   background: linear-gradient(90deg, hsl(0,60%,62%), hsl(60,60%,62%),
     hsl(120,60%,62%), hsl(180,60%,62%), hsl(240,60%,62%), hsl(300,60%,62%),
     hsl(360,60%,62%));
+}
+/* HOW STRONG, rather than which colour, so the track runs from nothing to
+   plenty rather than round the wheel. */
+.av-sat {
+  background: linear-gradient(90deg, #f4f4f2, hsl(190,60%,62%));
 }
 .av-hue::-webkit-slider-thumb {
   -webkit-appearance: none; width: 22px; height: 22px; border-radius: 50%;

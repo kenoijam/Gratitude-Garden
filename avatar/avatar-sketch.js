@@ -161,13 +161,23 @@
     A.SPECIES_ORDER.forEach(function (id) {
       g.appendChild(pic("flower", id, 48, A.BLOOMS[id].name, look.flower === id,
         function () {
-          /* PICKING A SPECIES RESETS THE HUE to that flower's own, so a new
-             choice always arrives in the colour it was drawn for. */
-          look.flower = id; look.flowerHue = null; buildFlower(); paint();
+          /* PICKING A SPECIES RESETS ALL THREE to that flower's own, so a
+             new choice always arrives in the colour it was drawn for. The
+             saturation has to go with the hue: left behind, a daisy drained
+             to white would hand its white to the poppy picked after it. */
+          look.flower = id;
+          look.flowerHue = null; look.flowerSat = null; look.flowerLight = null;
+          buildFlower(); paint();
         }));
     });
     $("avFlowerHue").value = look.flowerHue == null
       ? A.BLOOMS[look.flower].hue : look.flowerHue;
+    /* HOW STRONG, WHICH IS THE ONLY WAY TO REACH WHITE. A hue slider alone
+       cannot: white is an absence of saturation and no hue has one. At the
+       bottom of this the bloom goes to a near white whatever species it is,
+       which is what a daisy and a lily actually are. */
+    $("avFlowerSat").value = look.flowerSat == null
+      ? A.BLOOMS[look.flower].sat : look.flowerSat;
     /* THE TEST IS `=== "sprout"`. It was `!== "ring"`, and no species has ever
        been called `ring`, so the line fired on all eight and told somebody
        picking a rose that a rose has no ring of petals. */
@@ -187,19 +197,54 @@
       lab.textContent = A.SLOT_LABEL[slot];
       host.appendChild(lab);
       var ids = Object.keys(A.WEAR).filter(function (id) { return A.WEAR[id].slot === slot; });
-      /* THREE COLUMNS, so an item's three colours is exactly one row: three
-         Boots, then three Clogs, then three Wellies. */
+      /* ONE TILE PER ITEM, AND THE COLOURS ON A ROW OF THEIR OWN UNDERNEATH.
+         It used to be one tile per item PER COLOUR, three Boots then three
+         Clogs then three Wellies, which is a lovely row at three colours and
+         an impossible one at ten: the feet slot alone would have been thirty
+         tiles. The old note against a swatch row was that it put the colours
+         a step away from the choice and hid them until something was picked,
+         and both halves of that are answered here, since the row is always
+         on screen and says in words what it is waiting for. */
       var row = el("div", "av-grid av-grid-wear av-grid-3");
-      /* AN ITEM WITH NO COLOURS IS ONE TILE. What is held and what is on the
-         face carry none: three watering cans in three greens is the same
-         choice printed three times. */
-      ids.forEach(function (id) {
-        var tints = A.tintsFor(id);
-        if (!tints.length) { row.appendChild(variant(slot, id, null)); return; }
-        tints.forEach(function (ti) { row.appendChild(variant(slot, id, ti)); });
-      });
+      ids.forEach(function (id) { row.appendChild(variant(slot, id, null)); });
       host.appendChild(row);
+      /* A SLOT WHOSE ITEMS CARRY NO COLOUR GETS NO ROW AT ALL, which is what
+         is held and what is on the face: three watering cans in three greens
+         is one choice printed three times. */
+      if (ids.some(function (id) { return A.tintable(id); })) {
+        host.appendChild(tintRow(slot));
+      }
     });
+  }
+  /* THE COLOURS FOR WHATEVER IS ON IN THIS SLOT. With nothing on it is still
+     drawn, greyed, saying what it is for: a control that appears out of
+     nowhere the moment you pick something is a control nobody expects. */
+  function tintRow(slot) {
+    var worn = look[slot];
+    var list = worn ? A.tintsFor(worn) : [];
+    var wrap = el("div", "av-tints" + (list.length ? "" : " is-idle"));
+    if (!list.length) {
+      var hint = el("p", "av-note av-quiet");
+      hint.textContent = "Pick one above to colour it.";
+      wrap.appendChild(hint);
+      return wrap;
+    }
+    var now = wornTint(slot, worn);
+    list.forEach(function (ti) {
+      var t = A.TINTS[ti];
+      var b = el("button", "av-tint" + (now === ti ? " is-on" : ""));
+      b.type = "button";
+      b.title = t.name;
+      b.setAttribute("aria-label", t.name);
+      b.style.background = A.tone(t);
+      b.addEventListener("click", function () {
+        if (!look.tints) look.tints = {};
+        look.tints[slot] = ti;
+        buildWearables(); paint();
+      });
+      wrap.appendChild(b);
+    });
+    return wrap;
   }
   function wornTint(slot, id) {
     return (look.tints && look.tints[slot] != null)
@@ -212,7 +257,13 @@
   function variant(slot, id, ti) {
     var on = look[slot] === id && (ti == null || wornTint(slot, id) === ti);
     var shown = Object.assign({}, look, { tints: Object.assign({}, look.tints || {}) });
+    /* A TILE THAT IS NOT WORN SHOWS THE COLOUR IT WOULD ARRIVE IN, which is
+       the first of its own suggested three, rather than whatever the slot
+       happens to be set to. Without this every tile in the row repainted
+       itself in the worn garment's colour and the row came out as three of
+       one colour, which is the fault the per-tile tint was added to fix. */
     if (ti != null) shown.tints[slot] = ti;
+    else if (!on) delete shown.tints[slot];
     var b = el("button", "av-tile" + (on ? " is-on" : ""));
     b.type = "button";
     b.appendChild(A.icon("wear", id, 42, shown));
@@ -231,11 +282,21 @@
     return b;
   }
 
+  /* THE BODY'S COLOUR IS THREE NUMBERS NOW, not one hue, so a tile is matched
+     on all three. `look.top` is still the hue, which is what every gardener
+     saved before this holds; `topS` and `topL` are absent on those and read
+     back as the old constants. */
+  function topOn(t) {
+    return look.top === t.h
+      && (look.topS == null ? A.TOP_S : look.topS) === t.s
+      && (look.topL == null ? A.TOP_L : look.topL) === t.l;
+  }
   function buildTop() {
     var g = $("avTop"); g.innerHTML = "";
-    A.TOPS.forEach(function (h) {
-      g.appendChild(pic("top", h, 54, "", look.top === h, function () {
-        look.top = h; buildWearables(); paint();
+    A.TOPS.forEach(function (t, i) {
+      g.appendChild(pic("top", i, 54, "", topOn(t), function () {
+        look.top = t.h; look.topS = t.s; look.topL = t.l;
+        buildWearables(); paint();
       }));
     });
     slotRows($("avClothes"), A.STEP_SLOTS.top);
@@ -253,6 +314,15 @@
      rather than the thing you fall back to. */
   function buildGallery() {
     var g = $("avGallery"); g.innerHTML = "";
+    /* BUILD YOUR OWN IS FIRST, not the blank tile at the end. Last, it reads
+       as what you fall back to when none of the five fit; first, it is simply
+       the first of the six ways to start, which is what it actually is. */
+    var own = el("button", "av-gal-tile av-gal-own",
+      '<span class="av-gal-plus" aria-hidden="true">+</span>');
+    own.type = "button";
+    own.appendChild(label("Build your own"));
+    own.addEventListener("click", function () { startFrom(null); });
+    g.appendChild(own);
     A.TEMPLATES.forEach(function (t) {
       var b = el("button", "av-gal-tile");
       b.type = "button";
@@ -268,17 +338,18 @@
       b.addEventListener("click", function () { startFrom(t.id); });
       g.appendChild(b);
     });
-    var own = el("button", "av-gal-tile av-gal-own",
-      '<span class="av-gal-plus" aria-hidden="true">+</span>');
-    own.type = "button";
-    own.appendChild(label("Build your own"));
-    own.addEventListener("click", function () { startFrom(null); });
-    g.appendChild(own);
   }
 
   function startFrom(id) {
     var t = id ? A.templateOf(id) : null;
-    look = Object.assign({}, A.DEFAULT_LOOK, t ? t.look : {}, { tints: {} });
+    /* THE TINTS ARE COPIED, NOT WIPED. `{ tints: {} }` came last here, so a
+       template naming a black boot or a cream apron had every one of those
+       thrown away the instant it was chosen and arrived in the garment's own
+       default colour instead. It is also copied rather than shared, or
+       editing a gardener would write into the template everyone else starts
+       from. */
+    look = Object.assign({}, A.DEFAULT_LOOK, t ? t.look : {},
+      { tints: Object.assign({}, t && t.look && t.look.tints) });
     touched = true;
     $("avName").value = look.name || "";
     buildAll();
@@ -350,6 +421,7 @@
     panes.flower.appendChild($("avFlower"));
     panes.flower.appendChild(el("p", "av-label", "Its colour"));
     panes.flower.appendChild($("avFlowerHue"));
+    panes.flower.appendChild($("avFlowerSat"));
     panes.flower.appendChild($("avFlowerNote"));
 
     panes.top.appendChild(el("p", "av-label", "Their colour"));
@@ -463,6 +535,17 @@
 
     $("avFlowerHue").addEventListener("input", function () {
       touched = true; look.flowerHue = +this.value; paint();
+    });
+    /* THE LIGHTNESS RIDES WITH THE SATURATION rather than being a third
+       slider. Drained to nothing at the species' own lightness a bloom comes
+       out GREY, which is not what anybody reaching for pale means; lifting it
+       as the colour goes takes the same drag to a white flower instead. */
+    $("avFlowerSat").addEventListener("input", function () {
+      touched = true;
+      var b = A.BLOOMS[look.flower], v = +this.value;
+      look.flowerSat = v;
+      look.flowerLight = Math.round(b.light + (1 - v / Math.max(1, b.sat)) * 22);
+      paint();
     });
     $("avName").addEventListener("input", function () {
       touched = true; look.name = this.value.trim(); paint();

@@ -97,10 +97,19 @@
      The unreal four are last because a picker that opens on pink says the
      gardener is a toy, and they are worth having anyway: this is the one
      choice on the figure with no bearing on anything else, so it is the one
-     place somebody can simply please themselves. */
+     place somebody can simply please themselves.
+     SIXTEEN NOW, IN FOUR ROWS OF FOUR, and the last four are APPENDED rather
+     than slotted in where they belong tonally, which is the whole rule of
+     this list: `hairCol` is an INDEX and a saved gardener would change colour
+     under somebody the moment anything moved. #14131a is a near black and
+     #efe7d6 a platinum, so a TRUE black and a TRUE white were the two things
+     the eight naturals could not reach; a mid grey and a copper come with
+     them, and all four go on the end where they look out of order and are
+     safe. */
   var HAIRS = ["#14131a", "#3a2a1e", "#7a5540", "#a4642f",
                "#b0412c", "#d9c08a", "#9c9aa2", "#efe7d6",
-               "#e489b2", "#6fc6ae", "#a98ede", "#74aee2"];
+               "#e489b2", "#6fc6ae", "#a98ede", "#74aee2",
+               "#000000", "#ffffff", "#8f8f96", "#c98a5e"];
   /* THE FRINGE AND THE BACK ARE TWO SEPARATE CHOICES. They were nine fixed
      styles, so a blunt fringe could only ever come with a bob and a side
      parting only ever with one long piece. Split, twelve tiles buy
@@ -112,20 +121,66 @@
   var FRINGES = ["Blunt", "Parted", "Side part", "High", "Curly", "Choppy"];
   var BACKS = ["Tucked in", "Bob", "Long", "Wavy", "Braids", "Buns"];
 
-  var TOPS = [172, 210, 275, 332, 45, 18];
+  /* THE BODY'S OWN COLOUR, AND IT IS THE ONE PLACE `TINTS` CANNOT REACH.
+     It was six bare hues drawn at a fixed saturation of 26, so white, grey
+     and black were unreachable on the plain body however many garment
+     colours existed: no hue at 26 saturation is a neutral.
+     `look.top` STILL STORES A HUE, not an index, because every gardener saved
+     so far holds one. The saturation and lightness ride alongside as two
+     OPTIONAL fields, `topS` and `topL`, which default to the old 26 and 56,
+     so a look written before this reads back as exactly the colour it was. */
+  var TOPS = [
+    { h: 172, s: 26, l: 56, name: "Teal" },
+    { h: 210, s: 26, l: 56, name: "Blue" },
+    { h: 275, s: 26, l: 56, name: "Violet" },
+    { h: 332, s: 26, l: 56, name: "Rose" },
+    { h: 45,  s: 26, l: 56, name: "Gold" },
+    { h: 18,  s: 26, l: 56, name: "Rust" },
+    { h: 0,   s: 0,  l: 94, name: "White" },
+    { h: 210, s: 5,  l: 66, name: "Grey" },
+    { h: 218, s: 30, l: 30, name: "Navy" },
+    { h: 240, s: 8,  l: 18, name: "Black" },
+    /* TWELVE, NOT TEN, AND THAT IS THE GRID RATHER THAN THE PALETTE. This
+       row is three columns, so ten falls 3, 3, 3 and 1 and ends on a single
+       orphan tile. Twelve is four clean rows, and the project's own rule is
+       that a row is three columns when its count divides by three. */
+    { h: 95,  s: 24, l: 52, name: "Moss" },
+    { h: 32,  s: 30, l: 72, name: "Sand" }
+  ];
+  var TOP_S = 26, TOP_L = 56;
   /* SIX COLOURS, AND EVERY GARMENT AND ACCESSORY PICKS FROM THEM. Each one
      carried a hard-coded colour before, so a gardener was a figure in their
      own hue with a fixed blue dungaree and a fixed brown boot stuck on. Each
      `WEAR` entry names the one it starts in, and `look.tints` overrides it
      per slot; picking a different item in that slot clears the override, so
      a new garment always arrives in the colour it was drawn for. */
+  /* TEN, AND EVERY GARMENT MAY TAKE ANY OF THEM. It was six, with each item
+     offering a curated three, on the argument that six denims of a dungaree
+     is a paint chart and three is a choice. That argument was right about the
+     ROW and wrong about the WARDROBE: three suggestions are a good place to
+     start and a bad place to be stuck, and between them the six could not
+     make a white apron or a black boot at all.
+     So `tintsFor` still returns the item's own three FIRST, which keeps the
+     starting point, and then everything else behind them.
+     THE FOUR NEW ONES ARE APPENDED. A tint is stored per slot as an INDEX in
+     `look.tints`, so inserting White where it belongs tonally would repaint
+     every gardener already saved. */
   var TINTS = [
     { h: 214, s: 30, l: 48, name: "Denim" },
     { h: 42,  s: 34, l: 84, name: "Cream" },
     { h: 142, s: 22, l: 42, name: "Sage" },
     { h: 18,  s: 42, l: 50, name: "Clay" },
     { h: 322, s: 24, l: 56, name: "Plum" },
-    { h: 44,  s: 52, l: 60, name: "Ochre" }
+    { h: 44,  s: 52, l: 60, name: "Ochre" },
+    /* WHITE IS 93, NOT 100, AND BLACK IS 15, NOT 0, because `tone` shades a
+       garment by moving its lightness and clamps at 8 and 96. At a true 100
+       every fold, hem and collar on a white apron would clamp to the same
+       value and the garment would come out as one flat silhouette; at 93 the
+       darker tones still have somewhere to go. Same argument at the bottom. */
+    { h: 0,   s: 0,  l: 93, name: "White" },
+    { h: 240, s: 8,  l: 15, name: "Black" },
+    { h: 210, s: 6,  l: 62, name: "Stone" },
+    { h: 218, s: 34, l: 26, name: "Ink" }
   ];
 
   /* CLOTHING IS ONE CHOICE, NOT A LAYER PLUS A LEG. It was "over the clothes"
@@ -175,24 +230,58 @@
      are here, since a flower on a stem looks unlike the six that ring a face
      and a gallery that showed only rings would hide half the set. */
   var TEMPLATES = [
-    { id: "wren",  name: "Wren",
-      look: { skin: 1, fringe: 0, back: 2, hairCol: 1, flower: "daisy",
-              top: 172, clothes: "dungas", feet: "boots", hold: "trowel" } },
-    { id: "poppy", name: "Poppy",
-      look: { skin: 5, fringe: 2, back: 4, hairCol: 4, flower: "poppy",
-              top: 196, clothes: "apron", feet: "clogs", neck: "scarf",
-              face: "freckles" } },
-    { id: "sol",   name: "Sol",
-      look: { skin: 3, fringe: 5, back: 0, hairCol: 9, flower: "tulip",
-              top: 44,  clothes: "shorts", feet: "wellies", hold: "basket" } },
-    { id: "ash",   name: "Ash",
-      look: { skin: 7, fringe: 1, back: 5, hairCol: 7, flower: "peony",
-              top: 280, clothes: "cardi", feet: "boots", neck: "satchel",
-              face: "specs" } },
-    { id: "fern",  name: "Fern",
-      look: { skin: 2, fringe: 3, back: 3, hairCol: 10, flower: "lavender",
-              top: 128, clothes: "skirt", feet: "clogs", hold: "can",
-              face: "shades" } }
+    /* NARES. Deep skin, a black crop, and a pale green daisy worn as the
+       hood, which is the one species wide enough to read as a ruff at this
+       size. The cardigan is the only garment that opens down the middle, so
+       it is what puts a second colour on the torso. */
+    { id: "nares", name: "Nares",
+      look: { skin: 6, fringe: 4, back: 0, hairCol: 0,
+              flower: "daisy", flowerHue: 128, flowerSat: 34, flowerLight: 76,
+              top: 186, topS: 18, topL: 72,
+              clothes: "cardi", feet: "boots", hold: "trowel", face: "specs",
+              tints: { clothes: 2, feet: 2 } } },
+    /* ALICE. The tulip is a SPROUT, so it grows on a stem out of the crown
+       rather than ringing the face, which is what lets the long blonde hair
+       be the whole silhouette instead of being hidden behind petals. */
+    { id: "alice", name: "Alice",
+      look: { skin: 0, fringe: 1, back: 2, hairCol: 5,
+              flower: "tulip", flowerHue: 352,
+              top: 210,
+              clothes: "apron", feet: "wellies", hold: "basket",
+              tints: { clothes: 1, feet: 1 } } },
+    /* MARY. Buns are the one back style that reads at the sides rather than
+       behind, so they survive a ring flower; the peony is pushed round to a
+       tan, which no other template uses. */
+    { id: "mary", name: "Mary",
+      look: { skin: 1, fringe: 0, back: 5, hairCol: 4,
+              flower: "peony", flowerHue: 28, flowerSat: 46, flowerLight: 40,
+              top: 332,
+              clothes: "skirt", feet: "boots", hold: "trowel",
+              tints: { clothes: 0, feet: 0 } } },
+    /* BEAN AND JUNO ARE NODS, NOT COPIES, and they are named for themselves.
+       Anybody who knows the beagle and the boy will see them; nothing on the
+       page claims to be a character that is not this project's.
+       THEY ARE ALSO WHY THE PALETTE HAD TO OPEN. Between them they need a
+       white body, a black crop, a white hood, a black boot and a navy short,
+       and before this round the figure could make exactly none of those: the
+       six tints held no neutral, the body was a hue at a fixed saturation,
+       and a flower's saturation was pinned to its species. */
+    { id: "bean", name: "Bean",
+      look: { skin: 0, fringe: 0, back: 1, hairCol: 12,
+              /* THE BODY SITS A STEP UNDER THE HOOD, 86 against 94. At the
+                 same white the ruff, the face and the torso measured within
+                 five values of each other and the whole figure came out as
+                 one white blob with a pair of boots under it. */
+              flower: "peony", flowerSat: 6, flowerLight: 94,
+              top: 0, topS: 0, topL: 86,
+              clothes: null, neck: "scarf", feet: "boots",
+              tints: { neck: 3, feet: 7 } } },
+    { id: "juno", name: "Juno",
+      look: { skin: 1, fringe: 0, back: 0, hairCol: 13,
+              flower: "daisy", flowerSat: 5, flowerLight: 95,
+              top: 205, topS: 42, topL: 60,
+              clothes: "shorts", feet: "boots", neck: "satchel",
+              tints: { clothes: 9, feet: 7, neck: 2 } } }
   ];
   function templateOf(id) {
     for (var i = 0; i < TEMPLATES.length; i++) {
@@ -201,9 +290,13 @@
     return null;
   }
 
+  /* EVERY OPTIONAL FIELD IS SPELLED OUT AS null RATHER THAN LEFT OUT, so
+     `Object.assign` over a template that does not set one puts it back to the
+     default instead of leaving the last gardener's value behind. */
   var DEFAULT_LOOK = {
     name: "", skin: 1, fringe: 0, back: 0, hairCol: 1,
-    flower: "daisy", flowerHue: null, top: 172,
+    flower: "daisy", flowerHue: null, flowerSat: null, flowerLight: null,
+    top: 172, topS: null, topL: null,
     clothes: null, neck: null, feet: null, hold: null, face: null,
     tints: {}
   };
@@ -220,11 +313,34 @@
     return hsl(T.h, Math.max(0, T.s + (ds || 0)),
                Math.max(8, Math.min(96, T.l + (dl || 0))));
   }
+  /* THE PLAIN BODY'S COLOUR, IN ONE PLACE. It was `hsl(L.top, 26, 56)` written
+     out at five call sites, which is what made a neutral body impossible to
+     add: there was no single thing to change. The saturation and lightness
+     come from the look when it carries them and from the old constants when
+     it does not, so this is the whole of the backwards compatibility. */
+  function bodyTint(L) {
+    return { h: L.top, s: L.topS == null ? TOP_S : L.topS,
+             l: L.topL == null ? TOP_L : L.topL };
+  }
+  function bodyCol(L, dl, ds) { return tone(bodyTint(L), dl, ds); }
   function tintable(id) { return !!(WEAR[id] && WEAR[id].tints); }
-  /* THE THREE COLOURS AN ITEM OFFERS. Three rather than the whole palette,
-     because six denims of a dungaree is a paint chart and three is a choice;
-     each item names the three that suit what it is. */
-  function tintsFor(id) { return (WEAR[id] && WEAR[id].tints) || []; }
+  /* EVERY COLOUR, WITH THE ITEM'S OWN THREE FIRST. The order is the whole
+     point: an item still OPENS on the colours drawn for it, so there is a
+     starting point rather than a wall of ten swatches, and the other seven
+     are simply behind them rather than refused.
+     An item with no `tints` at all still returns nothing, and that is not an
+     oversight: three watering cans in three greens is the same choice printed
+     three times, so what is held and what is on the face carry no colour. */
+  function tintsFor(id) {
+    var own = (WEAR[id] && WEAR[id].tints) || [];
+    if (!own.length) return [];
+    var out = own.slice();
+    for (var i = 0; i < TINTS.length; i++) if (out.indexOf(i) < 0) out.push(i);
+    return out;
+  }
+  /* THE THREE AN ITEM WAS DRAWN FOR, which is what a tile row shows before
+     anything is chosen. `tintsFor` is what the colour row under it shows. */
+  function suggestedFor(id) { return (WEAR[id] && WEAR[id].tints) || []; }
 
   /* ---------------------------------------------------------- geometry
      A LARGE HEAD ON A SMALL BODY, which is the reference's proportion. The
@@ -341,10 +457,21 @@
      sender both pick one. `flowerHue` null means the species' own. The
      saturation and lightness stay the species', so a re-coloured daisy is
      still a pastel daisy rather than whatever the slider lands on. */
+  /* THE FLOWER'S COLOUR, AND ALL THREE PARTS OF IT ARE OPTIONAL OVERRIDES.
+     Only the hue used to be, with the saturation and lightness pinned to the
+     species so a re-coloured daisy stayed a pastel daisy. That is still the
+     default and still the right one, but it also meant NO FLOWER COULD BE
+     WHITE: white is a saturation of nothing, and no hue reaches it. A white
+     hood is most of what makes the two nodding templates read, so `flowerSat`
+     rides alongside. A look carrying neither is unchanged. */
   function bloomOf(id, L) {
     var b = BLOOMS[id] || BLOOMS.daisy;
-    if (!L || L.flowerHue == null) return b;
-    return { hue: L.flowerHue, sat: b.sat, light: b.light, name: b.name };
+    if (!L) return b;
+    if (L.flowerHue == null && L.flowerSat == null && L.flowerLight == null) return b;
+    return { hue:   L.flowerHue   == null ? b.hue   : L.flowerHue,
+             sat:   L.flowerSat   == null ? b.sat   : L.flowerSat,
+             light: L.flowerLight == null ? b.light : L.flowerLight,
+             name:  b.name };
   }
 
   /* THE FLOWER IS A BONNET, NOT A RING OF PETALS, and the SOLID CROWN is
@@ -706,7 +833,7 @@
     /* NO POCKET UNDER A SKIRT. It sits at b - 40, which is inside the skirt's
        own panel, so it came out printed on the front of it. */
     if (!pocket) return;
-    ctx.fillStyle = hsl(L.top, 26, 48);
+    ctx.fillStyle = bodyCol(L, -8);
     rr(ctx, cx + 8, b - 40, 22, 17, 5);
   }
 
@@ -805,7 +932,7 @@
      worn and the top otherwise. `holding` puts a thumb across the handle of
      what is carried, so the grip is a thing you can see. */
   function sleeveTone(L) {
-    return L.clothes === "cardi" ? tone(tintOf(L, "clothes")) : hsl(L.top, 26, 56);
+    return L.clothes === "cardi" ? tone(tintOf(L, "clothes")) : bodyCol(L);
   }
   function armPoints(k) {
     return {
@@ -1211,9 +1338,14 @@
       return;
     }
     if (kind === "top") {
-      var lk = Object.assign({}, L, { top: id, clothes: null });
+      /* `id` IS AN INDEX INTO `TOPS` HERE, not a hue, because a body colour
+         is three numbers now rather than one and a tile has to draw the
+         neutral it is offering rather than a hue at a fixed saturation. */
+      var tp = TOPS[id] || TOPS[0];
+      var lk = Object.assign({}, L,
+        { top: tp.h, topS: tp.s, topL: tp.l, clothes: null });
       drawSleeves(ctx, lk);
-      ctx.fillStyle = hsl(id, 26, 56);
+      ctx.fillStyle = bodyCol(lk);
       bodyPath(ctx); ctx.fill();
       drawHands(ctx, skin, false);
       return;
@@ -1240,7 +1372,7 @@
       if (ck.feet) drawFeet(ctx, ck.feet, ck);
       drawUnder(ctx, id, ck);
       drawSleeves(ctx, ck);
-      ctx.fillStyle = hsl(L.top, 26, 56);
+      ctx.fillStyle = bodyCol(L);
       bodyPath(ctx); ctx.fill();
       drawOver(ctx, id, ck);
       drawCollar(ctx, ck);
@@ -1322,14 +1454,17 @@
     drawLegs(ctx, L.clothes, L, skin);
     if (L.feet) drawFeet(ctx, L.feet, L);
     else {
-      ctx.fillStyle = hsl(L.top, 14, 26);
+      /* THE PLAIN SHOE STILL DERIVES FROM THE BODY, and it may: at thirty
+         steps darker it can never be mistaken for the stone trousers above
+         it, whatever the body is set to. */
+      ctx.fillStyle = bodyCol(L, -30, -12);
       rr(ctx, LEG.lx - 7, LEG.foot + 2, 28, 18, 8);
       rr(ctx, LEG.rx - 5, LEG.foot + 2, 28, 18, 8);
     }
     drawUnder(ctx, L.clothes, L);
 
     drawSleeves(ctx, L);
-    ctx.fillStyle = hsl(L.top, 26, 56);
+    ctx.fillStyle = bodyCol(L);
     bodyPath(ctx); ctx.fill();
     drawOver(ctx, L.clothes, L);
     drawCollar(ctx, L);
@@ -1391,7 +1526,8 @@
     FRINGES: FRINGES, BACKS: BACKS,
     TOPS: TOPS, WEAR: WEAR, SLOTS: SLOTS, STEP_SLOTS: STEP_SLOTS,
     SLOT_LABEL: SLOT_LABEL, NO_NONE: NO_NONE, BLOOMS: BLOOMS, HOOD: HOOD,
-    TINTS: TINTS, tintable: tintable, tintsFor: tintsFor, tone: tone,
+    TINTS: TINTS, tintable: tintable, tintsFor: tintsFor,
+    suggestedFor: suggestedFor, tone: tone, TOP_S: TOP_S, TOP_L: TOP_L,
     TEMPLATES: TEMPLATES, templateOf: templateOf,
     SPECIES_ORDER: SPECIES_ORDER, DEFAULT_LOOK: DEFAULT_LOOK, W: W, H: H
   };

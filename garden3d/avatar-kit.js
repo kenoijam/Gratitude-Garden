@@ -21,20 +21,23 @@ const hsl = (h, s, l) => new THREE.MeshStandardMaterial({ roughness: 0.88, metal
   color: new THREE.Color().setHSL(h / 360, s / 100, l / 100, THREE.SRGBColorSpace)
 });
 
-/* EIGHT SKINS AND TWELVE HAIRS, AND THESE ARE `avatar/avatar-draw.js`'s
+/* EIGHT SKINS AND SIXTEEN HAIRS, AND THESE ARE `avatar/avatar-draw.js`'s
    LISTS, IN ITS ORDER. A look stores `skin` and `hairCol` as INDICES, and the
    whole point of a look being data is that the same row of numbers draws the
    flat gardener on the web and the figure here, so the moment these two
    disagree one index means two different people. Change one and change the
    other; do not sort, insert or dedupe either of them on its own.
    The skins are a ramp, light to dark. The hairs are eight naturals, dark to
-   light, then four that no head grows, which is the one choice on the figure
-   with no bearing on anything else. */
+   light, then four that no head grows, then four APPENDED in a later round: a
+   true black, a true white, a mid grey and a copper. They are on the end and
+   out of tonal order for the reason above, which is the only order that
+   matters here. */
 export const SKINS = [0xfbeedd, 0xf6e3cd, 0xeed0ae, 0xe4bd95,
                       0xcf9d6e, 0xbb8354, 0x96603a, 0x76492c];
 export const HAIRS = [0x14131a, 0x3a2a1e, 0x7a5540, 0xa4642f,
                       0xb0412c, 0xd9c08a, 0x9c9aa2, 0xefe7d6,
-                      0xe489b2, 0x6fc6ae, 0xa98ede, 0x74aee2];
+                      0xe489b2, 0x6fc6ae, 0xa98ede, 0x74aee2,
+                      0x000000, 0xffffff, 0x8f8f96, 0xc98a5e];
 export const SHAPES = ["Short", "Bun", "Long"];
 
 /* Each keepsake names the species that gives it and the slot it fills, so

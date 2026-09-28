@@ -112,6 +112,12 @@
           <p class="av-label">Its colour</p>
           <input class="av-hue" id="avFlowerHue" type="range" min="0" max="359"
                  aria-label="The flower's hue">
+          <!-- HOW STRONG, and it is the only way to reach a white bloom. The
+               hue slider cannot: white is an absence of saturation and every
+               hue on that track has plenty. The lightness rises as the colour
+               drains, since a grey flower is not what anybody means by pale. -->
+          <input class="av-hue av-sat" id="avFlowerSat" type="range" min="0" max="70"
+                 aria-label="How strong the flower's colour is">
           <p class="av-note av-quiet" id="avFlowerNote"></p>
         </section>
         <section class="av-step" data-step="top" hidden>
