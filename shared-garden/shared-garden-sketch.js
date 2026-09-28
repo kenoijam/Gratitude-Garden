@@ -5,6 +5,35 @@ const isTouchDevice = /Mobi|Android|iPhone|iPad|iPod/.test(
 navigator.userAgent || ""
 );
 let step = "landing";
+/* HOW A FLOWER IS ATTRIBUTED, chosen on the confirm step and nowhere else.
+   "name" is what the garden has always done and stays the default, so
+   somebody who touches none of this sees exactly what they saw before.
+
+     gardener  your figure stands holding the flower, with your name on it
+     name      the name alone
+     anon      the label reads Someone, and NOTHING identifying is stored
+
+   ANONYMOUS IS HONEST OR IT IS NOTHING. The room object is public: anyone can
+   read it, so storing the name and merely hiding it would be a lie told in a
+   place people can check. The word is left EMPTY instead.
+   THE COST IS REAL AND IS ACCEPTED. `sharedPlantedToday` reads names out of
+   the room, so it cannot see an anonymous flower, and only the browser marker
+   then holds somebody to one a day. That is the same guarantee this garden
+   has always given anyone willing to clear their storage, which is written
+   down already: planting here takes no account on purpose. */
+let identity = "name";
+/* LOOKING ROUND BEFORE PLANTING. The garden was reachable only by planting
+   in it, which asks somebody to write the one sentence they get for the day
+   before they have seen what anybody else wrote or what the place even looks
+   like. `browsing` is what that route sets, and it is a FLAG rather than a
+   step, since the garden step itself is exactly the same garden. */
+let browsing = false;
+/* WHAT A BLOOM IS LABELLED WITH. One place, because it is read by the draw
+   and again by `keepFlowersOnScreen`, which holds a flower in far enough for
+   its own label: the two disagreeing would push blooms off the screen edge. */
+function flowerLabel(f) {
+  return f && f.anon ? "Someone" : ((f && f.word) || "");
+}
 let gratitudeText = "";
 let username = "";
 let chosenSpecies = null;
@@ -101,7 +130,7 @@ function defaultLight(sp) {
 return { daisy: 65, tulip: 60, rose: 55, sunflower: 65, lily: 70, sakura: 75, lotus: 70, peony: 70, poppy: 58, orchid: 68, chrysanth: 72 }[sp] || 65;
 }
 
-function addFlower(text, name, species, hue) {
+function addFlower(text, name, species, hue, look, anon) {
   const word = name.trim().slice(0, 20);
 
   const flowerCount = flowers.length;
@@ -202,6 +231,14 @@ function addFlower(text, name, species, hue) {
   const newFlower = {
     word,
     gratitude: text,
+    /* THE LOOK TRAVELS WITH THE FLOWER, which is what turns this from a
+       private decoration into a shared one. Before it, the garden drew only
+       YOUR gardener beside YOUR flower, because the room held nothing about
+       anybody else; with the row of numbers in the room, everybody sees
+       everybody. It is about fifteen small fields, which is nothing beside
+       the flower record already here. */
+    look: look || null,
+    anon: !!anon,
     species,
     x,
     baseY,
@@ -560,45 +597,70 @@ circle(x + W * 0.456 + b2 / 2, y + W * 0.052 + b2 / 2, b2);
 
    They paint before `drawForegroundHill()`, so the hill buries their feet the
    way it buries a stem. */
-let gardenerHit = null;
+/* EVERY GARDENER IN THE ROOM, not only yours, and this is the whole reason
+   the look travels with the flower. It used to draw one figure, beside the
+   one flower marked `isMyFlower`, because the room held nothing about anybody
+   else; a shared garden where only you have a face is a private garden with
+   strangers' flowers in it.
+   WHOSE IS WHOSE IS NOT GUESSED: a figure is drawn only for a flower whose
+   own record carries a look, so a bloom planted as a name or anonymously has
+   nobody standing at it, which is exactly what those two choices mean. */
+let gardenerHits = [];
+/* TWENTY FIGURES IN ONE MEADOW IS A LOBBY, which is the conclusion the 3D
+   exploration reached about the same question and for the same reason: what
+   is left of somebody who was here for a minute is their flower, not a
+   picture of them. The NEWEST are kept, since those are the people still
+   about, and the rest stand as flowers alone. */
+const MAX_GARDENERS = 6;
 function sharedHillTop(x) {
   /* the SAME expression `drawForegroundHill` draws its edge with, lift and
      all, so the feet follow the ground rather than a guess at it */
   return height * 0.76 - noise(x * 0.004, 321.45) * 20;
 }
-function drawGardener() {
-  if (!window.GardenGardener || !window.GardenGardener.has()) return;
-  if (!window.AvatarDraw || typeof window.drawSpeciesBloom !== "function") return;
-  let mine = null;
-  for (const f of flowers) {
-    if (!f.isMyFlower) continue;
-    if (!mine || (f.createdIndex || 0) > (mine.createdIndex || 0)) mine = f;
-  }
-  if (!mine) return;
+function drawGardeners() {
+  gardenerHits = [];
+  if (!window.GardenGardener || !window.AvatarDraw) return;
+  if (typeof window.drawSpeciesBloom !== "function") return;
+
+  const withLook = flowers.filter(f => f.look && !f.anon);
+  if (!withLook.length) return;
+  /* NEWEST FIRST, then back into planting order so they paint left to right
+     and a nearer figure is never drawn behind a further one. */
+  withLook.sort((a, b) => (b.createdIndex || 0) - (a.createdIndex || 0));
+  const shown = withLook.slice(0, MAX_GARDENERS)
+    .sort((a, b) => (a.createdIndex || 0) - (b.createdIndex || 0));
+
   const h = Math.max(96, Math.min(Math.min(height * 0.19, width * 0.34), 180));
-  /* BESIDE IT ON WHICHEVER SIDE HAS ROOM. Standing always to the left puts
-     a gardener half off the screen whenever somebody's flower lands near the
-     left edge, and a phone is 375 wide. */
   const gap = h * 0.55;
-  const gx = Math.max(gap, Math.min(width - gap,
-    mine.x < width / 2 ? mine.x + gap : mine.x - gap));
-  const gy = sharedHillTop(gx) + h * 0.10;
-  window.GardenGardener.paintAt(drawingContext, null, gx, gy, h,
-    window.GardenGardener.patNow());
-  /* WHERE THEY WERE DRAWN, kept so a tap can find them. The hit box is the
-     BODY, not the whole 360 box: most of that box is clear margin above the
-     flower, and a tap in empty sky two heads up should not pat anybody. */
-  gardenerHit = { x: gx, y: gy, w: h * 0.42, h: h * 0.72 };
+  for (const f of shown) {
+    /* BESIDE IT ON WHICHEVER SIDE HAS ROOM. Standing always to the left puts
+       a gardener half off the screen whenever somebody's flower lands near
+       the left edge, and a phone is 375 wide. */
+    const gx = Math.max(gap, Math.min(width - gap,
+      f.x < width / 2 ? f.x + gap : f.x - gap));
+    const gy = sharedHillTop(gx) + h * 0.10;
+    /* ONLY YOURS TAKES THE PAT. The clock is one for the whole page, so
+       feeding it to every figure would wink the entire meadow at once. */
+    window.GardenGardener.paintAt(drawingContext, f.look, gx, gy, h,
+      f.isMyFlower ? window.GardenGardener.patNow() : null);
+    /* WHERE THEY WERE DRAWN, kept so a tap can find them. The hit box is the
+       BODY, not the whole 360 box: most of that box is clear margin above the
+       flower, and a tap in empty sky two heads up should not pat anybody. */
+    gardenerHits.push({ x: gx, y: gy, w: h * 0.42, h: h * 0.72, mine: !!f.isMyFlower });
+  }
 }
-/* A PAT IS A TAP ON THE GARDENER, and it is checked BEFORE the flowers, since
-   a bloom behind them must not answer a tap that landed on a person. */
+/* A PAT IS A TAP ON A GARDENER, and it is checked BEFORE the flowers, since
+   a bloom behind them must not answer a tap that landed on a person. Anybody
+   can be patted, not only your own: a garden where only your figure answers
+   is a garden with one real person in it and five cardboard ones. */
 function gardenerPatted(mx, my) {
-  const g = gardenerHit;
-  if (!g || !window.GardenGardener || !window.GardenGardener.has()) return false;
-  if (Math.abs(mx - g.x) > g.w / 2) return false;
-  if (my > g.y || my < g.y - g.h) return false;
-  window.GardenGardener.pat();
-  return true;
+  for (const g of gardenerHits) {
+    if (Math.abs(mx - g.x) > g.w / 2) continue;
+    if (my > g.y || my < g.y - g.h) continue;
+    window.GardenGardener.pat();
+    return true;
+  }
+  return false;
 }
 
 function drawForegroundHill() {
@@ -1357,7 +1419,7 @@ drawDaisyBloom(R, hue, sat, light);
 const scaleFactor = (width < 720 ? gardenScale : 1);
 const labelSize = max(11, 16 * scaleFactor);
 
-let label = f.word || "";
+let label = flowerLabel(f);
 const maxChars = width < 720 ? 9 : 11;
 let displayWord = label;
 
@@ -2548,7 +2610,7 @@ push();
 textSize(max(11, 16 * (width < 720 ? gardenScale : 1)));
 const maxChars = width < 720 ? 9 : 11;
 for (const f of flowers) {
-  const w = String(f.word || "");
+  const w = String(flowerLabel(f));
   const shown = w.length > maxChars ? w.slice(0, maxChars - 1) + "\u2026" : w;
   const half = Math.max(textWidth(shown) / 2 + 10, (f.size || 20) * 1.4 + 6);
   if (half * 2 < width) f.x = constrain(f.x, half, width - half);
@@ -2688,7 +2750,7 @@ drawFlowersBloomsOnly("mid");
 drawGround();
 drawFlowersStemsOnly("front");
 drawFlowersGrowingOnly("front");
-drawGardener();
+drawGardeners();
 drawForegroundHill();
 drawFlowersBloomsOnly("front");
 
@@ -2940,9 +3002,16 @@ pop();
 }
 
 function getMyFlower() {
-if (!username || !flowers || !flowers.length) return null;
+if (!flowers || !flowers.length) return null;
+/* `isMyFlower` FIRST, because an anonymous flower carries no name to match
+   on and every anonymous flower's word is the same empty string: matching by
+   word alone would hand back somebody else's. That flag is set when this
+   visit plants and re-attached on every room update by `createdIndex`. */
+for (let i = flowers.length - 1; i >= 0; i--) {
+if (flowers[i].isMyFlower) return flowers[i];
+}
+if (!username) return null;
 const myWord = username.trim().slice(0, 20);
-
 for (let i = flowers.length - 1; i >= 0; i--) {
 if (flowers[i].word === myWord) return flowers[i];
 }
@@ -2989,8 +3058,29 @@ charCount = createP("0/100").style("text-align", "right").parent(card);
 continueBtn = createButton("Continue").addClass("gg-btn").parent(card);
 continueBtn.mousePressed(() => {
 if (!gratitudeText.trim()) return;
+browsing = false;
 goToFlowers();
 });
+
+/* A WAY IN WITHOUT WRITING ANYTHING FIRST. It is a quiet text link under the
+   button rather than a second button, because it is the smaller of the two
+   things to do here and a pair of equal buttons would make choosing one of
+   them a decision.
+   NOTHING IS LOST BY TAKING IT: whatever has been typed stays in the field,
+   and the way back is on screen the whole time you are looking. */
+const peekLink = createButton("Or look at today's garden first").parent(card);
+peekLink.style("display", "block");
+peekLink.style("width", "100%");
+peekLink.style("margin", "10px 0 0");
+peekLink.style("padding", "8px 4px");
+peekLink.style("background", "none");
+peekLink.style("border", "none");
+peekLink.style("color", "#2c7a7b");
+peekLink.style("font-size", "14px");
+peekLink.style("text-decoration", "underline");
+peekLink.style("cursor", "pointer");
+peekLink.style("pointer-events", "auto");
+peekLink.mousePressed(() => { browsing = true; showStep("garden"); });
 
 /* Username */
 usernameWrap = createDiv().id("username-wrap").parent(root).addClass("gg-wrap");
@@ -3254,12 +3344,94 @@ confirmSlider.input(() => {
   updateConfirmPreview();
 });
 
+/* ------------------------------------------------- who this flower is from
+   THREE WAYS, AND THE MIDDLE ONE IS WHAT THE GARDEN ALWAYS DID. Somebody who
+   touches none of this gets exactly the meadow they got before, which is why
+   "name" is the default rather than the safest option: making anonymous the
+   default would empty the garden of people to buy a setting most visitors
+   never open, and the whole point of a shared garden is that it is shared.
+   THE GARDENER OPTION ONLY APPEARS IF THERE IS ONE. Offered to somebody who
+   has never been to the studio it is a control that does nothing, and a line
+   under the row says where to go instead. */
+const idLabel = createP("Who is this from?").parent(confirmCard);
+idLabel.style("font-size", "14px");
+idLabel.style("color", "#0f5132");
+idLabel.style("margin", "4px 0 8px 0");
+
+const idRow = createDiv().parent(confirmCard);
+idRow.style("display", "flex");
+idRow.style("gap", "6px");
+idRow.style("margin-bottom", "8px");
+idRow.style("pointer-events", "auto");
+
+const idNote = createP("").parent(confirmCard);
+idNote.style("font-size", "12.5px");
+idNote.style("color", "#5a9e8e");
+idNote.style("line-height", "1.5");
+idNote.style("margin", "0 0 14px 0");
+
+const ID_NOTE = {
+  gardener: "Your gardener stands beside it, with your name on the flower.",
+  name: "Your name is on the flower. Nobody stands beside it.",
+  anon: "The flower says Someone. Nothing about you is kept with it."
+};
+let idButtons = [];
+function haveGardener() {
+  return !!(window.GardenGardener && GardenGardener.has() && window.AvatarDraw);
+}
+function paintIdRow() {
+  idButtons.forEach(b => {
+    const on = b.__id === identity;
+    b.style("background", on ? "#26a69a" : "#ffffff");
+    b.style("color", on ? "#ffffff" : "#1d6466");
+    b.style("border-color", on ? "#26a69a" : "#bde0d6");
+  });
+  idNote.html(ID_NOTE[identity] || "");
+}
+function buildIdRow() {
+  idRow.elt.innerHTML = "";
+  idButtons = [];
+  const opts = [];
+  if (haveGardener()) opts.push(["gardener", "My gardener"]);
+  opts.push(["name", "My name"], ["anon", "Anonymous"]);
+  /* IF THE GARDENER IS GONE, so is the choice that needed one. Somebody can
+     reach this card, open the studio in another tab and come back. */
+  if (identity === "gardener" && !haveGardener()) identity = "name";
+  opts.forEach(([id, text]) => {
+    const b = createButton(text).parent(idRow);
+    b.__id = id;
+    b.style("flex", "1");
+    b.style("padding", "10px 4px");
+    b.style("min-height", "44px");
+    b.style("border", "2px solid #bde0d6");
+    b.style("border-radius", "10px");
+    b.style("font-size", "13.5px");
+    b.style("font-weight", "600");
+    b.style("cursor", "pointer");
+    b.style("pointer-events", "auto");
+    b.mousePressed(() => { identity = id; paintIdRow(); });
+    idButtons.push(b);
+  });
+  if (!haveGardener()) {
+    const hint = createP("").parent(idRow.parent());
+    hint.style("display", "none");
+  }
+  paintIdRow();
+}
+buildIdRow();
+if (window.GardenGardener && GardenGardener.onChange) GardenGardener.onChange(buildIdRow);
+
 const plantBtn = createButton("Plant in Garden").addClass("gg-btn").parent(confirmCard);
 plantBtn.mousePressed(() => {
   /* Checked again here, not only at the username step. Somebody can sit on
      the picker while another tab plants, and the room is the authority. */
   if (sharedPlantedToday(username)) { showStep("garden"); return; }
-  addFlower(gratitudeText, username, chosenSpecies, chosenHue);
+  const anon = identity === "anon";
+  /* AN ANONYMOUS FLOWER CARRIES NO NAME AND NO FIGURE, and both have to be
+     stripped at the call rather than hidden at the draw: the room object is
+     public and a hidden name is a name anybody can read. */
+  addFlower(gratitudeText, anon ? "" : username, chosenSpecies, chosenHue,
+    (identity === "gardener" && haveGardener()) ? GardenGardener.get() : null, anon);
   markSharedPlanted();
   saveGarden();
   if (window.GardenJournal) {
@@ -3478,12 +3650,32 @@ if (dailyNote) {
    garden without having planted is being invited in, not told they are
    finished. */
 const mine = !!sharedPlantedToday(username);
-dailyNote.html(step === "garden" && mine
+const inGarden = step === "garden";
+/* THE NUDGE IS A LINE, NOT A GATE. Nothing blocks, nothing counts down and
+   nothing closes: it says the garden is waiting for one and gives the way
+   back to writing it, and somebody who ignores it can look as long as they
+   like. That is the only version of this that belongs on a page about not
+   being hurried. */
+dailyNote.html(inGarden && mine
 ? "Your flower is planted. Enjoy today's garden, and come back tomorrow for another."
-: "");
+: (inGarden && browsing
+? "Have a look around. When something comes to mind, <button id=\"peek-back\">plant yours</button>."
+: ""));
+const shown = inGarden && (mine || browsing);
 /* `flex`, not `block`: the box is a fixed 38px tall so that its line sits
    level with the icons, and flex is what centres the line inside it. */
-dailyNote.style("display", step === "garden" && mine ? "flex" : "none");
+dailyNote.style("display", shown ? "flex" : "none");
+/* THE BOX IS `pointer-events: none` so it never swallows a tap meant for a
+   flower under it, so the one thing in it that IS a control has to take them
+   back for itself. */
+dailyNote.style("pointer-events", "none");
+const back = document.getElementById("peek-back");
+if (back) {
+  back.style.cssText = "background:none;border:none;padding:0;font:inherit;" +
+    "color:#1d6466;font-weight:700;text-decoration:underline;cursor:pointer;" +
+    "pointer-events:auto;";
+  back.onclick = () => { browsing = false; showStep("landing"); };
+}
 }
 
 const logo = select("#gg-logo");

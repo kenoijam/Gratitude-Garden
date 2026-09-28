@@ -228,6 +228,38 @@ Same rendering engine, different state layer. `preload()` calls `partyConnect("w
 - (Resolved) The colour step washed the whole viewport with `rgba(207, 238, 240, 0.85)` on `#confirm-wrap`, so the garden appeared to vanish the moment you reached it. Every other step leaves its `.gg-wrap` transparent and lets the card stand on the scene. If a step ever loses the garden again, look for a background on its wrap.
 - (Resolved) `showStep` never made `#garden-wrap` visible, so the CSS `display: none` on it stood at every step and the sky, hills and ground never appeared behind anything. The personal garden shows its wrap unconditionally for exactly this reason, and the shared one now does too. If a garden ever renders on a blank background again, this is the line to check.
 
+#### Who a flower is from, and looking before planting
+
+**THREE WAYS TO BE ON A FLOWER, CHOSEN ON THE CONFIRM STEP.** `identity` holds `"gardener"`, `"name"` or `"anon"`.
+
+| | what the garden shows |
+|---|---|
+| `gardener` | the figure stands beside the flower, with the name on it |
+| `name` | the name alone, which is what this garden always did, and the DEFAULT |
+| `anon` | the label reads Someone, and nothing identifying is stored |
+
+- **NAME IS THE DEFAULT ON PURPOSE.** Making anonymous the default would empty the meadow of people to buy a setting most visitors never open, and a shared garden of unnamed flowers is a private garden with strangers' flowers in it. Somebody who touches none of this gets exactly the garden they got before.
+- **ANONYMOUS IS HONEST OR IT IS NOTHING.** The room object is PUBLIC and anybody can read it, so storing the name and hiding it at the draw would be a lie told somewhere people can check. `word` is left EMPTY and no look is written.
+- **THE COST IS REAL AND IS ACCEPTED.** `sharedPlantedToday` reads names out of the room, so it cannot see an anonymous flower and only the browser marker then holds that person to one a day. That is the same guarantee this garden has always given anyone willing to clear their storage; planting here takes no account on purpose.
+- **`getMyFlower` ASKS `isMyFlower` FIRST NOW.** It matched on the name, and every anonymous flower's name is the same empty string, so it would have handed back somebody else's.
+- **`flowerLabel(f)` IS THE ONE PLACE A BLOOM'S LABEL IS DECIDED**, because it is read by the draw and again by `keepFlowersOnScreen`, which holds a flower in far enough for its own label. The two disagreeing would push blooms off the screen edge.
+- **THE GARDENER OPTION ONLY APPEARS IF THERE IS ONE**, and if the gardener is removed while the card is open the choice falls back to `name` rather than leaving a dead selection. `GardenGardener.onChange` rebuilds the row.
+
+**`drawGardener` BECAME `drawGardeners`, AND THE LOOK TRAVELS WITH THE FLOWER.** That is the whole point: the old one drew a single figure beside the one flower marked `isMyFlower`, because the room held nothing about anybody else, so a shared garden was a place where only you had a face.
+
+- **A FIGURE IS DRAWN ONLY FOR A FLOWER WHOSE OWN RECORD CARRIES A LOOK**, never guessed, so a bloom planted as a name or anonymously has nobody at it, which is exactly what those choices mean.
+- **`MAX_GARDENERS` IS 6, and twenty in one meadow is a lobby.** That is the conclusion the 3D exploration reached about the same question and for the same reason: what is left of somebody who was here for a minute is their flower, not a picture of them. The NEWEST are kept, then re-sorted into planting order so a nearer figure never paints behind a further one.
+- **ONLY YOUR OWN TAKES THE PAT ANIMATION**, since the pat clock is one for the whole page and feeding it to every figure would wink the entire meadow at once. **Any of them can be patted**, though: a garden where only your figure answers has one real person in it and five cardboard ones.
+- Verified with nine flowers carrying looks: six figures drawn, all on screen, and an anonymous flower draws none and labels Someone.
+
+**LOOKING ROUND BEFORE PLANTING, as a FLAG rather than a step.** The garden was reachable only by planting in it, which asks somebody to write the one sentence they get for the day before they have seen the place or what anybody else wrote. `browsing` routes the landing step straight to the garden.
+
+- **THE NUDGE IS A LINE, NOT A GATE.** Nothing blocks, nothing counts down and nothing closes. It rides in `#daily-note`, the box that already sits level with the corner icons, and carries the way back to writing. That is the only version of this that belongs on a page about not being hurried.
+- **`#daily-note` IS `pointer-events: none`** so it never swallows a tap meant for a flower under it, so the one control inside it has to turn them back on for itself.
+- Whatever was typed stays in the field, so taking the look costs nothing.
+
+**A WARNING FROM TESTING THIS: THE ROOM IS LIVE AND PUBLIC, AND IT IS EASY TO WRITE TO BY ACCIDENT.** While checking the new drawing against the real room, `look` and `anon` ended up written onto a flower somebody had actually planted that day. It was found by reading the room back, and removed. A later probe confirmed that writing to a local `flowers` entry does NOT reach `shared.flowers`, so the two are genuine copies and the write came in by another route; the cause was not pinned down. **Test this page against a scratch array or a local room, read `shared.flowers` back afterwards, and never take it on trust that a local edit stayed local.**
+
 ### Shared garden: likes and comments (`shared-garden-social.js`)
 
 **The shared garden stays OPEN.** Planting is still a typed name and a sentence, with no account and no Supabase call of any kind. What needs an account is REACTING: a like has to be countable once per person, and a comment has to carry a name that belongs to somebody. A gate on the page was the other option and it was refused on purpose, since the shared garden is the one place anyone can try in ten seconds and asking for an account at the door would cost that to buy a feature most visitors never touch.
