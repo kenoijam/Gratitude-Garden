@@ -500,6 +500,10 @@ footer   dark teal   <- cream curve
 - **The footer's is on the RIGHT.** On the left it stood on top of the social icons; the right of that rule is the foot of the Explore column, which runs out four links earlier.
 - **Gone under 768px.** The column is 375 wide there and either of them would be standing on copy rather than beside it.
 
+**THE PAGE IS CALLED THE GARDENER'S STUDIO.** It was "build your gardener", the one page on a site of places named after the verb rather than the thing, so in a list beside The Personal Garden, The Shared Garden and The Bouquet Builder it read as a feature rather than a fourth place. **The INVITATION is still "build your gardener"**, on the buttons and the links that lead there, exactly the way the bouquet card says build a bouquet under the name The Bouquet Builder. Four places carry the name: the page's `<title>` and `h1`, the hero object's label, the footer's Explore column and the gardener band's copy.
+
+**THE FOOTER SAYS WHAT IT IS AND THEN STOPS.** It carried a paragraph describing the project and a three line note about what an account buys, which is the whole of the landing page said again at the bottom of the landing page. `.footer-desc` is DELETED rather than merely unused, and the join note is one line. The reference this was laid out from puts an invitation, a mark and some links in that space and nothing else; the explaining is what the six sections above are for. Measured after: the footer is 450px at 1024 where it was comfortably past 500.
+
 **THE FOOTER'S SIGN UP MAKES AN ACCOUNT, NOT A MAILING LIST, and that is the whole reason it is there.** The uncomfyworld reference puts a newsletter field in its footer; this project has no mailing list and no backend for one, so a box asking for an email with nothing behind it would be the single control on an otherwise honest page that does not do what it says. It HAS accounts, and the footer was the one place with no way into them.
 
 - **It is a BUTTON, not a field.** An input would promise that typing in it is the thing that signs you up, and the real form has two fields and lives in `garden-account.js`.

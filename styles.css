@@ -1067,17 +1067,19 @@ footer::before {
    An even two column grid gives each half a column and a real gap, and it is
    what lets the links be left aligned below. */
 .footer-top { display: grid; grid-template-columns: 1fr 1fr; gap: 0 3rem;
-  align-items: start; margin-bottom: 2.5rem; }
+  align-items: start; margin-bottom: 2rem; }
 .footer-brand-logo {
-  font-variation-settings: 'SOFT' 50, 'WONK' 0; font-family: 'Fraunces','Georgia',serif; font-size: 1.4rem; color: var(--yellow); margin-bottom: 0.9rem; display: block; text-decoration: none; }
-.footer-desc { font-family: Arial,Helvetica,sans-serif; font-size: 0.88rem; line-height: 1.75; max-width: 340px; }
+  font-variation-settings: 'SOFT' 50, 'WONK' 0; font-family: 'Fraunces','Georgia',serif; font-size: 1.4rem; color: var(--yellow); margin-bottom: 0.2rem; display: block; text-decoration: none; }
+/* `.footer-desc` IS GONE, not merely unused: it held the whole project
+   described again at the foot of the page that describes it. If a paragraph
+   is ever wanted back here, it belongs in About instead. */
 /* ------------------------------------------------- the footer's invitation
    THE SIGN UP MAKES AN ACCOUNT, not a mailing list, so it is a BUTTON and not
    a field: an input would promise that typing in it is the thing that signs
    you up, and the real form has two fields and lives in the account module. */
 .footer-join {
   display: inline-flex; align-items: center; gap: .5rem;
-  margin: 1.1rem 0 .55rem; padding: 11px 20px; min-height: 44px;
+  margin: .85rem 0 .5rem; padding: 11px 20px; min-height: 44px;
   border: 1.5px solid rgba(255,249,227,0.5); border-radius: 50px;
   background: none; color: var(--cream);
   font-family: Arial, Helvetica, sans-serif; font-size: .88rem; font-weight: 700;
@@ -1092,7 +1094,7 @@ footer::before {
    class, so this has to be scoped the same way or the two icons stack. */
 .footer-col ul.footer-social {
   list-style: none; display: flex; flex-direction: row; gap: .55rem;
-  margin: 1.1rem 0 0; padding: 0; align-items: center;
+  margin: .85rem 0 0; padding: 0; align-items: center;
 }
 .footer-social a {
   display: flex; align-items: center; justify-content: center;
