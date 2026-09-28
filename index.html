@@ -2791,9 +2791,27 @@
   }
 
   /* TWO PERCHED GARDENERS, and they are YOURS if you have built one. That is
-     what makes them worth the pixels: a stranger's figure standing on a card
-     is decoration, and your own standing there is the page remembering you.
-     Without one they fall back to a template, so the page is never bare. */
+     what makes them worth the pixels: a stranger's figure sitting on a card
+     is decoration, and your own sitting there is the page remembering you.
+     Without one they fall back to a template, so the page is never bare.
+
+     WHAT THEY SAY IS ENCOURAGEMENT AND A NUDGE TO PLANT, nothing else. Facts
+     about the flowers belong to the guide further up this page and would be
+     the same sentences twice; instructions belong to the cards. What nothing
+     on the page says is the thing these are for: that whatever you noticed
+     today is enough. */
+  var SAYINGS = [
+    'Whatever you noticed today counts. It does not have to be big.',
+    'You do not need a good day to find one thing worth keeping.',
+    'One flower a day. That is the whole of it.',
+    "The shared garden empties at midnight, so today's is only today's.",
+    'Nobody sees your personal garden but you.',
+    'Plant the small thing. The small things are most of a life.',
+    'A bouquet is a way of saying it to somebody else.',
+    'Come back tomorrow and there will be two.'
+  ];
+  var sayAt = Math.floor(Math.random() * SAYINGS.length);
+
   function perch() {
     var A = window.AvatarDraw, G = window.GardenGardener;
     if (!A || typeof window.drawSpeciesBloom !== 'function') return;
@@ -2806,13 +2824,114 @@
       var x = c.getContext('2d');
       x.setTransform(dpr, 0, 0, dpr, 0, 0);
       x.clearRect(0, 0, w, h);
-      var look = mine || A.TEMPLATES[+c.dataset.perch === 0 ? 1 : 3].look;
-      A.paintAt(x, look, w / 2, h * 0.99, h * 1.04);
+      var look = mine || A.TEMPLATES[+c.dataset.perch === 0 ? 0 : 2].look;
+      /* THE SEAT LINE IS WHERE THE CANVAS IS SPLIT, in the proportion the
+         drawing itself reports. The canvas then hangs below the edge by
+         exactly the part that is leg, which is what the negative margin
+         is for: `bottom: 100%` alone would leave them floating above it. */
+      var B = A.SEAT_BOX || { up: 0.72, down: 0.08 };
+      var seatY = h * (B.up / (B.up + B.down));
+      A.paintSeated(x, look, w / 2, seatY, h / (B.up + B.down) * 0.98,
+                    window.GardenGardener && GardenGardener.patNow());
+      c.style.marginBottom = -(h - seatY) + 'px';
+      /* THE HIT TEST IS ON THE FIGURE, NOT THE CANVAS. The canvas is a
+         rectangle far wider and taller than the person in it, which is the
+         same problem `gardenerHit` already solves in both gardens; a tap in
+         the empty corner above their head should reach the card underneath. */
+      c._fig = { x: w / 2, top: seatY - h * 0.62, w: w * 0.62, bottom: h };
     });
   }
 
-  window.__paintGardeners = function () { paint(); perch(); };
-  function both() { paint(); perch(); }
+  /* THE BUBBLE IS ONE ELEMENT, MOVED, rather than one per figure. Only ever
+     one of them is being pointed at, and a second panel left over from the
+     last hover is the kind of thing that survives a resize and never leaves. */
+  var sayEl = null;
+  function bubbleFor(c) {
+    if (!sayEl) {
+      sayEl = document.createElement('div');
+      sayEl.className = 'perch-say';
+      sayEl.setAttribute('role', 'status');
+      document.body.appendChild(sayEl);
+    }
+    sayEl.textContent = SAYINGS[sayAt % SAYINGS.length];
+    sayAt++;
+    var r = c.getBoundingClientRect();
+    sayEl.style.visibility = 'hidden';
+    sayEl.classList.add('is-on');
+    var bw = sayEl.offsetWidth, bh = sayEl.offsetHeight;
+    var left = r.left + scrollX + r.width / 2 - bw / 2;
+    /* KEPT INSIDE THE WINDOW. These sit at 8 and 9 percent from the right
+       edge, so a 210px panel centred on one runs off the side at any width
+       narrower than about 1100. */
+    left = Math.max(scrollX + 10, Math.min(left, scrollX + innerWidth - bw - 10));
+    sayEl.style.left = Math.round(left) + 'px';
+    sayEl.style.top = Math.round(r.top + scrollY - bh - 12) + 'px';
+    /* THE NOTCH FOLLOWS THE HEAD once the panel has been pulled back inside
+       the window, or it points at the air beside them. Held off the panel's
+       own edges so it cannot hang past a rounded corner. */
+    var head = r.left + scrollX + r.width / 2 - left;
+    sayEl.style.setProperty('--notch',
+      Math.round(Math.max(14, Math.min(bw - 14, head))) + 'px');
+    sayEl.style.visibility = '';
+  }
+  function hush() { if (sayEl) sayEl.classList.remove('is-on'); }
+
+  /* WHETHER THE POINTER IS ON THE PERSON is asked of the recorded box rather
+     than of the canvas element, so the empty margin around them is not part
+     of the control. Same rule, and the same reason, as both gardens. */
+  function onFigure(c, ev) {
+    var f = c._fig;
+    if (!f) return false;
+    var r = c.getBoundingClientRect();
+    var x = ev.clientX - r.left, y = ev.clientY - r.top;
+    return Math.abs(x - f.x) <= f.w / 2 && y >= f.top && y <= f.bottom;
+  }
+  function wirePerch() {
+    [].forEach.call(document.querySelectorAll('.perch'), function (c) {
+      if (c._wired) return;
+      c._wired = true;
+      c.setAttribute('role', 'img');
+      c.setAttribute('aria-label', 'A gardener sitting here. Point at them for a word.');
+      var over = false;
+      c.addEventListener('pointermove', function (e) {
+        var on = onFigure(c, e);
+        /* THE CURSOR SAYS WHERE THE PERSON IS. Off the figure the canvas is
+           just a transparent box over the card, so it should behave like one. */
+        c.style.cursor = on ? 'pointer' : 'default';
+        c.dataset.ggHot = on ? '1' : '';
+        if (on && !over) { over = true; bubbleFor(c); }
+        else if (!on && over) { over = false; hush(); }
+      });
+      c.addEventListener('pointerleave', function () { over = false; hush(); });
+      /* A TAP IS THE ONLY WAY IN WITHOUT A POINTER, and it also pats: the
+         gardens already answer a press on a gardener with a wink and a heart,
+         and one that sat here refusing would be the odd one out. */
+      c.addEventListener('pointerdown', function (e) {
+        if (!onFigure(c, e)) return;
+        bubbleFor(c);
+        if (window.GardenGardener && GardenGardener.pat) {
+          GardenGardener.pat();
+          patPerch();
+        }
+      });
+    });
+  }
+  /* ONLY WHILE A PAT IS RUNNING. This page is still, so a permanent frame
+     loop for two small figures is a cost for nothing; the loop stops itself
+     the moment the wink is over. Same rule the cursor trail follows. */
+  var patting = false;
+  function patPerch() {
+    if (patting) return;
+    patting = true;
+    (function tick() {
+      perch();
+      if (window.GardenGardener && GardenGardener.patting()) requestAnimationFrame(tick);
+      else { patting = false; perch(); }
+    })();
+  }
+
+  window.__paintGardeners = function () { paint(); perch(); wirePerch(); };
+  function both() { paint(); perch(); wirePerch(); }
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', function () { setTimeout(both, 160); });
   } else { setTimeout(both, 160); }

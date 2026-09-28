@@ -391,6 +391,21 @@
      They run UP INSIDE the body from 250 rather than starting at its hem, so
      the figure is one shape rather than two objects touching. */
   var LEG = { top: 250, bottom: 302, w: 16, lx: 97, rx: 127, foot: 294 };
+  /* SITTING ON AN EDGE, WHICH IS A SHORTER LEG AND ALMOST NOTHING ELSE.
+     From the only angle this figure has, straight on, a seated person's
+     thighs point AT the viewer and cannot be drawn at all; what is visible is
+     the shin hanging down off the edge. So the whole of the pose is that the
+     leg runs a shorter way and the shoe lands higher, with everything above
+     the hip left exactly as it is.
+     WHAT MAKES IT READ AS SITTING IS NOT IN THIS FILE. It is the EDGE itself
+     crossing the hip, which the page supplies by anchoring at `SEAT` rather
+     than at the sole. Drawn on blank ground a seated figure just looks short,
+     so do not judge this pose without the thing being sat on. */
+  var SEAT = 260;
+  var SEAT_DROP = 26;
+  var seated = false;
+  function legBottom() { return LEG.bottom - (seated ? SEAT_DROP : 0); }
+  function legFoot()   { return LEG.foot   - (seated ? SEAT_DROP : 0); }
 
   function hsl(h, s, l, a) {
     return "hsla(" + h + "," + s + "%," + l + "%," + (a == null ? 1 : a) + ")";
@@ -794,8 +809,8 @@
   function drawLegs(ctx, id, L, skin) {
     var w = WEAR[id] || { bare: false };
     ctx.fillStyle = w.bare ? skin : TROUSER;
-    rr(ctx, LEG.lx, LEG.top, LEG.w, LEG.bottom - LEG.top, 8);
-    rr(ctx, LEG.rx, LEG.top, LEG.w, LEG.bottom - LEG.top, 8);
+    rr(ctx, LEG.lx, LEG.top, LEG.w, legBottom() - LEG.top, 8);
+    rr(ctx, LEG.rx, LEG.top, LEG.w, legBottom() - LEG.top, 8);
   }
 
   /* a scalloped edge, for a hem that should read as frilled */
@@ -1031,7 +1046,7 @@
      and a welly's shaft is 54, so it swallowed the whole thing and the shorts
      appeared to sit straight on the boot. */
   function drawFeet(ctx, id, L) {
-    var y = LEG.foot, T = tintOf(L, "feet");
+    var y = legFoot(), T = tintOf(L, "feet");
     var wc = WEAR[L.clothes], k = (wc && wc.bare) ? 0.45 : 1;
     if (id === "boots") {
       /* A SHAFT, A CUFF, A FOOT AND A SOLE. Two blocks read as two blocks. */
@@ -1458,8 +1473,8 @@
          steps darker it can never be mistaken for the stone trousers above
          it, whatever the body is set to. */
       ctx.fillStyle = bodyCol(L, -30, -12);
-      rr(ctx, LEG.lx - 7, LEG.foot + 2, 28, 18, 8);
-      rr(ctx, LEG.rx - 5, LEG.foot + 2, 28, 18, 8);
+      rr(ctx, LEG.lx - 7, legFoot() + 2, 28, 18, 8);
+      rr(ctx, LEG.rx - 5, legFoot() + 2, 28, 18, 8);
     }
     drawUnder(ctx, L.clothes, L);
 
@@ -1520,8 +1535,36 @@
     fx = null;
   }
 
+  /* SOMEBODY SITTING ON AN EDGE, ANCHORED AT THE HIP rather than at the sole.
+     `seatY` is the line they are sitting on, so everything above it is the
+     figure as always and the legs hang below it. The anchor is the whole
+     difference: hung by the sole like `paintAt`, a seated figure would float
+     above the edge it is meant to be on, and hung by its top it would sink or
+     rise as the flower on its head changed height.
+     `h` IS STILL THE WHOLE 360 BOX, so a seated gardener is the same size as
+     a standing one and the pose is the only thing that changes. */
+  function paintSeated(ctx, look, cx, seatY, h, effects) {
+    var L = Object.assign({}, DEFAULT_LOOK, look || {});
+    var s = (h || 120) / H;
+    fx = effects || null;
+    seated = true;
+    ctx.save();
+    ctx.translate(cx - (W / 2) * s, seatY - SEAT * s);
+    ctx.scale(s, s);
+    paintFigure(ctx, L);
+    ctx.restore();
+    seated = false;
+    fx = null;
+  }
+  /* WHERE A SEATED FIGURE FALLS EITHER SIDE OF `seatY`, as fractions of `h`,
+     so a page can size and place its canvas without knowing any of the
+     geometry above. They add to less than 1 because the box carries clear
+     margin at the top for a flower on a stem. */
+  var SEAT_BOX = { up: SEAT / H, down: (FOOT - SEAT - SEAT_DROP) / H };
+
   window.AvatarDraw = {
-    paint: paint, paintAt: paintAt, icon: icon,
+    paint: paint, paintAt: paintAt, paintSeated: paintSeated,
+    SEAT_BOX: SEAT_BOX, icon: icon,
     patFx: patFx, PAT_MS: PAT_MS, SKINS: SKINS, HAIRS: HAIRS,
     FRINGES: FRINGES, BACKS: BACKS,
     TOPS: TOPS, WEAR: WEAR, SLOTS: SLOTS, STEP_SLOTS: STEP_SLOTS,

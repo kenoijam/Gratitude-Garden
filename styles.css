@@ -991,21 +991,63 @@ footer::before {
    TWO ON THE WHOLE PAGE AND NO MORE. It already carries eleven hero flowers,
    three card pictures, eight guide blooms and five gardeners in the band, and
    another repeated figure past that stops being charm and starts competing.
-   NOT LINKS, no labels, and `pointer-events: none`, which is the rule already
-   written down: the flower cursor marks a CONTROL, and a large box you happen
-   to be able to click is not one. */
+   THEY SIT, LEGS OVER THE EDGE, AND THEY ANSWER WHEN YOU REACH FOR THEM.
+   They were standing and silent, and both halves changed together: a figure
+   that says something is a CONTROL, so the old note here that they are not
+   links and take no pointer events no longer applies. The rule it came from
+   still does, and it is a different rule: the flower cursor marks a control,
+   and a large box you happen to be able to click is not one. So the pointer
+   events are on the CANVAS and the hit test inside it is on the FIGURE. */
 .perch {
-  position: absolute; z-index: 2; pointer-events: none;
-  display: block; width: 62px; height: 78px;
+  /* BIGGER THAN THE STANDING PAIR WERE, 80 against 62. A seated figure shows
+     only about a tenth of its own height below the hip, so at the old size
+     the whole of the pose was ten pixels of shin and it read as standing
+     behind the card rather than sitting on it. */
+  position: absolute; z-index: 3; cursor: pointer;
+  display: block; width: 80px; height: 116px;
 }
-/* STANDING ON THE CARD'S TOP EDGE. `bottom: 100%` puts their feet exactly on
-   it whatever the section's padding turns out to be, and that padding is set
-   in three separate places. */
-.perch-cta { right: 9%; bottom: 100%; margin-bottom: -6px; }
+/* SITTING ON THE CARD'S TOP EDGE. `bottom: 100%` puts the canvas above the
+   edge and the negative margin pulls it back down so the line crosses the
+   hip; the exact amount is set in JS from `AvatarDraw.SEAT_BOX`, since the
+   geometry belongs to the drawing rather than to this file. */
+.perch-cta { right: 9%; bottom: 100%; }
 /* ON THE RIGHT, because the LEFT of the rule is where the social icons end
-   and she stood on top of them. The right side above the rule is the foot of
+   and she sat on top of them. The right side above the rule is the foot of
    the Explore column, which runs out four links earlier. */
-.perch-footer { right: 8%; bottom: 100%; margin-bottom: -4px; }
+.perch-footer { right: 8%; bottom: 100%; }
+
+/* WHAT THEY SAY. A small cream panel above the head, pointing down at it.
+   It is `pointer-events: none` so that reaching past it to the button
+   underneath is never intercepted: the bubble is an answer, not a control. */
+.perch-say {
+  position: absolute; z-index: 4; pointer-events: none;
+  width: max-content; max-width: 210px;
+  padding: 9px 13px 10px; border-radius: 14px;
+  background: var(--cream); color: var(--darkteal);
+  border: 1.5px solid rgba(29, 100, 102, 0.18);
+  box-shadow: 0 6px 20px rgba(29, 100, 102, 0.13);
+  font-size: .82rem; line-height: 1.35; text-align: left;
+  opacity: 0; transform: translateY(4px);
+  transition: opacity .22s ease, transform .22s ease;
+}
+.perch-say.is-on { opacity: 1; transform: translateY(0); }
+/* THE NOTCH IS TWO ROTATED SQUARES, NOT ONE, which is the same fix the
+   music hint already carries: a single bordered square shows its own upper
+   edges through the panel it is meant to be part of, so the back one carries
+   the border colour and the front one, 2px higher, carries the fill. */
+/* THE NOTCH POINTS AT THE FIGURE, NOT AT THE MIDDLE OF THE PANEL. These sit
+   8 and 9 percent from the right edge, so the panel is pulled back inside the
+   window and its centre is nowhere near the head it belongs to; at `left:50%`
+   it pointed at empty air beside them. `--notch` is set in JS. */
+.perch-say::before, .perch-say::after {
+  content: ""; position: absolute; left: var(--notch, 50%); width: 10px; height: 10px;
+  margin-left: -5px; transform: rotate(45deg);
+}
+.perch-say::before { bottom: -6px; background: rgba(29, 100, 102, 0.18); }
+.perch-say::after  { bottom: -4px; background: var(--cream); }
+@media (prefers-reduced-motion: reduce) {
+  .perch-say { transition: none; }
+}
 @media (prefers-reduced-motion: no-preference) {
   .perch { animation: perchBob 6.2s ease-in-out infinite; }
   .perch-footer { animation-duration: 5.4s; animation-delay: -2.1s; }
@@ -1015,9 +1057,9 @@ footer::before {
   50% { transform: translateY(-5px); }
 }
 @media (max-width: 768px) {
-  /* GONE ON A PHONE. The column is 375 wide and every one of these would be
-     standing on copy rather than beside it. */
-  .perch { display: none; }
+  /* GONE ON A PHONE. The column is 375 wide and either of these would be
+     sitting on copy rather than beside it, bubble and all. */
+  .perch, .perch-say { display: none; }
 }
 /* TWO COLUMNS, NOT TWO EDGES. `space-between` on a 939px row holding 403px
    of content left a 535px gulf between Gratitude Garden and Explore, so the
