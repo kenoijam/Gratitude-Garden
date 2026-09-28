@@ -402,10 +402,29 @@
      than at the sole. Drawn on blank ground a seated figure just looks short,
      so do not judge this pose without the thing being sat on. */
   var SEAT = 260;
-  var SEAT_DROP = 26;
+  /* THE BEND IS THE CUE, NOT THE LENGTH, and two attempts went the other way
+     before this one. Shorter legs alone read as a SHORT PERSON STANDING
+     BEHIND THE CARD, because a straight leg hanging from a hip is what
+     standing looks like whatever its length; and a wide bar of thigh seen end
+     on was invisible the moment anybody wore a skirt, which flares past the
+     hem and covers exactly that band.
+     What reads is the KNEE: the thigh goes down and OUT to a knee wider than
+     the hip, then the shin drops straight. That zigzag is a bent leg and
+     nothing else, at any size, under any garment. */
+  var SEAT_DROP = 0;
+  var SEAT_KNEE = 30;   /* how far out of centre the knees sit */
   var seated = false;
   function legBottom() { return LEG.bottom - (seated ? SEAT_DROP : 0); }
   function legFoot()   { return LEG.foot   - (seated ? SEAT_DROP : 0); }
+  /* THE SHOES FOLLOW THE KNEES. `drawFeet` hangs everything off these two, so
+     moving them is the whole of putting a seated figure's feet in the right
+     place: the numbers are the standing ones shifted by the knee splay. */
+  /* THE 7 AND THE 11 ARE `drawFeet`'S OWN OFFSETS. It draws a 30 wide shoe at
+     `lx - 8` and `rx - 4`, so the standing shoe CENTRES land at `lx + 7` and
+     `rx + 11`; working back from the knee is the only way a seated shoe sits
+     under the leg it belongs to rather than eleven units inside it. */
+  function legLX() { return seated ? BODY.cx - SEAT_KNEE - 7  : LEG.lx; }
+  function legRX() { return seated ? BODY.cx + SEAT_KNEE - 11 : LEG.rx; }
 
   function hsl(h, s, l, a) {
     return "hsla(" + h + "," + s + "%," + l + "%," + (a == null ? 1 : a) + ")";
@@ -809,6 +828,24 @@
   function drawLegs(ctx, id, L, skin) {
     var w = WEAR[id] || { bare: false };
     ctx.fillStyle = w.bare ? skin : TROUSER;
+    if (seated) {
+      /* ONE STROKE PER LEG WITH A ROUND JOIN, rather than two rectangles: the
+         join IS the knee, and a round cap is what keeps that corner from
+         reading as a mitre. Each leg starts INSIDE the torso so the hip is a
+         join rather than a seam. */
+      ctx.strokeStyle = ctx.fillStyle;
+      ctx.lineWidth = LEG.w + 2;
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
+      [-1, 1].forEach(function (k) {
+        ctx.beginPath();
+        ctx.moveTo(BODY.cx + k * 10, SEAT - 12);
+        ctx.lineTo(BODY.cx + k * SEAT_KNEE, SEAT + 28);
+        ctx.lineTo(BODY.cx + k * SEAT_KNEE, SEAT + 38);
+        ctx.stroke();
+      });
+      return;
+    }
     rr(ctx, LEG.lx, LEG.top, LEG.w, legBottom() - LEG.top, 8);
     rr(ctx, LEG.rx, LEG.top, LEG.w, legBottom() - LEG.top, 8);
   }
@@ -1047,49 +1084,52 @@
      appeared to sit straight on the boot. */
   function drawFeet(ctx, id, L) {
     var y = legFoot(), T = tintOf(L, "feet");
+    /* SEATED THESE ARE THE KNEES rather than the standing stance, so a shoe
+       lands under the leg that is actually there. */
+    var FX = legLX(), RX = legRX();
     var wc = WEAR[L.clothes], k = (wc && wc.bare) ? 0.45 : 1;
     if (id === "boots") {
       /* A SHAFT, A CUFF, A FOOT AND A SOLE. Two blocks read as two blocks. */
       ctx.fillStyle = tone(T);
-      rr(ctx, LEG.lx - 2, y - 26 * k, 20, 26 * k + 8, 7);
-      rr(ctx, LEG.rx - 2, y - 26 * k, 20, 26 * k + 8, 7);
+      rr(ctx, FX - 2, y - 26 * k, 20, 26 * k + 8, 7);
+      rr(ctx, RX - 2, y - 26 * k, 20, 26 * k + 8, 7);
       ctx.fillStyle = tone(T, -12);
-      rr(ctx, LEG.lx - 4, y - 26 * k - 4, 24, 11, 5);
-      rr(ctx, LEG.rx - 4, y - 26 * k - 4, 24, 11, 5);
+      rr(ctx, FX - 4, y - 26 * k - 4, 24, 11, 5);
+      rr(ctx, RX - 4, y - 26 * k - 4, 24, 11, 5);
       ctx.fillStyle = tone(T);
-      rr(ctx, LEG.lx - 8, y + 2, 30, 16, 7);
-      rr(ctx, LEG.rx - 4, y + 2, 30, 16, 7);
+      rr(ctx, FX - 8, y + 2, 30, 16, 7);
+      rr(ctx, RX - 4, y + 2, 30, 16, 7);
       ctx.fillStyle = tone(T, -24);
-      rr(ctx, LEG.lx - 9, y + 13, 32, 8, 4);
-      rr(ctx, LEG.rx - 5, y + 13, 32, 8, 4);
+      rr(ctx, FX - 9, y + 13, 32, 8, 4);
+      rr(ctx, RX - 5, y + 13, 32, 8, 4);
     }
     if (id === "clogs") {
       /* A WOODEN SOLE AND A ROUNDED TOE. Two beige pills read as pebbles. */
       ctx.fillStyle = tone(T, -18);
-      rr(ctx, LEG.lx - 9, y + 12, 32, 10, 4);
-      rr(ctx, LEG.rx - 5, y + 12, 32, 10, 4);
+      rr(ctx, FX - 9, y + 12, 32, 10, 4);
+      rr(ctx, RX - 5, y + 12, 32, 10, 4);
       ctx.fillStyle = tone(T, 18, -10);
-      rr(ctx, LEG.lx - 8, y - 2, 30, 18, 9);
-      rr(ctx, LEG.rx - 4, y - 2, 30, 18, 9);
+      rr(ctx, FX - 8, y - 2, 30, 18, 9);
+      rr(ctx, RX - 4, y - 2, 30, 18, 9);
       ctx.fillStyle = tone(T, 4, -8);
-      rr(ctx, LEG.lx - 8, y - 4, 16, 12, 6);
-      rr(ctx, LEG.rx + 8, y - 4, 16, 12, 6);
+      rr(ctx, FX - 8, y - 4, 16, 12, 6);
+      rr(ctx, RX + 8, y - 4, 16, 12, 6);
     }
     if (id === "wellies") {
       /* TALL, and the height is the point: it is the one boot you can see
          from across a garden. The rolled top is what says rubber. */
       ctx.fillStyle = tone(T);
-      rr(ctx, LEG.lx - 3, y - 46 * k, 22, 46 * k + 8, 9);
-      rr(ctx, LEG.rx - 3, y - 46 * k, 22, 46 * k + 8, 9);
+      rr(ctx, FX - 3, y - 46 * k, 22, 46 * k + 8, 9);
+      rr(ctx, RX - 3, y - 46 * k, 22, 46 * k + 8, 9);
       ctx.fillStyle = tone(T, -11);
-      rr(ctx, LEG.lx - 5, y - 46 * k - 4, 26, 12, 6);
-      rr(ctx, LEG.rx - 5, y - 46 * k - 4, 26, 12, 6);
+      rr(ctx, FX - 5, y - 46 * k - 4, 26, 12, 6);
+      rr(ctx, RX - 5, y - 46 * k - 4, 26, 12, 6);
       ctx.fillStyle = tone(T);
-      rr(ctx, LEG.lx - 9, y + 2, 31, 17, 8);
-      rr(ctx, LEG.rx - 5, y + 2, 31, 17, 8);
+      rr(ctx, FX - 9, y + 2, 31, 17, 8);
+      rr(ctx, RX - 5, y + 2, 31, 17, 8);
       ctx.fillStyle = tone(T, -20);
-      rr(ctx, LEG.lx - 10, y + 14, 33, 8, 4);
-      rr(ctx, LEG.rx - 6, y + 14, 33, 8, 4);
+      rr(ctx, FX - 10, y + 14, 33, 8, 4);
+      rr(ctx, RX - 6, y + 14, 33, 8, 4);
     }
   }
 
@@ -1473,8 +1513,8 @@
          steps darker it can never be mistaken for the stone trousers above
          it, whatever the body is set to. */
       ctx.fillStyle = bodyCol(L, -30, -12);
-      rr(ctx, LEG.lx - 7, legFoot() + 2, 28, 18, 8);
-      rr(ctx, LEG.rx - 5, legFoot() + 2, 28, 18, 8);
+      rr(ctx, legLX() - 7, legFoot() + 2, 28, 18, 8);
+      rr(ctx, legRX() - 5, legFoot() + 2, 28, 18, 8);
     }
     drawUnder(ctx, L.clothes, L);
 

@@ -925,6 +925,11 @@
   </div>
 
   <div class="about-right reveal">
+      <!-- SOMEBODY ON THE TOP EDGE OF THE FEATURE CARDS. On a laptop this
+           column stands on its own beside the copy, so the band above it is
+           empty; below 900 the section stacks and the perch is hidden with
+           the rest of them. -->
+      <canvas class="perch perch-about" data-perch="2" aria-hidden="true"></canvas>
       <div class="feature-card">
         <svg class="feature-icon" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="8" y="16" width="20" height="14" rx="3" fill="#b7e4e7" stroke="#429288" stroke-width="2"/><path d="M12 16V12a6 6 0 1 1 12 0v4" stroke="#429288" stroke-width="2" stroke-linecap="round"/><circle cx="18" cy="23" r="2.5" fill="#1d6466"/></svg>
         <div class="feature-card-text">
@@ -980,6 +985,9 @@
     <p class="section-desc">Your gratitude can stay private, join a meadow of strangers, or be wrapped up and handed to someone.</p>
   </div>
   <div class="gardens-grid">
+    <!-- ON THE TOP EDGE OF THE THREE CARDS, out at the right where the
+         section's own centred copy above never reaches. -->
+    <canvas class="perch perch-gardens" data-perch="3" aria-hidden="true"></canvas>
     <div class="garden-card reveal">
       <div class="garden-card-inner card-private">
         <button type="button" class="card-fold" aria-expanded="false"><span class="card-fold-chev" aria-hidden="true"></span></button>
@@ -1088,7 +1096,13 @@
            they looked pressable and were not, and the answer to that was to
            make them the templates rather than to make them look inert. -->
       <div class="gardener-row reveal" id="gardenerRow"></div>
-      <a class="btn btn-primary reveal" href="avatar/avatar-index.html">Or build one from nothing</a>
+      <!-- IT GOES TO THE CHOICES, WHICH IS WHAT IT SAYS. Pointed at the bare
+           page it opened the EDITOR for anybody who had already built a
+           gardener, so a button inviting you to start showed you the middle of
+           something you were already halfway through. `?start` shows the
+           gallery, the five ready ones and the blank, without clearing what is
+           saved. -->
+      <a class="btn btn-primary reveal" href="avatar/avatar-index.html?start=1">Start customising</a>
     </div>
 
 </section>
@@ -1116,6 +1130,13 @@
          a ring has nowhere to put a label. Only one of the two is ever on
          screen. -->
     <div class="flower-ring reveal" id="flowerRing">
+      <!-- ONE ON THE RING'S OWN TOP EDGE, out to the left where the labels
+           never reach. It sits INSIDE the ring so `bottom: 100%` resolves
+           against the ring rather than against the whole split, which would
+           have put them above the section's heading. The ring APPENDS its
+           blooms and its leader lines rather than clearing itself, so a child
+           written here survives being laid out. -->
+      <canvas class="perch perch-ring" data-perch="4" aria-hidden="true"></canvas>
       <svg class="fr-lines" id="frLines" aria-hidden="true"></svg>
       <p class="fr-centre" id="frCentre">Hover a bloom</p>
       <!-- The two side notes, one either side of the circle at mid height.
@@ -2830,7 +2851,10 @@
       var x = c.getContext('2d');
       x.setTransform(dpr, 0, 0, dpr, 0, 0);
       x.clearRect(0, 0, w, h);
-      var look = mine || A.TEMPLATES[+c.dataset.perch === 0 ? 0 : 2].look;
+      /* A DIFFERENT ONE IN EACH SPOT when nobody has built a gardener, or the
+         five are the same stranger printed five times down the page. Once
+         there IS one it is yours in all five, which is the point of them. */
+      var look = mine || A.TEMPLATES[(+c.dataset.perch || 0) % A.TEMPLATES.length].look;
       /* THE SEAT LINE IS WHERE THE CANVAS IS SPLIT, in the proportion the
          drawing itself reports. The canvas then hangs below the edge by
          exactly the part that is leg, which is what the negative margin

@@ -570,11 +570,28 @@
     }
 
     /* WHERE IT OPENS, and the order matters. A `?t=` from the landing page
-       wins, since somebody pressed that gardener on purpose. Otherwise a
-       gardener already kept opens the STUDIO wearing them, because coming
-       back is an edit. Only a first visit sees the gallery. */
-    var t = new URLSearchParams(location.search).get("t");
+       wins, since somebody pressed that gardener on purpose. Then `?start`,
+       which is the landing band's button and means show me the choices.
+       Otherwise a gardener already kept opens the STUDIO wearing them,
+       because coming back is an edit. Only a first visit sees the gallery. */
+    var q = new URLSearchParams(location.search);
+    var t = q.get("t");
     if (t && A.templateOf(t)) { startFrom(t); return; }
+    /* `?start` IS WHAT THE LANDING PAGE'S BUTTON CARRIES, and it exists
+       because without it that button was a promise the page could not keep:
+       it says come and choose, and for anybody who had already built a
+       gardener it opened straight into the editor with the six choices
+       nowhere on screen. It shows the gallery WITHOUT clearing anything, so
+       walking back out of it leaves the saved gardener exactly as it was. */
+    if (q.has("start")) {
+      if (G && G.has()) {
+        look = Object.assign({}, A.DEFAULT_LOOK, G.get());
+        $("avName").value = look.name || "";
+      }
+      buildAll();
+      go("gallery");
+      return;
+    }
     if (G && G.has()) {
       look = Object.assign({}, A.DEFAULT_LOOK, G.get());
       $("avName").value = look.name || "";

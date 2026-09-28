@@ -1011,6 +1011,36 @@ footer::before {
    hip; the exact amount is set in JS from `AvatarDraw.SEAT_BOX`, since the
    geometry belongs to the drawing rather than to this file. */
 .perch-cta { right: 9%; bottom: 100%; }
+/* FIVE ON THE PAGE NOW, NOT TWO, and they run down it rather than waiting at
+   the bottom: on the feature cards in About, on the three garden cards, on
+   the flower ring, on the closing card and on the footer's rule. The note
+   this replaces said two and no more, on the argument that the page already
+   carries eleven hero flowers, three card pictures and eight guide blooms.
+   What changed is that they are no longer decoration: they SIT, and they say
+   something when you reach for them, so each is a thing to find rather than
+   the same figure printed again.
+   EVERY HOST NEEDS `position: relative`, or `bottom: 100%` resolves against
+   whatever ancestor happens to be positioned and the figure lands in another
+   section entirely. */
+.about-right, .gardens-grid { position: relative; }
+.perch-about   { left: 4%;  bottom: 100%; }
+/* ABOUT'S ONE GOES EARLIER THAN THE REST, at 1100 rather than 768, and it is
+   measured rather than cautious: that section is a grid of title, copy and
+   cards, and below about 1000 it STACKS, which puts the copy column directly
+   above the cards and the figure straight on top of the Read more fold.
+   1100 is where the page's side padding already drops, so it is the width the
+   rest of this layout already treats as narrow. */
+@media (max-width: 1100px) { .perch-about { display: none; } }
+.perch-gardens { right: 3%; bottom: 100%; }
+.perch-ring    { left: 2%;  bottom: 100%; }
+@media (prefers-reduced-motion: no-preference) {
+  /* EACH ON ITS OWN PERIOD, or the five rise and fall together and the page
+     reads as tilting. Same rule the gardener band and the hero objects
+     already follow. */
+  .perch-about   { animation-duration: 5.8s; animation-delay: -1.4s; }
+  .perch-gardens { animation-duration: 6.6s; animation-delay: -3.0s; }
+  .perch-ring    { animation-duration: 5.1s; animation-delay: -0.6s; }
+}
 /* ON THE RIGHT, because the LEFT of the rule is where the social icons end
    and she sat on top of them. The right side above the rule is the foot of
    the Explore column, which runs out four links earlier. */
