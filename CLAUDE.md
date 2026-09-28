@@ -1571,6 +1571,25 @@ Headings on the garden pages come from two places. `.gg-title` and `#tips-card h
 - **The house SVG has to be IN the markup.** `swapHomeIcon` in `garden-cursor.js` REPLACES an existing svg inside `#back-to-home` and returns if it finds none, so a text only Home becomes an empty 34px circle on a phone, where the shared rule shrinks the pill to a circle and the word has nowhere to go.
 - The phone block is LAST in the stylesheet, like the project's other four, since a later rule beats an earlier one at equal specificity.
 
+## The Guest Book (`guestbook/`)
+
+**A FIFTH PAGE, and the only one on the site that genuinely cannot work without an account.** Everything else here keeps running with no database configured; this one says so in a line and stops, because a guest book with no way to tell one signer from another is not a guest book.
+
+A card is somebody's gardener, the four things they said about themselves, one line in their own words, and the date. **Anybody can READ it. Signing needs an account**, which is what makes one entry belong to one person and lets them come back and change it.
+
+- **THE TABLE HOLDS ALMOST NOTHING: the signer, their note and when.** The name, the gardener and the four answers come from `profiles`, which `garden-account.js` already selects in two places for the friends list. So a card UPDATES when somebody changes their gardener, rather than being a snapshot going quietly stale, and the whole feature costs one small table.
+- **ONE PERSON, ONE ENTRY, ENFORCED BY A UNIQUE INDEX** rather than by the page, because anybody can edit the page in their own browser. It is also what the upsert conflicts against, so without it signing twice would leave two cards.
+- **THREE WRITE POLICIES, NOT ONE `for all`.** Insert checks the row going IN and update and delete check the row already there, and a single policy cannot say both.
+- **`select("*")`, NEVER A LIST OF COLUMNS.** Supabase answers a query naming a missing column with a 400 and an error OBJECT rather than throwing, so on a project where Step 10 has not been run, naming one would empty the result and take every entry down with it.
+- **AN EMPTY LIST AND A FAILED QUERY MUST NOT SAY THE SAME SENTENCE, and they did.** `load` set the "not set up yet" message and then `draw` ran with no rows and replaced it with "Nobody has signed it yet", so a project missing the table looked exactly like a project nobody had signed. `draw(quiet)` is the fix. **Anything that reports a state after an error has to know an error happened.**
+- **THE MESSAGE NAMES STEP 10 ONLY WHEN THE TABLE IS REALLY MISSING.** A permission refusal gets a different sentence, and the database's own message is always shown rather than a guess about it, which is the rule the comments panel learned the hard way: a message that tells somebody to go and run SQL has to be right, because they will go and run it.
+- **PROFILES ARE A SECOND QUERY, not an embedded join.** A PostgREST join would need a foreign key from `guestbook` straight to `profiles`, and this schema points at `auth.users`, so asking for one would be a guess about somebody else's database.
+- **A SIGNER WITH NO GARDENER GETS THEIR INITIAL, never a default figure**, which is `avatarFor`'s rule in the friends list: a stock gardener would make everybody who has not built one appear to have made the same person.
+- **YOUR OWN ENTRY IS AT THE TOP, not the bottom.** Signing is what you came to do, and a page that grows would put it further away every week.
+- **NO USERNAME, NO ENTRY.** A card with nothing under the picture is worse than no card, and the account module already owns the screen that claims a name.
+- **THE GUEST BOOK'S LINE IS ITS OWN**, separate from the about-you note that travels with the gardener everywhere. This one was written for this page and the people reading it.
+- Step 9 should be run first: without the `look` column every card falls back to an initial, which works and looks like nobody has built a gardener.
+
 ## `garden3d/`, a SEPARATE exploration, not part of the site
 
 **Nothing in `garden3d/` is loaded by the four pages, and nothing in the four pages loads it.** It is a spike for a possible thesis direction: the same garden as a cosy low poly, avatar based, isometric 3D space, after Animal Crossing and Cozy Island. **The web version stays exactly as it is.** If that ever stops being true, this note is wrong.

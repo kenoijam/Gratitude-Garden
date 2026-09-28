@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- Supabase client, and the keys it reads. These two MUST stay inside
+       <head>: anything before the doctype makes the browser ignore it and
+       render the whole page in QUIRKS MODE. -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+  <script src="../config.js"></script>
+
+  <!-- One cursor for the whole project. -->
+  <script src="../garden-cursor.js"></script>
+  <!-- One flower opening while the page gets ready. On every page, not only
+       the slow ones: a loader that appears on a single page reads as that
+       page being the broken one. -->
+  <script src="../garden-loader.js"></script>
+  <!-- The account, whose client every other module borrows rather than making
+       a second one. It must load BEFORE the page's own script. -->
+  <!-- `data-chip` NAMES THE CORNER, the way `garden-music.js` names its
+       mood. This page has nothing in its top corners but Home, so the
+       account chip goes beside the music button like the landing page. -->
+  <script src="../garden-account.js" data-chip="top"></script>
+
+  <!-- THE GARDENER, and it is three tags rather than one. `avatar-draw.js`
+       draws the figure and `garden-gardener.js` decides whose it is; the
+       bouquet's file is here because the flower they wear is the REAL 2D
+       bloom, `drawSpeciesBloom`, which takes a raw 2D context and needs no
+       p5. `boot()` returns immediately when #bqBuilder is absent, which is
+       the guard the landing page has relied on for a long time. -->
+  <script src="../garden-gardener.js"></script>
+  <script src="../avatar/avatar-draw.js"></script>
+  <script src="../bouquet/bouquet-sketch.js"></script>
+
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>The Guest Book, Gratitude Garden</title>
+  <link rel="icon" href="../favicon.png" />
+  <link rel="apple-touch-icon" href="../apple-touch-icon.png" />
+  <link rel="stylesheet" href="guestbook-style.css" />
+</head>
+<body>
+  <!-- A HOUSE, not a back chevron. A chevron means "the previous page", which
+       the browser's own button already says; this always goes to one place.
+       The SVG has to be IN the markup: `swapHomeIcon` in `garden-cursor.js`
+       REPLACES an existing svg and returns if it finds none, so a text only
+       Home becomes an empty circle on a phone. -->
+  <a href="../index.html" id="back-to-home">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M4 10.5 12 4l8 6.5V20h-5.5v-5h-5v5H4z"/>
+    </svg>
+    <span>Home</span>
+  </a>
+
+  <main class="gb-page">
+    <h1 class="gb-title">The Guest <em>Book</em></h1>
+    <p class="gb-sub">Everyone who has been through the garden, and one line
+       from each of them.</p>
+
+    <!-- YOUR OWN ENTRY, which is a form the first time and an edit after that.
+         It is at the TOP rather than the bottom: signing is the thing you came
+         to do, and a page that grows would put it further away every week. -->
+    <section class="gb-mine" id="gbMine" hidden></section>
+
+    <p class="gb-state" id="gbState">Opening the book...</p>
+    <div class="gb-list" id="gbList"></div>
+  </main>
+
+  <script src="guestbook.js"></script>
+  <script src="../garden-music.js" data-mood="whimsy"></script>
+</body>
+</html>

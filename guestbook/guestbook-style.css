@@ -1,0 +1,188 @@
+/* =========================================================================
+   guestbook-style.css  -  The Guest Book
+
+   The project's own palette and type, so this reads as a fifth room of the
+   same house rather than a page that wandered in. Cream ground, white cards,
+   dark teal ink, Fraunces for the headings and Arial for everything else.
+
+   THE PHONE BLOCK IS LAST IN THIS FILE, like the project's other five: a
+   later rule beats an earlier one at equal specificity, so a phone override
+   written above the rule it is overriding does nothing at all, silently.
+   ========================================================================= */
+@font-face {
+  font-family: 'Fraunces';
+  src: url('../Fraunces.ttf') format('truetype');
+  font-weight: 100 900;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Fraunces';
+  src: url('../Fraunces-Italic.ttf') format('truetype');
+  font-weight: 100 900;
+  font-style: italic;
+  font-display: swap;
+}
+
+:root {
+  --cream: #fff9e3;
+  --white: #ffffff;
+  --sky: #cfeef0;
+  --teal: #429288;
+  --darkteal: #1d6466;
+  --yellow: #f7e7a0;
+}
+
+* { box-sizing: border-box; }
+html { font-size: 17px; }
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: linear-gradient(180deg, var(--sky) 0%, #eaf7f3 42%, var(--cream) 100%);
+  background-attachment: fixed;
+  color: var(--darkteal);
+  font-family: Arial, Helvetica, sans-serif;
+}
+/* A ZOOM WAIT ON EVERY PRESS, removed. A browser holds a tap about 300ms in
+   case it has to double tap to zoom, and a press that does nothing for a
+   third of a second reads as a press that did not register. */
+button, a, [role="button"], summary, input, label[for] { touch-action: manipulation; }
+
+#back-to-home {
+  position: fixed; top: 16px; left: 16px; z-index: 200;
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 9px 16px 9px 13px; border-radius: 50px;
+  background: var(--cream); color: var(--darkteal);
+  text-decoration: none; font-weight: 700; font-size: .9rem;
+  box-shadow: 0 4px 16px rgba(29,100,102,0.14);
+}
+#back-to-home svg { width: 18px; height: 18px; }
+
+.gb-page {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 92px 24px 110px;
+}
+.gb-title {
+  font-family: 'Fraunces', Georgia, serif;
+  font-variation-settings: 'SOFT' 50, 'WONK' 0;
+  font-weight: 700;
+  font-size: clamp(2.2rem, 6vw, 3.1rem);
+  text-align: center;
+  margin: 0 0 .3rem;
+  color: var(--darkteal);
+}
+.gb-title em { font-style: italic; color: var(--teal); }
+.gb-sub {
+  text-align: center; margin: 0 auto 2.4rem; max-width: 30rem;
+  /* #2f6260 IS A FLOOR, NOT A PREFERENCE. It is the body copy colour the
+     landing page settled on after measuring every ground it sits over. */
+  color: #2f6260; font-size: .95rem; line-height: 1.7;
+}
+.gb-state {
+  text-align: center; color: #5a8f8d; font-size: .9rem; line-height: 1.7;
+  margin: 2rem auto; max-width: 34rem;
+}
+.gb-state a { color: var(--darkteal); }
+
+/* ── your own entry ──────────────────────────────────────────────────── */
+.gb-mine {
+  background: var(--cream);
+  border: 1.5px solid rgba(29,100,102,0.16);
+  border-radius: 20px;
+  padding: 22px 24px;
+  margin: 0 auto 2.6rem;
+  max-width: 640px;
+  box-shadow: 0 8px 30px rgba(29,100,102,0.08);
+}
+.gb-mine[hidden] { display: none !important; }
+.gb-mine h2 {
+  font-family: 'Fraunces', Georgia, serif;
+  font-variation-settings: 'SOFT' 50, 'WONK' 0;
+  font-weight: 600; font-size: 1.3rem; margin: 0 0 .2rem;
+}
+.gb-mine p { margin: 0 0 .9rem; font-size: .86rem; line-height: 1.6; color: #5a8f8d; }
+.gb-mine textarea {
+  width: 100%; resize: none; border-radius: 12px; padding: 12px 14px;
+  border: 1.5px solid #bde0d6; background: var(--white); color: var(--darkteal);
+  /* 16px IS A HARD FLOOR: iOS zooms the page in on a focused field under it
+     and does not zoom back out. */
+  font-family: Arial, Helvetica, sans-serif; font-size: 16px; line-height: 1.55;
+}
+.gb-row { display: flex; align-items: center; gap: 10px; margin-top: 12px; flex-wrap: wrap; }
+.gb-btn {
+  border: none; border-radius: 50px; cursor: pointer;
+  padding: 12px 22px; min-height: 46px;
+  background: var(--darkteal); color: var(--cream);
+  font-family: Arial, Helvetica, sans-serif; font-weight: 700; font-size: .9rem;
+}
+.gb-btn[disabled] { opacity: .55; cursor: default; }
+.gb-plain {
+  border: none; background: none; cursor: pointer; padding: 10px 4px;
+  color: #5a8f8d; font: inherit; font-size: .84rem; text-decoration: underline;
+}
+.gb-count { font-size: .78rem; color: #8aa9a7; margin-left: auto; }
+
+/* ── the cards ───────────────────────────────────────────────────────── */
+.gb-list {
+  display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.4rem;
+}
+.gb-card {
+  display: grid; grid-template-columns: 132px minmax(0, 1fr); gap: 1.1rem;
+  background: var(--white);
+  border: 1.5px solid rgba(29,100,102,0.12);
+  border-radius: 20px; padding: 20px;
+  box-shadow: 0 8px 26px rgba(29,100,102,0.07);
+}
+/* THE FIGURE STANDS ON THE GARDEN'S OWN SKY, not on the card. A gardener is
+   somebody standing in a place, and a white box behind them reads as a
+   cut-out. `overflow: hidden` makes the frame a crop rather than a border. */
+.gb-shot {
+  background: linear-gradient(180deg, var(--sky), #eaf7f3);
+  border-radius: 16px; overflow: hidden;
+  display: flex; align-items: flex-end; justify-content: center;
+  min-height: 150px;
+}
+.gb-shot canvas { display: block; }
+.gb-who {
+  font-family: 'Fraunces', Georgia, serif;
+  font-variation-settings: 'SOFT' 50, 'WONK' 0;
+  font-weight: 600; font-size: 1.05rem; color: var(--teal);
+  margin: 0 0 .7rem;
+}
+.gb-facts { margin: 0 0 .8rem; padding: 0; list-style: none; }
+.gb-facts li {
+  font-size: .82rem; line-height: 1.55; color: #2f6260; margin-bottom: .22rem;
+}
+.gb-facts b { color: var(--teal); font-weight: 700; }
+.gb-note {
+  margin: 0 0 .7rem; font-size: .9rem; line-height: 1.6; color: var(--darkteal);
+  padding-left: 11px; border-left: 2.5px solid #bde0d6; overflow-wrap: anywhere;
+}
+.gb-when { margin: 0; font-size: .76rem; color: #8aa9a7; }
+/* THE INITIAL IS THE FALLBACK, NEVER A DEFAULT FIGURE. Drawing a stock
+   gardener for somebody who has not built one would make every one of them
+   appear to have made the same person, which is the rule `avatarFor` in
+   `garden-account.js` already follows. */
+.gb-initial {
+  width: 64px; height: 64px; border-radius: 50%; margin-bottom: 26px;
+  background: var(--teal); color: var(--cream);
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Fraunces', Georgia, serif; font-size: 1.6rem; font-weight: 600;
+}
+
+/* ── a phone. LAST IN THE FILE, and that is not a style choice ─────────── */
+@media (max-width: 760px) {
+  .gb-page { padding: 84px 16px 80px; }
+  .gb-list { grid-template-columns: 1fr; gap: 1rem; }
+  .gb-card { grid-template-columns: 104px minmax(0, 1fr); gap: .8rem; padding: 15px; }
+  .gb-shot { min-height: 124px; }
+  .gb-mine { padding: 18px 16px; }
+  .gb-count { margin-left: 0; width: 100%; }
+}
+/* A FIRST TAP THAT ONLY APPLIES :hover IS A TAP THE BUTTON ATE. Safari on iOS
+   has no pointer, so it fakes one on the first tap of anything carrying a
+   hover rule and the second tap is the one that works. */
+@media (hover: hover) {
+  .gb-btn:hover { background: #14494b; }
+  .gb-plain:hover { color: var(--darkteal); }
+}

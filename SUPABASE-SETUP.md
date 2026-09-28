@@ -751,3 +751,81 @@ kept in this browser instead, under `gg_gardener`, exactly as it is for
 somebody with no account at all; the console says so once, naming this step,
 and never again. The only thing missing is that the gardener does not follow
 you between devices and your friends cannot see them.
+
+---
+
+## Step 10: the guest book
+
+**This is the only page on the site that genuinely cannot work without an
+account**, so it is also the only one where skipping a step turns something
+off rather than quietly falling back. Everything else here keeps working
+whether you run this or not.
+
+The Guest Book is a page of cards: somebody's gardener, the four things they
+said about themselves, one line in their own words, and the date. **Anybody
+can read it. Signing needs an account**, which is what makes one entry belong
+to one person and lets them come back and change it.
+
+**The table holds almost nothing, and that is deliberate.** A row is the
+signer, their note and when. The name, the gardener and the four answers are
+read from `profiles`, which the friends list already fetches, so **a card
+updates when somebody changes their gardener** rather than being a snapshot
+going quietly stale.
+
+Open the SQL Editor in your Supabase project, paste all of this, and run it.
+It is safe to run more than once.
+
+```sql
+create table if not exists public.guestbook (
+  id          uuid primary key default gen_random_uuid(),
+  user_id     uuid not null references auth.users(id) on delete cascade,
+  note        text not null default '',
+  created_at  timestamptz not null default now(),
+  updated_at  timestamptz not null default now()
+);
+
+-- ONE PERSON, ONE ENTRY, enforced HERE rather than in the page, because
+-- anybody can edit the page in their own browser. It is also what the
+-- page's upsert conflicts against, so without it signing twice would
+-- leave two cards rather than changing one.
+create unique index if not exists guestbook_one_each
+  on public.guestbook (user_id);
+
+alter table public.guestbook enable row level security;
+
+-- ANYBODY MAY READ IT, signed in or not. A guest book nobody can read
+-- without joining is a mailing list.
+drop policy if exists "guestbook readable by all" on public.guestbook;
+create policy "guestbook readable by all"
+  on public.guestbook for select
+  using (true);
+
+-- ONLY YOU MAY WRITE YOURS. Three separate policies rather than one `for
+-- all`, because insert checks the row going IN and update and delete check
+-- the row already there, and a single policy cannot say both.
+drop policy if exists "sign your own" on public.guestbook;
+create policy "sign your own"
+  on public.guestbook for insert
+  with check (auth.uid() = user_id);
+
+drop policy if exists "change your own" on public.guestbook;
+create policy "change your own"
+  on public.guestbook for update
+  using (auth.uid() = user_id)
+  with check (auth.uid() = user_id);
+
+drop policy if exists "remove your own" on public.guestbook;
+create policy "remove your own"
+  on public.guestbook for delete
+  using (auth.uid() = user_id);
+```
+
+**Until this is run the page says so in words and nothing throws.** It names
+this step only when the error really is a missing table; a permission refusal
+gets a different sentence, and the database's own message is always shown
+rather than a guess about it. That matters because a message telling somebody
+to go and run SQL has to be right: they will go and run it.
+
+**Step 9 should be run first.** Without the `look` column every card falls
+back to an initial in a circle, which works and looks like nobody has built a
+gardener.
