@@ -40,7 +40,15 @@
       icon: '<path d="M8.6 3.8 4 6.4l1.7 3.4 2-1V20h8.6V8.8l2 1L20 6.4l-4.6-2.6"/><path d="M8.6 3.8c0 1.9 1.5 2.9 3.4 2.9s3.4-1 3.4-2.9"/>' },
     { id: "wear", label: "Carrying", title: "What they carry",
       sub: "Over the shoulder, on the feet, in hand and on the face. Tap again to take one off.",
-      icon: '<path d="M6.5 8.5h11l1 11.5h-13z"/><path d="M9 8.5V6a3 3 0 0 1 6 0v2.5"/>' }
+      icon: '<path d="M6.5 8.5h11l1 11.5h-13z"/><path d="M9 8.5V6a3 3 0 0 1 6 0v2.5"/>' },
+    /* SIX AGAINST THE BOUQUET'S FIVE, and the sixth changes nothing about the
+       drawing. It is here because a gardener is somebody rather than an
+       outfit, and because the guest book is built out of exactly these five
+       answers. It goes LAST, after everything that is visible: it is the part
+       you fill in once you have somebody to fill it in about. */
+    { id: "about", label: "About", title: "A little about them",
+      sub: "None of this changes how they look. It is what goes under your gardener in the guest book.",
+      icon: '<circle cx="12" cy="8.4" r="3.6"/><path d="M5.2 19.6a6.8 6.8 0 0 1 13.6 0"/>' }
   ];
 
   var tab = "skin";
@@ -302,9 +310,55 @@
     slotRows($("avClothes"), A.STEP_SLOTS.top);
   }
   function buildWear() { slotRows($("avWear"), A.STEP_SLOTS.wear); }
+
+  /* FOUR PICKERS AND ONE LINE. Each question is a row of chips rather than a
+     dropdown, because a dropdown hides seven of the eight answers behind a
+     press and this is the one step that is supposed to be quick and a little
+     bit fun. Tapping the chosen one clears it, the same rule every other slot
+     on this page follows, so no question is a trap. */
+  function buildAbout() {
+    var host = $("avAbout");
+    if (!host) return;
+    host.innerHTML = "";
+    if (!look.about) look.about = {};
+    A.ABOUT.forEach(function (q) {
+      var lab = el("p", "av-label");
+      lab.textContent = q.label;
+      host.appendChild(lab);
+      var row = el("div", "av-chips");
+      q.opts.forEach(function (o) {
+        var on = look.about[q.key] === o;
+        var b = el("button", "av-chip" + (on ? " is-on" : ""));
+        b.type = "button";
+        b.textContent = o;
+        b.addEventListener("click", function () {
+          if (on) delete look.about[q.key]; else look.about[q.key] = o;
+          buildAbout();
+        });
+        row.appendChild(b);
+      });
+      host.appendChild(row);
+    });
+    var lab2 = el("p", "av-label");
+    lab2.textContent = A.ABOUT_NOTE;
+    host.appendChild(lab2);
+    var ta = document.createElement("textarea");
+    ta.className = "av-about-note";
+    ta.maxLength = A.ABOUT_MAX;
+    ta.rows = 3;
+    ta.placeholder = "Anything you want people to know.";
+    ta.value = look.about.note || "";
+    ta.setAttribute("aria-label", A.ABOUT_NOTE);
+    ta.addEventListener("input", function () {
+      var v = this.value.trim();
+      if (v) look.about.note = v; else delete look.about.note;
+    });
+    host.appendChild(ta);
+  }
   function buildWearables() { buildTop(); buildWear(); }
   function buildAll() {
-    buildSkin(); buildHair(); buildFlower(); buildTop(); buildWear(); paint();
+    buildSkin(); buildHair(); buildFlower(); buildTop(); buildWear();
+    buildAbout(); paint();
   }
 
   /* ------------------------------------------------------------- gallery */
@@ -348,8 +402,13 @@
        default colour instead. It is also copied rather than shared, or
        editing a gardener would write into the template everyone else starts
        from. */
+    /* `tints` AND `about` ARE BOTH COPIED, NEVER SHARED. `DEFAULT_LOOK` holds
+       one object for each and `Object.assign` is shallow, so without these
+       two every gardener built in this session would be writing into the
+       SAME two objects, and into the template everybody else starts from. */
     look = Object.assign({}, A.DEFAULT_LOOK, t ? t.look : {},
-      { tints: Object.assign({}, t && t.look && t.look.tints) });
+      { tints: Object.assign({}, t && t.look && t.look.tints),
+        about: Object.assign({}, t && t.look && t.look.about) });
     touched = true;
     $("avName").value = look.name || "";
     buildAll();
@@ -429,6 +488,8 @@
     panes.top.appendChild($("avClothes"));
 
     panes.wear.appendChild($("avWear"));
+
+    panes.about.appendChild($("avAbout"));
 
     /* the foot: arrows for a phone, and one button that keeps them */
     var foot = el("div", "av-foot");
@@ -554,7 +615,7 @@
     $("avEdit").addEventListener("click", function () { go("studio"); });
     $("avReset").addEventListener("click", function () {
       touched = true;
-      look = Object.assign({}, A.DEFAULT_LOOK, { tints: {} });
+      look = Object.assign({}, A.DEFAULT_LOOK, { tints: {}, about: {} });
       $("avName").value = "";
       buildAll();
       go("gallery");
@@ -586,6 +647,7 @@
     if (q.has("start")) {
       if (G && G.has()) {
         look = Object.assign({}, A.DEFAULT_LOOK, G.get());
+        look.about = Object.assign({}, look.about);
         $("avName").value = look.name || "";
       }
       buildAll();
@@ -594,6 +656,7 @@
     }
     if (G && G.has()) {
       look = Object.assign({}, A.DEFAULT_LOOK, G.get());
+      look.about = Object.assign({}, look.about);
       $("avName").value = look.name || "";
       buildAll();
       go("studio"); showTab("skin");

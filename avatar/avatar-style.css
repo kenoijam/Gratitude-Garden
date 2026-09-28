@@ -175,6 +175,29 @@ button, a, [role="button"], summary, label[for] { touch-action: manipulation; }
     hsl(120,60%,62%), hsl(180,60%,62%), hsl(240,60%,62%), hsl(300,60%,62%),
     hsl(360,60%,62%));
 }
+/* ── about you ─────────────────────────────────────────────────────────
+   CHIPS, NOT A DROPDOWN. A dropdown hides seven of the eight answers behind
+   a press, and this is the one step meant to be quick and a bit of fun. They
+   WRAP, since the cosiest-place answers are whole phrases. */
+.av-chips { display: flex; flex-wrap: wrap; gap: 7px; margin: 0 0 14px; }
+.av-chip {
+  padding: 7px 12px; border-radius: 999px; cursor: pointer;
+  border: 1.5px solid #bde0d6; background: #fff; color: #1d6466;
+  font: inherit; font-size: .8rem; line-height: 1.2;
+}
+.av-chip.is-on { background: #26a69a; border-color: #26a69a; color: #fff; }
+.av-about-note {
+  width: 100%; box-sizing: border-box; resize: none;
+  border: 1.5px solid #bde0d6; border-radius: 12px; padding: 10px 12px;
+  /* `font: inherit` ALONE IS NOT ENOUGH ON A TEXTAREA. The shorthand is reset
+     by the browser's own stylesheet for form controls, so the family has to
+     be named or the note comes out in monospace beside eight chips that are
+     not. 16px is a FLOOR rather than a preference: iOS zooms the page in on a
+     focused field under it and does not zoom back out. */
+  font-family: Arial, Helvetica, sans-serif; font-size: 16px; line-height: 1.5;
+  color: #1d6466; background: #fff;
+}
+
 /* HOW STRONG, rather than which colour, so the track runs from nothing to
    plenty rather than round the wheel. */
 .av-sat {

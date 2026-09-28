@@ -283,6 +283,42 @@
               clothes: "shorts", feet: "boots", neck: "satchel",
               tints: { clothes: 9, feet: 7, neck: 2 } } }
   ];
+  /* ------------------------------------------------------------- about you
+     FOUR QUESTIONS AND ONE FREE LINE, and this is the only part of a look
+     that `AvatarDraw` never draws. It lives here anyway because a look is one
+     row of numbers kept in one place, and because the guest book reads a
+     stranger's answers out of the same `profiles.look` the friends list
+     already fetches to draw their gardener: no new column, no new query.
+
+     PICKS RATHER THAN FOUR TEXT BOXES. Four open fields is a form, every card
+     in the guest book comes out a different length, and four things to
+     moderate rather than one. The free line is where somebody's own words go,
+     and it is deliberately the LAST of the five so the quick part is done
+     first.
+
+     THE FOURTH QUESTION IS THE PROJECT'S OWN. A hobby, a place and a snack
+     are the reference's three; asking which flower somebody would plant every
+     day is the one that could only be asked here, and it is the eight species
+     so an answer means something the rest of the site already knows. */
+  var ABOUT = [
+    { key: "hobby", label: "Favourite thing to do",
+      opts: ["reading", "drawing", "baking", "walking", "playing games",
+             "listening to music", "growing things", "sleeping in"] },
+    { key: "spot", label: "Cosiest place",
+      opts: ["a bed with too many blankets", "a sunny windowsill",
+             "a quiet coffee shop", "a blanket fort", "under a tree",
+             "the back seat of a car", "a warm bath", "anywhere it rains"] },
+    { key: "snack", label: "Favourite snack",
+      opts: ["boba", "a warm bowl of noodles", "something with too much cheese",
+             "fruit, cut up by somebody else", "toast", "ice cream",
+             "a very good biscuit", "whatever is in the fridge"] },
+    { key: "bloom", label: "The flower you would plant every day",
+      opts: ["daisy", "tulip", "rose", "sunflower",
+             "lily", "peony", "poppy", "lavender"] }
+  ];
+  var ABOUT_NOTE = "In your own words";
+  var ABOUT_MAX = 120;
+
   function templateOf(id) {
     for (var i = 0; i < TEMPLATES.length; i++) {
       if (TEMPLATES[i].id === id) return TEMPLATES[i];
@@ -298,7 +334,10 @@
     flower: "daisy", flowerHue: null, flowerSat: null, flowerLight: null,
     top: 172, topS: null, topL: null,
     clothes: null, neck: null, feet: null, hold: null, face: null,
-    tints: {}
+    tints: {},
+    /* NOTHING IS DRAWN FROM THIS, and an empty object rather than null so
+       nothing has to test for its existence before reading a key. */
+    about: {}
   };
 
   /* the colour an item is wearing: its own default unless this look has
@@ -1612,6 +1651,7 @@
     TINTS: TINTS, tintable: tintable, tintsFor: tintsFor,
     suggestedFor: suggestedFor, tone: tone, TOP_S: TOP_S, TOP_L: TOP_L,
     TEMPLATES: TEMPLATES, templateOf: templateOf,
+    ABOUT: ABOUT, ABOUT_NOTE: ABOUT_NOTE, ABOUT_MAX: ABOUT_MAX,
     SPECIES_ORDER: SPECIES_ORDER, DEFAULT_LOOK: DEFAULT_LOOK, W: W, H: H
   };
 })();
