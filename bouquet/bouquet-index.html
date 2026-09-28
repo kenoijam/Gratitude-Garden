@@ -21,6 +21,13 @@
        only copied as a link. With no project configured this does nothing and
        the builder is exactly as it was. -->
   <script src="../garden-account.js"></script>
+  <!-- THE GARDENER, so a finished bouquet can arrive with the person who sent
+       it standing beside it. `avatar-draw.js` needs `drawSpeciesBloom` for the
+       flower on their head, which this page already defines in its own sketch,
+       and it reads it at DRAW time rather than at load, so the order here does
+       not matter. Both are inert until something asks them to paint. -->
+  <script src="../garden-gardener.js"></script>
+  <script src="../avatar/avatar-draw.js"></script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>The Bouquet Builder, Gratitude Garden</title>
@@ -494,6 +501,11 @@
       <p class="bq-reveal-sub" id="bqReadySub">Tap the card to preview your note, then share the link.</p>
 
       <div class="bq-stage" id="bqStage">
+        <!-- WHOEVER SENT IT, STANDING BESIDE THE BOUQUET. Its own canvas
+             rather than the bouquet's, because the bouquet's is measured,
+             scaled and repainted from its painted extent and a second figure
+             inside that would be scaled with it. Hidden until asked for. -->
+        <canvas id="bqGardener" hidden aria-hidden="true"></canvas>
         <canvas id="bouquetCanvas"></canvas>
         <div class="bq-card-tag" id="bqCardTag" role="button" tabindex="0" aria-label="Open the letter">
           <div class="bq-card-face">
@@ -516,6 +528,20 @@
            it because it does something different, and "Start over" has to be
            unmistakable because it throws the bouquet away. Every icon keeps
            its words in `aria-label` and in the project's own hover tip. -->
+      <!-- WHETHER THE SENDER STANDS WITH IT. Off by default, because most
+           bouquets are sent by people who have never been near the studio and
+           because it puts about 150 characters on an already long link. It
+           sits above the share buttons rather than back in the studio, since
+           this is the only screen where you can see what it does. -->
+      <div class="bq-sender" id="bqSender" hidden>
+        <button type="button" class="bq-sender-toggle" id="bqSenderBtn"
+                aria-pressed="false">
+          <span class="bq-sender-box" aria-hidden="true"></span>
+          <span>Stand my gardener with it</span>
+        </button>
+        <p class="bq-sender-note" id="bqSenderNote"></p>
+      </div>
+
       <div class="bq-share-panel" id="bqSharePanel">
         <button class="bq-btn" id="sendFriendBtn" style="display:none;">Send to a friend</button>
         <div class="bq-share-icons">

@@ -528,6 +528,53 @@ body {
 .bq-reveal-sub { font-size: 0.9rem; color: rgba(29,100,102,0.7); margin-bottom: 10px; }
 
 .bq-stage { position: relative; width: 100%; max-width: 400px; margin: 0 auto; }
+/* THE SENDER, STANDING AT THE FOOT OF THE BOUQUET on the left. `left: -6%`
+   lets them overlap the stage's edge a little, which is what stops the pair
+   reading as two pictures side by side; the stage is centred in a much wider
+   column, so nothing is clipped by it.
+   `hidden` LOSES TO ANY AUTHOR RULE, so the `[hidden]` line is load bearing:
+   without it this keeps its `display: block` however many times the code sets
+   the property, and reading it back says `true` while the thing is on screen.
+   That trap has been hit on the foot bar and the studio already. */
+#bqGardener {
+  position: absolute; left: -6%; bottom: 2%; z-index: 3;
+  display: block; pointer-events: none;
+  opacity: 0; transform: translateY(10px);
+  transition: opacity .5s ease .25s, transform .5s ease .25s;
+}
+#bqGardener[hidden] { display: none !important; }
+/* the toggle that puts them there */
+.bq-sender { margin: 0 auto 14px; max-width: 420px; text-align: center; }
+.bq-sender[hidden] { display: none !important; }
+.bq-sender-toggle {
+  display: inline-flex; align-items: center; gap: 9px; cursor: pointer;
+  background: none; border: none; padding: 8px 6px; min-height: 44px;
+  font-family: Arial, Helvetica, sans-serif; font-size: .9rem; font-weight: 700;
+  color: #1d6466;
+}
+.bq-sender-box {
+  width: 20px; height: 20px; border-radius: 6px; flex: 0 0 auto;
+  border: 2px solid #bde0d6; background: #fff; position: relative;
+}
+.bq-sender-toggle[aria-pressed="true"] .bq-sender-box {
+  background: #26a69a; border-color: #26a69a;
+}
+.bq-sender-toggle[aria-pressed="true"] .bq-sender-box::after {
+  content: ""; position: absolute; left: 5px; top: 1px;
+  width: 5px; height: 10px; border: solid #fff;
+  border-width: 0 2.4px 2.4px 0; transform: rotate(42deg);
+}
+.bq-sender-note {
+  margin: 0; font-family: Arial, Helvetica, sans-serif;
+  font-size: .78rem; line-height: 1.55; color: #5a8f8d;
+}
+.bq-stage.revealed #bqGardener { opacity: 1; transform: translateY(0); }
+@media (max-width: 560px) {
+  /* A 375 COLUMN CANNOT HOLD A BOUQUET AND A PERSON SIDE BY SIDE. They tuck
+     in rather than going, since the whole point is that the recipient sees
+     who sent it. */
+  #bqGardener { left: -2%; }
+}
 
 #bouquetCanvas {
   display: block; width: 100%;

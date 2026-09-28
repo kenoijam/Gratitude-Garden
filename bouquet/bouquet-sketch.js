@@ -2298,7 +2298,12 @@ function renderWrapSwatch(canvas, wrap) {
 
 const state = { flowers: [], hues: {}, foliages: [], legacyWrap: null,
   wrapH: WRAP_DEFAULT.h, wrapS: WRAP_DEFAULT.s, wrapL: WRAP_DEFAULT.l, wrapP: WRAP_DEFAULT.p, ribbonH: null,
-  card: null, bg: null, to: "", msg: "", from: "" };
+  card: null, bg: null, to: "", msg: "", from: "",
+  /* THE SENDER'S GARDENER, OFF BY DEFAULT. It is the only thing in `state`
+     that is a whole object rather than an id or a number, and it costs about
+     150 characters of an already long link, which is why it is only written
+     when somebody has actually asked for it. */
+  gardener: null };
 /* ====================================================================
    TWO TRACKS: a real bouquet, and a drawn one
    ====================================================================
@@ -3039,6 +3044,26 @@ function b64decode(str) {
   for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
   return new TextDecoder().decode(bytes);
 }
+/* WHAT OF A LOOK ACTUALLY GOES IN A URL, and it is only what gets DRAWN.
+   Two things come out. Every EMPTY field, because null, empty string and
+   empty object all mean "the default" and `AvatarDraw` puts the default back.
+   And `about` and `name`, which is a PRIVACY decision rather than a size one:
+   the reveal draws neither, and somebody's cosiest place and favourite snack
+   should not ride along in a link they send to a florist's customer, a group
+   chat or anyone else. They belong to the guest book, where they are offered
+   on purpose. */
+const LOOK_NOT_DRAWN = ["about", "name"];
+function trimLook(look) {
+  const out = {};
+  Object.keys(look || {}).forEach(k => {
+    if (LOOK_NOT_DRAWN.indexOf(k) >= 0) return;
+    const v = look[k];
+    if (v === null || v === undefined || v === "") return;
+    if (typeof v === "object" && !Object.keys(v).length) return;
+    out[k] = v;
+  });
+  return out;
+}
 function encodeState(s) {
   /* only hues that differ from the species default are sent, which keeps the
      link short for the common case where the sender changed nothing */
@@ -3054,6 +3079,16 @@ function encodeState(s) {
      written when an old link was opened and nothing was touched, so that
      bouquet keeps its hand-picked ribbon and ink rather than derived ones. */
   const compact = { f: s.flowers, a: 1, g: s.foliages, c: s.card, b: s.bg, t: s.to, m: s.msg, r: s.from };
+  /* `gd` IS THE SENDER'S GARDENER, and it travels in the LINK rather than
+     being looked up from an account, because most of these go through a chat
+     app to somebody who has never been here. Looked up, the option would
+     appear to do nothing in exactly the case it is for.
+     IT IS STRIPPED FIRST, of the empty fields and of anything not DRAWN.
+     Measured on a real saved gardener with the about-you answers filled in:
+     447 characters whole, 318 stripped, on a link that is about 300 without
+     it. `AvatarDraw` fills every default back in from `DEFAULT_LOOK` on the
+     way out, so nothing that shows is lost. */
+  if (s.gardener) compact.gd = trimLook(s.gardener);
   if (s.legacyWrap) compact.w = s.legacyWrap;
   else {
     compact.wh = Math.round(s.wrapH); compact.wl = Math.round(s.wrapL); compact.wp = s.wrapP;
@@ -3110,7 +3145,11 @@ function decodeState(str) {
       .concat(c.g === undefined ? [DEFAULT_FOLIAGE] : []),
     legacyWrap: legacyWrap, wrapH: wrapH, wrapS: wrapS, wrapL: wrapL, wrapP: wrapP, ribbonH: ribbonH,
     card: c.c, bg: c.b,
-    to: String(c.t || ""), msg: String(c.m || ""), from: String(c.r || "")
+    to: String(c.t || ""), msg: String(c.m || ""), from: String(c.r || ""),
+    /* NOT REQUIRED, EVER. Every link ever shared lacks this key, which is the
+       rule already written down here: anything this project may not have
+       written must not be required on the way back in. */
+    gardener: (c.gd && typeof c.gd === "object") ? c.gd : null
   };
 }
 function buildShareUrl() {
@@ -3788,6 +3827,10 @@ function renderFinal(isRecipientView) {
   document.getElementById("cardMsg").textContent = state.msg || "";
   document.getElementById("cardFrom").textContent = state.from || "a friend";
 
+  /* THE TOGGLE IS THE SENDER'S ONLY. A recipient is looking at a finished
+     thing and has nothing to decide; showing it would also let them turn OFF
+     the person who sent it to them, which is somebody else's choice. */
+  refreshSenderToggle(isRecipientView);
   document.getElementById("bqSharePanel").style.display = isRecipientView ? "none" : "flex";
   document.getElementById("bqBackNav").style.display = isRecipientView ? "none" : "flex";
   document.getElementById("bqRecipientCta").style.display = isRecipientView ? "block" : "none";
@@ -3814,6 +3857,91 @@ function renderFinal(isRecipientView) {
 function drawFinalBouquet() {
   const canvas = document.getElementById("bouquetCanvas");
   if (canvas) renderBouquetCanvas(canvas, state.flowers, currentWrap());
+  drawSenderGardener();
+}
+
+/* WHOEVER SENT IT, STANDING BESIDE THE BOUQUET AND HOLDING IT OUT.
+   ON ITS OWN CANVAS, not the bouquet's. The bouquet is rendered once,
+   MEASURED for what it actually painted, scaled to fit and rendered again, so
+   a figure drawn into that canvas would be scaled by whatever the bouquet
+   happened to need. A second canvas is also what keeps the letter tag, which
+   tucks UNDER the wrap at `z-index` 1, where it is.
+   THEY STAND ON NOTHING. A cut bouquet is not planted in a meadow, so there
+   is no ground here and no hill to bury their feet in; they simply stand on
+   the backdrop, which is what the reveal already is. */
+/* WHETHER THE SENDER STANDS WITH IT. Three states rather than two, and the
+   third is the one that matters: with no gardener built the control would be
+   a checkbox that does nothing, so it says where to go instead. */
+function refreshSenderToggle(isRecipientView) {
+  const box = document.getElementById("bqSender");
+  const btn = document.getElementById("bqSenderBtn");
+  const note = document.getElementById("bqSenderNote");
+  if (!box || !btn) return;
+  if (isRecipientView) { box.hidden = true; return; }
+  const G = window.GardenGardener;
+  const mine = G && G.get();
+  box.hidden = false;
+  if (!mine) {
+    btn.disabled = true;
+    btn.setAttribute("aria-pressed", "false");
+    state.gardener = null;
+    note.innerHTML = 'Build one in <a href="../avatar/avatar-index.html?start=1">The Gardener\u2019s Studio</a> and they can stand here.';
+    return;
+  }
+  btn.disabled = false;
+  const on = !!state.gardener;
+  btn.setAttribute("aria-pressed", on ? "true" : "false");
+  note.textContent = on
+    ? "They travel with the link, so whoever opens it sees who it came from."
+    : "Off, so the link stays short and the bouquet arrives on its own.";
+}
+function initSenderToggle() {
+  const btn = document.getElementById("bqSenderBtn");
+  if (!btn) return;
+  btn.addEventListener("click", () => {
+    const G = window.GardenGardener;
+    const mine = G && G.get();
+    if (!mine) return;
+    /* A COPY, not the live look. `GardenGardener` keeps one object and hands
+       it out, so writing the same reference into `state` would make editing a
+       gardener silently rewrite a bouquet that had already been built. */
+    state.gardener = state.gardener ? null : JSON.parse(JSON.stringify(mine));
+    refreshSenderToggle(false);
+    drawSenderGardener();
+  });
+}
+
+function drawSenderGardener() {
+  const c = document.getElementById("bqGardener");
+  if (!c) return;
+  const look = state.gardener;
+  const A = window.AvatarDraw;
+  if (!look || !A || !A.paintAt || typeof drawSpeciesBloom !== "function") {
+    c.hidden = true;
+    return;
+  }
+  const stage = document.getElementById("bqStage");
+  const bouquet = document.getElementById("bouquetCanvas");
+  const sw = stage ? stage.clientWidth : 0;
+  if (!sw || !bouquet || !bouquet.clientHeight) { c.hidden = true; return; }
+  /* SIZED AGAINST THE BOUQUET, not the stage, so the two read as one picture
+     at any width. A third of the bouquet's height puts their head at about
+     the wrap's shoulder, which is where somebody holding one out stands. */
+  const h = Math.round(bouquet.clientHeight * 0.52);
+  const w = Math.round(h * 0.62);
+  const dpr = Math.min(2, window.devicePixelRatio || 1);
+  c.hidden = false;
+  c.style.width = w + "px";
+  c.style.height = h + "px";
+  c.width = Math.round(w * dpr);
+  c.height = Math.round(h * dpr);
+  const x = c.getContext("2d");
+  x.setTransform(dpr, 0, 0, dpr, 0, 0);
+  x.clearRect(0, 0, w, h);
+  /* `h * 1.04` AND A FOOT AT 0.99, which is what every other page that stands
+     one of these uses: the figure's box carries clear margin above the head
+     for a flower on a stem, so painting at exactly `h` leaves them floating. */
+  A.paintAt(x, look, w / 2, h * 0.99, h * 1.04);
 }
 
 function openLetter() {
@@ -4836,6 +4964,7 @@ function boot() {
 
   const encoded = new URLSearchParams(window.location.search).get("b");
   initCardTagInteraction();
+  initSenderToggle();
   initResize();
 
   if (encoded) {
