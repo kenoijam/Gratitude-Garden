@@ -94,44 +94,56 @@ So grepping `sakura` finds the data and never the rendering code.
 - **The orchid's chip colour changed with its status.** It was `--lightsky` while it was hidden and nothing ever showed it; a pickable orchid gets an orchid purple.
 - **A CACHED SKETCH WASTED A CHECK AGAIN**, on the shared garden's picker this time. `fetch(url, {cache:"reload"})` on the script followed by a reload is the fix, and reading the live value back is the only way to know.
 
-##### THE ORCHID'S CENTRE IS A RING, and the last peonies are gone
+##### THE ORCHID'S CENTRE IS FOUR PARTS, and the last peonies are gone
 
 The swap above left the orchid drawn exactly as it had been while it was
-hidden, and the thing nobody had looked at was its CENTRE. It hung off the
-bottom of the flower; it is now a deep RING across the middle with the column
-pale inside it, which is the part the reference marks as the fourth thing a
-phalaenopsis is made of. Separately, peony and poppy were out of every picker
-but still showing in five places the pickers do not reach.
+hidden, and the thing nobody had looked at was its CENTRE. It took three goes
+and the last one was done by transcribing a drawing rather than designing a
+shape. Separately, peony and poppy were out of every picker but still showing
+in five places the pickers do not reach.
 
-- **THE CENTRE WAS THREE LOBES ALL POINTING DOWNWARDS**, at 62, 118 and 90
-  degrees, so every part of it painted BELOW the origin: measured at R 150 its
+- **GO ONE: THREE LOBES ALL POINTING DOWNWARDS**, at 62, 118 and 90 degrees,
+  so every part of the centre painted BELOW the origin: measured at R 150 its
   centre of mass sat at +0.254 Ro against a flower whose own painted middle is
   at -0.177 Ro, which is 52 percent of the way from the middle to the bottom
   edge. It read as a pendant hanging off the petals rather than as the middle
   of the flower.
-- **TWO ARMS THAT RISE WAS THE FIRST FIX, AND IT WENT HALF WAY.** Anchoring
-  the two side lobes at the origin and tilting them 22 degrees off vertical
-  does carry magenta ABOVE the junction where the two broad petals meet, which
-  is what centres the assembly, and the measured centre of mass went from
-  +0.254 Ro to +0.057. What it does not do is read as the ROUND thing the
-  reference marks, because two tapering lobes with a gap between them read as
-  a pair of horns with something caught in them.
-- **SO IT IS ONE DEEP CIRCLE WITH THE COLUMN PALE INSIDE IT**, which is the
-  horseshoe a real phalaenopsis wears, closed up. The whole centre is five
-  ellipses: the ring at `0.50 by 0.48 Ro` centred 0.09 Ro high, the two that
-  were already the lower lip, and the pale column at `0.23 by 0.26 Ro` centred
-  0.14 Ro high. The arms and the column bar are deleted.
-- **THE RING HAS TO CLOSE AT R 30, AND THAT IS WHAT SIZED THE COLUMN.** An
-  open top is what a photographed orchid has, and at garden size it reads as a
-  keyhole rather than as a circle. Scanning down the centre line, the deep
-  band above the column measures 2px at R 30, 3 at R 38 and R 46, 5 at R 63
-  and 7 at R 100, so it is closed at every size anything draws it. **Two
-  earlier sets measured 0 and 1px there and both looked closed by eye.** Scan
-  the column; do not look at it.
+- **GO TWO: TWO ARMS THAT RISE, which fixed the position and not the shape.**
+  Anchoring the side lobes at the origin and tilting them 22 degrees off
+  vertical does carry magenta ABOVE the junction where the two broad petals
+  meet, and the centre of mass went from +0.254 Ro to +0.057. What two
+  tapering lobes with a gap between them read as is a pair of horns.
+- **GO THREE: ONE CLOSED RING with the column pale inside it.** Round, and
+  a doughnut: it has no top, no bottom and no parts, where the thing it is
+  drawing is plainly a little assembly stacked one part on another.
+- **GO FOUR, AND THE ONE THAT HOLDS: FOUR PARTS, TRANSCRIBED.** A pencil
+  drawing of a phalaenopsis was the reference, and reading it part by part is
+  what finally worked. Top to bottom: the **anther cap**, a small dome at the
+  very top; the **column**, pale, narrow, running down from under it; the
+  **side lobes of the lip**, closing round the column as one deep mass; and
+  the **midlobe**, hanging below on a thin waist with its two corners turned
+  up. Nine ops, and the two corners are the only lobes.
+- **THE CORNERS ARE WHAT NAME IT, and they have to be SMALL.** A phalaenopsis
+  midlobe carries two antennae that turn up at its tip, and that anchor shape
+  is the one part of the flower nothing else in the set has. Drawn at 0.18 Ro
+  and near vertical they read as **a cat's face**, which is what three earlier
+  lips did; at `0.12 Ro` long, `0.042 Ro` wide and 34 degrees off vertical
+  they read as corners of the lip they belong to.
+- **THE CAP IS A THIRD TONE, AND IT WAS MEASURED RATHER THAN CHOSEN.** The
+  deep is `light - 15` and the sepals behind it are `light + 13`, so a cap
+  anywhere near the petals disappears into them: at `sat * 0.95, light + 2` it
+  was invisible at R 46 and a scan down the centre line could not tell it from
+  the petal above. It is `sat * 1.05, light - 4`, which leaves three tones
+  that separate, and it stays a pink cap rather than a second dark blob, which
+  is what a fully deep one looked like.
 - **THE COLUMN HAD TO GAIN COLOUR.** At `sat * 0.35, light + 26` it is
   effectively white, and ringed by deep magenta it read as a HOLE punched in
   the flower. It is `sat * 0.60, light + 20`, a soft pink that still reads as
   the palest thing on the bloom.
+- **`lobe` CARRIES `oy` AND `ox` NOW, and they translate in FLOWER space
+  before the rotate**, so a part can be anchored away from the origin. The
+  midlobe's corners need both. The catalogue copy folds them into its own
+  `cx, cy` translate.
 - **NOTHING HAD TO BE RE-MEASURED, AND THAT WAS CHECKED RATHER THAN ASSUMED.**
   The centre is entirely interior, so the painted box is identical before and
   after, through both the lip change and the ring: `l -1.04, r 1.03, t -1.28,
@@ -243,7 +255,7 @@ The poppy arrived at 68/54, 74/52 and 66/56, taken from the reference drawing's 
 - **The hidden entries keep an EMPTY `keywords` array, never a missing one.** `chooseFlowerForMood` reads `.keywords` off entries in `flowerMeanings`, so removing or renaming the field throws the moment anyone writes a journal entry. The real lists are parked beside them as `keywordsHidden`, ready to swap back. That loop also iterates `votes` rather than `flowerMeanings`, so a keyword hit on a hidden species cannot write `votes[undefined]` and poison the result.
 - **Verified by exhausting the space, not by reading the maps**: all 280 combinations of rating, shaper and journal text were run through `chooseFlowerForMood`, and only the original eight ever come out.
 - **Every hidden species still draws**, which is deliberate: `SPECIES_MAP` resolves them, so a share link that names one opens instead of erroring, and the sync table above stays true.
-- **The orchid is a phalaenopsis face on**: three narrow sepals behind, two broad petals in front, and in the middle a deep ring with the column pale inside it and the lip under it. That centre is what makes it read as an orchid rather than a generic five petalled bloom, and it was rebuilt once; see "THE ORCHID'S CENTRE IS A RING" above. It needs no label offset and no `bloomReach` entry, but it DOES need an origin nudge in the landing page's ring, since it paints 1.28 R above its origin and 0.83 below.
+- **The orchid is a phalaenopsis face on**: three narrow sepals behind, two broad petals in front, and in the middle an anther cap over a pale column, the lip's side lobes closed round it and the midlobe below. That centre is what makes it read as an orchid rather than a generic five petalled bloom, and it was rebuilt four times; see "THE ORCHID'S CENTRE IS FOUR PARTS" above. It needs no label offset and no `bloomReach` entry, but it DOES need an origin nudge in the landing page's ring, since it paints 1.28 R above its origin and 0.83 below.
 - **The chrysanthemum is a POMPOM and that is load bearing.** A chrysanthemum is in the same family as the daisy, and drawn as a single flat bloom the two tiles are the same picture twice. Four concentric rings of short petals lightening inward reads as a ball; the daisy is one flat ring of sixteen. Checked with colour removed, which is the case that matters since a bouquet sender can set any species to any hue.
 - **Both were sized by measurement.** As a multiple of R the set runs tulip 0.61, lily 0.92, rose and daisy 0.98, lavender 0.39 wide by 1.06 tall, sunflower 1.33. Orchid lands at 1.02 and the chrysanthemum at 1.17, so neither needs scaling if they are ever turned on. A spider chrysanthemum was drawn and rejected: unmistakable, but it reached 1.9R, read as tangled at garden size, and a spiky flower is the wrong shape for a meaning about quiet reflection.
 
