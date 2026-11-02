@@ -699,8 +699,8 @@
        drawn so the sync table in CLAUDE.md stays true and the work is ready. */
     function drawOrchid(R,hue,sat,light){
       var Ro=R*1.28;
-      function lobe(ang,len,wid,sa,li,al,pinch,oy){
-        ctx.save(); ctx.translate(0,oy||0); ctx.rotate((ang+90)*Math.PI/180);
+      function lobe(ang,len,wid,sa,li,al,pinch){
+        ctx.save(); ctx.rotate((ang+90)*Math.PI/180);
         ctx.fillStyle=hsl(hue,sa,li,al);
         ctx.beginPath(); ctx.moveTo(0,0);
         ctx.bezierCurveTo(wid,-len*(pinch||.22),wid,-len*.82,0,-len);
@@ -712,14 +712,14 @@
       lobe( 138,Ro*.94,Ro*.31,sat*.72,light+13,.92);
       lobe( -40,Ro*.95,Ro*.60,sat*.85,light+19,.96,.30);
       lobe(-140,Ro*.95,Ro*.60,sat*.85,light+19,.96,.30);
-      lobe(-68,Ro*.31,Ro*.115,sat+14,light-11,1,.52,0);
-      lobe(-112,Ro*.31,Ro*.115,sat+14,light-11,1,.52,0);
-      lobe(90,Ro*.26,Ro*.085,sat+18,light-15,1,.58,-Ro*.16);
+      /* the centre is a deep ring with the column pale inside it, and the
+         lip hanging below: a phalaenopsis face on */
       ctx.fillStyle=hsl(hue,sat+18,light-15);
+      ctx.beginPath(); ctx.ellipse(0,-Ro*.09,Ro*.25,Ro*.24,0,0,Math.PI*2); ctx.fill();
       ctx.beginPath(); ctx.ellipse(0,Ro*.13,Ro*.215,Ro*.145,0,0,Math.PI*2); ctx.fill();
       ctx.beginPath(); ctx.ellipse(0,Ro*.06,Ro*.155,Ro*.138,0,0,Math.PI*2); ctx.fill();
       ctx.fillStyle=hsl(hue,sat*.6,light+20);
-      ctx.beginPath(); ctx.ellipse(0,-Ro*.19,Ro*.105,Ro*.124,0,0,Math.PI*2); ctx.fill();
+      ctx.beginPath(); ctx.ellipse(0,-Ro*.14,Ro*.115,Ro*.13,0,0,Math.PI*2); ctx.fill();
     }
 
     function drawChrysanth(R,hue,sat,light){
@@ -1997,8 +1997,8 @@
      above but in this block's signature. See the note there. */
   function drawOrchid(ctx,cx,cy,R,hue,sat,light){
     var Ro=R*1.28;
-    function lobe(ang,len,wid,sa,li,al,pinch,oy){
-      ctx.save(); ctx.translate(cx,cy+(oy||0)); ctx.rotate((ang+90)*Math.PI/180);
+    function lobe(ang,len,wid,sa,li,al,pinch){
+      ctx.save(); ctx.translate(cx,cy); ctx.rotate((ang+90)*Math.PI/180);
       ctx.fillStyle=hsl(hue,sa,li,al);
       ctx.beginPath(); ctx.moveTo(0,0);
       ctx.bezierCurveTo(wid,-len*(pinch||.22),wid,-len*.82,0,-len);
@@ -2010,14 +2010,14 @@
     lobe( 138,Ro*.94,Ro*.31,sat*.72,light+13,.92);
     lobe( -40,Ro*.95,Ro*.60,sat*.85,light+19,.96,.30);
     lobe(-140,Ro*.95,Ro*.60,sat*.85,light+19,.96,.30);
-    lobe(-68,Ro*.31,Ro*.115,sat+14,light-11,1,.52,0);
-    lobe(-112,Ro*.31,Ro*.115,sat+14,light-11,1,.52,0);
-    lobe(90,Ro*.26,Ro*.085,sat+18,light-15,1,.58,-Ro*.16);
+    /* the centre is a deep ring with the column pale inside it, and the
+       lip hanging below: a phalaenopsis face on */
     ctx.fillStyle=hsl(hue,sat+18,light-15);
+    ctx.beginPath(); ctx.ellipse(cx,cy-Ro*.09,Ro*.25,Ro*.24,0,0,Math.PI*2); ctx.fill();
     ctx.beginPath(); ctx.ellipse(cx,cy+Ro*.13,Ro*.215,Ro*.145,0,0,Math.PI*2); ctx.fill();
     ctx.beginPath(); ctx.ellipse(cx,cy+Ro*.06,Ro*.155,Ro*.138,0,0,Math.PI*2); ctx.fill();
     ctx.fillStyle=hsl(hue,sat*.6,light+20);
-    ctx.beginPath(); ctx.ellipse(cx,cy-Ro*.19,Ro*.105,Ro*.124,0,0,Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(cx,cy-Ro*.14,Ro*.115,Ro*.13,0,0,Math.PI*2); ctx.fill();
   }
 
   function drawChrysanth(ctx,cx,cy,R,hue,sat,light){

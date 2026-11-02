@@ -656,9 +656,8 @@ function drawLavender(ctx, hgt, hue, sat, light) {
 function drawOrchid(ctx, R, hue, sat, light) {
   const Ro = R * 1.28;
   /* one lobe, authored pointing up and rotated into place */
-  function lobe(ang, len, wid, s, l, a, pinch, oy) {
+  function lobe(ang, len, wid, s, l, a, pinch) {
     ctx.save();
-    ctx.translate(0, oy || 0);
     ctx.rotate(deg(ang + 90));
     ctx.fillStyle = hsla(hue, s, l, a);
     ctx.beginPath();
@@ -673,14 +672,14 @@ function drawOrchid(ctx, R, hue, sat, light) {
   lobe(138, Ro * 0.94, Ro * 0.31, sat * 0.72, light + 13, 0.92);
   lobe(-40,  Ro * 0.95, Ro * 0.60, sat * 0.85, light + 19, 0.96, 0.30);
   lobe(-140, Ro * 0.95, Ro * 0.60, sat * 0.85, light + 19, 0.96, 0.30);
-  lobe(-68, Ro * 0.31, Ro * 0.115, sat + 14, light - 11, 1, 0.52, 0);
-  lobe(-112, Ro * 0.31, Ro * 0.115, sat + 14, light - 11, 1, 0.52, 0);
-  lobe(90, Ro * 0.26, Ro * 0.085, sat + 18, light - 15, 1, 0.58, -Ro * 0.16);
+  /* the centre is a deep ring with the column pale inside it, and the
+     lip hanging below: a phalaenopsis face on */
   ctx.fillStyle = hsla(hue, sat + 18, light - 15, 1);
+  ellipseC(ctx, 0, -Ro * 0.09, Ro * 0.50, Ro * 0.48);
   ellipseC(ctx, 0, Ro * 0.13, Ro * 0.43, Ro * 0.29);
   ellipseC(ctx, 0, Ro * 0.06, Ro * 0.31, Ro * 0.276);
   ctx.fillStyle = hsla(hue, sat * 0.60, light + 20, 1);
-  ellipseC(ctx, 0, -Ro * 0.19, Ro * 0.21, Ro * 0.248);
+  ellipseC(ctx, 0, -Ro * 0.14, Ro * 0.23, Ro * 0.26);
 }
 
 /* Pompom chrysanthemum: concentric rings of short rounded petals, lightening

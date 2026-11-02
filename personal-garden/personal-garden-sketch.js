@@ -1262,9 +1262,8 @@ function drawLotusBloom(R, hue, sat, light) {
 function drawOrchidBloom(R, hue, sat, light) {
   noStroke();
   const Ro = R * 1.28;
-  const lobe = (ang, len, wid, sa, li, al, pinch, oy) => {
+  const lobe = (ang, len, wid, sa, li, al, pinch) => {
     push();
-    translate(0, oy || 0);
     rotate(ang + 90);
     fill(hue, sa, li, al);
     beginShape();
@@ -1279,14 +1278,14 @@ function drawOrchidBloom(R, hue, sat, light) {
   lobe(138, Ro * 0.94, Ro * 0.31, sat * 0.72, light + 13, 0.92);
   lobe(-40,  Ro * 0.95, Ro * 0.60, sat * 0.85, light + 19, 0.96, 0.30);
   lobe(-140, Ro * 0.95, Ro * 0.60, sat * 0.85, light + 19, 0.96, 0.30);
-  lobe(-68, Ro * 0.31, Ro * 0.115, sat + 14, light - 11, 1, 0.52, 0);
-  lobe(-112, Ro * 0.31, Ro * 0.115, sat + 14, light - 11, 1, 0.52, 0);
-  lobe(90, Ro * 0.26, Ro * 0.085, sat + 18, light - 15, 1, 0.58, -Ro * 0.16);
+  /* the centre is a deep ring with the column pale inside it, and the
+     lip hanging below: a phalaenopsis face on */
   fill(hue, sat + 18, light - 15, 1);
+  ellipse(0, -Ro * 0.09, Ro * 0.50, Ro * 0.48);
   ellipse(0, Ro * 0.13, Ro * 0.43, Ro * 0.29);
   ellipse(0, Ro * 0.06, Ro * 0.31, Ro * 0.276);
   fill(hue, sat * 0.60, light + 20, 1);
-  ellipse(0, -Ro * 0.19, Ro * 0.21, Ro * 0.248);
+  ellipse(0, -Ro * 0.14, Ro * 0.23, Ro * 0.26);
 }
 
 /* Pompom chrysanthemum: concentric rings of short rounded petals, lightening
@@ -1846,9 +1845,8 @@ function drawOrchidBloomOnGraphics(pg, R, hue, sat, light) {
   pg.push();
   pg.noStroke();
   const Ro = R * 1.28;
-  const lobe = (ang, len, wid, sa, li, al, pinch, oy) => {
+  const lobe = (ang, len, wid, sa, li, al, pinch) => {
     pg.push();
-    pg.translate(0, oy || 0);
     pg.rotate(ang + 90);
     pg.fill(hue, sa, li, al);
     pg.beginShape();
@@ -1863,14 +1861,14 @@ function drawOrchidBloomOnGraphics(pg, R, hue, sat, light) {
   lobe(138, Ro * 0.94, Ro * 0.31, sat * 0.72, light + 13, 0.92);
   lobe(-40,  Ro * 0.95, Ro * 0.60, sat * 0.85, light + 19, 0.96, 0.30);
   lobe(-140, Ro * 0.95, Ro * 0.60, sat * 0.85, light + 19, 0.96, 0.30);
-  lobe(-68, Ro * 0.31, Ro * 0.115, sat + 14, light - 11, 1, 0.52, 0);
-  lobe(-112, Ro * 0.31, Ro * 0.115, sat + 14, light - 11, 1, 0.52, 0);
-  lobe(90, Ro * 0.26, Ro * 0.085, sat + 18, light - 15, 1, 0.58, -Ro * 0.16);
+  /* the centre is a deep ring with the column pale inside it, and the
+     lip hanging below: a phalaenopsis face on */
   pg.fill(hue, sat + 18, light - 15, 1);
+  pg.ellipse(0, -Ro * 0.09, Ro * 0.50, Ro * 0.48);
   pg.ellipse(0, Ro * 0.13, Ro * 0.43, Ro * 0.29);
   pg.ellipse(0, Ro * 0.06, Ro * 0.31, Ro * 0.276);
   pg.fill(hue, sat * 0.60, light + 20, 1);
-  pg.ellipse(0, -Ro * 0.19, Ro * 0.21, Ro * 0.248);
+  pg.ellipse(0, -Ro * 0.14, Ro * 0.23, Ro * 0.26);
   pg.pop();
 }
 
