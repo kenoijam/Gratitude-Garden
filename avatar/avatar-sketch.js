@@ -33,7 +33,7 @@
       sub: "A fringe and a back are two choices, so twelve tiles buy thirty-six looks.",
       icon: '<path d="M4.6 13.5C4.6 8 7.9 4.2 12 4.2s7.4 3.8 7.4 9.3"/><path d="M4.6 13.5V19M19.4 13.5V19"/><path d="M8.4 9.6c2.6 1.9 5.6 2.2 7.6.7"/>' },
     { id: "flower", label: "Flower", title: "The flower they wear",
-      sub: "Six ring the face like a hood. The tulip and the lavender grow on a stem instead.",
+      sub: "Five ring the face like a hood. The tulip, the hibiscus and the lavender grow on a stem.",
       icon: '<circle cx="12" cy="12" r="2.4"/><path d="M12 9.6c-1.6-2.9-.9-5.6 0-6.6.9 1 1.6 3.7 0 6.6zM14.3 11.3c2.3-2.4 5.1-2.5 6.3-1.9-.5 1.3-2.7 3.1-6.3 1.9zM13.4 14.2c3.2.8 4.6 3.2 4.6 4.6-1.4.2-3.9-.9-4.6-4.6zM10.6 14.2c-.7 3.7-3.2 4.8-4.6 4.6 0-1.4 1.4-3.8 4.6-4.6zM9.7 11.3C6.1 12.5 3.9 10.7 3.4 9.4c1.2-.6 4-.5 6.3 1.9z"/>' },
     { id: "top", label: "Clothes", title: "What they wear",
       sub: "One outfit dresses the whole figure. Tap the one they have on to take it off.",
@@ -172,7 +172,7 @@
           /* PICKING A SPECIES RESETS ALL THREE to that flower's own, so a
              new choice always arrives in the colour it was drawn for. The
              saturation has to go with the hue: left behind, a daisy drained
-             to white would hand its white to the poppy picked after it. */
+             to white would hand its white to the hibiscus picked after it. */
           look.flower = id;
           look.flowerHue = null; look.flowerSat = null; look.flowerLight = null;
           buildFlower(); paint();
@@ -188,11 +188,14 @@
       ? A.BLOOMS[look.flower].sat : look.flowerSat;
     /* THE TEST IS `=== "sprout"`. It was `!== "ring"`, and no species has ever
        been called `ring`, so the line fired on all eight and told somebody
-       picking a rose that a rose has no ring of petals. */
+       picking a rose that a rose has no ring of petals.
+       THE SENTENCE COMES OFF THE TABLE THAT DECIDES THE DRAWING, because the
+       three sprouts no longer sprout for one reason: the tulip and the
+       lavender have no ring of petals, and the hibiscus has one and carries
+       its column out past it. One sentence written here for all three would
+       be wrong about whichever it was not written for. */
     var h = A.HOOD[look.flower];
-    $("avFlowerNote").textContent = (h && h.mode === "sprout")
-      ? A.BLOOMS[look.flower].name + " has no ring of petals to sit inside, so it grows from the head instead."
-      : "";
+    $("avFlowerNote").textContent = (h && h.mode === "sprout" && h.note) ? h.note : "";
   }
 
   /* ONE PER SLOT, and picking the one already on takes it off, so a slot is

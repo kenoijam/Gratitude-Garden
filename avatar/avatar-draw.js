@@ -37,12 +37,12 @@
     rose:      { hue: 344, sat: 55, light: 55, name: "Rose" },
     sunflower: { hue: 45,  sat: 60, light: 65, name: "Sunflower" },
     lily:      { hue: 20,  sat: 40, light: 70, name: "Lily" },
-    peony:     { hue: 332, sat: 52, light: 70, name: "Peony" },
-    poppy:     { hue: 356, sat: 58, light: 58, name: "Poppy" },
+    orchid:    { hue: 305, sat: 50, light: 68, name: "Orchid" },
+    hibiscus:  { hue: 352, sat: 62, light: 58, name: "Hibiscus" },
     lavender:  { hue: 275, sat: 55, light: 68, name: "Lavender" }
   };
   var SPECIES_ORDER = ["daisy", "tulip", "rose", "sunflower",
-                       "lily", "peony", "poppy", "lavender"];
+                       "lily", "orchid", "hibiscus", "lavender"];
 
   /* THE HOOD IS THE SPECIES' OWN 2D DRAWING, sat behind the head. Stylised
      petals were tried twice and read as a ring of separate blobs both times;
@@ -56,27 +56,45 @@
                   against a face of 44, so the face covers it completely and
                   the dark collar that plagued every earlier attempt is gone
        rose       five rings of wide petals, lightening inward, centre 0.17R
-       peony      ten outer alternating two lengths and two tones, six inner
-       poppy      four deep petals on the axes and four brighter at 45
+       orchid     five petals round a lip; its box is the set's most lopsided
        lily       six broad pointed tepals, throat at 0.39R
 
-     `dy` is the peony's alone: its painted box is deliberately asymmetric,
-     0.08R high, so it needs pushing down to sit centred on the face. */
+     `dy` CORRECTS A LOPSIDED BOX, and only two species need one. The crown
+     is refilled over the bloom's middle after it is drawn, so whatever a
+     species keeps in its centre is covered either way; what `dy` buys is the
+     TIPS landing at 84 all the way round rather than high on one side. */
   var HOOD = {
     daisy:     { mode: "hood",   R: 84, dy: 0 },
     sunflower: { mode: "hood",   R: 62, dy: 0 },
     rose:      { mode: "hood",   R: 83, dy: 0 },
-    /* THE PEONY IS 92, NOT 84, and it is the one species that needs its own
-       figure for a reason that is written down: its painted box runs -1.00 to
-       +0.84 of R, so at the same R as the others it stood 154 tall against
-       their 168 and read as a smaller flower on the same head. 92 puts its
-       span back on theirs; `dy` is 0.08 R, the amount its own drawing sits
-       above its origin. */
-    peony:     { mode: "hood",   R: 92, dy: 7 },
-    poppy:     { mode: "hood",   R: 84, dy: 0 },
+    /* THE ORCHID IS THE MOST LOPSIDED BLOOM IN THE SET and it needs both
+       numbers. Its box runs -1.28 to +0.83 of R, so at a shared 84 it would
+       stand 177 tall against the others' 168 AND sit 18 off centre. R 80 puts
+       its span on theirs and `dy` 18 is its own box's offset, which lands
+       every tip within a pixel of 84: top 84.4, bottom 84.2, sides 83.
+       THE HIBISCUS IS A SPROUT, AND THAT IS THE THIRD SPECIES THAT CANNOT
+       RING A FACE. It was tried as a hood at R 88, which put its five petals
+       at 84 with everything else and looked right as a bonnet; what it also
+       did was send the stamen column, 1.13 R and the longest thing any of the
+       twelve paints, out from behind the head and down across the shoulder,
+       ending in its stigma over the arm. It reads as a stray object laid on
+       the figure rather than as part of the flower. The column cannot be
+       dropped without a new argument in all seven copies of `drawHibiscus`,
+       and it should not be: it is what names the species in the guide. So the
+       hibiscus grows on a stem out of the crown, where the column is a spike
+       on a small flower, which is the same answer the tulip and the lavender
+       already get for the same underlying reason. */
+    orchid:    { mode: "hood",   R: 80, dy: 18 },
+    hibiscus:  { mode: "sprout", stem: 26, R: 20, dy: 0,
+                 note: "A hibiscus carries its stamen column well past its " +
+                       "petals, so it grows on a stem out of the crown." },
     lily:      { mode: "hood",   R: 78, dy: 0 },
-    tulip:     { mode: "sprout", stem: 26, R: 22, dy: 0 },
-    lavender:  { mode: "sprout", stem: 14, R: 19, dy: 0 }
+    tulip:     { mode: "sprout", stem: 26, R: 22, dy: 0,
+                 note: "A tulip is a closed cup, with no ring of petals to " +
+                       "sit inside, so it grows on a stem out of the crown." },
+    lavender:  { mode: "sprout", stem: 14, R: 19, dy: 0,
+                 note: "Lavender is a spike, with no ring of petals to sit " +
+                       "inside, so it grows on a stem out of the crown." }
   };
 
   /* EIGHT SKINS AS A RAMP, and the four that were here are IN it rather
@@ -249,12 +267,12 @@
               top: 210,
               clothes: "apron", feet: "wellies", hold: "basket",
               tints: { clothes: 1, feet: 1 } } },
-    /* MARY. Buns are the one back style that reads at the sides rather than
-       behind, so they survive a ring flower; the peony is pushed round to a
-       tan, which no other template uses. */
+    /* MARY. The hibiscus is pushed round to a tan, which no other template
+       uses, and it sprouts, so her buns are the whole silhouette rather than
+       being flanked by petals. */
     { id: "mary", name: "Mary",
       look: { skin: 1, fringe: 0, back: 5, hairCol: 4,
-              flower: "peony", flowerHue: 28, flowerSat: 46, flowerLight: 40,
+              flower: "hibiscus", flowerHue: 28, flowerSat: 46, flowerLight: 40,
               top: 332,
               clothes: "skirt", feet: "boots", hold: "trowel",
               tints: { clothes: 0, feet: 0 } } },
@@ -272,7 +290,7 @@
                  same white the ruff, the face and the torso measured within
                  five values of each other and the whole figure came out as
                  one white blob with a pair of boots under it. */
-              flower: "peony", flowerSat: 6, flowerLight: 94,
+              flower: "orchid", flowerSat: 6, flowerLight: 94,
               top: 0, topS: 0, topL: 86,
               clothes: null, neck: "scarf", feet: "boots",
               tints: { neck: 3, feet: 7 } } },
@@ -314,7 +332,7 @@
              "a very good biscuit", "whatever is in the fridge"] },
     { key: "bloom", label: "The flower you would plant every day",
       opts: ["daisy", "tulip", "rose", "sunflower",
-             "lily", "peony", "poppy", "lavender"] }
+             "lily", "orchid", "hibiscus", "lavender"] }
   ];
   var ABOUT_NOTE = "In your own words";
   var ABOUT_MAX = 120;

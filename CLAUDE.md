@@ -94,6 +94,80 @@ So grepping `sakura` finds the data and never the rendering code.
 - **The orchid's chip colour changed with its status.** It was `--lightsky` while it was hidden and nothing ever showed it; a pickable orchid gets an orchid purple.
 - **A CACHED SKETCH WASTED A CHECK AGAIN**, on the shared garden's picker this time. `fetch(url, {cache:"reload"})` on the script followed by a reload is the fix, and reading the live value back is the only way to know.
 
+##### THE ORCHID'S LIP SITS IN THE MIDDLE NOW, and the last peonies are gone
+
+The swap above left the orchid drawn exactly as it had been while it was
+hidden, and the thing nobody had looked at was its CENTRE. It hung off the
+bottom of the flower; it now sits across the middle, with the reference's own
+shape. Separately, peony and poppy were out of every picker but still showing
+in five places the pickers do not reach.
+
+- **THE LIP WAS THREE LOBES ALL POINTING DOWNWARDS**, at 62, 118 and 90
+  degrees, so every part of it painted BELOW the origin: measured at R 150 its
+  centre of mass sat at +0.254 Ro against a flower whose own painted middle is
+  at -0.177 Ro, which is 52 percent of the way from the middle to the bottom
+  edge. It reads as a pendant hanging off the petals rather than as the middle
+  of the flower.
+- **WHAT THE REFERENCE ACTUALLY SHOWS IS TWO ARMS THAT RISE.** That is the
+  whole of the fix and it is why moving the old shape up would not have done
+  it: the arms carry magenta ABOVE the junction where the two broad petals
+  meet, which is what makes the assembly read as centred on the flower. They
+  are at -68 and -112, 22 degrees off vertical, anchored exactly at the
+  origin, with a pale column tip between them, a narrow column bar, and a
+  rounded lower lip of two ellipses. Centre of mass is +0.057 Ro now and the
+  lip spans -0.286 to +0.271, so it crosses the middle instead of hanging
+  under it.
+- **THE COLUMN TIP HAD TO GAIN COLOUR.** At `sat * 0.35, light + 26` it is
+  effectively white, and surrounded by the arms it read as a HOLE punched in
+  the lip rather than as the column. It is `sat * 0.60, light + 20`, a soft
+  pink that still reads as the palest thing on the flower.
+- **NOTHING HAD TO BE RE-MEASURED, AND THAT WAS CHECKED RATHER THAN ASSUMED.**
+  The lip is entirely interior, so the painted box is identical before and
+  after: `l -1.04, r 1.033, t -1.28, b 0.827` of R both times, which is
+  `BLOOM_METRICS.orchid` exactly, and `BLOOM_BOX` and `HALO_BOX` both still
+  hold. **Measure the box on any interior change anyway**; it is one run and
+  it is the difference between knowing and hoping.
+- **`lobe` GAINED AN `oy`, which is the only signature change in the seven.**
+  It translates in FLOWER space before rotating, so a part can be anchored
+  somewhere other than the origin. The catalogue copy folds it into its own
+  `cx, cy` translate.
+- **THE SEVEN COPIES WERE GENERATED FROM ONE DEFINITION**, the way the
+  connected tulip and the hibiscus were, with one emitter per call style:
+  p5 globals, p5 graphics, the bouquet's `ctx`, and `index.html`'s two compact
+  blocks. Note that the two p5 families and the bouquet take ellipse
+  DIAMETERS and the two `index.html` blocks take RADII.
+- **THE RING NEEDED THE ORCHID'S ORIGIN MOVED, and it is the biggest shift of
+  the eight.** The orchid paints 1.28 R above its origin and 0.83 below, so
+  its middle sits 0.23 R high, which at the ring's R of 0.30 size is 14px up a
+  210px slot. `cy` is `size*0.568` for it and `size*0.508` for the hibiscus.
+  Verified by reading every ring canvas back: all eight painted centres now
+  land between 0.478 and 0.500 of their slot.
+- **WHERE THE LAST PEONIES WERE**, and none of them was a picker: the shared
+  garden card's middle bloom on the landing page (putu's, the purple of its
+  three), the hero drafts' palette and the two journal objects that use it,
+  both example bouquets, the avatar studio's flower list and two of its five
+  templates, and the modal's fallback SVGs.
+- **THE DRAWING CODE STAYS. Retired, not deleted, as before.** A peony planted
+  before the swap still draws and a bouquet link naming one still opens, which
+  is the rule the swap was made under and the reason the ring's own peony
+  branch was kept beside the two new ones.
+- **THE HIBISCUS CANNOT RING A FACE, AND IT IS THE THIRD SPECIES THAT CANNOT.**
+  As an avatar hood at R 88 the petals landed at 84 with everything else and
+  the bonnet looked right; what it also did was send the stamen column, at
+  1.13 R the longest thing any of the twelve paints, out from behind the head
+  and down across the shoulder, ending in its stigma over the arm. It reads as
+  a stray object laid on the figure. Dropping the column would mean a new
+  argument in all seven copies of `drawHibiscus`, and the column is what names
+  the species in the guide, so the hibiscus SPROUTS instead, which is the same
+  answer the tulip and the lavender already get. The orchid rings the face at
+  R 80 with `dy` 18, which lands every tip within a pixel of 84.
+- **THE SPROUT SENTENCE MOVED ONTO THE TABLE THAT DECIDES THE DRAWING.** The
+  picker printed one line for every sprout, "has no ring of petals to sit
+  inside", and with three sprouts that is now wrong for whichever it was not
+  written for: the hibiscus HAS a ring of petals and sprouts for the column.
+  Each sprout entry in `HOOD` carries its own `note`, and the panel's own
+  heading went from six ringing the face to five.
+
 #### The peony and the poppy
 
 **THE LOTUS AND THE SAKURA ARE OUT OF THE PICKERS. The peony took the lotus's place and the poppy took the sakura's**, with their meanings, keywords, mood mappings, hues, chips and catalogue tiles. Nothing else about the eight moved.
@@ -1442,7 +1516,7 @@ Headings on the garden pages come from two places. `.gg-title` and `#tips-card h
 - **WHERE IT OPENS, and the order matters.** A `?t=` from the landing page wins, since somebody pressed that gardener on purpose; otherwise a gardener already kept opens the STUDIO wearing them, because coming back is an edit; only a first visit sees the gallery.
 - **THE DONE PAGE CARRIES THE FIGURE.** It said "your gardener" over a card with no gardener on it, which is the one screen where the figure is the whole point.
 
-**FIVE TEMPLATES, AND THEY LIVE IN `avatar-draw.js` RATHER THAN ON EITHER PAGE THAT SHOWS THEM.** The landing page draws them in a row under the three garden cards and the build page opens on the same five as a gallery, so a look written in two files would be two rows that drift; `avatar-draw.js` is the one file both pages already load. They are unlike each other in every slot rather than one gardener in five colours, and **both SPROUT species are among them**, since a flower on a stem looks unlike the six that ring a face and a gallery of rings alone would hide half the set. A blank sixth tile, "Build your own", is IN the grid rather than a link under it, which is the bouquet's rule: starting from nothing is one of the six choices rather than the thing you fall back to.
+**FIVE TEMPLATES, AND THEY LIVE IN `avatar-draw.js` RATHER THAN ON EITHER PAGE THAT SHOWS THEM.** The landing page draws them in a row under the three garden cards and the build page opens on the same five as a gallery, so a look written in two files would be two rows that drift; `avatar-draw.js` is the one file both pages already load. They are unlike each other in every slot rather than one gardener in five colours, and **a SPROUT species is among them**, twice over since the hibiscus joined them, because a flower on a stem looks unlike the five that ring a face and a gallery of rings alone would hide half the set. A blank sixth tile, "Build your own", is IN the grid rather than a link under it, which is the bouquet's rule: starting from nothing is one of the six choices rather than the thing you fall back to.
 
 - **A GARDENER IS SOMEBODY, NOT AN OUTFIT: four questions and one free line, on a SIXTH tab.** Favourite thing to do, cosiest place, favourite snack, and the flower you would plant every day, then a line in your own words. It is the only step that changes nothing about the drawing.
 
@@ -1465,10 +1539,10 @@ Headings on the garden pages come from two places. `.gg-title` and `#tips-card h
 - **THE SUNFLOWER IS THE ONE THAT HAS TO BE COMPROMISED, and it is why R is 70 there rather than 96.** Its disc is as wide as its petals are long, so at a radius that put its tips with the others the disc came out at 48 against a 44 face and ringed it in dark olive, which is the "dark collar" the first attempt was abandoned for. At 70 the disc leaves a **three pixel rim**, which reads as an outline rather than a collar, and the tips land at 94.
 - **`dy` is the peony's alone.** Its painted box is deliberately asymmetric, 0.08R high, so it needs pushing down 8px to sit centred on the face. Everything else is 0.
 - **`petal()`, the stylised petal routine, is DELETED.** Do not reintroduce it: the ring of blobs is what it produced both times.
-- **THE PEONY IS 92 AND EVERY OTHER RING SPECIES IS 84, and it is the second of the eight to need a figure of its own.** Its painted box runs -1.00 to +0.84 of R, the asymmetry `BLOOM_BOX` already records, so at the shared R it stood 154 pixels tall against the others' 168 and read as a smaller flower on the same head. 92 puts its span back on theirs. `dy` stays 7, which is the 0.08 R its own drawing sits above its origin, and it is the only species that has one.
+- **THE ORCHID IS 80 WITH A `dy` OF 18 AND EVERY OTHER RING SPECIES IS 84, and it is the only one of the eight that needs both numbers.** Its painted box runs -1.28 to +0.83 of R, the most lopsided in the set, so at the shared R it would stand 177 pixels tall against the others' 168 AND sit 18 off centre. 80 puts its span on theirs and `dy` is its own box's offset; together they land every tip within a pixel of 84, top 84.4, bottom 84.2, sides 83. (The retired peony was the earlier case: 92 and a `dy` of 7, for the 0.08 R its outer ring sits above its origin.)
 - **RE-TUNE THE SIX `R` VALUES if any species' 2D drawing changes**, the same rule `BLOOM_BOX`, `HALO_BOX` and `BLOOM_METRICS` already carry.
 
-- **TWO OF THE EIGHT GROW INSTEAD OF BEING WORN, and the sprout references are what fixed them.** A tulip is a closed cup and lavender is a spike, so neither has a ring of petals to put a face inside. Worn on top they read as **a chef's hat and a spiky crown**; an inverted tulip and a fan of three spikes were both tried and both failed. They now get a plain cowl round the face and the flower on a short stem out of the crown, with two leaves on it, which is what makes it a sprout rather than a flower taped to a head. **Those two ARE `drawSpeciesBloom`**, since on a stem that is exactly what it draws.
+- **THREE OF THE EIGHT GROW INSTEAD OF BEING WORN, and they do NOT all grow for the same reason.** A tulip is a closed cup and lavender is a spike, so neither has a ring of petals to put a face inside. The hibiscus has one and still sprouts: its stamen column reaches 1.13 R, past every petal, and as a hood that column came out from behind the head and lay across the shoulder. Each sprout entry in `HOOD` therefore carries its own `note`, which is the sentence the picker prints, because one line written for all three is wrong about whichever it was not written for. Worn on top they read as **a chef's hat and a spiky crown**; an inverted tulip and a fan of three spikes were both tried and both failed. They now get a plain cowl round the face and the flower on a short stem out of the crown, with two leaves on it, which is what makes it a sprout rather than a flower taped to a head. **Those two ARE `drawSpeciesBloom`**, since on a stem that is exactly what it draws.
 - **THE HEAD SITS ON THE BODY, it does not hover over it.** With the body at `y: 188` the face's own bottom edge was 162 and the body began 26px below it, so the background showed between them and the figure read as a head balanced on a separate object. There is no neck at all, which is how every one of the references is built.
 - **TWO SMALL HANDS AND NO ARMS.** That is what "arms behind the body" means here and what the sprout characters do: a rounded hand at each side with the limb hidden. It also removes the stick arms, which read as twigs.
 - **THE LEGS ARE 25 APART, NOT 19, and that is the shoes' doing rather than the legs'.** At 19 the two shoes were 26 wide on centres 19 apart, so they overlapped by 6 and the feet read as one dark block. The leg spacing is set by whatever has to stand on it.
