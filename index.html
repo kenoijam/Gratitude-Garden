@@ -549,6 +549,101 @@
       ctx.beginPath(); ctx.arc(0,0,R*.135,0,Math.PI*2); ctx.fill();
     }
 
+    function drawHibiscus(R,hue,sat,light){
+  ctx.save();
+  ctx.fillStyle=hsl(hue,Math.min(100,sat),Math.max(10,Math.min(96,light-2)));
+  ctx.beginPath(); ctx.ellipse(R*0,R*-0.44,R*0.46,R*0.53,0,0,Math.PI*2); ctx.fill();
+  ctx.restore();
+  ctx.save(); ctx.rotate(72*Math.PI/180);
+  ctx.fillStyle=hsl(hue,Math.min(100,sat),Math.max(10,Math.min(96,light-2)));
+  ctx.beginPath(); ctx.ellipse(R*0,R*-0.44,R*0.46,R*0.53,0,0,Math.PI*2); ctx.fill();
+  ctx.restore();
+  ctx.save(); ctx.rotate(144*Math.PI/180);
+  ctx.fillStyle=hsl(hue,Math.min(100,sat),Math.max(10,Math.min(96,light-2)));
+  ctx.beginPath(); ctx.ellipse(R*0,R*-0.44,R*0.46,R*0.53,0,0,Math.PI*2); ctx.fill();
+  ctx.restore();
+  ctx.save(); ctx.rotate(216*Math.PI/180);
+  ctx.fillStyle=hsl(hue,Math.min(100,sat),Math.max(10,Math.min(96,light-2)));
+  ctx.beginPath(); ctx.ellipse(R*0,R*-0.44,R*0.46,R*0.53,0,0,Math.PI*2); ctx.fill();
+  ctx.restore();
+  ctx.save(); ctx.rotate(288*Math.PI/180);
+  ctx.fillStyle=hsl(hue,Math.min(100,sat),Math.max(10,Math.min(96,light-2)));
+  ctx.beginPath(); ctx.ellipse(R*0,R*-0.44,R*0.46,R*0.53,0,0,Math.PI*2); ctx.fill();
+  ctx.restore();
+  ctx.save();
+  ctx.fillStyle=hsl(hue,Math.min(100,sat+14),Math.max(10,Math.min(96,light-14)));
+  ctx.beginPath(); ctx.ellipse(R*0,R*-0.45,R*0.0225,R*0.35,0,0,Math.PI*2); ctx.fill();
+  ctx.restore();
+  ctx.save(); ctx.rotate(72*Math.PI/180);
+  ctx.fillStyle=hsl(hue,Math.min(100,sat+14),Math.max(10,Math.min(96,light-14)));
+  ctx.beginPath(); ctx.ellipse(R*0,R*-0.45,R*0.0225,R*0.35,0,0,Math.PI*2); ctx.fill();
+  ctx.restore();
+  ctx.save(); ctx.rotate(144*Math.PI/180);
+  ctx.fillStyle=hsl(hue,Math.min(100,sat+14),Math.max(10,Math.min(96,light-14)));
+  ctx.beginPath(); ctx.ellipse(R*0,R*-0.45,R*0.0225,R*0.35,0,0,Math.PI*2); ctx.fill();
+  ctx.restore();
+  ctx.save(); ctx.rotate(216*Math.PI/180);
+  ctx.fillStyle=hsl(hue,Math.min(100,sat+14),Math.max(10,Math.min(96,light-14)));
+  ctx.beginPath(); ctx.ellipse(R*0,R*-0.45,R*0.0225,R*0.35,0,0,Math.PI*2); ctx.fill();
+  ctx.restore();
+  ctx.save(); ctx.rotate(288*Math.PI/180);
+  ctx.fillStyle=hsl(hue,Math.min(100,sat+14),Math.max(10,Math.min(96,light-14)));
+  ctx.beginPath(); ctx.ellipse(R*0,R*-0.45,R*0.0225,R*0.35,0,0,Math.PI*2); ctx.fill();
+  ctx.restore();
+  ctx.save();
+  ctx.fillStyle=hsl(hue,Math.min(100,sat+16),Math.max(10,Math.min(96,light-24)));
+  ctx.beginPath(); ctx.ellipse(R*0,R*0,R*0.29,R*0.29,0,0,Math.PI*2); ctx.fill();
+  ctx.restore();
+  ctx.save();
+  ctx.fillStyle=hsl(hue,Math.min(100,sat+22),Math.max(10,Math.min(96,light-34)));
+  ctx.beginPath(); ctx.ellipse(R*0,R*0,R*0.16,R*0.16,0,0,Math.PI*2); ctx.fill();
+  ctx.restore();
+  ctx.save(); ctx.rotate(128*Math.PI/180);
+  ctx.fillStyle=hsl(hue,Math.min(100,sat*0.42),Math.max(10,Math.min(96,light+24)));
+  ctx.beginPath(); ctx.ellipse(R*0,R*-0.7,R*0.029,R*0.61,0,0,Math.PI*2); ctx.fill();
+  ctx.restore();
+  ctx.save(); ctx.rotate(128*Math.PI/180);
+  ctx.fillStyle=hsl(46,74,60);
+  ctx.beginPath(); ctx.ellipse(R*0.04,R*-0.95,R*0.0425,R*0.0425,0,0,Math.PI*2); ctx.fill();
+  ctx.restore();
+  ctx.save(); ctx.rotate(128*Math.PI/180);
+  ctx.fillStyle=hsl(46,74,60);
+  ctx.beginPath(); ctx.ellipse(R*-0.04,R*-1.03,R*0.0425,R*0.0425,0,0,Math.PI*2); ctx.fill();
+  ctx.restore();
+  ctx.save(); ctx.rotate(128*Math.PI/180);
+  ctx.fillStyle=hsl(46,74,60);
+  ctx.beginPath(); ctx.ellipse(R*0.04,R*-1.11,R*0.0425,R*0.0425,0,0,Math.PI*2); ctx.fill();
+  ctx.restore();
+  ctx.save(); ctx.rotate(128*Math.PI/180);
+  ctx.fillStyle=hsl(46,74,60);
+  ctx.beginPath(); ctx.ellipse(R*-0.04,R*-1.19,R*0.0425,R*0.0425,0,0,Math.PI*2); ctx.fill();
+  ctx.restore();
+  ctx.save(); ctx.rotate(128*Math.PI/180);
+  ctx.fillStyle=hsl(46,74,60);
+  ctx.beginPath(); ctx.ellipse(R*0,R*-1.26,R*0.0425,R*0.0425,0,0,Math.PI*2); ctx.fill();
+  ctx.restore();
+  ctx.save(); ctx.rotate(128*Math.PI/180);
+  ctx.fillStyle=hsl(hue,Math.min(100,sat+18),Math.max(10,Math.min(96,light-30)));
+  ctx.beginPath(); ctx.ellipse(R*0,R*-1.385,R*0.0475,R*0.0475,0,0,Math.PI*2); ctx.fill();
+  ctx.restore();
+  ctx.save(); ctx.rotate(128*Math.PI/180);
+  ctx.fillStyle=hsl(hue,Math.min(100,sat+18),Math.max(10,Math.min(96,light-30)));
+  ctx.beginPath(); ctx.ellipse(R*0.0713,R*-1.3332,R*0.0475,R*0.0475,0,0,Math.PI*2); ctx.fill();
+  ctx.restore();
+  ctx.save(); ctx.rotate(128*Math.PI/180);
+  ctx.fillStyle=hsl(hue,Math.min(100,sat+18),Math.max(10,Math.min(96,light-30)));
+  ctx.beginPath(); ctx.ellipse(R*0.0441,R*-1.2493,R*0.0475,R*0.0475,0,0,Math.PI*2); ctx.fill();
+  ctx.restore();
+  ctx.save(); ctx.rotate(128*Math.PI/180);
+  ctx.fillStyle=hsl(hue,Math.min(100,sat+18),Math.max(10,Math.min(96,light-30)));
+  ctx.beginPath(); ctx.ellipse(R*-0.0441,R*-1.2493,R*0.0475,R*0.0475,0,0,Math.PI*2); ctx.fill();
+  ctx.restore();
+  ctx.save(); ctx.rotate(128*Math.PI/180);
+  ctx.fillStyle=hsl(hue,Math.min(100,sat+18),Math.max(10,Math.min(96,light-30)));
+  ctx.beginPath(); ctx.ellipse(R*-0.0713,R*-1.3332,R*0.0475,R*0.0475,0,0,Math.PI*2); ctx.fill();
+  ctx.restore();
+    }
+
     function drawPoppy(R,hue,sat,light){
     function petal(ang,d,w,h,s,l){
       ctx.save(); ctx.rotate(ang*Math.PI/180); ctx.translate(0,-d);
@@ -679,8 +774,8 @@
       [476,100,3,  drawRose,     17,350,58,55],   // deep pink rose
       [608,150,4,  drawSunflower,23, 18,62,60],   // orange sunflower
       [735,112,3.5,drawLily,     17,185,42,70],   // teal lily
-      [858, 96,3,  drawPoppy,    16,356,60,58],   // red poppy
-      [985,142,4,  drawPeony,    17,326,52,72],   // pink peony
+      [858, 96,3,  drawHibiscus, 16,352,62,58],   // red hibiscus
+      [985,142,4,  drawOrchid,   17,305,50,68],   // orchid
       [1105,108,3, drawLavender, 14,268,56,68],   // lavender
       [1226,136,3.5,drawSunflower,21, 62,58,64],  // lemon sunflower
       [1340, 92,3, drawDaisy,    15, 52,52,74]    // butter daisy
@@ -1079,7 +1174,7 @@
         <canvas class="flower-canvas" data-flower="rose" data-hue="350" data-sat="55" data-light="55" width="80" height="100"></canvas>
       </div>
       <div class="flower-name">Rose</div>
-      <div class="flower-mood">Love and depth</div>
+      <div class="flower-mood">Love and connection</div>
       <span class="flower-chip chip-rose">love, heart, care</span>
     </div>
 
@@ -1089,18 +1184,18 @@
         <canvas class="flower-canvas" data-flower="sunflower" data-hue="48" data-sat="62" data-light="65" width="80" height="100"></canvas>
       </div>
       <div class="flower-name">Sunflower</div>
-      <div class="flower-mood">Hope and resilience</div>
+      <div class="flower-mood">Joy and warmth</div>
       <span class="flower-chip chip-sun">happy, sun, bright</span>
     </div>
 
-    <!-- PEONY -->
-    <div class="flower-tile reveal" onclick="openFlowerModal('peony')">
+    <!-- ORCHID -->
+    <div class="flower-tile reveal" onclick="openFlowerModal('orchid')">
       <div class="flower-svg-wrap">
-        <canvas class="flower-canvas" data-flower="peony" data-hue="320" data-sat="50" data-light="70" width="80" height="100"></canvas>
+        <canvas class="flower-canvas" data-flower="orchid" data-hue="305" data-sat="50" data-light="68" width="80" height="100"></canvas>
       </div>
-      <div class="flower-name">Peony</div>
-      <div class="flower-mood">Honour and strength</div>
-      <span class="flower-chip chip-peony">strong, enduring, persist</span>
+      <div class="flower-name">Orchid</div>
+      <div class="flower-mood">Strength and resilience</div>
+      <span class="flower-chip chip-orchid">strong, growth, came through</span>
     </div>
 
     <!-- LAVENDER -->
@@ -1119,7 +1214,7 @@
         <canvas class="flower-canvas" data-flower="tulip" data-hue="232" data-sat="52" data-light="62" width="80" height="100"></canvas>
       </div>
       <div class="flower-name">Tulip</div>
-      <div class="flower-mood">Renewal and change</div>
+      <div class="flower-mood">Hope and new beginnings</div>
       <span class="flower-chip chip-tulip">hope, new, beginning</span>
     </div>
 
@@ -1129,7 +1224,7 @@
         <canvas class="flower-canvas" data-flower="daisy" data-hue="25" data-sat="54" data-light="68" width="80" height="100"></canvas>
       </div>
       <div class="flower-name">Daisy</div>
-      <div class="flower-mood">Simplicity and joy</div>
+      <div class="flower-mood">Simplicity and contentment</div>
       <span class="flower-chip chip-daisy">calm, content, gentle</span>
     </div>
 
@@ -1139,18 +1234,18 @@
         <canvas class="flower-canvas" data-flower="lily" data-hue="190" data-sat="42" data-light="70" width="80" height="100"></canvas>
       </div>
       <div class="flower-name">Lily</div>
-      <div class="flower-mood">Peace and restoration</div>
-      <span class="flower-chip chip-lily">tired, rest, recover</span>
+      <div class="flower-mood">Trust and faith</div>
+      <span class="flower-chip chip-lily">trust, faith, held</span>
     </div>
 
-    <!-- POPPY -->
-    <div class="flower-tile reveal" onclick="openFlowerModal('poppy')">
+    <!-- HIBISCUS -->
+    <div class="flower-tile reveal" onclick="openFlowerModal('hibiscus')">
       <div class="flower-svg-wrap">
-        <canvas class="flower-canvas" data-flower="poppy" data-hue="8" data-sat="60" data-light="57" width="80" height="100"></canvas>
+        <canvas class="flower-canvas" data-flower="hibiscus" data-hue="352" data-sat="62" data-light="58" width="80" height="100"></canvas>
       </div>
-      <div class="flower-name">Poppy</div>
-      <div class="flower-mood">Memory and reflection</div>
-      <span class="flower-chip chip-poppy">grateful, memory, notice</span>
+      <div class="flower-name">Hibiscus</div>
+      <div class="flower-mood">Presence and impermanence</div>
+      <span class="flower-chip chip-hibiscus">fleeting, present, noticing</span>
     </div>
 
   </div>
@@ -1390,17 +1485,19 @@
 
   // FIX 4: Flower modal data
   const flowerData = {
-    rose:      { name: 'Rose',      meaning: 'Love & depth',            keywords: ['love','heart','care','longing','connection'],  quote: 'Feeling deeply is a kind of courage. Your heart is open and that is a beautiful thing.' },
-    sunflower: { name: 'Sunflower', meaning: 'Hope & resilience',        keywords: ['happy','joy','excited','positive','energized'], quote: 'Even on the cloudiest days, you are still reaching toward the light. That counts for a lot.' },
-    peony:     { name: 'Peony',     meaning: 'Honour & strength',  keywords: ['difficult','struggling','strong','persevering','kept going'], quote: 'You moved through something hard today. That quiet strength matters more than you know.' },
+    rose:      { name: 'Rose',      meaning: 'Love & connection',        keywords: ['love','heart','care','longing','connection'],  quote: 'Feeling deeply is a kind of courage. Your heart is open and that is a beautiful thing.' },
+    sunflower: { name: 'Sunflower', meaning: 'Joy & warmth',             keywords: ['happy','joy','excited','positive','energized'], quote: 'Something good happened and you noticed it. Naming it is what makes it stay.' },
+    orchid:    { name: 'Orchid',    meaning: 'Strength & resilience',    keywords: ['difficult','struggling','strong','persevering','came through'], quote: 'You moved through something hard, and you are not the same on the other side of it. That is growth.' },
     lavender:  { name: 'Lavender',  meaning: 'Calm & safety',            keywords: ['anxious','stressed','nervous','tense','worried'],  quote: 'You made it through the noise today. Take a breath. You are safe, and you are okay.' },
-    tulip:     { name: 'Tulip',     meaning: 'Renewal & change',         keywords: ['change','new','beginning','fresh','transition'],  quote: 'Something new is taking root in you. Trust the direction you are growing in.' },
-    daisy:     { name: 'Daisy',     meaning: 'Simplicity & joy',        keywords: ['calm','content','gentle','quiet','peaceful'],    quote: 'There is real wisdom in finding beauty in the ordinary. Today was enough, and so are you.' },
-    lily:      { name: 'Lily',      meaning: 'Peace & restoration',      keywords: ['tired','rest','recover','exhausted','recharging'], quote: 'Rest is not giving up. It is how you come back to yourself. You are allowed to slow down.' },
+    tulip:     { name: 'Tulip',     meaning: 'Hope & new beginnings',    keywords: ['change','new','beginning','fresh','transition'],  quote: 'Something new is taking root in you. Trust the direction you are growing in.' },
+    daisy:     { name: 'Daisy',     meaning: 'Simplicity & contentment', keywords: ['calm','content','gentle','quiet','peaceful'],    quote: 'There is real wisdom in finding beauty in the ordinary. Today was enough, and so are you.' },
+    lily:      { name: 'Lily',      meaning: 'Trust & faith',            keywords: ['tired','rest','faith','trust','held'], quote: 'You are carried further than you can see. Rest is allowed, and so is believing it will hold.' },
+    hibiscus:  { name: 'Hibiscus',  meaning: 'Presence & impermanence',  keywords: ['grateful','fleeting','noticing','present','while it lasts'], quote: 'Nothing about today was going to stay. You noticed it anyway, and that is the whole of it.' },
+    /* RETIRED AND HIDDEN: no tile in the catalogue above, so nothing opens
+       these, and they are kept word for word so a flower already planted as
+       one still says what it meant. See CLAUDE.md. */
+    peony:     { name: 'Peony',     meaning: 'Honour & strength',  keywords: ['difficult','struggling','strong','persevering','kept going'], quote: 'You moved through something hard today. That quiet strength matters more than you know.' },
     poppy:     { name: 'Poppy',     meaning: 'Memory & reflection',  keywords: ['grateful','memory','remember','appreciating','thankful'], quote: 'You noticed something worth holding onto today. That kind of awareness is rare and beautiful.' },
-    /* HIDDEN: no tile in the catalogue above, so nothing opens these. Kept so
-       the florist orderable pair stays complete and ready. See CLAUDE.md. */
-    orchid:    { name: 'Orchid',    meaning: 'Grace & endurance',        keywords: ['difficult','struggling','strong','persevering','held it together'], quote: 'You held yourself together today, and that took more than anyone saw. That is its own kind of strength.' },
     chrysanth: { name: 'Chrysanthemum', meaning: 'Reflection & presence', keywords: ['grateful','memory','notice','appreciating','thankful'], quote: 'You noticed something worth holding onto today. That kind of awareness is rare and beautiful.' }
   };
 
@@ -1415,8 +1512,8 @@
     poppy: '<svg width="120" height="120" viewBox="-40 -40 80 80" xmlns="http://www.w3.org/2000/svg"><line x1="0" y1="10" x2="0" y2="38" stroke="#3d7a60" stroke-width="2.5" stroke-linecap="round"/><ellipse rx="8.9" ry="13.4" fill="#e63946" transform="rotate(0) translate(0,-12.6)"/><ellipse rx="8.9" ry="13.4" fill="#d62839" transform="rotate(90) translate(0,-12.6)"/><ellipse rx="8.9" ry="13.4" fill="#e63946" transform="rotate(180) translate(0,-12.6)"/><ellipse rx="8.9" ry="13.4" fill="#d62839" transform="rotate(270) translate(0,-12.6)"/><ellipse rx="5.6" ry="7" fill="#2b1220"/><rect x="-4.2" y="-1.8" width="8.4" height="0.6" fill="#4a2033"/><rect x="-4.2" y="-0.3" width="8.4" height="0.6" fill="#4a2033"/><rect x="-4.2" y="1.2" width="8.4" height="0.6" fill="#4a2033"/><circle cx="3.9" cy="-6.8" r="0.9" fill="#0c0509"/><circle cx="7.8" cy="-0.0" r="0.9" fill="#0c0509"/><circle cx="3.9" cy="6.8" r="0.9" fill="#0c0509"/><circle cx="-3.9" cy="6.8" r="0.9" fill="#0c0509"/><circle cx="-7.8" cy="0.0" r="0.9" fill="#0c0509"/><circle cx="-3.9" cy="-6.8" r="0.9" fill="#0c0509"/></svg>'
   };
 
-  const chipClasses = { rose:'chip-rose', sunflower:'chip-sun', peony:'chip-peony', lavender:'chip-lav', tulip:'chip-tulip', daisy:'chip-daisy', lily:'chip-lily', poppy:'chip-poppy',
-                        orchid:'chip-orchid', chrysanth:'chip-mum' };   /* hidden pair */
+  const chipClasses = { rose:'chip-rose', sunflower:'chip-sun', orchid:'chip-orchid', lavender:'chip-lav', tulip:'chip-tulip', daisy:'chip-daisy', lily:'chip-lily', hibiscus:'chip-hibiscus',
+                        peony:'chip-peony', poppy:'chip-poppy', chrysanth:'chip-mum' };   /* retired and hidden */
 
   function openFlowerModal(id) {
     const d = flowerData[id];
@@ -1748,6 +1845,101 @@
     ctx.beginPath(); ctx.arc(0,0,R*.135,0,Math.PI*2); ctx.fill(); ctx.restore();
   }
 
+  function drawHibiscus(ctx,cx,cy,R,hue,sat,light){
+  ctx.save(); ctx.translate(cx,cy);
+  ctx.fillStyle=hsl(hue,Math.min(100,sat),Math.max(10,Math.min(96,light-2)));
+  ctx.beginPath(); ctx.ellipse(R*0,R*-0.44,R*0.46,R*0.53,0,0,Math.PI*2); ctx.fill();
+  ctx.restore();
+  ctx.save(); ctx.translate(cx,cy); ctx.rotate(72*Math.PI/180);
+  ctx.fillStyle=hsl(hue,Math.min(100,sat),Math.max(10,Math.min(96,light-2)));
+  ctx.beginPath(); ctx.ellipse(R*0,R*-0.44,R*0.46,R*0.53,0,0,Math.PI*2); ctx.fill();
+  ctx.restore();
+  ctx.save(); ctx.translate(cx,cy); ctx.rotate(144*Math.PI/180);
+  ctx.fillStyle=hsl(hue,Math.min(100,sat),Math.max(10,Math.min(96,light-2)));
+  ctx.beginPath(); ctx.ellipse(R*0,R*-0.44,R*0.46,R*0.53,0,0,Math.PI*2); ctx.fill();
+  ctx.restore();
+  ctx.save(); ctx.translate(cx,cy); ctx.rotate(216*Math.PI/180);
+  ctx.fillStyle=hsl(hue,Math.min(100,sat),Math.max(10,Math.min(96,light-2)));
+  ctx.beginPath(); ctx.ellipse(R*0,R*-0.44,R*0.46,R*0.53,0,0,Math.PI*2); ctx.fill();
+  ctx.restore();
+  ctx.save(); ctx.translate(cx,cy); ctx.rotate(288*Math.PI/180);
+  ctx.fillStyle=hsl(hue,Math.min(100,sat),Math.max(10,Math.min(96,light-2)));
+  ctx.beginPath(); ctx.ellipse(R*0,R*-0.44,R*0.46,R*0.53,0,0,Math.PI*2); ctx.fill();
+  ctx.restore();
+  ctx.save(); ctx.translate(cx,cy);
+  ctx.fillStyle=hsl(hue,Math.min(100,sat+14),Math.max(10,Math.min(96,light-14)));
+  ctx.beginPath(); ctx.ellipse(R*0,R*-0.45,R*0.0225,R*0.35,0,0,Math.PI*2); ctx.fill();
+  ctx.restore();
+  ctx.save(); ctx.translate(cx,cy); ctx.rotate(72*Math.PI/180);
+  ctx.fillStyle=hsl(hue,Math.min(100,sat+14),Math.max(10,Math.min(96,light-14)));
+  ctx.beginPath(); ctx.ellipse(R*0,R*-0.45,R*0.0225,R*0.35,0,0,Math.PI*2); ctx.fill();
+  ctx.restore();
+  ctx.save(); ctx.translate(cx,cy); ctx.rotate(144*Math.PI/180);
+  ctx.fillStyle=hsl(hue,Math.min(100,sat+14),Math.max(10,Math.min(96,light-14)));
+  ctx.beginPath(); ctx.ellipse(R*0,R*-0.45,R*0.0225,R*0.35,0,0,Math.PI*2); ctx.fill();
+  ctx.restore();
+  ctx.save(); ctx.translate(cx,cy); ctx.rotate(216*Math.PI/180);
+  ctx.fillStyle=hsl(hue,Math.min(100,sat+14),Math.max(10,Math.min(96,light-14)));
+  ctx.beginPath(); ctx.ellipse(R*0,R*-0.45,R*0.0225,R*0.35,0,0,Math.PI*2); ctx.fill();
+  ctx.restore();
+  ctx.save(); ctx.translate(cx,cy); ctx.rotate(288*Math.PI/180);
+  ctx.fillStyle=hsl(hue,Math.min(100,sat+14),Math.max(10,Math.min(96,light-14)));
+  ctx.beginPath(); ctx.ellipse(R*0,R*-0.45,R*0.0225,R*0.35,0,0,Math.PI*2); ctx.fill();
+  ctx.restore();
+  ctx.save(); ctx.translate(cx,cy);
+  ctx.fillStyle=hsl(hue,Math.min(100,sat+16),Math.max(10,Math.min(96,light-24)));
+  ctx.beginPath(); ctx.ellipse(R*0,R*0,R*0.29,R*0.29,0,0,Math.PI*2); ctx.fill();
+  ctx.restore();
+  ctx.save(); ctx.translate(cx,cy);
+  ctx.fillStyle=hsl(hue,Math.min(100,sat+22),Math.max(10,Math.min(96,light-34)));
+  ctx.beginPath(); ctx.ellipse(R*0,R*0,R*0.16,R*0.16,0,0,Math.PI*2); ctx.fill();
+  ctx.restore();
+  ctx.save(); ctx.translate(cx,cy); ctx.rotate(128*Math.PI/180);
+  ctx.fillStyle=hsl(hue,Math.min(100,sat*0.42),Math.max(10,Math.min(96,light+24)));
+  ctx.beginPath(); ctx.ellipse(R*0,R*-0.7,R*0.029,R*0.61,0,0,Math.PI*2); ctx.fill();
+  ctx.restore();
+  ctx.save(); ctx.translate(cx,cy); ctx.rotate(128*Math.PI/180);
+  ctx.fillStyle=hsl(46,74,60);
+  ctx.beginPath(); ctx.ellipse(R*0.04,R*-0.95,R*0.0425,R*0.0425,0,0,Math.PI*2); ctx.fill();
+  ctx.restore();
+  ctx.save(); ctx.translate(cx,cy); ctx.rotate(128*Math.PI/180);
+  ctx.fillStyle=hsl(46,74,60);
+  ctx.beginPath(); ctx.ellipse(R*-0.04,R*-1.03,R*0.0425,R*0.0425,0,0,Math.PI*2); ctx.fill();
+  ctx.restore();
+  ctx.save(); ctx.translate(cx,cy); ctx.rotate(128*Math.PI/180);
+  ctx.fillStyle=hsl(46,74,60);
+  ctx.beginPath(); ctx.ellipse(R*0.04,R*-1.11,R*0.0425,R*0.0425,0,0,Math.PI*2); ctx.fill();
+  ctx.restore();
+  ctx.save(); ctx.translate(cx,cy); ctx.rotate(128*Math.PI/180);
+  ctx.fillStyle=hsl(46,74,60);
+  ctx.beginPath(); ctx.ellipse(R*-0.04,R*-1.19,R*0.0425,R*0.0425,0,0,Math.PI*2); ctx.fill();
+  ctx.restore();
+  ctx.save(); ctx.translate(cx,cy); ctx.rotate(128*Math.PI/180);
+  ctx.fillStyle=hsl(46,74,60);
+  ctx.beginPath(); ctx.ellipse(R*0,R*-1.26,R*0.0425,R*0.0425,0,0,Math.PI*2); ctx.fill();
+  ctx.restore();
+  ctx.save(); ctx.translate(cx,cy); ctx.rotate(128*Math.PI/180);
+  ctx.fillStyle=hsl(hue,Math.min(100,sat+18),Math.max(10,Math.min(96,light-30)));
+  ctx.beginPath(); ctx.ellipse(R*0,R*-1.385,R*0.0475,R*0.0475,0,0,Math.PI*2); ctx.fill();
+  ctx.restore();
+  ctx.save(); ctx.translate(cx,cy); ctx.rotate(128*Math.PI/180);
+  ctx.fillStyle=hsl(hue,Math.min(100,sat+18),Math.max(10,Math.min(96,light-30)));
+  ctx.beginPath(); ctx.ellipse(R*0.0713,R*-1.3332,R*0.0475,R*0.0475,0,0,Math.PI*2); ctx.fill();
+  ctx.restore();
+  ctx.save(); ctx.translate(cx,cy); ctx.rotate(128*Math.PI/180);
+  ctx.fillStyle=hsl(hue,Math.min(100,sat+18),Math.max(10,Math.min(96,light-30)));
+  ctx.beginPath(); ctx.ellipse(R*0.0441,R*-1.2493,R*0.0475,R*0.0475,0,0,Math.PI*2); ctx.fill();
+  ctx.restore();
+  ctx.save(); ctx.translate(cx,cy); ctx.rotate(128*Math.PI/180);
+  ctx.fillStyle=hsl(hue,Math.min(100,sat+18),Math.max(10,Math.min(96,light-30)));
+  ctx.beginPath(); ctx.ellipse(R*-0.0441,R*-1.2493,R*0.0475,R*0.0475,0,0,Math.PI*2); ctx.fill();
+  ctx.restore();
+  ctx.save(); ctx.translate(cx,cy); ctx.rotate(128*Math.PI/180);
+  ctx.fillStyle=hsl(hue,Math.min(100,sat+18),Math.max(10,Math.min(96,light-30)));
+  ctx.beginPath(); ctx.ellipse(R*-0.0713,R*-1.3332,R*0.0475,R*0.0475,0,0,Math.PI*2); ctx.fill();
+  ctx.restore();
+  }
+
   function drawPoppy(ctx,cx,cy,R,hue,sat,light){
     function petal(ang,d,w,h,s,l){
       ctx.save(); ctx.translate(cx,cy); ctx.rotate(ang*Math.PI/180); ctx.translate(0,-d);
@@ -1867,7 +2059,10 @@
   }
 
   var bloomFns={rose:drawRose,sunflower:drawSunflower,lotus:drawLotus,lavender:drawLavender,
-                tulip:drawTulip,daisy:drawDaisy,lily:drawLily,sakura:drawSakura,peony:drawPeony,poppy:drawPoppy,
+                tulip:drawTulip,daisy:drawDaisy,lily:drawLily,hibiscus:drawHibiscus,
+                /* retired from every picker, drawn anyway, so a flower already
+                   planted as one still renders. See CLAUDE.md. */
+                sakura:drawSakura,peony:drawPeony,poppy:drawPoppy,
                 /* hidden from every picker, drawn anyway. See CLAUDE.md. */
                 orchid:drawOrchid,chrysanth:drawChrysanth};
   window._bloomFns = bloomFns; // expose for modal
@@ -1896,10 +2091,14 @@
     daisy:     { l:-1.00, r:0.99, t:-1.00, b:0.99 },
     lily:      { l:-0.94, r:0.93, t:-1.08, b:1.07 },
     sakura:    { l:-1.05, r:1.04, t:-1.11, b:0.99 },
+    /* MEASURED like every row here, at R 100 with the origin at the centre.
+       The hibiscus is the only one in the set wider on one side than the
+       other by a long way, and all of it is the stamen column. */
+    hibiscus:  { l:-0.95, r:1.13, t:-0.97, b:0.92 },
+    orchid:    { l:-1.04, r:1.03, t:-1.28, b:0.83 },
+    /* retired from every picker, measured anyway. See CLAUDE.md. */
     peony:     { l:-0.96, r:0.95, t:-1.00, b:0.84 },
     poppy:     { l:-1.00, r:0.99, t:-1.00, b:0.99 },
-    /* hidden from every picker, measured anyway. See CLAUDE.md. */
-    orchid:    { l:-1.04, r:1.03, t:-1.28, b:0.83 },
     chrysanth: { l:-1.20, r:1.19, t:-1.21, b:1.20 }
   };
 
@@ -1983,8 +2182,18 @@
        so the ring reads as a spectrum rather than as eight flowers that
        happen to be scattered.
 
-         poppy 8, daisy 28, sunflower 48, lily 190, tulip 232, lavender 272,
-         peony 320, rose 350, and back to the poppy.
+         daisy 28, sunflower 48, lily 190, tulip 232, lavender 272,
+         orchid 305, rose 350, hibiscus 352, and back to the daisy.
+
+       THE HIBISCUS AND THE ORCHID TOOK THE POPPY'S AND THE PEONY'S SLOTS, and
+       the wheel survived it with one thing to watch: a hibiscus is red at 352
+       and the rose is red at 350, which is TWO degrees apart and the closest
+       pair the ring has ever carried. They sit at opposite ends of the wheel,
+       a:-112.5 against a:-157.5, so they are never neighbours and the eye
+       never compares them directly; every ADJACENT step still climbs and none
+       is closer than 18 degrees. Moving the hibiscus off red was the other
+       option and it was refused: a hibiscus is red, and the ring is a way of
+       showing eight flowers rather than a promise about the spectrum.
 
        THE PEONY AND THE POPPY REPLACED THE LOTUS AND THE SAKURA, and they
        cost the wheel its green. The lotus had been pushed to 140 precisely
@@ -2005,13 +2214,13 @@
 
        The eight tile canvases below carry the same numbers and must move with
        these, since the popup reads its colour off the tile. */
-    { id:'poppy',     a:-112.5, hue:8,   sat:60, light:57 },
+    { id:'hibiscus',  a:-112.5, hue:352, sat:62, light:58 },
     { id:'daisy',     a:-67.5,  hue:28,  sat:54, light:68 },
     { id:'sunflower', a:-22.5,  hue:48,  sat:62, light:65 },
     { id:'lily',      a: 22.5,  hue:190, sat:42, light:70 },
     { id:'tulip',     a: 67.5,  hue:232, sat:52, light:62 },
     { id:'lavender',  a:112.5,  hue:272, sat:55, light:68 },
-    { id:'peony',     a:157.5,  hue:320, sat:50, light:70 },
+    { id:'orchid',    a:157.5,  hue:305, sat:50, light:68 },
     { id:'rose',      a:-157.5, hue:350, sat:55, light:55 }
   ];
 

@@ -79,36 +79,51 @@ const dayShaperOptions = ["work/school", "relationships", "rest or energy", "a s
 const flowerMeanings = {
   sunflower: {
     keywords: ["happy", "happiness", "joy", "joyful", "excited", "elated", "positive", "energized", "upbeat", "cheerful", "wonderful", "amazing", "thrilled", "delighted", "proud"],
-    meaning: "hope & resilience",
-    quote: "Even on the cloudiest days, you are still reaching toward the light. That counts for a lot."
+    meaning: "joy & warmth",
+    quote: "Something good happened and you noticed it. Naming it is what makes it stay."
   },
   rose: {
     keywords: ["love", "loved", "longing", "heartbreak", "vulnerable", "romantic", "miss", "missed", "hurt", "connection", "relationship", "grief", "loss", "heart", "caring"],
-    meaning: "love & depth",
+    meaning: "love & connection",
     quote: "Feeling deeply is a kind of courage. Your heart is open and that is a beautiful thing."
   },
   daisy: {
     keywords: ["calm", "content", "simple", "okay", "fine", "gentle", "quiet", "peaceful", "neutral", "ordinary", "steady", "balanced", "comfortable", "relaxed", "mellow"],
-    meaning: "simplicity & joy",
+    meaning: "simplicity & contentment",
     quote: "There is real wisdom in finding beauty in the ordinary. Today was enough, and so are you."
   },
   tulip: {
     keywords: ["change", "new", "starting", "beginning", "moving", "fresh", "ready", "transition", "growing", "next chapter", "different", "renewing", "turning point", "opportunity", "stepping"],
-    meaning: "renewal & change",
+    meaning: "hope & new beginnings",
     quote: "Something new is taking root in you. Trust the direction you are growing in."
   },
   lily: {
-    keywords: ["tired", "exhausted", "drained", "resting", "burned out", "burnt out", "heavy", "slow", "recovering", "weary", "fatigued", "sleepy", "needed rest", "low energy", "recharging"],
-    meaning: "peace & restoration",
-    quote: "Rest is not giving up. It is how you come back to yourself. You are allowed to slow down."
+    keywords: ["tired", "exhausted", "drained", "resting", "burned out", "burnt out", "heavy", "slow", "recovering", "weary", "fatigued", "sleepy", "needed rest", "low energy", "recharging", "faith", "believe", "trust", "prayer", "blessed", "held"],
+    meaning: "trust & faith",
+    quote: "You are carried further than you can see. Rest is allowed, and so is believing it will hold."
   },
+  /* HIBISCUS: what is fleeting. A hibiscus bloom opens and is finished inside
+     a day, which is the flower saying the thing the meaning says. */
+  hibiscus: {
+    keywords: ["grateful", "gratitude", "fleeting", "moment", "passing", "temporary", "brief", "noticing", "noticed", "present", "savoured", "savored", "today", "right now", "appreciating", "thankful", "while it lasts", "cherish"],
+    meaning: "presence & impermanence",
+    quote: "Nothing about today was going to stay. You noticed it anyway, and that is the whole of it."
+  },
+  /* RETIRED, NOT DELETED, and the keyword lists follow the rule the pair
+     below already follow: EMPTY, never missing, with the real list parked
+     alongside. `chooseFlowerForMood` reads `.keywords` off entries here, so a
+     removed field throws the moment anybody writes a journal entry. Every
+     flower already planted carries its species, so a peony from last month
+     still draws and still says what it meant. */
   poppy: {
-    keywords: ["grateful", "gratitude", "reflecting", "nostalgic", "memory", "memories", "remember", "remembering", "appreciating", "thankful", "looked back", "bittersweet", "cherish", "noticing", "missed them"],
+    keywords: [],
+    keywordsHidden: ["grateful", "gratitude", "reflecting", "nostalgic", "memory", "memories", "remember", "remembering", "appreciating", "thankful", "looked back", "bittersweet", "cherish", "noticing", "missed them"],
     meaning: "memory & reflection",
     quote: "You noticed something worth holding onto today. That kind of awareness is rare and beautiful."
   },
   peony: {
-    keywords: ["difficult", "struggling", "overwhelmed", "swamped", "pushing through", "accepting", "strong", "despite", "kept going", "still here", "persevering", "surviving", "managing", "enduring", "holding on"],
+    keywords: [],
+    keywordsHidden: ["difficult", "struggling", "overwhelmed", "swamped", "pushing through", "accepting", "strong", "despite", "kept going", "still here", "persevering", "surviving", "managing", "enduring", "holding on"],
     meaning: "honour & strength",
     quote: "You moved through something hard today. That quiet strength matters more than you know."
   },
@@ -122,11 +137,14 @@ const flowerMeanings = {
      `.keywords` off entries here, so a removed or renamed field throws the
      moment anyone writes a journal entry. The real lists are parked alongside
      under `keywordsHidden`, ready to swap back in. */
+  /* THE ORCHID IS PICKABLE NOW, and its keyword list is simply the one that
+     was parked under `keywordsHidden` waiting for it. It was drawn in all
+     seven sites the whole time it was hidden, which is the entire reason
+     turning it on was a data edit rather than a drawing job. */
   orchid: {
-    keywords: [],
-    keywordsHidden: ["difficult", "struggling", "overwhelmed", "swamped", "pushing through", "accepting", "strong", "despite", "kept going", "still here", "persevering", "surviving", "managing", "enduring", "holding on", "held it together", "composed"],
-    meaning: "grace & endurance",
-    quote: "You held yourself together today, and that took more than anyone saw. That is its own kind of strength."
+    keywords: ["difficult", "struggling", "overwhelmed", "swamped", "pushing through", "accepting", "strong", "despite", "kept going", "still here", "persevering", "surviving", "managing", "enduring", "holding on", "held it together", "composed", "grew", "growth", "came through", "survived"],
+    meaning: "strength & resilience",
+    quote: "You moved through something hard, and you are not the same on the other side of it. That is growth."
   },
   /* RETIRED, not deleted, and their keyword lists follow the same rule as the
      pair above: EMPTY, never missing, with the real list parked alongside.
@@ -199,18 +217,18 @@ const ratingFlowerMap = {
   "calm":       "daisy",
   "happy":      "sunflower",
   "tired":      "lily",
-  "stressed":   "peony",
+  "stressed":   "orchid",
   "anxious":    "lavender",
-  "grateful":   "poppy",
+  "grateful":   "hibiscus",
   "hopeful":    "tulip",
   "loved":      "rose"
 };
 
 const shaperFlowerMap = {
-  "work/school":         "peony",
+  "work/school":         "orchid",
   "relationships":       "rose",
   "rest or energy":      "lily",
-  "a small joy":         "poppy",
+  "a small joy":         "hibiscus",
   "an unexpected event": "tulip",
   "nothing special":     "daisy",
   "worries":             "lavender"
@@ -220,7 +238,7 @@ const shaperFlowerMap = {
 function chooseFlowerForMood(dayRating, dayShaper, journal) {
   const votes = {
     sunflower: 0, rose: 0, daisy: 0, tulip: 0,
-    lily: 0, poppy: 0, peony: 0, lavender: 0
+    lily: 0, hibiscus: 0, orchid: 0, lavender: 0
   };
 
   const ratingFlower = ratingFlowerMap[dayRating];
@@ -264,6 +282,7 @@ function speciesPetalCount(id) {
     sunflower: 24,
     lily: 12,
     sakura: 5,
+    hibiscus: 5,
     peony: 22,
     poppy: 4,
     orchid: 5,
@@ -272,11 +291,11 @@ function speciesPetalCount(id) {
 }
 
 function defaultSat(sp) {
-  return { daisy: 45, tulip: 50, rose: 55, sunflower: 60, lily: 40, sakura: 40, lotus: 50, peony: 52, poppy: 58, orchid: 50, chrysanth: 48, lavender: 55 }[sp] || 45;
+  return { daisy: 45, tulip: 50, rose: 55, sunflower: 60, lily: 40, sakura: 40, lotus: 50, peony: 52, poppy: 58, orchid: 50, chrysanth: 48, lavender: 55, hibiscus: 62 }[sp] || 45;
 }
 
 function defaultLight(sp) {
-  return { daisy: 65, tulip: 60, rose: 55, sunflower: 65, lily: 70, sakura: 75, lotus: 70, peony: 70, poppy: 58, orchid: 68, chrysanth: 72, lavender: 68 }[sp] || 65;
+  return { daisy: 65, tulip: 60, rose: 55, sunflower: 65, lily: 70, sakura: 75, lotus: 70, peony: 70, poppy: 58, orchid: 68, chrysanth: 72, lavender: 68, hibiscus: 58 }[sp] || 65;
 }
 
 function getTodayDate() {
@@ -478,6 +497,7 @@ function speciesShapeCfg(species) {
     lily:     { w: 0.70, h: 1.00 },
     tulip:     { w: 0.80, h: 1.10 },
     sakura:    { w: 0.75, h: 1.00 },
+    hibiscus:  { w: 0.95, h: 0.97 },
     peony:     { w: 0.62, h: 0.84 },
     poppy:     { w: 0.80, h: 1.00 },
     orchid:    { w: 0.72, h: 1.00 },
@@ -805,6 +825,127 @@ function drawPeonyBloom(R, hue, sat, light) {
    apart when a sender re-colours the whole bloom. Geometry ported from the
    reference drawing: back d 0.475 of R, front 0.45, and a dark eye with its
    ribs and six stamen dots. */
+/* HIBISCUS: five broad petals, a deep throat, and the stamen column at
+   FULL botanical length, which is the one thing no other species in the
+   set has. The throat is what names it at garden size and the column is
+   what names it in the guide, where a bloom is drawn large. */
+function drawHibiscusBloom(R, hue, sat, light) {
+  push();
+  noStroke();
+  push();
+  fill(hue, sat, light-2, 1);
+  ellipse(R*0, R*-0.44, R*0.92, R*1.06);
+  pop();
+  push();
+  rotate(72);
+  fill(hue, sat, light-2, 1);
+  ellipse(R*0, R*-0.44, R*0.92, R*1.06);
+  pop();
+  push();
+  rotate(144);
+  fill(hue, sat, light-2, 1);
+  ellipse(R*0, R*-0.44, R*0.92, R*1.06);
+  pop();
+  push();
+  rotate(216);
+  fill(hue, sat, light-2, 1);
+  ellipse(R*0, R*-0.44, R*0.92, R*1.06);
+  pop();
+  push();
+  rotate(288);
+  fill(hue, sat, light-2, 1);
+  ellipse(R*0, R*-0.44, R*0.92, R*1.06);
+  pop();
+  push();
+  fill(hue, sat+14, light-14, 1);
+  ellipse(R*0, R*-0.45, R*0.045, R*0.7);
+  pop();
+  push();
+  rotate(72);
+  fill(hue, sat+14, light-14, 1);
+  ellipse(R*0, R*-0.45, R*0.045, R*0.7);
+  pop();
+  push();
+  rotate(144);
+  fill(hue, sat+14, light-14, 1);
+  ellipse(R*0, R*-0.45, R*0.045, R*0.7);
+  pop();
+  push();
+  rotate(216);
+  fill(hue, sat+14, light-14, 1);
+  ellipse(R*0, R*-0.45, R*0.045, R*0.7);
+  pop();
+  push();
+  rotate(288);
+  fill(hue, sat+14, light-14, 1);
+  ellipse(R*0, R*-0.45, R*0.045, R*0.7);
+  pop();
+  push();
+  fill(hue, sat+16, light-24, 1);
+  ellipse(R*0, R*0, R*0.58, R*0.58);
+  pop();
+  push();
+  fill(hue, sat+22, light-34, 1);
+  ellipse(R*0, R*0, R*0.32, R*0.32);
+  pop();
+  push();
+  rotate(128);
+  fill(hue, sat*0.42, light+24, 1);
+  ellipse(R*0, R*-0.7, R*0.058, R*1.22);
+  pop();
+  push();
+  rotate(128);
+  fill(46, 74, 60, 1);
+  ellipse(R*0.04, R*-0.95, R*0.085, R*0.085);
+  pop();
+  push();
+  rotate(128);
+  fill(46, 74, 60, 1);
+  ellipse(R*-0.04, R*-1.03, R*0.085, R*0.085);
+  pop();
+  push();
+  rotate(128);
+  fill(46, 74, 60, 1);
+  ellipse(R*0.04, R*-1.11, R*0.085, R*0.085);
+  pop();
+  push();
+  rotate(128);
+  fill(46, 74, 60, 1);
+  ellipse(R*-0.04, R*-1.19, R*0.085, R*0.085);
+  pop();
+  push();
+  rotate(128);
+  fill(46, 74, 60, 1);
+  ellipse(R*0, R*-1.26, R*0.085, R*0.085);
+  pop();
+  push();
+  rotate(128);
+  fill(hue, sat+18, light-30, 1);
+  ellipse(R*0, R*-1.385, R*0.095, R*0.095);
+  pop();
+  push();
+  rotate(128);
+  fill(hue, sat+18, light-30, 1);
+  ellipse(R*0.0713, R*-1.3332, R*0.095, R*0.095);
+  pop();
+  push();
+  rotate(128);
+  fill(hue, sat+18, light-30, 1);
+  ellipse(R*0.0441, R*-1.2493, R*0.095, R*0.095);
+  pop();
+  push();
+  rotate(128);
+  fill(hue, sat+18, light-30, 1);
+  ellipse(R*-0.0441, R*-1.2493, R*0.095, R*0.095);
+  pop();
+  push();
+  rotate(128);
+  fill(hue, sat+18, light-30, 1);
+  ellipse(R*-0.0713, R*-1.3332, R*0.095, R*0.095);
+  pop();
+  pop();
+}
+
 function drawPoppyBloom(R, hue, sat, light) {
   push();
   noStroke();
@@ -850,6 +991,123 @@ function drawPeonyBloomOnGraphics(pg, R, hue, sat, light) {
   for (let i = 0; i < 6; i++) petal(i * 60 + 18, R * 0.299, R * 0.299, R * 0.478, sat * 0.92, light - 3);
   pg.fill(48, 80, 86, 1);
   pg.ellipse(0, 0, R * 0.27, R * 0.27);
+  pg.pop();
+}
+
+function drawHibiscusBloomOnGraphics(pg, R, hue, sat, light) {
+  pg.push();
+  pg.noStroke();
+  pg.push();
+  pg.fill(hue, sat, light-2, 1);
+  pg.ellipse(R*0, R*-0.44, R*0.92, R*1.06);
+  pg.pop();
+  pg.push();
+  pg.rotate(72);
+  pg.fill(hue, sat, light-2, 1);
+  pg.ellipse(R*0, R*-0.44, R*0.92, R*1.06);
+  pg.pop();
+  pg.push();
+  pg.rotate(144);
+  pg.fill(hue, sat, light-2, 1);
+  pg.ellipse(R*0, R*-0.44, R*0.92, R*1.06);
+  pg.pop();
+  pg.push();
+  pg.rotate(216);
+  pg.fill(hue, sat, light-2, 1);
+  pg.ellipse(R*0, R*-0.44, R*0.92, R*1.06);
+  pg.pop();
+  pg.push();
+  pg.rotate(288);
+  pg.fill(hue, sat, light-2, 1);
+  pg.ellipse(R*0, R*-0.44, R*0.92, R*1.06);
+  pg.pop();
+  pg.push();
+  pg.fill(hue, sat+14, light-14, 1);
+  pg.ellipse(R*0, R*-0.45, R*0.045, R*0.7);
+  pg.pop();
+  pg.push();
+  pg.rotate(72);
+  pg.fill(hue, sat+14, light-14, 1);
+  pg.ellipse(R*0, R*-0.45, R*0.045, R*0.7);
+  pg.pop();
+  pg.push();
+  pg.rotate(144);
+  pg.fill(hue, sat+14, light-14, 1);
+  pg.ellipse(R*0, R*-0.45, R*0.045, R*0.7);
+  pg.pop();
+  pg.push();
+  pg.rotate(216);
+  pg.fill(hue, sat+14, light-14, 1);
+  pg.ellipse(R*0, R*-0.45, R*0.045, R*0.7);
+  pg.pop();
+  pg.push();
+  pg.rotate(288);
+  pg.fill(hue, sat+14, light-14, 1);
+  pg.ellipse(R*0, R*-0.45, R*0.045, R*0.7);
+  pg.pop();
+  pg.push();
+  pg.fill(hue, sat+16, light-24, 1);
+  pg.ellipse(R*0, R*0, R*0.58, R*0.58);
+  pg.pop();
+  pg.push();
+  pg.fill(hue, sat+22, light-34, 1);
+  pg.ellipse(R*0, R*0, R*0.32, R*0.32);
+  pg.pop();
+  pg.push();
+  pg.rotate(128);
+  pg.fill(hue, sat*0.42, light+24, 1);
+  pg.ellipse(R*0, R*-0.7, R*0.058, R*1.22);
+  pg.pop();
+  pg.push();
+  pg.rotate(128);
+  pg.fill(46, 74, 60, 1);
+  pg.ellipse(R*0.04, R*-0.95, R*0.085, R*0.085);
+  pg.pop();
+  pg.push();
+  pg.rotate(128);
+  pg.fill(46, 74, 60, 1);
+  pg.ellipse(R*-0.04, R*-1.03, R*0.085, R*0.085);
+  pg.pop();
+  pg.push();
+  pg.rotate(128);
+  pg.fill(46, 74, 60, 1);
+  pg.ellipse(R*0.04, R*-1.11, R*0.085, R*0.085);
+  pg.pop();
+  pg.push();
+  pg.rotate(128);
+  pg.fill(46, 74, 60, 1);
+  pg.ellipse(R*-0.04, R*-1.19, R*0.085, R*0.085);
+  pg.pop();
+  pg.push();
+  pg.rotate(128);
+  pg.fill(46, 74, 60, 1);
+  pg.ellipse(R*0, R*-1.26, R*0.085, R*0.085);
+  pg.pop();
+  pg.push();
+  pg.rotate(128);
+  pg.fill(hue, sat+18, light-30, 1);
+  pg.ellipse(R*0, R*-1.385, R*0.095, R*0.095);
+  pg.pop();
+  pg.push();
+  pg.rotate(128);
+  pg.fill(hue, sat+18, light-30, 1);
+  pg.ellipse(R*0.0713, R*-1.3332, R*0.095, R*0.095);
+  pg.pop();
+  pg.push();
+  pg.rotate(128);
+  pg.fill(hue, sat+18, light-30, 1);
+  pg.ellipse(R*0.0441, R*-1.2493, R*0.095, R*0.095);
+  pg.pop();
+  pg.push();
+  pg.rotate(128);
+  pg.fill(hue, sat+18, light-30, 1);
+  pg.ellipse(R*-0.0441, R*-1.2493, R*0.095, R*0.095);
+  pg.pop();
+  pg.push();
+  pg.rotate(128);
+  pg.fill(hue, sat+18, light-30, 1);
+  pg.ellipse(R*-0.0713, R*-1.3332, R*0.095, R*0.095);
+  pg.pop();
   pg.pop();
 }
 
@@ -1142,6 +1400,10 @@ var BLOOM_BOX = {
   rose:      [ 0.00, 1.00, 1.00],
   sunflower: [ 0.00, 1.32, 1.35],
   sakura:    [-0.06, 1.05, 1.05],
+  /* MEASURED at R 100, like every row here. The hibiscus is the widest thing
+     in the set at 1.13 R, and all of that is the stamen column: the petals
+     themselves stop at 0.97. */
+  hibiscus:  [-0.03, 1.13, 0.95],
   peony:     [-0.08, 0.96, 0.92],  /* measured: the ruffled ring is not symmetric */
   poppy:     [ 0.00, 1.00, 1.00],
   lily:      [ 0.00, 0.94, 1.08],
@@ -1177,6 +1439,12 @@ var HALO_BOX = {
   rose:      [ 0.00, 0.99, 1.00],
   sunflower: [ 0.00, 1.15, 1.16],
   sakura:    [-0.06, 0.99, 0.99],
+  /* SIZED TO THE PETALS, NOT THE COLUMN, which is the peony's rule applied to
+     the opposite problem: an ellipse stretched to cover a 1.3 R spike is the
+     lavender's fog again. Measured radially over 720 directions with the
+     column's own sector skipped: 0.74 at the notch, 0.98 at the tip, 0.89
+     between them. */
+  hibiscus:  [ 0.00, 0.89, 0.89],
   peony:     [-0.08, 0.68, 0.68],   /* sized to its NOTCH, not its tips */
   poppy:     [ 0.00, 0.90, 0.90],
   lily:      [ 0.00, 0.88, 0.87],
@@ -1334,8 +1602,10 @@ function drawBloom(f, shadowK) {
     drawRoseBloom(R, hue, sat, light);
   } else if (f.species === "sunflower") {
     drawSunflowerBloom(R, hue, sat, light);
+  } else if (f.species === "hibiscus") {
+    drawHibiscusBloom(R, hue, sat, light);
   } else if (f.species === "peony") {
-    drawPeonyBloom(R, hue, sat, light);
+    drawPeonyBloom(R, hue, sat, light);          /* retired, drawn anyway */
   } else if (f.species === "poppy") {
     drawPoppyBloom(R, hue, sat, light);
   } else if (f.species === "sakura") {
@@ -1381,8 +1651,10 @@ function drawPreviewFlower(pg, species, hue) {
     drawRoseBloomOnGraphics(pg, R, hue, sat, light);
   } else if (species === "sunflower") {
     drawSunflowerBloomOnGraphics(pg, R, hue, sat, light);
+  } else if (species === "hibiscus") {
+    drawHibiscusBloomOnGraphics(pg, R, hue, sat, light);
   } else if (species === "peony") {
-    drawPeonyBloomOnGraphics(pg, R, hue, sat, light);
+    drawPeonyBloomOnGraphics(pg, R, hue, sat, light);   /* retired */
   } else if (species === "poppy") {
     drawPoppyBloomOnGraphics(pg, R, hue, sat, light);
   } else if (species === "sakura") {

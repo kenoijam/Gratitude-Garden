@@ -68,18 +68,20 @@ const GARDEN_KEY = "community_garden_daily";
    page and something else on the other. Here you pick the species yourself, so
    the meaning has to be visible while you are choosing rather than afterwards. */
 const speciesList = [
-{ id: "daisy", name: "Daisy", meaning: "Simplicity and joy" },
-{ id: "tulip", name: "Tulip", meaning: "Renewal & change" },
-{ id: "rose", name: "Rose", meaning: "Love & depth" },
-{ id: "sunflower", name: "Sunflower", meaning: "Hope & resilience" },
-{ id: "lily", name: "Lily", meaning: "Peace & restoration" },
-{ id: "poppy", name: "Poppy", meaning: "Memory & reflection" },
-{ id: "peony", name: "Peony", meaning: "Honour & strength" },
-/* Orchid and chrysanthemum are drawn by this sketch but deliberately absent
-   from `speciesList`, so they appear in no picker, and the sakura and the
-   lotus joined them when the peony and the poppy took their places. Every
-   one of the four is still drawn, so a flower planted before the swap still
-   comes up in the history and in a day that is replayed. See CLAUDE.md. */
+{ id: "daisy", name: "Daisy", meaning: "Simplicity & contentment" },
+{ id: "tulip", name: "Tulip", meaning: "Hope & new beginnings" },
+{ id: "rose", name: "Rose", meaning: "Love & connection" },
+{ id: "sunflower", name: "Sunflower", meaning: "Joy & warmth" },
+{ id: "lily", name: "Lily", meaning: "Trust & faith" },
+{ id: "hibiscus", name: "Hibiscus", meaning: "Presence & impermanence" },
+{ id: "orchid", name: "Orchid", meaning: "Strength & resilience" },
+/* The chrysanthemum is drawn by this sketch and deliberately absent from
+   `speciesList`, and the sakura, the lotus, the peony and the poppy are with
+   it: the orchid came out of that group when the hibiscus and the orchid took
+   the peony's and the poppy's places, and the orchid needed no drawing at all
+   because it had been drawn the whole time it was hidden. All five are still
+   drawn, so a flower planted before any swap still comes up in the history
+   and in a day that is replayed. See CLAUDE.md. */
 { id: "lavender", name: "Lavender", meaning: "Calm & safety" },
 ];
 
@@ -115,6 +117,7 @@ rose: 8,
 sunflower: 24,
 lily: 12,
 sakura: 5,
+hibiscus: 5,
 peony: 22,
 poppy: 4,
 orchid: 5,
@@ -123,11 +126,11 @@ chrysanth: 18
 }
 
 function defaultSat(sp) {
-return { daisy: 45, tulip: 50, rose: 55, sunflower: 60, lily: 40, sakura: 40, lotus: 50, peony: 52, poppy: 58, orchid: 50, chrysanth: 48 }[sp] || 45;
+return { daisy: 45, tulip: 50, rose: 55, sunflower: 60, lily: 40, sakura: 40, lotus: 50, peony: 52, poppy: 58, orchid: 50, chrysanth: 48, hibiscus: 62 }[sp] || 45;
 }
 
 function defaultLight(sp) {
-return { daisy: 65, tulip: 60, rose: 55, sunflower: 65, lily: 70, sakura: 75, lotus: 70, peony: 70, poppy: 58, orchid: 68, chrysanth: 72 }[sp] || 65;
+return { daisy: 65, tulip: 60, rose: 55, sunflower: 65, lily: 70, sakura: 75, lotus: 70, peony: 70, poppy: 58, orchid: 68, chrysanth: 72, hibiscus: 58 }[sp] || 65;
 }
 
 function addFlower(text, name, species, hue, look, anon) {
@@ -285,6 +288,7 @@ rose:      { w: 0.60, h: 1.05 },
 lily:     { w: 0.70, h: 1.00 },
 tulip:     { w: 0.80, h: 1.10 },
 sakura:    { w: 0.75, h: 1.00 },
+hibiscus:  { w: 0.95, h: 0.97 },
 peony:     { w: 0.62, h: 0.84 },
 poppy:     { w: 0.80, h: 1.00 },
     orchid:    { w: 0.72, h: 1.00 },
@@ -866,6 +870,127 @@ function drawPeonyBloom(R, hue, sat, light) {
    apart when a sender re-colours the whole bloom. Geometry ported from the
    reference drawing: back d 0.475 of R, front 0.45, and a dark eye with its
    ribs and six stamen dots. */
+/* HIBISCUS: five broad petals, a deep throat, and the stamen column at
+   FULL botanical length, which is the one thing no other species in the
+   set has. The throat is what names it at garden size and the column is
+   what names it in the guide, where a bloom is drawn large. */
+function drawHibiscusBloom(R, hue, sat, light) {
+  push();
+  noStroke();
+  push();
+  fill(hue, sat, light-2, 1);
+  ellipse(R*0, R*-0.44, R*0.92, R*1.06);
+  pop();
+  push();
+  rotate(72);
+  fill(hue, sat, light-2, 1);
+  ellipse(R*0, R*-0.44, R*0.92, R*1.06);
+  pop();
+  push();
+  rotate(144);
+  fill(hue, sat, light-2, 1);
+  ellipse(R*0, R*-0.44, R*0.92, R*1.06);
+  pop();
+  push();
+  rotate(216);
+  fill(hue, sat, light-2, 1);
+  ellipse(R*0, R*-0.44, R*0.92, R*1.06);
+  pop();
+  push();
+  rotate(288);
+  fill(hue, sat, light-2, 1);
+  ellipse(R*0, R*-0.44, R*0.92, R*1.06);
+  pop();
+  push();
+  fill(hue, sat+14, light-14, 1);
+  ellipse(R*0, R*-0.45, R*0.045, R*0.7);
+  pop();
+  push();
+  rotate(72);
+  fill(hue, sat+14, light-14, 1);
+  ellipse(R*0, R*-0.45, R*0.045, R*0.7);
+  pop();
+  push();
+  rotate(144);
+  fill(hue, sat+14, light-14, 1);
+  ellipse(R*0, R*-0.45, R*0.045, R*0.7);
+  pop();
+  push();
+  rotate(216);
+  fill(hue, sat+14, light-14, 1);
+  ellipse(R*0, R*-0.45, R*0.045, R*0.7);
+  pop();
+  push();
+  rotate(288);
+  fill(hue, sat+14, light-14, 1);
+  ellipse(R*0, R*-0.45, R*0.045, R*0.7);
+  pop();
+  push();
+  fill(hue, sat+16, light-24, 1);
+  ellipse(R*0, R*0, R*0.58, R*0.58);
+  pop();
+  push();
+  fill(hue, sat+22, light-34, 1);
+  ellipse(R*0, R*0, R*0.32, R*0.32);
+  pop();
+  push();
+  rotate(128);
+  fill(hue, sat*0.42, light+24, 1);
+  ellipse(R*0, R*-0.7, R*0.058, R*1.22);
+  pop();
+  push();
+  rotate(128);
+  fill(46, 74, 60, 1);
+  ellipse(R*0.04, R*-0.95, R*0.085, R*0.085);
+  pop();
+  push();
+  rotate(128);
+  fill(46, 74, 60, 1);
+  ellipse(R*-0.04, R*-1.03, R*0.085, R*0.085);
+  pop();
+  push();
+  rotate(128);
+  fill(46, 74, 60, 1);
+  ellipse(R*0.04, R*-1.11, R*0.085, R*0.085);
+  pop();
+  push();
+  rotate(128);
+  fill(46, 74, 60, 1);
+  ellipse(R*-0.04, R*-1.19, R*0.085, R*0.085);
+  pop();
+  push();
+  rotate(128);
+  fill(46, 74, 60, 1);
+  ellipse(R*0, R*-1.26, R*0.085, R*0.085);
+  pop();
+  push();
+  rotate(128);
+  fill(hue, sat+18, light-30, 1);
+  ellipse(R*0, R*-1.385, R*0.095, R*0.095);
+  pop();
+  push();
+  rotate(128);
+  fill(hue, sat+18, light-30, 1);
+  ellipse(R*0.0713, R*-1.3332, R*0.095, R*0.095);
+  pop();
+  push();
+  rotate(128);
+  fill(hue, sat+18, light-30, 1);
+  ellipse(R*0.0441, R*-1.2493, R*0.095, R*0.095);
+  pop();
+  push();
+  rotate(128);
+  fill(hue, sat+18, light-30, 1);
+  ellipse(R*-0.0441, R*-1.2493, R*0.095, R*0.095);
+  pop();
+  push();
+  rotate(128);
+  fill(hue, sat+18, light-30, 1);
+  ellipse(R*-0.0713, R*-1.3332, R*0.095, R*0.095);
+  pop();
+  pop();
+}
+
 function drawPoppyBloom(R, hue, sat, light) {
   push();
   noStroke();
@@ -911,6 +1036,123 @@ function drawPeonyPreview(pg, R, hue, sat, light) {
   for (let i = 0; i < 6; i++) petal(i * 60 + 18, R * 0.299, R * 0.299, R * 0.478, sat * 0.92, light - 3);
   pg.fill(48, 80, 86, 1);
   pg.ellipse(0, 0, R * 0.27, R * 0.27);
+  pg.pop();
+}
+
+function drawHibiscusPreview(pg, R, hue, sat, light) {
+  pg.push();
+  pg.noStroke();
+  pg.push();
+  pg.fill(hue, sat, light-2, 1);
+  pg.ellipse(R*0, R*-0.44, R*0.92, R*1.06);
+  pg.pop();
+  pg.push();
+  pg.rotate(72);
+  pg.fill(hue, sat, light-2, 1);
+  pg.ellipse(R*0, R*-0.44, R*0.92, R*1.06);
+  pg.pop();
+  pg.push();
+  pg.rotate(144);
+  pg.fill(hue, sat, light-2, 1);
+  pg.ellipse(R*0, R*-0.44, R*0.92, R*1.06);
+  pg.pop();
+  pg.push();
+  pg.rotate(216);
+  pg.fill(hue, sat, light-2, 1);
+  pg.ellipse(R*0, R*-0.44, R*0.92, R*1.06);
+  pg.pop();
+  pg.push();
+  pg.rotate(288);
+  pg.fill(hue, sat, light-2, 1);
+  pg.ellipse(R*0, R*-0.44, R*0.92, R*1.06);
+  pg.pop();
+  pg.push();
+  pg.fill(hue, sat+14, light-14, 1);
+  pg.ellipse(R*0, R*-0.45, R*0.045, R*0.7);
+  pg.pop();
+  pg.push();
+  pg.rotate(72);
+  pg.fill(hue, sat+14, light-14, 1);
+  pg.ellipse(R*0, R*-0.45, R*0.045, R*0.7);
+  pg.pop();
+  pg.push();
+  pg.rotate(144);
+  pg.fill(hue, sat+14, light-14, 1);
+  pg.ellipse(R*0, R*-0.45, R*0.045, R*0.7);
+  pg.pop();
+  pg.push();
+  pg.rotate(216);
+  pg.fill(hue, sat+14, light-14, 1);
+  pg.ellipse(R*0, R*-0.45, R*0.045, R*0.7);
+  pg.pop();
+  pg.push();
+  pg.rotate(288);
+  pg.fill(hue, sat+14, light-14, 1);
+  pg.ellipse(R*0, R*-0.45, R*0.045, R*0.7);
+  pg.pop();
+  pg.push();
+  pg.fill(hue, sat+16, light-24, 1);
+  pg.ellipse(R*0, R*0, R*0.58, R*0.58);
+  pg.pop();
+  pg.push();
+  pg.fill(hue, sat+22, light-34, 1);
+  pg.ellipse(R*0, R*0, R*0.32, R*0.32);
+  pg.pop();
+  pg.push();
+  pg.rotate(128);
+  pg.fill(hue, sat*0.42, light+24, 1);
+  pg.ellipse(R*0, R*-0.7, R*0.058, R*1.22);
+  pg.pop();
+  pg.push();
+  pg.rotate(128);
+  pg.fill(46, 74, 60, 1);
+  pg.ellipse(R*0.04, R*-0.95, R*0.085, R*0.085);
+  pg.pop();
+  pg.push();
+  pg.rotate(128);
+  pg.fill(46, 74, 60, 1);
+  pg.ellipse(R*-0.04, R*-1.03, R*0.085, R*0.085);
+  pg.pop();
+  pg.push();
+  pg.rotate(128);
+  pg.fill(46, 74, 60, 1);
+  pg.ellipse(R*0.04, R*-1.11, R*0.085, R*0.085);
+  pg.pop();
+  pg.push();
+  pg.rotate(128);
+  pg.fill(46, 74, 60, 1);
+  pg.ellipse(R*-0.04, R*-1.19, R*0.085, R*0.085);
+  pg.pop();
+  pg.push();
+  pg.rotate(128);
+  pg.fill(46, 74, 60, 1);
+  pg.ellipse(R*0, R*-1.26, R*0.085, R*0.085);
+  pg.pop();
+  pg.push();
+  pg.rotate(128);
+  pg.fill(hue, sat+18, light-30, 1);
+  pg.ellipse(R*0, R*-1.385, R*0.095, R*0.095);
+  pg.pop();
+  pg.push();
+  pg.rotate(128);
+  pg.fill(hue, sat+18, light-30, 1);
+  pg.ellipse(R*0.0713, R*-1.3332, R*0.095, R*0.095);
+  pg.pop();
+  pg.push();
+  pg.rotate(128);
+  pg.fill(hue, sat+18, light-30, 1);
+  pg.ellipse(R*0.0441, R*-1.2493, R*0.095, R*0.095);
+  pg.pop();
+  pg.push();
+  pg.rotate(128);
+  pg.fill(hue, sat+18, light-30, 1);
+  pg.ellipse(R*-0.0441, R*-1.2493, R*0.095, R*0.095);
+  pg.pop();
+  pg.push();
+  pg.rotate(128);
+  pg.fill(hue, sat+18, light-30, 1);
+  pg.ellipse(R*-0.0713, R*-1.3332, R*0.095, R*0.095);
+  pg.pop();
   pg.pop();
 }
 
@@ -1208,6 +1450,9 @@ var BLOOM_BOX = {
   rose:      [ 0.00, 1.00, 1.00],
   sunflower: [ 0.00, 1.32, 1.35],
   sakura:    [-0.06, 1.05, 1.05],
+  /* MEASURED at R 100. The widest thing in the set at 1.13 R, and all of the
+     extra is the stamen column: the petals stop at 0.97. */
+  hibiscus:  [-0.03, 1.13, 0.95],
   peony:     [-0.08, 0.96, 0.92],  /* measured: the ruffled ring is not symmetric */
   poppy:     [ 0.00, 1.00, 1.00],
   lily:      [ 0.00, 0.94, 1.08],
@@ -1243,6 +1488,10 @@ var HALO_BOX = {
   rose:      [ 0.00, 0.99, 1.00],
   sunflower: [ 0.00, 1.15, 1.16],
   sakura:    [-0.06, 0.99, 0.99],
+  /* SIZED TO THE PETALS, NOT THE COLUMN: 0.74 at the notch, 0.98 at the tip,
+     0.89 between them, measured over 720 directions with the column's sector
+     skipped. An ellipse covering the column would be the lavender's fog. */
+  hibiscus:  [ 0.00, 0.89, 0.89],
   peony:     [-0.08, 0.68, 0.68],   /* sized to its NOTCH, not its tips */
   poppy:     [ 0.00, 0.90, 0.90],
   lily:      [ 0.00, 0.88, 0.87],
@@ -1400,6 +1649,8 @@ drawSunflowerBloom(R, hue, sat, light);
 drawChrysanthBloom(R, hue, sat, light);
 } else if (f.species === "orchid") {
 drawOrchidBloom(R, hue, sat, light);
+} else if (f.species === "hibiscus") {
+  drawHibiscusBloom(R, hue, sat, light);
 } else if (f.species === "peony") {
 drawPeonyBloom(R, hue, sat, light);
 } else if (f.species === "poppy") {
@@ -2359,6 +2610,8 @@ drawSunflowerPreview(pg, R, hue, sat, light);
 drawChrysanthPreview(pg, R, hue, sat, light);
 } else if (speciesId === "orchid") {
 drawOrchidPreview(pg, R, hue, sat, light);
+} else if (speciesId === "hibiscus") {
+  drawHibiscusPreview(pg, R, hue, sat, light);
 } else if (speciesId === "peony") {
 drawPeonyPreview(pg, R, hue, sat, light);
 } else if (speciesId === "poppy") {

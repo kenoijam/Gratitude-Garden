@@ -834,7 +834,12 @@ canvas.flower-canvas { position: absolute; top: 0; left: 0; width: 100%; height:
 .chip-daisy { background:#fff4d6; color:#8a6d2a; } .chip-tulip { background:#eef8ee;color:#386040; } 
 .chip-lily { background:#fde8f0;color:#905060; } .chip-poppy { background:#fde3e1;color:#a83a35; }  /* was .chip-sakura */
 /* the hidden florist pair: no tile uses these, kept so turning them on needs no CSS work */
-.chip-orchid { background:var(--lightsky);color:var(--darkteal); } .chip-mum { background:#fde8e8;color:#b05070; }
+/* THE ORCHID IS PICKABLE NOW, so its chip is a real orchid purple rather
+   than the pale sky it carried while it was hidden and nothing showed it.
+   The hibiscus is the one new chip; the peony's and the poppy's stay exactly
+   as they are, because the modal still opens for a flower already planted. */
+.chip-orchid { background:#efe0f4;color:#7b4a90; } .chip-mum { background:#fde8e8;color:#b05070; }
+.chip-hibiscus { background:#fde0e3;color:#a8384a; }
 .catalogue::after { display: none; }
 .flowers-grid::before { display: none; }
 

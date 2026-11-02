@@ -11,20 +11,20 @@
 /* ---------------------------------------------------------- species ---------------------------------------------------------- */
 
 const SPECIES = [
-  { id: "sunflower", name: "Sunflower", meaning: "Hope and resilience",
+  { id: "sunflower", name: "Sunflower", meaning: "Joy and warmth",
     blurb: "For the person who keeps you going.", hue: 45,  sat: 82, light: 56 },
-  { id: "rose", name: "Rose", meaning: "Love and depth",
+  { id: "rose", name: "Rose", meaning: "Love and connection",
     blurb: "For a love you want to say out loud.", hue: 344, sat: 62, light: 52 },
-  { id: "daisy", name: "Daisy", meaning: "Simplicity and joy",
+  { id: "daisy", name: "Daisy", meaning: "Simplicity and contentment",
     blurb: "For simple days and light company.", hue: 52,  sat: 44, light: 70 },
-  { id: "tulip", name: "Tulip", meaning: "Renewal and change",
+  { id: "tulip", name: "Tulip", meaning: "Hope and new beginnings",
     blurb: "For a new beginning worth marking.", hue: 350, sat: 68, light: 62 },
-  { id: "lily", name: "Lily", meaning: "Peace and restoration",
+  { id: "lily", name: "Lily", meaning: "Trust and faith",
     blurb: "For someone who needs a calm week.", hue: 20,  sat: 40, light: 70 },
-  { id: "peony", name: "Peony", meaning: "Honour and strength",
-    blurb: "For someone who came through it all.", hue: 332, sat: 56, light: 70 },
-  { id: "poppy", name: "Poppy", meaning: "Memory and reflection",
-    blurb: "For a memory you keep going back to.", hue: 356, sat: 62, light: 56 },
+  { id: "orchid", name: "Orchid", meaning: "Strength and resilience",
+    blurb: "For someone who came through it all.", hue: 305, sat: 50, light: 68 },
+  { id: "hibiscus", name: "Hibiscus", meaning: "Presence and impermanence",
+    blurb: "For a day that was never going to stay.", hue: 352, sat: 62, light: 58 },
   { id: "lavender", name: "Lavender", meaning: "Calm and safety",
     blurb: "For a little quiet at the end of it.", hue: 275, sat: 42, light: 66 }
 ];
@@ -45,8 +45,16 @@ const SPECIES = [
 const LEGACY_SPECIES = [
   { id: "chrysanth", name: "Chrysanthemum", meaning: "Reflection and presence",
     blurb: "For a moment you both want to keep.", hue: 335, sat: 58, light: 72 },
-  { id: "orchid", name: "Orchid", meaning: "Grace and endurance",
-    blurb: "For someone who held themselves together.", hue: 305, sat: 50, light: 68 },
+  /* THE PEONY AND THE POPPY RETIRED HERE when the hibiscus and the orchid took
+     their places, and they keep their wording exactly: a bouquet link made
+     before the swap still names one, and it has to open saying what it said
+     when it was sent. The ORCHID went the other way, out of this list and into
+     `SPECIES`, which cost nothing at all because it was drawn in all seven
+     sites for the whole time it was hidden. */
+  { id: "peony", name: "Peony", meaning: "Honour and strength",
+    blurb: "For someone who came through it all.", hue: 332, sat: 56, light: 70 },
+  { id: "poppy", name: "Poppy", meaning: "Memory and reflection",
+    blurb: "For a memory you keep going back to.", hue: 356, sat: 62, light: 56 },
   /* THE SAKURA AND THE LOTUS RETIRED HERE, they were not deleted, and the
      difference matters: every bouquet ever shared names its species in the
      link, so a link made before the swap still has to open. They are drawn
@@ -742,6 +750,105 @@ function drawPeony(ctx, R, hue, sat, light) {
    apart when a sender re-colours the whole bloom. Geometry ported from the
    reference drawing: back d 0.475 of R, front 0.45, and a dark eye with its
    ribs and six stamen dots. */
+/* HIBISCUS: five broad petals, a deep throat, and the stamen column at
+   FULL botanical length, which is the one thing no other species in the
+   set has. The throat is what names it at garden size and the column is
+   what names it in the guide, where a bloom is drawn large. */
+function drawHibiscus(ctx, R, hue, sat, light) {
+  ctx.save();
+  ctx.fillStyle=hsla(hue,Math.min(100,sat),Math.max(10,Math.min(96,light-2)),1);
+  ctx.beginPath(); ctx.ellipse(R*0,R*-0.44,R*0.46,R*0.53,0,0,Math.PI*2); ctx.fill();
+  ctx.restore();
+  ctx.save(); ctx.rotate(72*Math.PI/180);
+  ctx.fillStyle=hsla(hue,Math.min(100,sat),Math.max(10,Math.min(96,light-2)),1);
+  ctx.beginPath(); ctx.ellipse(R*0,R*-0.44,R*0.46,R*0.53,0,0,Math.PI*2); ctx.fill();
+  ctx.restore();
+  ctx.save(); ctx.rotate(144*Math.PI/180);
+  ctx.fillStyle=hsla(hue,Math.min(100,sat),Math.max(10,Math.min(96,light-2)),1);
+  ctx.beginPath(); ctx.ellipse(R*0,R*-0.44,R*0.46,R*0.53,0,0,Math.PI*2); ctx.fill();
+  ctx.restore();
+  ctx.save(); ctx.rotate(216*Math.PI/180);
+  ctx.fillStyle=hsla(hue,Math.min(100,sat),Math.max(10,Math.min(96,light-2)),1);
+  ctx.beginPath(); ctx.ellipse(R*0,R*-0.44,R*0.46,R*0.53,0,0,Math.PI*2); ctx.fill();
+  ctx.restore();
+  ctx.save(); ctx.rotate(288*Math.PI/180);
+  ctx.fillStyle=hsla(hue,Math.min(100,sat),Math.max(10,Math.min(96,light-2)),1);
+  ctx.beginPath(); ctx.ellipse(R*0,R*-0.44,R*0.46,R*0.53,0,0,Math.PI*2); ctx.fill();
+  ctx.restore();
+  ctx.save();
+  ctx.fillStyle=hsla(hue,Math.min(100,sat+14),Math.max(10,Math.min(96,light-14)),1);
+  ctx.beginPath(); ctx.ellipse(R*0,R*-0.45,R*0.0225,R*0.35,0,0,Math.PI*2); ctx.fill();
+  ctx.restore();
+  ctx.save(); ctx.rotate(72*Math.PI/180);
+  ctx.fillStyle=hsla(hue,Math.min(100,sat+14),Math.max(10,Math.min(96,light-14)),1);
+  ctx.beginPath(); ctx.ellipse(R*0,R*-0.45,R*0.0225,R*0.35,0,0,Math.PI*2); ctx.fill();
+  ctx.restore();
+  ctx.save(); ctx.rotate(144*Math.PI/180);
+  ctx.fillStyle=hsla(hue,Math.min(100,sat+14),Math.max(10,Math.min(96,light-14)),1);
+  ctx.beginPath(); ctx.ellipse(R*0,R*-0.45,R*0.0225,R*0.35,0,0,Math.PI*2); ctx.fill();
+  ctx.restore();
+  ctx.save(); ctx.rotate(216*Math.PI/180);
+  ctx.fillStyle=hsla(hue,Math.min(100,sat+14),Math.max(10,Math.min(96,light-14)),1);
+  ctx.beginPath(); ctx.ellipse(R*0,R*-0.45,R*0.0225,R*0.35,0,0,Math.PI*2); ctx.fill();
+  ctx.restore();
+  ctx.save(); ctx.rotate(288*Math.PI/180);
+  ctx.fillStyle=hsla(hue,Math.min(100,sat+14),Math.max(10,Math.min(96,light-14)),1);
+  ctx.beginPath(); ctx.ellipse(R*0,R*-0.45,R*0.0225,R*0.35,0,0,Math.PI*2); ctx.fill();
+  ctx.restore();
+  ctx.save();
+  ctx.fillStyle=hsla(hue,Math.min(100,sat+16),Math.max(10,Math.min(96,light-24)),1);
+  ctx.beginPath(); ctx.ellipse(R*0,R*0,R*0.29,R*0.29,0,0,Math.PI*2); ctx.fill();
+  ctx.restore();
+  ctx.save();
+  ctx.fillStyle=hsla(hue,Math.min(100,sat+22),Math.max(10,Math.min(96,light-34)),1);
+  ctx.beginPath(); ctx.ellipse(R*0,R*0,R*0.16,R*0.16,0,0,Math.PI*2); ctx.fill();
+  ctx.restore();
+  ctx.save(); ctx.rotate(128*Math.PI/180);
+  ctx.fillStyle=hsla(hue,Math.min(100,sat*0.42),Math.max(10,Math.min(96,light+24)),1);
+  ctx.beginPath(); ctx.ellipse(R*0,R*-0.7,R*0.029,R*0.61,0,0,Math.PI*2); ctx.fill();
+  ctx.restore();
+  ctx.save(); ctx.rotate(128*Math.PI/180);
+  ctx.fillStyle=hsla(46,74,60,1);
+  ctx.beginPath(); ctx.ellipse(R*0.04,R*-0.95,R*0.0425,R*0.0425,0,0,Math.PI*2); ctx.fill();
+  ctx.restore();
+  ctx.save(); ctx.rotate(128*Math.PI/180);
+  ctx.fillStyle=hsla(46,74,60,1);
+  ctx.beginPath(); ctx.ellipse(R*-0.04,R*-1.03,R*0.0425,R*0.0425,0,0,Math.PI*2); ctx.fill();
+  ctx.restore();
+  ctx.save(); ctx.rotate(128*Math.PI/180);
+  ctx.fillStyle=hsla(46,74,60,1);
+  ctx.beginPath(); ctx.ellipse(R*0.04,R*-1.11,R*0.0425,R*0.0425,0,0,Math.PI*2); ctx.fill();
+  ctx.restore();
+  ctx.save(); ctx.rotate(128*Math.PI/180);
+  ctx.fillStyle=hsla(46,74,60,1);
+  ctx.beginPath(); ctx.ellipse(R*-0.04,R*-1.19,R*0.0425,R*0.0425,0,0,Math.PI*2); ctx.fill();
+  ctx.restore();
+  ctx.save(); ctx.rotate(128*Math.PI/180);
+  ctx.fillStyle=hsla(46,74,60,1);
+  ctx.beginPath(); ctx.ellipse(R*0,R*-1.26,R*0.0425,R*0.0425,0,0,Math.PI*2); ctx.fill();
+  ctx.restore();
+  ctx.save(); ctx.rotate(128*Math.PI/180);
+  ctx.fillStyle=hsla(hue,Math.min(100,sat+18),Math.max(10,Math.min(96,light-30)),1);
+  ctx.beginPath(); ctx.ellipse(R*0,R*-1.385,R*0.0475,R*0.0475,0,0,Math.PI*2); ctx.fill();
+  ctx.restore();
+  ctx.save(); ctx.rotate(128*Math.PI/180);
+  ctx.fillStyle=hsla(hue,Math.min(100,sat+18),Math.max(10,Math.min(96,light-30)),1);
+  ctx.beginPath(); ctx.ellipse(R*0.0713,R*-1.3332,R*0.0475,R*0.0475,0,0,Math.PI*2); ctx.fill();
+  ctx.restore();
+  ctx.save(); ctx.rotate(128*Math.PI/180);
+  ctx.fillStyle=hsla(hue,Math.min(100,sat+18),Math.max(10,Math.min(96,light-30)),1);
+  ctx.beginPath(); ctx.ellipse(R*0.0441,R*-1.2493,R*0.0475,R*0.0475,0,0,Math.PI*2); ctx.fill();
+  ctx.restore();
+  ctx.save(); ctx.rotate(128*Math.PI/180);
+  ctx.fillStyle=hsla(hue,Math.min(100,sat+18),Math.max(10,Math.min(96,light-30)),1);
+  ctx.beginPath(); ctx.ellipse(R*-0.0441,R*-1.2493,R*0.0475,R*0.0475,0,0,Math.PI*2); ctx.fill();
+  ctx.restore();
+  ctx.save(); ctx.rotate(128*Math.PI/180);
+  ctx.fillStyle=hsla(hue,Math.min(100,sat+18),Math.max(10,Math.min(96,light-30)),1);
+  ctx.beginPath(); ctx.ellipse(R*-0.0713,R*-1.3332,R*0.0475,R*0.0475,0,0,Math.PI*2); ctx.fill();
+  ctx.restore();
+}
+
 function drawPoppy(ctx, R, hue, sat, light) {
   function petal(ang,d,w,h,s,l){
     ctx.save(); ctx.rotate(ang*Math.PI/180); ctx.translate(0,-d);
@@ -768,7 +875,8 @@ function drawSpeciesBloom(ctx, species, R, hue, sat, light) {
     case "sunflower": return drawSunflower(ctx, R, hue, sat, light);
     case "sakura": return drawSakura(ctx, R, hue, sat, light);
     case "peony": return drawPeony(ctx, R, hue, sat, light);
-    case "poppy": return drawPoppy(ctx, R, hue, sat, light);
+    case "hibiscus": return drawHibiscus(ctx, R, hue, sat, light);
+    case "poppy": return drawPoppy(ctx, R, hue, sat, light);   /* retired, drawn anyway */
     case "lily": return drawLily(ctx, R, hue, sat, light);
     case "lotus": return drawLotus(ctx, R, hue, sat, light);
     /* hidden from the picker, drawn anyway. See LEGACY_SPECIES. */
