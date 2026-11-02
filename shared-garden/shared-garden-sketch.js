@@ -3554,7 +3554,7 @@ const ul = createElement("ul").parent(tipsCard);
 createElement("li", "Hover a flower for its message").parent(ul);
 createElement("li", "Sign in to like or reply").parent(ul);
 createElement("li", "One flower a day, resets nightly").parent(ul);
-createElement("li", "Top right: music, friends, history, camera").parent(ul);
+createElement("li", "Top right: music, account, history, camera").parent(ul);
 tipsCard.style("display", "none");
 
 buildLogo();

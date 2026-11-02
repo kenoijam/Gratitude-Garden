@@ -27,6 +27,18 @@
 (function () {
   "use strict";
 
+  /* FRIENDS ARE OFF WHILE THE PROJECT SHOWS THE TWO GARDENS ONLY, and this
+     one flag is the whole of it. The friends list exists almost entirely to
+     send somebody a bouquet, and with the bouquet builder unlinked a panel
+     full of people to send nothing to is a feature pointing at a hole.
+     WHAT AN ACCOUNT STILL DOES IS ALL GARDEN: a username, your personal
+     garden following you between devices, the once a day limit holding across
+     them, and liking or replying in the shared meadow. None of that is
+     friends, which is why the account stayed and this went.
+     Everything below is untouched and unreachable. Set this to false and the
+     panel is exactly what it was. */
+  var FRIENDS_OFF = true;
+
   var CFG = (typeof window.readSupabaseConfig === "function")
     ? window.readSupabaseConfig() : null;
 
@@ -551,7 +563,7 @@
     close.setAttribute("aria-label", "Close");
     close.innerHTML = X_ICON;
     close.addEventListener("click", closePanel);
-    var h2 = el("h2", null, "Friends");
+    var h2 = el("h2", null, FRIENDS_OFF ? "Your account" : "Friends");
     panelWho = el("p"); panelWho.id = "ga-whoami";
     head.appendChild(close); head.appendChild(h2); head.appendChild(panelWho);
 
@@ -801,13 +813,47 @@
     if (!me) {
       panelBody.innerHTML = "";
       panelBody.appendChild(el("p", "ga-none",
-        "Sign in to add friends. The gardens work without an account."));
+        FRIENDS_OFF
+          ? "Sign in to keep your garden across devices. Both gardens work without an account."
+          : "Sign in to add friends. The gardens work without an account."));
       return;
     }
     if (!profile) {
       panelBody.innerHTML = "";
       panelBody.appendChild(el("p", "ga-none",
-        "Choose a username first and friends can find you."));
+        FRIENDS_OFF ? "Choose a username and your flowers carry it."
+                    : "Choose a username first and friends can find you."));
+      return;
+    }
+
+    /* WITH FRIENDS OFF THE PANEL IS WHO YOU ARE AND A WAY OUT, which is what
+       is left once there is nobody to add. The Account block is rebuilt here
+       rather than reached by letting the friends path run, because the real
+       one lives inside `loadFriends().then(...)` and that query would be a
+       round trip for a list nothing shows. */
+    if (FRIENDS_OFF) {
+      if (btn) btn.setAttribute("data-pending", "0");
+      var pip0 = btn && btn.querySelector(".ga-pip");
+      if (pip0) pip0.textContent = "";
+      panelBody.innerHTML = "";
+      panelBody.appendChild(el("div", "ga-h", "Account"));
+      panelBody.appendChild(el("p", "ga-none", (me && me.email) ? me.email : "Signed in"));
+      var bye = el("button", "ga-mini", "Sign out");
+      bye.type = "button";
+      bye.setAttribute("data-kind", "quiet");
+      bye.style.marginTop = "8px";
+      bye.addEventListener("click", function () {
+        bye.disabled = true;
+        /* Reloaded rather than repainted, for the reason the friends path
+           gives: the personal garden decided what to show long before this
+           button existed, and half a signed out page is worse than a moment
+           of white. */
+        sb.auth.signOut().then(function () { location.reload(); })
+          .catch(function () { location.reload(); });
+      });
+      panelBody.appendChild(bye);
+      panelBody.appendChild(el("p", "ga-none",
+        "Your garden is kept here, and follows you to any device you sign in on."));
       return;
     }
 
@@ -999,11 +1045,15 @@
        it. There is deliberately NO `title`: the browser's own tooltip would
        arrive on top of the project's, which is what hovering the music button
        used to do. */
+    /* THE WORD ON THE CHIP FOLLOWS WHAT THE PANEL ACTUALLY HOLDS. With
+       friends off it opens your account rather than a list of people, and a
+       button labelled Friends that opens neither is worse than no label. */
+    var noun = FRIENDS_OFF ? "Your account" : "Friends";
     var what = me
-      ? ((profile && profile.username) ? "Friends, signed in as " + profile.username : "Friends")
+      ? ((profile && profile.username) ? noun + ", signed in as " + profile.username : noun)
       : "Sign in";
     btn.setAttribute("aria-label", what);
-    btn.setAttribute("data-tip", me ? "Friends" : "Sign in");
+    btn.setAttribute("data-tip", me ? noun : "Sign in");
     if (me) refreshPanel();
     else { btn.setAttribute("data-pending", "0"); closePanel(); }
   }

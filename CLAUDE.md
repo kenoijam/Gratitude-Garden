@@ -6,6 +6,30 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 "Gratitude Garden" is a static, dependency-free web project by Kenisha Gabriella Wijaya. Users answer reflection prompts and a flower is planted in a generative garden scene. There is no build system, no package manager, no tests, and no git repository. Every file is served as-is.
 
+## THE PROJECT IS SHOWING TWO GARDENS ONLY, AND IT IS TEMPORARY
+
+**Read this before anything else below, because most of this file describes pages the site no longer links to.** The feedback was that four destinations read as a feature party, so the project was narrowed to **The Personal Garden and The Shared Garden**. Everything else is still on disk, untouched, and unlinked.
+
+| | state |
+|---|---|
+| The Personal Garden | live |
+| The Shared Garden | live |
+| The Bouquet Builder | **files intact, no link anywhere** |
+| The Gardener's Studio and the gardener figure | **files intact, no link, not loaded** |
+| The Guest Book | **files intact, no link** |
+| Friends, inside `garden-account.js` | **behind `FRIENDS_OFF`** |
+| Accounts, usernames, likes, comments, history | live, untouched |
+
+- **NOTHING WAS DELETED AND NOTHING WAS REWRITTEN.** Every page still answers at its own URL, so you can open one to show somebody; nothing on the site points at it. That is the whole requirement: this has to come back in one revert.
+- **THE GARDENS NEEDED ONLY THEIR SCRIPT TAGS REMOVED, and that is worth knowing before putting them back.** `bouquet-sketch.js`, `avatar-draw.js` and `garden-gardener.js` are gone from both garden pages, and no other line changed in either sketch. Every path that draws or pats a gardener already guarded on `window.AvatarDraw` and `window.GardenGardener`, so the sketches skip it; the shared garden's "who is this from" row asks `haveGardener()` and builds itself with two choices instead of three, falling back to `name`. **Restore the three tags and the gardener returns with the identity choice.**
+- **`FRIENDS_OFF` IS ONE FLAG AT THE TOP OF `garden-account.js`.** The friends list exists almost entirely to send a bouquet, and with the builder unlinked a panel full of people to send nothing to is a feature pointing at a hole. The panel is who you are and a way out; its Account block is rebuilt in the early return rather than reached through the friends path, because the real one lives inside `loadFriends().then(...)` and that query would be a round trip for a list nothing shows. The chip's label follows the flag, since a button saying Friends that opens an account panel is worse than no label.
+- **THE ACCOUNT STAYED, AND THE REASON IS THAT ALL OF IT IS GARDEN**: a username, the personal garden following you between devices, the once a day limit holding across them, and liking or replying in the meadow. None of that is friends.
+- **WHAT THE LANDING PAGE LOST**: the bouquet card and the gardener band (commented out together in `#gardens`), all five perched gardeners, the three gardener and bouquet script tags with the block that painted them, the top nav's Bouquet entry, three footer links, and the closing section's third button. `.gardens-grid` went to **two columns**, which is the one CSS line that has to move with the card.
+- **COPY THAT COUNTED TO THREE WAS REWRITTEN**, and it is easy to miss: the hero subtitle, the About lede and its three paragraphs, the About section title, the gardens eyebrow and description, all three Wisdom tips, and both gardens' Tips card line naming the corner icons. The gardens heading was "Reflect, share, give", where `give` was the bouquet and also the title's only `<em>`; it is "Reflect, and *share*" so the line still carries an emphasis for the wiggle to find.
+- **THE BOUQUET FEATURE CARD IN ABOUT BECAME "Your history".** That grid is two by two so the count has to stay at four, and the history is a real part of the personal garden and the only part of it nothing else on the page mentions.
+- **TWO DEAD LINKS SURVIVE ON PURPOSE**, in the `?hero=` drafts. Those are gated behind a query string, invisible to any ordinary visitor, and their painters already guard on `typeof renderBouquetCanvas === "function"`, so they simply do not paint. Leaving them is less to revert. **If a hero draft is ever promoted, those two objects and the three script tags have to come back together.**
+- **The two painter blocks for the bouquet card and the hero objects are still in `index.html` and are inert**, each returning early on a missing element or a missing function. Same reasoning: less to undo.
+
 ## Running it
 
 Serve the repo root over HTTP (relative paths and `localStorage` both need an origin, and opening `index.html` via `file://` breaks the garden pages):

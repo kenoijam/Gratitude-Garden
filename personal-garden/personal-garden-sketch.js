@@ -3241,7 +3241,7 @@ saveBtn.mousePressed(() => {
     : "Saved in this browser";
   createElement("li", savedWhere).parent(ul);
   createElement("li", "Click the name to rename it").parent(ul);
-  createElement("li", "Top right: music, friends, history, camera").parent(ul);
+  createElement("li", "Top right: music, account, history, camera").parent(ul);
   tipsCard.style("display", "none");
 
   const nameWrap = createDiv().id("name-wrap").parent(gardenWrap);
