@@ -3642,10 +3642,26 @@ confirmSlider.input(() => {
    THE GARDENER OPTION ONLY APPEARS IF THERE IS ONE. Offered to somebody who
    has never been to the studio it is a control that does nothing, and a line
    under the row says where to go instead. */
+/* A RULE AND AN EYEBROW, because this is not another styling choice. It sat
+   at the colour label's exact size and colour, so a question about whether
+   your name goes on a public flower looked like a peer of "choose your
+   flower color". The rule is where the card stops being about the bloom and
+   starts being about you, and the eyebrow is the page's own language for a
+   section beginning. It stays AFTER the colour on purpose: that keeps the
+   two flower choices together and leaves the privacy line as the last thing
+   read before the button that acts on it. */
+const idRule = createDiv().parent(confirmCard);
+idRule.style("height", "1px");
+idRule.style("background", "#d9ece5");
+idRule.style("margin", "18px 0 14px 0");
+
 const idLabel = createP("Who is this from?").parent(confirmCard);
-idLabel.style("font-size", "14px");
+idLabel.style("font-size", "12.5px");
+idLabel.style("font-weight", "700");
+idLabel.style("letter-spacing", "0.07em");
+idLabel.style("text-transform", "uppercase");
 idLabel.style("color", "#0f5132");
-idLabel.style("margin", "4px 0 8px 0");
+idLabel.style("margin", "0 0 10px 0");
 
 const idRow = createDiv().parent(confirmCard);
 idRow.style("display", "flex");
