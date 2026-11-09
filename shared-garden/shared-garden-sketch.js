@@ -1326,16 +1326,22 @@ lobe(50, Ro * 0.96, Ro * 0.38, sat * 0.72, light + 13, 0.95, 0.40);
 lobe(130, Ro * 0.96, Ro * 0.38, sat * 0.72, light + 13, 0.95, 0.40);
 lobe(-22, Ro * 1.00, Ro * 0.66, sat * 0.80, light + 17, 1.00, 0.52);
 lobe(-158, Ro * 1.00, Ro * 0.66, sat * 0.80, light + 17, 1.00, 0.52);
-/* the centre, off the reference drawing: a pale anther cap
-   crowning two thick upright arms with the column between them,
-   and the midlobe flaring below */
-lobe(-100, Ro * 0.46, Ro * 0.15, sat + 22, light - 24, 1.00, 0.90, Ro * 0.30, -Ro * 0.10);
-lobe(-80, Ro * 0.46, Ro * 0.15, sat + 22, light - 24, 1.00, 0.90, Ro * 0.30, Ro * 0.10);
-fill(hue, sat + 22, light - 24, 1);
-ellipse(0, Ro * 0.12, Ro * 0.15, Ro * 0.44);
-lobe(90, Ro * 0.26, Ro * 0.26, sat + 22, light - 24, 1.00, 0.92, Ro * 0.26, 0);
-fill(hue, sat * 0.40, light + 26, 1);
-ellipse(0, -Ro * 0.12, Ro * 0.21, Ro * 0.21);
+/* the centre, off the flat reference: the lip's side lobes are ONE
+   horseshoe curling in round the column, drawn as a thick arc with
+   round caps and a gap left at the top for the pale anther cap to
+   sit in, with the midlobe flaring below */
+push();
+noFill();
+stroke(hue, sat + 24, light - 26, 1);
+strokeWeight(Ro * 0.10);
+strokeCap(ROUND);
+arc(0, Ro * 0.02, Ro * 0.31, Ro * 0.27, 316.00, 584.00);
+pop();
+fill(hue, sat + 24, light - 26, 1);
+ellipse(0, Ro * 0.12, Ro * 0.09, Ro * 0.23);
+ellipse(0, Ro * 0.25, Ro * 0.26, Ro * 0.18);
+fill(hue, sat * 0.35, light + 27, 1);
+ellipse(0, -Ro * 0.12, Ro * 0.15, Ro * 0.15);
 }
 
 /* Pompom chrysanthemum: concentric rings of short rounded petals, lightening
@@ -2499,16 +2505,22 @@ lobe(50, Ro * 0.96, Ro * 0.38, sat * 0.72, light + 13, 0.95, 0.40);
 lobe(130, Ro * 0.96, Ro * 0.38, sat * 0.72, light + 13, 0.95, 0.40);
 lobe(-22, Ro * 1.00, Ro * 0.66, sat * 0.80, light + 17, 1.00, 0.52);
 lobe(-158, Ro * 1.00, Ro * 0.66, sat * 0.80, light + 17, 1.00, 0.52);
-/* the centre, off the reference drawing: a pale anther cap
-   crowning two thick upright arms with the column between them,
-   and the midlobe flaring below */
-lobe(-100, Ro * 0.46, Ro * 0.15, sat + 22, light - 24, 1.00, 0.90, Ro * 0.30, -Ro * 0.10);
-lobe(-80, Ro * 0.46, Ro * 0.15, sat + 22, light - 24, 1.00, 0.90, Ro * 0.30, Ro * 0.10);
-pg.fill(hue, sat + 22, light - 24, 1);
-pg.ellipse(0, Ro * 0.12, Ro * 0.15, Ro * 0.44);
-lobe(90, Ro * 0.26, Ro * 0.26, sat + 22, light - 24, 1.00, 0.92, Ro * 0.26, 0);
-pg.fill(hue, sat * 0.40, light + 26, 1);
-pg.ellipse(0, -Ro * 0.12, Ro * 0.21, Ro * 0.21);
+/* the centre, off the flat reference: the lip's side lobes are ONE
+   horseshoe curling in round the column, drawn as a thick arc with
+   round caps and a gap left at the top for the pale anther cap to
+   sit in, with the midlobe flaring below */
+pg.push();
+pg.noFill();
+pg.stroke(hue, sat + 24, light - 26, 1);
+pg.strokeWeight(Ro * 0.10);
+pg.strokeCap(ROUND);
+pg.arc(0, Ro * 0.02, Ro * 0.31, Ro * 0.27, 316.00, 584.00);
+pg.pop();
+pg.fill(hue, sat + 24, light - 26, 1);
+pg.ellipse(0, Ro * 0.12, Ro * 0.09, Ro * 0.23);
+pg.ellipse(0, Ro * 0.25, Ro * 0.26, Ro * 0.18);
+pg.fill(hue, sat * 0.35, light + 27, 1);
+pg.ellipse(0, -Ro * 0.12, Ro * 0.15, Ro * 0.15);
 pg.pop();
 }
 

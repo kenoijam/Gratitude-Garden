@@ -121,24 +121,45 @@ in five places the pickers do not reach.
   two corners turned up. Right in its parts and still wrong as a picture: the
   mass was a soft egg where the reference has a hard little assembly, and at
   garden size it read as a blob with a dot on it.
-- **GO FIVE, AND THE ONE THAT HOLDS: THE WHOLE FLOWER OFF A FLAT DRAWING, not
-  the centre alone.** Every round before this had tuned the centre inside
-  petals nobody had looked at, which is why five goes were needed. The
-  reference is a flat vector phalaenopsis, and read as a whole it says two
-  things at once. The centre is a **pale circle crowning two thick upright
-  arms** with the column between them, the three flaring together into the
-  midlobe, which reads as a small lyre or a trident; **two lobes, two ellipses
-  and nothing else**. And the two broad petals are far rounder and swung far
-  more horizontal than ours were, at **22 degrees off horizontal** against the
-  old 50, with the lower sepals widened to match.
-- **THE ARMS HAVE TO BE NEARLY UPRIGHT OR THEY ARE A WISHBONE.** At 24 degrees
-  off vertical and thin they read as a **V with something caught in it**, and
-  the column disappears into the crossing; at 10 degrees and thick, the arms,
-  the column and the gaps between them are four things the eye can separate,
-  which is what the reference has. **The cap is the topmost thing on the
-  flower's middle** and it has to stay that way: it is what the arms are
-  flanking, and an arm tip rising past it turns the group back into a V.
-- **EVERYTHING MEASURED HAD TO BE MEASURED AGAIN, because the PETALS moved.**
+- **GO FIVE: THE WHOLE FLOWER OFF A FLAT DRAWING, not the centre alone**, and
+  that is what finally fixed the PETALS. Every round before it had tuned the
+  centre inside petals nobody had looked at, which is most of why there were
+  so many. The two broad petals are far rounder and swung far more horizontal
+  than ours were, at **22 degrees off horizontal** against the old 50, with
+  the lower sepals widened to match. **The petals have not moved since** and
+  nothing below is about them.
+- **GO SIX, AND THE ONE THAT HOLDS: THE ARMS ARE ONE HORSESHOE, NOT TWO
+  SHAPES.** Go five drew them as two separate lobes either side of a column
+  and it was wrong three ways at once, all of them the same mistake: a fat
+  bezier lobe is a club, widest near its TIP, so the pair merged into one
+  blocky hood at the top, the column vanished into it, and the whole centre
+  read as a bat or a cape rather than as a flower's middle. Drawn as two slim
+  upright ellipses instead it read as three vertical bars, which is worse. The
+  reference's arms are ONE shape that curls in round the cap on both sides.
+- **IT IS A THICK STROKED ARC WITH ROUND CAPS, and that is the first stroked
+  thing in the whole set of twelve.** `arc` in p5, `ctx.ellipse` with start
+  and stop angles on a raw canvas, a `lineWidth` of `0.10 Ro` and a **92
+  degree gap left at the top** for the anther cap to sit in. Nothing else can
+  make a crescent here: a ring needs its middle cut out, and these sketches
+  have no compositing, only fills on whatever colour the petals happen to be.
+- **THE GAP IS THE WHOLE CONTROL.** At 64 degrees the tips close over the cap
+  and the centre is a doughnut again; at 92 they stand either side of it like
+  a pair of horns, which is the reference. **The cap stays the topmost thing
+  on the flower's middle**: it is what the horseshoe is cradling, and tips
+  rising past it turn the group back into a V.
+- **TWO p5 TRAPS, AND BOTH BITE SILENTLY.** The stroke is wrapped in
+  `push()`/`pop()`, since `strokeWeight` and `strokeCap` are global state and
+  a species function that leaks them changes every stroke drawn after it in
+  that frame. And the constant is the GLOBAL `ROUND`, never `pg.ROUND`: a
+  `p5.Graphics` carries the drawing methods and not the constants, so
+  `pg.strokeCap(pg.ROUND)` passes `undefined` and the caps come out square on
+  the preview family alone, which is the copy nobody looks at first.
+- **THE HORSESHOE CHANGED NO TABLE, and that was checked rather than assumed.**
+  A stroke reaches half its width past its own path, so it could have: the arc
+  sits at `0.155 Ro` with a `0.05 Ro` overhang, which is nowhere near the
+  petals. The painted box came back identical at `l -1.21, r 1.20, t -1.24,
+  b 0.96`, so every table go five moved stayed where go five put it.
+- **GO FIVE'S PETALS DID MOVE EVERYTHING, though.**
   That is the difference between this round and the four before it, which were
   all interior and left every table standing. The painted box went from
   `l -1.04, r 1.03, t -1.28, b 0.83` to **`l -1.21, r 1.20, t -1.24, b 0.96`**,
