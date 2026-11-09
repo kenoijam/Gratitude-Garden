@@ -2645,7 +2645,7 @@ pg.pop();
 }
 
 function drawSpeciesPreviews() {
-const isNarrow = windowWidth <= 768;
+const isNarrow = viewW() <= 768;
 
 speciesList.forEach(sp => {
 const holder = speciesButtons[sp.id]?.holder;
@@ -2887,8 +2887,20 @@ for (const f of flowers) {
 pop();
 }
 
+/* THE WINDOW IS ASKED FOR ITS SIZE, NEVER p5's CACHE. p5 fills `windowWidth`
+   and `windowHeight` once, when p5.js ITSELF is parsed in the head, and
+   refreshes them only when a resize event fires. A tab that is in the
+   background, restored from the back forward cache, or coming back on iOS
+   reports 0 at that moment, so `createCanvas(windowWidth, windowHeight)`
+   makes a DEAD 0 by 0 canvas; no resize ever follows to correct it, and the
+   garden comes up blank with its chrome around it and NO error anywhere.
+   That is far more likely here than it looks, because this sketch is
+   INJECTED after the session check rather than parsed with the page. */
+function viewW() { return window.innerWidth  || document.documentElement.clientWidth  || windowWidth  || 0; }
+function viewH() { return window.innerHeight || document.documentElement.clientHeight || windowHeight || 0; }
+
 function resizeGardenCanvas() {
-resizeCanvas(windowWidth, windowHeight);
+resizeCanvas(viewW(), viewH());
 
 groundLevel = height * 0.76;
 buildClouds(true);
@@ -2901,7 +2913,7 @@ let canvas;
 function setup() {
 buildUI();
 
-canvas = createCanvas(windowWidth, windowHeight);
+canvas = createCanvas(viewW(), viewH());
 canvas.parent("garden-wrap");
 canvas.style("pointer-events", "none");
 canvas.style("position", "absolute");
@@ -3292,7 +3304,7 @@ function saveGarden() {
 
 function buildUI() {
 const root = select("#ui-root");
-const isNarrow = windowWidth <= 768;
+const isNarrow = viewW() <= 768;
 
 /* Landing */
 landingWrap = createDiv().id("landing-wrap").parent(root).addClass("gg-wrap");

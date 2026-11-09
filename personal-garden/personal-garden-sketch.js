@@ -3594,8 +3594,8 @@ saveBtn.mousePressed(() => {
        the floor on the strength of that leaves the title tiny when the page
        comes back. Below 200 there is nothing worth fitting to, so keep the
        size we already have. */
-    if (windowWidth < 200) return;
-    const room = windowWidth - 32;
+    if (viewW() < 200) return;
+    const room = viewW() - 32;
     titlePx = NAME_PX;
     for (let i = 0; i < 14; i++) {
       nameField.elt.style.fontSize = titlePx + "px";
@@ -3778,8 +3778,20 @@ function showStep(s) {
   
 }
 
+/* THE WINDOW IS ASKED FOR ITS SIZE, NEVER p5's CACHE. p5 fills `windowWidth`
+   and `windowHeight` once, when p5.js ITSELF is parsed in the head, and
+   refreshes them only when a resize event fires. A tab that is in the
+   background, restored from the back forward cache, or coming back on iOS
+   reports 0 at that moment, so `createCanvas(windowWidth, windowHeight)`
+   makes a DEAD 0 by 0 canvas; no resize ever follows to correct it, and the
+   garden comes up blank with its chrome around it and NO error anywhere.
+   That is far more likely here than it looks, because this sketch is
+   INJECTED after the session check rather than parsed with the page. */
+function viewW() { return window.innerWidth  || document.documentElement.clientWidth  || windowWidth  || 0; }
+function viewH() { return window.innerHeight || document.documentElement.clientHeight || windowHeight || 0; }
+
 function windowResized() {
-  resizeCanvas(windowWidth, windowHeight);
+  resizeCanvas(viewW(), viewH());
   groundLevel = height * 0.76;
   buildClouds(true);
   updateResponsiveFlowerLayout();
@@ -3789,7 +3801,7 @@ function windowResized() {
 function setup() {
   buildUI();
 
-  canvas = createCanvas(windowWidth, windowHeight);
+  canvas = createCanvas(viewW(), viewH());
   canvas.parent("garden-wrap");
   canvas.style("pointer-events", "none");
   canvas.style("position", "absolute");
