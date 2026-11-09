@@ -1078,6 +1078,23 @@ Two things live in this one file, and they are together because both are needed 
 - **The `.flowers-grid` above it is the same eight flowers and must NOT be deleted.** Exactly one of the two is on screen: the ring above 880px, the grid below it, and the grid at ANY width on a touch screen, since a ring whose whole point is hovering is useless without a pointer. That last rule is declared after the width one so it wins. Both open the same entry.
 - **The centre line has to clear the inside of the ring.** The nearest bloom's edge runs about 95px from the middle and `.fr-centre` corners at about 80, which is why it is 9.2em wide and one short sentence.
 
+## The letter (`garden-letter.js`)
+
+**A NOTE FROM THE PERSON WHO MADE IT, SHOWN ONCE, on a first visit to the landing page.** The reference is the One Year app, which opens on a signed letter saying why it exists. Every other thing on this page describes what the site DOES; nothing said why anybody made it, and that is the one part that cannot be worked out from looking at it.
+
+- **IT IS A LETTER RATHER THAN A PARAGRAPH, and that is the whole point.** The same sentences set as body copy in a section read as marketing. Signed, in the first person, with a flower over them, they read as somebody talking. The last line stands alone in the heading's face, since it is the one sentence the whole site is an argument for.
+- **ONE COPY AT THE ROOT**, like `garden-music.js`, `garden-cursor.js`, `garden-loader.js`, `garden-life.js`, `garden-journal.js` and `garden-account.js`. Only `index.html` loads it, because a first hello belongs at the front door, but another page could carry it with one tag rather than a second copy of the words. `data-letter="off"` on the tag disables it.
+- **THE WORDS LIVE IN `LETTER` AT THE TOP OF THE FILE**, not in the markup, so there is one copy of them and the footer's link opens the very same card.
+- **IT WAITS FOR THE LOADER.** `garden-loader.js` holds a flower over the sky for up to nine seconds, and two cards stacked on a first visit is exactly what this is meant to avoid rather than cause. `GardenLoader.showing()` is polled, since the loader comes down on whichever of three things happens first and there is no event.
+- **`localStorage`, NOT `sessionStorage`, and that is the difference between this and the music hint.** The hint is about the music playing right now, so it comes back next visit. This is about meeting somebody once. The key is `gg_letter`; `GardenLetter.reset()` clears it.
+- **THERE IS A WAY BACK TO IT, and that is not a nicety.** A letter that can only ever be seen once cannot be read twice, shown to anybody, or demonstrated. The footer's Explore column carries "Why this exists", which calls `GardenLetter.open()`.
+- **THE FOOTER'S WAY BACK IS A BUTTON DRESSED AS A LINK.** It opens a card rather than going anywhere, and an `href` to nowhere is the first thing a keyboard finds. `.footer-as-link` has to undo everything a `button` brings of its own: its font, padding, border and centred text.
+- **z-index 9500, ABOVE THE SIDE NAV.** That rail is 9000 and runs down the left of the page above 1100px, so at the flower modal's 300 or the music button's 260 the rail would paint straight through the card.
+- **FOUR WAYS OUT, the same four the photo viewer offers**: the button, the corner cross, a tap on the surround and Escape. The button is an invitation and the cross is a dismissal, and somebody who wants the second should not have to accept the first.
+- **The flower above it is inline SVG, not one of the eight.** The eight are drawn by code that lives in the sketches, and a letter that waits for a flower renderer is a letter nobody reads. It is also honest about being a drawing rather than claiming to be a species.
+- **A forced reflow between showing it and asking for the transition**, or the browser coalesces the two and the card simply appears. The wiggling words need the identical trick.
+- **The music hint cannot collide with it**, and that was checked rather than arranged: the hint only fires once audio is genuinely running, which needs a gesture, and the first gesture is dismissing the letter. So the hint arrives after the card has gone.
+
 ## The loading flower (`garden-loader.js`)
 
 **One bloom opening over the garden's own sky, on ALL FOUR pages.** The stem rises, the leaves unfold, six petals open one after another, the eye fills in, and it loops every two and a half seconds.

@@ -1156,6 +1156,13 @@ footer::before {
 .footer-col ul { list-style: none; display: flex; flex-direction: column; gap: 0.55rem; align-items: flex-start; }
 .footer-col ul a { font-family: Arial,Helvetica,sans-serif; color: rgba(255,249,227,0.55); text-decoration: none; font-size: 0.88rem; transition: color 0.3s; }
 .footer-col ul a:hover { color: var(--yellow); }
+/* THE LETTER'S WAY BACK IS A BUTTON, because it opens a card rather than
+   going anywhere, and a href to nowhere is a lie the keyboard finds first.
+   It is dressed exactly as the links beside it so the column still reads as
+   one list; everything a `button` brings of its own (its font, its padding,
+   its border and its left alignment) has to be taken off by hand. */
+.footer-col ul button.footer-as-link { font-family: Arial,Helvetica,sans-serif; color: rgba(255,249,227,0.55); font-size: 0.88rem; background: none; border: none; padding: 0; text-align: left; transition: color 0.3s; }
+.footer-col ul button.footer-as-link:hover { color: var(--yellow); }
 .footer-bottom { border-top: 1px solid rgba(255,255,255,0.1);
   /* 1.8rem, not 2.5: the row centres its credit in what is left, which adds
      about 12px on top of the padding, so the gap UNDER the divider reads 43
