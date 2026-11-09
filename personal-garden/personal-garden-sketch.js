@@ -60,7 +60,7 @@ let titlePx = NAME_PX;
 
 let prompt1Wrap, prompt2Wrap, prompt3Wrap, prompt4Wrap, flowerPreviewWrap, gardenWrap;
 let continueBtn1, continueBtn2, continueBtn3;
-let journalField, gratitudeField;
+let journalField, gratitudeField, gladBtn;
 let colorPickerSelect, plantBtn;
 let saveBtn, tipsCard, dailyNote;
 /* The photo picked on the journal step, held until the flower is planted. */
@@ -2915,6 +2915,30 @@ function buildLogo() {
   });
 }
 
+/* THE SKIP IS NAMED, NOT HIDDEN, and that is the middle of the two things
+   this card could have been. Requiring an answer is the obvious reading of a
+   project called Gratitude Garden and it is the wrong one: gratitude produced
+   to get past a screen is a toll rather than gratitude, and the LAST card,
+   three questions in and one tap from the flower, is the cruellest place in
+   the flow to put a wall. Leaving it merely optional has the opposite fault,
+   since an optional box on the last card is the one a hurried visitor tabs
+   past without ever reading it. So nothing blocks, and the button says in
+   words when the box is empty, which makes skipping a thing somebody notices
+   doing rather than a default they fall through.
+
+   IT IS ONE WORD ADDED, NOT A DIFFERENT BUTTON, and that is deliberate on
+   both counts. The press does exactly the same thing either way, so a label
+   that changed wholesale would read as a different control appearing; and it
+   may not promise PLANTING, since this button opens the flower preview and
+   the planting is a tap further on. "anyway" is the card's own word, out of
+   the line this rewrite shortened: "leave it empty if today has none in it,
+   and plant anyway". It was reassurance there and it is reassurance here. */
+function gladBtnLabel() {
+  if (!gladBtn) return;
+  const has = gratitudeField && (gratitudeField.elt.value || "").trim() !== "";
+  gladBtn.html(has ? "See Your Flower" : "See Your Flower anyway");
+}
+
 function resetPromptSelections() {
   dayRating = "";
   dayShaper = "";
@@ -2922,6 +2946,7 @@ function resetPromptSelections() {
   gratitudeText = "";
   if (journalField) journalField.value("");
   if (gratitudeField) gratitudeField.value("");
+  gladBtnLabel();
 
   const p1Buttons = prompt1Wrap && prompt1Wrap.elt.querySelectorAll("button");
   if (p1Buttons) p1Buttons.forEach(b => {
@@ -3300,17 +3325,17 @@ function buildUI() {
   cardGlad.style("width", "min(460px, 92vw)");
   cardGlad.style("box-sizing", "border-box");
   cardGlad.style("padding", "24px 28px 20px 28px");
-  createElement("h3", "One thing you were glad of?")
+  createElement("h3", "One small gratitude?")
     .style("text-align", "center").style("color", "#0f5132")
     .style("font-size", "23px").style("font-weight", "600")
     .style("margin", "0 0 2px 0").parent(cardGlad);
-  createP("It can be very small. A cup of tea counts. Leave it empty if today has none in it, and plant anyway.")
+  createP("A cup of tea counts.")
     .addClass("gg-sub").style("font-size", "13px").style("margin", "0 0 12px 0")
     .style("text-align", "center").style("color", "#5a9e8e").parent(cardGlad);
 
   gratitudeField = createElement("textarea").parent(cardGlad);
   gratitudeField.attribute("maxlength", "300");
-  gratitudeField.attribute("placeholder", "Today I was glad of...");
+  gratitudeField.attribute("placeholder", "Today I was grateful for...");
   gratitudeField.style("width", "100%");
   gratitudeField.style("box-sizing", "border-box");
   gratitudeField.style("border", "2px solid #bde0d6");
@@ -3320,9 +3345,13 @@ function buildUI() {
   gratitudeField.style("font-size", "16px");
   gratitudeField.style("resize", "none");
   gratitudeField.style("pointer-events", "auto");
-  gratitudeField.input(() => { gratitudeText = gratitudeField.elt.value; });
+  gratitudeField.input(() => {
+    gratitudeText = gratitudeField.elt.value;
+    gladBtnLabel();
+  });
 
-  const continueBtn4 = createButton("See Your Flower").parent(cardGlad);
+  const continueBtn4 = createButton("See Your Flower anyway").parent(cardGlad);
+  gladBtn = continueBtn4;
   continueBtn4.style("background", "#4db6ac");
   continueBtn4.style("color", "white");
   continueBtn4.style("border", "none");
@@ -3437,6 +3466,7 @@ function buildUI() {
   gratitudeText = "";
   if (journalField) journalField.value("");
   if (gratitudeField) gratitudeField.value("");
+  gladBtnLabel();
 });
 
   gardenWrap = createDiv().id("garden-wrap").parent(root);
