@@ -668,23 +668,21 @@ function drawOrchid(ctx, R, hue, sat, light) {
     ctx.closePath(); ctx.fill();
     ctx.restore();
   }
-  lobe(-90, Ro * 1.00, Ro * 0.31, sat * 0.72, light + 13, 0.92);
-  lobe( 42, Ro * 0.94, Ro * 0.31, sat * 0.72, light + 13, 0.92);
-  lobe(138, Ro * 0.94, Ro * 0.31, sat * 0.72, light + 13, 0.92);
-  lobe(-40,  Ro * 0.95, Ro * 0.60, sat * 0.85, light + 19, 0.96, 0.30);
-  lobe(-140, Ro * 0.95, Ro * 0.60, sat * 0.85, light + 19, 0.96, 0.30);
-  /* the centre, off the reference drawing: an anther cap on a pale
-     column, the lip's side lobes closed round it, and the midlobe
-     below with its two corners turned up */
-  ctx.fillStyle = hsla(hue, sat + 18, light - 15, 1);
-  ellipseC(ctx, 0, -Ro * 0.13, Ro * 0.34, Ro * 0.40);
-  lobe(-124, Ro * 0.12, Ro * 0.042, sat + 18, light - 15, 1, 0.38, Ro * 0.13, -Ro * 0.11);
-  lobe(-56, Ro * 0.12, Ro * 0.042, sat + 18, light - 15, 1, 0.38, Ro * 0.13, Ro * 0.11);
-  ellipseC(ctx, 0, Ro * 0.16, Ro * 0.34, Ro * 0.17);
-  ctx.fillStyle = hsla(hue, sat * 0.60, light + 20, 1);
-  ellipseC(ctx, 0, -Ro * 0.15, Ro * 0.155, Ro * 0.31);
-  ctx.fillStyle = hsla(hue, sat * 1.05, light - 4, 1);
-  ellipseC(ctx, 0, -Ro * 0.30, Ro * 0.15, Ro * 0.13);
+  lobe(-90, Ro * 0.97, Ro * 0.34, sat * 0.72, light + 13, 0.95, 0.34);
+  lobe(50, Ro * 0.96, Ro * 0.38, sat * 0.72, light + 13, 0.95, 0.40);
+  lobe(130, Ro * 0.96, Ro * 0.38, sat * 0.72, light + 13, 0.95, 0.40);
+  lobe(-22, Ro * 1.00, Ro * 0.66, sat * 0.80, light + 17, 1.00, 0.52);
+  lobe(-158, Ro * 1.00, Ro * 0.66, sat * 0.80, light + 17, 1.00, 0.52);
+  /* the centre, off the reference drawing: a pale anther cap
+     crowning two thick upright arms with the column between them,
+     and the midlobe flaring below */
+  lobe(-100, Ro * 0.46, Ro * 0.15, sat + 22, light - 24, 1.00, 0.90, Ro * 0.30, -Ro * 0.10);
+  lobe(-80, Ro * 0.46, Ro * 0.15, sat + 22, light - 24, 1.00, 0.90, Ro * 0.30, Ro * 0.10);
+  ctx.fillStyle = hsla(hue, sat + 22, light - 24, 1);
+  ellipseC(ctx, 0, Ro * 0.12, Ro * 0.15, Ro * 0.44);
+  lobe(90, Ro * 0.26, Ro * 0.26, sat + 22, light - 24, 1.00, 0.92, Ro * 0.26, 0);
+  ctx.fillStyle = hsla(hue, sat * 0.40, light + 26, 1);
+  ellipseC(ctx, 0, -Ro * 0.12, Ro * 0.21, Ro * 0.21);
 }
 
 /* Pompom chrysanthemum: concentric rings of short rounded petals, lightening

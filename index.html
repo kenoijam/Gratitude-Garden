@@ -707,23 +707,21 @@
         ctx.bezierCurveTo(-wid,-len*.82,-wid,-len*(pinch||.22),0,0);
         ctx.fill(); ctx.restore();
       }
-      lobe(-90,Ro*1.00,Ro*.31,sat*.72,light+13,.92);
-      lobe(  42,Ro*.94,Ro*.31,sat*.72,light+13,.92);
-      lobe( 138,Ro*.94,Ro*.31,sat*.72,light+13,.92);
-      lobe( -40,Ro*.95,Ro*.60,sat*.85,light+19,.96,.30);
-      lobe(-140,Ro*.95,Ro*.60,sat*.85,light+19,.96,.30);
-      /* the centre, off the reference drawing: an anther cap on a pale
-         column, the lip's side lobes closed round it, and the midlobe
-         below with its two corners turned up */
-      ctx.fillStyle=hsl(hue,sat+18,light-15);
-      ctx.beginPath(); ctx.ellipse(0,-Ro*.13,Ro*.17,Ro*.20,0,0,Math.PI*2); ctx.fill();
-      lobe(-124,Ro*.12,Ro*.042,sat+18,light-15,1,.38,Ro*.13,-Ro*.11);
-      lobe(-56,Ro*.12,Ro*.042,sat+18,light-15,1,.38,Ro*.13,Ro*.11);
-      ctx.beginPath(); ctx.ellipse(0,Ro*.16,Ro*.17,Ro*.085,0,0,Math.PI*2); ctx.fill();
-      ctx.fillStyle=hsl(hue,sat*.6,light+20);
-      ctx.beginPath(); ctx.ellipse(0,-Ro*.15,Ro*.077,Ro*.155,0,0,Math.PI*2); ctx.fill();
-      ctx.fillStyle=hsl(hue,sat*1.05,light-4);
-      ctx.beginPath(); ctx.ellipse(0,-Ro*.30,Ro*.075,Ro*.065,0,0,Math.PI*2); ctx.fill();
+      lobe(-90,Ro*.97,Ro*.34,sat*.72,light+13,.95,.34);
+      lobe(50,Ro*.96,Ro*.38,sat*.72,light+13,.95,.40);
+      lobe(130,Ro*.96,Ro*.38,sat*.72,light+13,.95,.40);
+      lobe(-22,Ro*1.00,Ro*.66,sat*.8,light+17,1.00,.52);
+      lobe(-158,Ro*1.00,Ro*.66,sat*.8,light+17,1.00,.52);
+      /* the centre, off the reference drawing: a pale anther cap
+         crowning two thick upright arms with the column between them,
+         and the midlobe flaring below */
+      lobe(-100,Ro*.46,Ro*.15,sat+22,light-24,1.00,.90,Ro*.30,-Ro*.10);
+      lobe(-80,Ro*.46,Ro*.15,sat+22,light-24,1.00,.90,Ro*.30,Ro*.10);
+      ctx.fillStyle=hsl(hue,sat+22,light-24);
+      ctx.beginPath(); ctx.ellipse(0,Ro*.12,Ro*.075,Ro*.22,0,0,Math.PI*2); ctx.fill();
+      lobe(90,Ro*.26,Ro*.26,sat+22,light-24,1.00,.92,Ro*.26,0);
+      ctx.fillStyle=hsl(hue,sat*.4,light+26);
+      ctx.beginPath(); ctx.ellipse(0,-Ro*.12,Ro*.105,Ro*.105,0,0,Math.PI*2); ctx.fill();
     }
 
     function drawChrysanth(R,hue,sat,light){
@@ -2009,23 +2007,21 @@
       ctx.bezierCurveTo(-wid,-len*.82,-wid,-len*(pinch||.22),0,0);
       ctx.fill(); ctx.restore();
     }
-    lobe(-90,Ro*1.00,Ro*.31,sat*.72,light+13,.92);
-    lobe(  42,Ro*.94,Ro*.31,sat*.72,light+13,.92);
-    lobe( 138,Ro*.94,Ro*.31,sat*.72,light+13,.92);
-    lobe( -40,Ro*.95,Ro*.60,sat*.85,light+19,.96,.30);
-    lobe(-140,Ro*.95,Ro*.60,sat*.85,light+19,.96,.30);
-    /* the centre, off the reference drawing: an anther cap on a pale
-       column, the lip's side lobes closed round it, and the midlobe
-       below with its two corners turned up */
-    ctx.fillStyle=hsl(hue,sat+18,light-15);
-    ctx.beginPath(); ctx.ellipse(cx,cy-Ro*.13,Ro*.17,Ro*.20,0,0,Math.PI*2); ctx.fill();
-    lobe(-124,Ro*.12,Ro*.042,sat+18,light-15,1,.38,Ro*.13,-Ro*.11);
-    lobe(-56,Ro*.12,Ro*.042,sat+18,light-15,1,.38,Ro*.13,Ro*.11);
-    ctx.beginPath(); ctx.ellipse(cx,cy+Ro*.16,Ro*.17,Ro*.085,0,0,Math.PI*2); ctx.fill();
-    ctx.fillStyle=hsl(hue,sat*.6,light+20);
-    ctx.beginPath(); ctx.ellipse(cx,cy-Ro*.15,Ro*.077,Ro*.155,0,0,Math.PI*2); ctx.fill();
-    ctx.fillStyle=hsl(hue,sat*1.05,light-4);
-    ctx.beginPath(); ctx.ellipse(cx,cy-Ro*.30,Ro*.075,Ro*.065,0,0,Math.PI*2); ctx.fill();
+    lobe(-90,Ro*.97,Ro*.34,sat*.72,light+13,.95,.34);
+    lobe(50,Ro*.96,Ro*.38,sat*.72,light+13,.95,.40);
+    lobe(130,Ro*.96,Ro*.38,sat*.72,light+13,.95,.40);
+    lobe(-22,Ro*1.00,Ro*.66,sat*.8,light+17,1.00,.52);
+    lobe(-158,Ro*1.00,Ro*.66,sat*.8,light+17,1.00,.52);
+    /* the centre, off the reference drawing: a pale anther cap
+       crowning two thick upright arms with the column between them,
+       and the midlobe flaring below */
+    lobe(-100,Ro*.46,Ro*.15,sat+22,light-24,1.00,.90,Ro*.30,-Ro*.10);
+    lobe(-80,Ro*.46,Ro*.15,sat+22,light-24,1.00,.90,Ro*.30,Ro*.10);
+    ctx.fillStyle=hsl(hue,sat+22,light-24);
+    ctx.beginPath(); ctx.ellipse(cx,cy+Ro*.12,Ro*.075,Ro*.22,0,0,Math.PI*2); ctx.fill();
+    lobe(90,Ro*.26,Ro*.26,sat+22,light-24,1.00,.92,Ro*.26,0);
+    ctx.fillStyle=hsl(hue,sat*.4,light+26);
+    ctx.beginPath(); ctx.ellipse(cx,cy-Ro*.12,Ro*.105,Ro*.105,0,0,Math.PI*2); ctx.fill();
   }
 
   function drawChrysanth(ctx,cx,cy,R,hue,sat,light){
@@ -2115,7 +2111,7 @@
        The hibiscus is the only one in the set wider on one side than the
        other by a long way, and all of it is the stamen column. */
     hibiscus:  { l:-0.95, r:1.13, t:-0.97, b:0.92 },
-    orchid:    { l:-1.04, r:1.03, t:-1.28, b:0.83 },
+    orchid:    { l:-1.21, r:1.20, t:-1.24, b:0.96 },
     /* retired from every picker, measured anyway. See CLAUDE.md. */
     peony:     { l:-0.96, r:0.95, t:-1.00, b:0.84 },
     poppy:     { l:-1.00, r:0.99, t:-1.00, b:0.99 },
@@ -2424,7 +2420,7 @@
          at the ring's R of 0.30 size that is 14px up a 210px slot: plainly
          higher than the seven beside it. The hibiscus is very nearly centred
          already, 0.025 R, and takes a shift of about a pixel. */
-      else if(it.id === 'orchid') cy = size*0.568;
+      else if(it.id === 'orchid') cy = size*0.542;
       else if(it.id === 'hibiscus') cy = size*0.508;
       /* Retired, and kept so a restore is one edit: the peony paints 0.08 R
          above its origin, since its outer ring alternates two lengths. */

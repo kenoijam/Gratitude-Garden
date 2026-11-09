@@ -94,7 +94,7 @@ So grepping `sakura` finds the data and never the rendering code.
 - **The orchid's chip colour changed with its status.** It was `--lightsky` while it was hidden and nothing ever showed it; a pickable orchid gets an orchid purple.
 - **A CACHED SKETCH WASTED A CHECK AGAIN**, on the shared garden's picker this time. `fetch(url, {cache:"reload"})` on the script followed by a reload is the fix, and reading the live value back is the only way to know.
 
-##### THE ORCHID'S CENTRE IS FOUR PARTS, and the last peonies are gone
+##### THE WHOLE ORCHID IS TRANSCRIBED NOW, and the last peonies are gone
 
 The swap above left the orchid drawn exactly as it had been while it was
 hidden, and the thing nobody had looked at was its CENTRE. It took three goes
@@ -116,13 +116,42 @@ in five places the pickers do not reach.
 - **GO THREE: ONE CLOSED RING with the column pale inside it.** Round, and
   a doughnut: it has no top, no bottom and no parts, where the thing it is
   drawing is plainly a little assembly stacked one part on another.
-- **GO FOUR, AND THE ONE THAT HOLDS: FOUR PARTS, TRANSCRIBED.** A pencil
-  drawing of a phalaenopsis was the reference, and reading it part by part is
-  what finally worked. Top to bottom: the **anther cap**, a small dome at the
-  very top; the **column**, pale, narrow, running down from under it; the
-  **side lobes of the lip**, closing round the column as one deep mass; and
-  the **midlobe**, hanging below on a thin waist with its two corners turned
-  up. Nine ops, and the two corners are the only lobes.
+- **GO FOUR: FOUR PARTS off a pencil drawing.** Anther cap, pale column, the
+  lip's side lobes closed round it as one mass, and the midlobe below with its
+  two corners turned up. Right in its parts and still wrong as a picture: the
+  mass was a soft egg where the reference has a hard little assembly, and at
+  garden size it read as a blob with a dot on it.
+- **GO FIVE, AND THE ONE THAT HOLDS: THE WHOLE FLOWER OFF A FLAT DRAWING, not
+  the centre alone.** Every round before this had tuned the centre inside
+  petals nobody had looked at, which is why five goes were needed. The
+  reference is a flat vector phalaenopsis, and read as a whole it says two
+  things at once. The centre is a **pale circle crowning two thick upright
+  arms** with the column between them, the three flaring together into the
+  midlobe, which reads as a small lyre or a trident; **two lobes, two ellipses
+  and nothing else**. And the two broad petals are far rounder and swung far
+  more horizontal than ours were, at **22 degrees off horizontal** against the
+  old 50, with the lower sepals widened to match.
+- **THE ARMS HAVE TO BE NEARLY UPRIGHT OR THEY ARE A WISHBONE.** At 24 degrees
+  off vertical and thin they read as a **V with something caught in it**, and
+  the column disappears into the crossing; at 10 degrees and thick, the arms,
+  the column and the gaps between them are four things the eye can separate,
+  which is what the reference has. **The cap is the topmost thing on the
+  flower's middle** and it has to stay that way: it is what the arms are
+  flanking, and an arm tip rising past it turns the group back into a V.
+- **EVERYTHING MEASURED HAD TO BE MEASURED AGAIN, because the PETALS moved.**
+  That is the difference between this round and the four before it, which were
+  all interior and left every table standing. The painted box went from
+  `l -1.04, r 1.03, t -1.28, b 0.83` to **`l -1.21, r 1.20, t -1.24, b 0.96`**,
+  so `BLOOM_METRICS.orchid`, `BLOOM_BOX.orchid` and `HALO_BOX.orchid` in BOTH
+  gardens, the ring's own `cy` (`size*0.568` to **`size*0.542`**) and the
+  avatar hood all moved with it. Checked after: the p5 preview family and the
+  raw canvas family agree to a pixel, and all eight ring blooms still land
+  between 0.478 and 0.500 of their slot.
+- **THE ORCHID IS NOW WIDER THAN IT IS TALL, and that is what cost the avatar
+  hood its single radius.** It spans 1.21 R across and 1.10 down, where it
+  used to be 1.04 by 1.06, so no one `R` can land its tips at 84 on all three
+  sides any more. The sides win, since the bonnet's WIDTH is what reads as a
+  hood: `R: 70, dy: 10` puts them at 84.4 with the top and bottom at about 77.
 - **THE CORNERS ARE WHAT NAME IT, and they have to be SMALL.** A phalaenopsis
   midlobe carries two antennae that turn up at its tip, and that anchor shape
   is the one part of the flower nothing else in the set has. Drawn at 0.18 Ro
@@ -144,13 +173,12 @@ in five places the pickers do not reach.
   before the rotate**, so a part can be anchored away from the origin. The
   midlobe's corners need both. The catalogue copy folds them into its own
   `cx, cy` translate.
-- **NOTHING HAD TO BE RE-MEASURED, AND THAT WAS CHECKED RATHER THAN ASSUMED.**
-  The centre is entirely interior, so the painted box is identical before and
-  after, through both the lip change and the ring: `l -1.04, r 1.03, t -1.28,
-  b 0.83` of R every time, which is `BLOOM_METRICS.orchid` exactly, and
-  `BLOOM_BOX` and `HALO_BOX` both still hold. **Measure the box on any
-  interior change anyway**; it is one run and it is the difference between
-  knowing and hoping.
+- **NOTHING HAD TO BE RE-MEASURED THROUGH GOES TWO, THREE AND FOUR, and that
+  was checked rather than assumed each time.** All three were interior, so the
+  painted box came back identical every time at `l -1.04, r 1.03, t -1.28,
+  b 0.83`. Go five moved the petals and moved everything with them. **Measure
+  the box on any change at all**, interior or not; it is one run, and it is
+  the difference between knowing and hoping.
 - **`lobe` BRIEFLY GAINED AN `oy` AND HAS LOST IT AGAIN.** The arms had to be
   anchored away from the origin; the ring is ellipses and needs no such thing,
   so the parameter and its `translate` are gone from all seven rather than
@@ -255,9 +283,9 @@ The poppy arrived at 68/54, 74/52 and 66/56, taken from the reference drawing's 
 - **The hidden entries keep an EMPTY `keywords` array, never a missing one.** `chooseFlowerForMood` reads `.keywords` off entries in `flowerMeanings`, so removing or renaming the field throws the moment anyone writes a journal entry. The real lists are parked beside them as `keywordsHidden`, ready to swap back. That loop also iterates `votes` rather than `flowerMeanings`, so a keyword hit on a hidden species cannot write `votes[undefined]` and poison the result.
 - **Verified by exhausting the space, not by reading the maps**: all 280 combinations of rating, shaper and journal text were run through `chooseFlowerForMood`, and only the original eight ever come out.
 - **Every hidden species still draws**, which is deliberate: `SPECIES_MAP` resolves them, so a share link that names one opens instead of erroring, and the sync table above stays true.
-- **The orchid is a phalaenopsis face on**: three narrow sepals behind, two broad petals in front, and in the middle an anther cap over a pale column, the lip's side lobes closed round it and the midlobe below. That centre is what makes it read as an orchid rather than a generic five petalled bloom, and it was rebuilt four times; see "THE ORCHID'S CENTRE IS FOUR PARTS" above. It needs no label offset and no `bloomReach` entry, but it DOES need an origin nudge in the landing page's ring, since it paints 1.28 R above its origin and 0.83 below.
+- **The orchid is a phalaenopsis face on**: three sepals behind, two broad round petals in front swung nearly horizontal, and in the middle a pale anther cap crowning two upright arms with the column between them, all flaring into the midlobe below. That centre is what makes it read as an orchid rather than a generic five petalled bloom, and the whole flower was rebuilt five times; see "THE WHOLE ORCHID IS TRANSCRIBED NOW" above. It needs no label offset and no `bloomReach` entry, but it DOES need an origin nudge in the landing page's ring, since it paints 1.28 R above its origin and 0.83 below.
 - **The chrysanthemum is a POMPOM and that is load bearing.** A chrysanthemum is in the same family as the daisy, and drawn as a single flat bloom the two tiles are the same picture twice. Four concentric rings of short petals lightening inward reads as a ball; the daisy is one flat ring of sixteen. Checked with colour removed, which is the case that matters since a bouquet sender can set any species to any hue.
-- **Both were sized by measurement.** As a multiple of R the set runs tulip 0.61, lily 0.92, rose and daisy 0.98, lavender 0.39 wide by 1.06 tall, sunflower 1.33. Orchid lands at 1.02 and the chrysanthemum at 1.17, so neither needs scaling if they are ever turned on. A spider chrysanthemum was drawn and rejected: unmistakable, but it reached 1.9R, read as tangled at garden size, and a spiky flower is the wrong shape for a meaning about quiet reflection.
+- **Both were sized by measurement.** As a multiple of R the set runs tulip 0.61, lily 0.92, rose and daisy 0.98, lavender 0.39 wide by 1.06 tall, sunflower 1.33. The chrysanthemum lands at 1.17 and needs no scaling if it is ever turned on. The orchid was 1.02 and is **1.21** since it was redrawn from the flat reference, which puts it between the daisy and the sunflower rather than beside the rose. A spider chrysanthemum was drawn and rejected: unmistakable, but it reached 1.9R, read as tangled at garden size, and a spiky flower is the wrong shape for a meaning about quiet reflection.
 
 #### Florist sourcing, RESEARCH ONLY, not applied to the code
 
@@ -328,7 +356,7 @@ One exception: `personal-garden-style.css` is not the near-empty file it looks l
 - **IT IS SKIPPABLE, AND THAT IS THE DESIGN RATHER THAN A CONCESSION.** Gratitude produced on demand to get past a screen is a toll, not gratitude, and this is the LAST card: three questions in and one tap from the flower is the cruellest place in the flow to put a wall. Requiring an answer was weighed again later and refused again for that reason.
 - **THE SKIP IS NAMED RATHER THAN HIDDEN, which is the answer to the real worry.** Merely optional has its own fault: an optional box on the last card is the one a hurried visitor tabs past without ever reading, so the one question the project is named after becomes the one nobody answers. The button reads **"See Your Flower"** once there is text and **"See Your Flower anyway"** while the box is empty, so leaving it empty is a thing somebody notices doing rather than a default they fall through. `gladBtnLabel()` is the one place that decides, and it reads the FIELD rather than `gratitudeText`, so it cannot go stale; **both** of the places that clear the field call it, or the button keeps yesterday's label.
 - **IT IS ONE WORD ADDED, NOT A DIFFERENT LABEL, on both counts.** The press does exactly the same thing either way, so a label that changed wholesale would read as a different control appearing where there is only one. And it may NOT promise planting: this button opens the flower PREVIEW and the planting is a tap further on, which is what ruled out "Plant without one". **"anyway" is the card's own word**, out of the line the rewrite shortened.
-- **THE CARD IS THREE SHORT PIECES NOW, and each one carries a sentence the subtext used to.** The title is **"One small gratitude?"**, which has the project's word in it and carries "small is fine"; the line under it is **"A cup of tea counts."** alone; and "an empty box is allowed" moved onto the button. It was a 23px heading over a three sentence paragraph that wrapped to two lines, which is a lot of reading for the quietest question in the flow. The placeholder went with it, from "Today I was glad of..." to "Today I was grateful for...", or the card asks for a gratitude and the box asks for something else.
+- **THE CARD IS THREE SHORT PIECES NOW, and each one carries a sentence the subtext used to.** The title is **"One small gratitude?"**, which has the project's word in it and carries "small is fine"; the line under it is **"A cup of tea counts. Write whatever you like."**, two short fragments on ONE line; and "an empty box is allowed" moved onto the button. **The second fragment is reassurance rather than instruction**, and it is the only thing on the card that says the subject is yours: "a cup of tea counts" answers how small is allowed and says nothing about how wide. Keep it to one line, which at this card's width is about 50 characters; the old three sentences wrapped to two and that was the complaint. It was a 23px heading over a three sentence paragraph that wrapped to two lines, which is a lot of reading for the quietest question in the flow. The placeholder went with it, from "Today I was glad of..." to "Today I was grateful for...", or the card asks for a gratitude and the box asks for something else.
 - **A SCREEN OF ITS OWN RATHER THAN A SECOND BOX ON THE ONE BEFORE.** A card with two text areas on it is a form, and that card is already carrying the photo control. Being LAST is also what makes it the question you leave with.
 - **`showStep` (~:3338) IS WHERE A STEP IS ADDED, not `updateScreen`**, which is dead and has been for a long time. Three edits: the flag, the wrap toggle, and the button wiring in the two neighbouring cards.
 - **BOTH TEXTS FEED `chooseFlowerForMood`.** The keyword lists in `flowerMeanings` are full of gratitude words and this is the field most likely to hit them, so leaving it out would make the one question about gratitude the one question with no bearing on which flower grows. **Measured rather than assumed**: over all 56 combinations of rating and shaper, adding a gratitude sentence changes the species in **32** of them. The weighting is untouched, still two per keyword found anywhere in what was written.
@@ -1575,7 +1603,7 @@ Headings on the garden pages come from two places. `.gg-title` and `#tips-card h
 - **THE SUNFLOWER IS THE ONE THAT HAS TO BE COMPROMISED, and it is why R is 70 there rather than 96.** Its disc is as wide as its petals are long, so at a radius that put its tips with the others the disc came out at 48 against a 44 face and ringed it in dark olive, which is the "dark collar" the first attempt was abandoned for. At 70 the disc leaves a **three pixel rim**, which reads as an outline rather than a collar, and the tips land at 94.
 - **`dy` is the peony's alone.** Its painted box is deliberately asymmetric, 0.08R high, so it needs pushing down 8px to sit centred on the face. Everything else is 0.
 - **`petal()`, the stylised petal routine, is DELETED.** Do not reintroduce it: the ring of blobs is what it produced both times.
-- **THE ORCHID IS 80 WITH A `dy` OF 18 AND EVERY OTHER RING SPECIES IS 84, and it is the only one of the eight that needs both numbers.** Its painted box runs -1.28 to +0.83 of R, the most lopsided in the set, so at the shared R it would stand 177 pixels tall against the others' 168 AND sit 18 off centre. 80 puts its span on theirs and `dy` is its own box's offset; together they land every tip within a pixel of 84, top 84.4, bottom 84.2, sides 83. (The retired peony was the earlier case: 92 and a `dy` of 7, for the 0.08 R its outer ring sits above its origin.)
+- **THE ORCHID IS 70 WITH A `dy` OF 10 AND EVERY OTHER RING SPECIES IS 84, and it is the only one of the eight that needs both numbers.** Its painted box is both lopsided and WIDER THAN TALL, 1.21 R across against 1.10 down, so unlike every other ring species no single radius can land its tips at 84 on all three sides. The sides win, because the bonnet's width is what reads as a hood: sides 84.4, top and bottom about 77. (It was `R: 80, dy: 18` against the earlier 1.04 by 1.06 box, where all three did land within a pixel of 84.) (The retired peony was the earlier case: 92 and a `dy` of 7, for the 0.08 R its outer ring sits above its origin.)
 - **RE-TUNE THE SIX `R` VALUES if any species' 2D drawing changes**, the same rule `BLOOM_BOX`, `HALO_BOX` and `BLOOM_METRICS` already carry.
 
 - **THREE OF THE EIGHT GROW INSTEAD OF BEING WORN, and they do NOT all grow for the same reason.** A tulip is a closed cup and lavender is a spike, so neither has a ring of petals to put a face inside. The hibiscus has one and still sprouts: its stamen column reaches 1.13 R, past every petal, and as a hood that column came out from behind the head and lay across the shoulder. Each sprout entry in `HOOD` therefore carries its own `note`, which is the sentence the picker prints, because one line written for all three is wrong about whichever it was not written for. Worn on top they read as **a chef's hat and a spiky crown**; an inverted tulip and a fan of three spikes were both tried and both failed. They now get a plain cowl round the face and the flower on a short stem out of the crown, with two leaves on it, which is what makes it a sprout rather than a flower taped to a head. **Those two ARE `drawSpeciesBloom`**, since on a stem that is exactly what it draws.

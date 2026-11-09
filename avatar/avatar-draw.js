@@ -84,7 +84,7 @@
        hibiscus grows on a stem out of the crown, where the column is a spike
        on a small flower, which is the same answer the tulip and the lavender
        already get for the same underlying reason. */
-    orchid:    { mode: "hood",   R: 80, dy: 18 },
+    orchid:    { mode: "hood",   R: 70, dy: 10 },
     hibiscus:  { mode: "sprout", stem: 26, R: 20, dy: 0,
                  note: "A hibiscus carries its stamen column well past its " +
                        "petals, so it grows on a stem out of the crown." },
