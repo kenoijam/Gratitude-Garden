@@ -1084,6 +1084,16 @@ Two things live in this one file, and they are together because both are needed 
 
 - **IT IS A LETTER RATHER THAN A PARAGRAPH, and that is the whole point.** The same sentences set as body copy in a section read as marketing. Signed, in the first person, with a flower over them, they read as somebody talking. The last line stands alone in the heading's face, since it is the one sentence the whole site is an argument for.
 - **ONE COPY AT THE ROOT**, like `garden-music.js`, `garden-cursor.js`, `garden-loader.js`, `garden-life.js`, `garden-journal.js` and `garden-account.js`. Only `index.html` loads it, because a first hello belongs at the front door, but another page could carry it with one tag rather than a second copy of the words. `data-letter="off"` on the tag disables it.
+- **THE WORDS ARE THE AUTHOR'S OWN AND ARE VERBATIM.** They are not copy to
+  be tightened or rewritten: the whole argument for a letter rather than a
+  paragraph is that it is somebody talking, and an edited personal letter is
+  a page describing itself again. If it ever has to fit a shorter screen, the
+  TYPE moves and the sentences do not. Measured at the current words: the card
+  is 584px tall at 470 wide, which fits a 640px laptop viewport with 12px to
+  spare and needs no scroll, and 679 of 812 on a phone at 345 wide.
+- **THE LAST LINE IS WHICHEVER IS LAST.** `build()` puts `gl-last` on the
+  final entry of `lines`, so the closing sentence is set in the heading's face
+  automatically and adding a paragraph after it moves that treatment.
 - **THE WORDS LIVE IN `LETTER` AT THE TOP OF THE FILE**, not in the markup, so there is one copy of them and the footer's link opens the very same card.
 - **IT WAITS FOR THE LOADER.** `garden-loader.js` holds a flower over the sky for up to nine seconds, and two cards stacked on a first visit is exactly what this is meant to avoid rather than cause. `GardenLoader.showing()` is polled, since the loader comes down on whichever of three things happens first and there is no event.
 - **`localStorage`, NOT `sessionStorage`, and that is the difference between this and the music hint.** The hint is about the music playing right now, so it comes back next visit. This is about meeting somebody once. The key is `gg_letter`; `GardenLetter.reset()` clears it.

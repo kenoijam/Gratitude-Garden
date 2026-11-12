@@ -34,13 +34,17 @@
   /* ------------------------------------------------------------- the words
      Kept here rather than in the markup so there is one copy of them and the
      footer's "read it again" opens the very same card. */
+  /* THESE ARE THE AUTHOR'S OWN WORDS, verbatim. They are not copy to be
+     tightened: the whole argument for the letter is that it is somebody
+     talking rather than a page describing itself, and an edited personal
+     letter is a page describing itself again. If the card has to fit a
+     shorter screen, the TYPE moves, never the sentences. */
   var LETTER = {
-    hello: "Hey there",
+    hello: "Hello there!",
     lines: [
-      "I started writing down one thing I was grateful for each day. Not big things. A cup of tea, a message from someone, the light at four in the afternoon.",
-      "It quietly changed how I read the rest of the day. The same day, the same news, the same weather, and somehow a different one.",
-      "So I made somewhere to do it. You write, and a flower grows. Keep yours, or plant one in a meadow that everybody shares and that empties again at midnight.",
-      "Whatever you noticed today is enough."
+      "I used to compare my situations with others all the time, wanting the things I didn't have and envying other's situations. But one day I realized I have many things to appreciate in my own life! From the fact that I get to wake up everyday, eat good food, and meet amazing people, it's changed how I see the world.",
+      "That's why I decided to make gratitude garden, a space to reflect, appreciate and share! Have a personal little garden to record your days and end them with gratitude, and a shared garden to share gratitude and view what other people are grateful for!",
+      "Always remember that gratitude gets you a long way, and whatever you noticed today is enough!"
     ],
     sign: "Kenisha",
     go: "Come in"
