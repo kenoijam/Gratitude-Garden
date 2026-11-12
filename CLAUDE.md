@@ -18,6 +18,25 @@ one. That needs both online at the same time, so:
 | `/` | the BEFORE | **frozen. Do not change it.** |
 | `/v2/` | the AFTER | every new feature goes here |
 
+- **WHAT ACTUALLY DIFFERS, which is the thing the testing measures.** Keep
+  this table true; it is the experiment's own definition.
+
+  | | `/` the BEFORE | `/v2/` the AFTER |
+  |---|---|---|
+  | the first visit letter | **absent** | present |
+  | the mascot | absent | present |
+  | the guide and the fertilizer of the day | absent | present |
+  | footer "Why this exists" | absent | present |
+  | everything else | identical | identical |
+
+- **THE LETTER WAS TAKEN BACK OUT OF THE ROOT, and it is a SPLIT rather than a
+  deletion.** It was written before the two versions existed, so it had landed
+  in the root and then been copied into v2, which left the before carrying one
+  of the after's biggest features: the first thing a visitor sees, saying why
+  the project exists. `garden-letter.js` is still in the root directory and
+  `.footer-as-link` is still in the root stylesheet, both unused, so putting it
+  back is the script tag and the footer `<li>` and nothing else.
+
 - **`/v2/` IS A SELF CONTAINED COPY, NOT A SET OF OVERRIDES.** It carries its
   own `index.html`, `styles.css`, `config.js`, fonts, images, every root
   `garden-*.js`, and its own `personal-garden/` and `shared-garden/`. Every

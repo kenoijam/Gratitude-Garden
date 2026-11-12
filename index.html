@@ -26,11 +26,13 @@
        page being broken. It caps itself, so it can never outlive its page. -->
   <script src="garden-loader.js"></script>
 
-  <!-- THE NOTE THAT IS HERE THE FIRST TIME YOU ARE. Every other thing on the
-       page describes what the site does; this is the only thing that says why
-       anybody made it. It waits for the loader to go, shows once, and the
-       footer's "Why this exists" brings it back. -->
-  <script src="garden-letter.js"></script>
+  <!-- THE LETTER IS NOT LOADED HERE, AND THAT IS THE BEFORE/AFTER SPLIT
+       RATHER THAN A DELETION. This copy of the site is the frozen BEFORE for
+       the user testing, so every new feature lives in /v2/ and this one has
+       none of them. `garden-letter.js` is still sitting beside this file and
+       is still loaded by /v2/index.html; putting it back here is this one
+       tag and the footer link below. See CLAUDE.md, "THERE ARE TWO SITES IN
+       THIS REPO NOW". -->
 
   <!-- The account chip and the friends panel. Top right here, beside the
        music button, since the landing page keeps its controls in the top
@@ -1449,7 +1451,6 @@
              twice, shown to anybody, or demonstrated. The Explore column is
              where somebody looks for the rest of the site, so it is where
              the one piece of writing belongs too. -->
-        <li><button type="button" class="footer-as-link" id="footerLetter">Why this exists</button></li>
       </ul>
     </details>
   </div>
@@ -1484,15 +1485,6 @@
     });
   })();
 
-  /* "Why this exists" reopens the first-visit letter. `garden-letter.js` owns
-     the words, so this knows none of them. */
-  (function () {
-    var b = document.getElementById('footerLetter');
-    if (!b) return;
-    b.addEventListener('click', function () {
-      if (window.GardenLetter) window.GardenLetter.open();
-    });
-  })();
 
   // Scroll reveal
   const observer = new IntersectionObserver((entries) => {
