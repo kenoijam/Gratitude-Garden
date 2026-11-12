@@ -95,6 +95,44 @@ sketches and is deliberately NOT a line for line transcription of them.
   Butterfly is a label, and this one is the garden itself come to meet you. It
   is one constant, `NAME` in `garden-guide.js`, read by the introduction and
   both aria-labels, so renaming it is one line.
+- **IT IS 140px, UP FROM 92, AND THE REASON IS THE MEADOW'S OWN BUTTERFLIES.**
+  `garden-life.js` flies ambient butterflies across the hero at roughly the
+  size the mascot was sitting at, so a butterfly mascot in the corner read as
+  a third piece of scenery rather than as somebody talking to you. Half as
+  large again is what separates a character from the life around it. 90 on a
+  phone, up from 62.
+- **IT BREATHES, FLAPS AND WATCHES THE POINTER, AND ALL OF IT IS CSS.** The
+  figure is rebuilt as a STRING whenever the pose changes, so anything that
+  moved every frame would mean regenerating the whole SVG sixty times a
+  second. `garden-mascot.js` therefore emits two hooks that exist only for
+  this, `gm-wings` and `gm-eyes`, and the guide drives them from a stylesheet.
+  - **THE FLAP AND THE BREATH RUN AT 2.6s AND 3.4s**, deliberately unrelated,
+    so they drift against each other instead of locking into one beat. Same
+    rule the hero's flowers and the landing band's five gardeners follow:
+    things that rise and fall together read as the page tilting rather than as
+    several living things.
+  - **`transform-box:view-box` IS WHAT MAKES `transform-origin` MEAN VIEWBOX
+    UNITS.** Without it the origin is the element's own bounding box and the
+    wings shear sideways instead of folding about the body.
+  - **A CSS TRANSLATE IN px ON AN SVG CHILD IS IN USER UNITS**, so the gaze is
+    written straight in viewBox numbers with no conversion.
+  - **THE GAZE IS MEASURED FROM THE EYES, NOT THE FIGURE'S CENTRE.** They sit
+    at y 112 of a 200 unit box, well above the middle, and measured from the
+    centre the eyes looked down at everything. It is capped at 2.6 units,
+    about half an eye's width, and eased in over the first 260 pixels so a
+    pointer right beside it does not slam them to full deflection. Vertical
+    travel is 0.75 of horizontal, because a face has less room up and down.
+  - **One passive document listener**, and it writes a transform only when the
+    eyes have moved a tenth of a unit, so a pointer crossing the page does not
+    set a style sixty times a second for a picture that has not changed. A
+    touch pointer is ignored: a finger is not a gaze.
+- **A TAP DOES SOMETHING VISIBLE NOW.** It only repeated the line, and if the
+  bubble was already up that is a press with no answer at all, which is most
+  of what "not that interactive" meant. It beams and throws the project's four
+  pointed sparkle for 1400ms, which is the `planted` pose, then settles back
+  to the section's. That is deliberately SHORTER than the bubble's 7000ms
+  hold, so the face settles while the words are still readable rather than
+  everything going quiet at once.
 - **IT SAYS ITS NAME ONCE, EVER.** A character that introduces itself every
   visit is one that has not remembered you, which is the opposite of what a
   companion is for. The introduction rides on the FRONT of the day's

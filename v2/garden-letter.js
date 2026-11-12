@@ -102,7 +102,14 @@
     "#gg-letter[hidden]{display:none !important;}",
 
     ".gl-card{position:relative;width:min(92vw,470px);background:#fffdf7;",
-    "border-radius:18px;padding:26px 28px 22px;margin:auto;",
+    /* THE SIDE PADDING IS 40, NOT 28, AND IT IS THE ONE THAT HAD TO GROW.
+       At 28 the text ran within a couple of characters of the card's own
+       edge, so the paragraph read as filling the card rather than sitting in
+       it, which is the difference between a note and a notice. Top and
+       bottom were already generous; it was only the sides that were tight.
+       The close cross lives in the top right, so the extra side room also
+       stops the first line running under it. */
+    "border-radius:18px;padding:26px 40px 22px;margin:auto;",
     "box-shadow:0 18px 48px rgba(29,100,102,0.22);text-align:center;",
     "transform:translateY(16px);transition:transform .52s cubic-bezier(.22,.9,.3,1);}",
     "#gg-letter[data-show='1'] .gl-card{transform:none;}",
@@ -153,7 +160,10 @@
     "font-size:19px;line-height:1;}",
     ".gl-x:hover{background:#eef6f2;}",
 
-    "@media (max-width:420px){.gl-card{padding:26px 20px 22px;}",
+    /* A phone keeps proportionally more side room than it used to (24
+       against 20) but less than the laptop's 40, since 40 either side of a
+       345 wide card leaves 265 of text and the lines start breaking badly. */
+    "@media (max-width:420px){.gl-card{padding:26px 24px 22px;}",
     ".gl-hello{font-size:22px;}}",
 
     /* The rise is the only motion here, so it is the only thing to opt out

@@ -181,7 +181,13 @@
              '" transform="rotate(28 140 147)"/>';
     }
 
-    s += '<g transform="translate(100 118) scale(' + w + ') translate(-100 -118)">' +
+    /* `gm-wings` AND `gm-eyes` EXIST FOR THE ANIMATION AND FOR NOTHING ELSE.
+       The figure is rebuilt as a STRING whenever the pose changes, so anything
+       that moves every frame cannot be redrawn here: it would mean
+       regenerating the whole SVG sixty times a second. These two hooks let
+       `garden-guide.js` drive the flap, the breath and the eyes from CSS
+       instead, which costs nothing and survives a pose change. */
+    s += '<g class="gm-wings" transform="translate(100 118) scale(' + w + ') translate(-100 -118)">' +
          side() +
          '<g transform="translate(200,0) scale(-1,1)">' + side() + '</g>' +
          '</g>';
@@ -210,7 +216,7 @@
 
     s += '<ellipse cx="71" cy="127" rx="11" ry="7" fill="' + C.cheek + '"/>';
     s += '<ellipse cx="129" cy="127" rx="11" ry="7" fill="' + C.cheek + '"/>';
-    s += p.face;
+    s += '<g class="gm-eyes">' + p.face + '</g>';
     if (p.extra) s += p.extra;
     return s;
   }

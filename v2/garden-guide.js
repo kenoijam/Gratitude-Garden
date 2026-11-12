@@ -132,10 +132,46 @@
 
     ".gg-g-me{pointer-events:auto;border:none;background:none;padding:0;",
     "line-height:0;display:block;",
-    "filter:drop-shadow(0 6px 14px rgba(29,100,102,0.18));",
+    "filter:drop-shadow(0 8px 18px rgba(29,100,102,0.20));",
     "transition:transform .3s cubic-bezier(.22,.9,.3,1);}",
-    ".gg-g-me:hover{transform:translateY(-4px);}",
+    ".gg-g-me:hover{transform:translateY(-6px) scale(1.06);}",
+    ".gg-g-me:active{transform:translateY(-2px) scale(0.98);}",
     ".gg-g-me svg{display:block;}",
+
+    /* ─────────────────────────────────────────── IT IS ALIVE, NOT A STICKER
+       NOTHING ON THIS PAGE IS STILL except a sticker, which is what a mascot
+       that never moves reads as. The clouds drift, the hero flowers sway, the
+       birds cross and the butterflies fly; a character pinned in the corner
+       at a fixed pose was the one motionless thing on screen and it showed.
+
+       ALL OF IT IS CSS ON HOOKS THE DRAWING PROVIDES, never a redraw. The
+       figure is rebuilt as a string whenever the pose changes, so anything
+       animated here would otherwise mean regenerating the whole SVG every
+       frame.
+
+       THE TWO PERIODS ARE DELIBERATELY COPRIME-ISH, 2.6s against 3.4s, so the
+       flap and the breath drift against each other and never lock into one
+       beat. That is the rule the hero's own flowers and the landing band's
+       gardeners already follow: things that rise and fall together read as
+       the page tilting rather than as several living things. */
+    "@keyframes gmFlap{0%,100%{transform:scaleX(1);}50%{transform:scaleX(0.86);}}",
+    "@keyframes gmBreathe{0%,100%{transform:translateY(0) scale(1);}",
+    "50%{transform:translateY(-3px) scale(1.018);}}",
+
+    /* `transform-box:view-box` is what makes `transform-origin` mean viewBox
+       units here. Without it the origin is the element's own bounding box and
+       the wings shear sideways instead of folding about the body. */
+    ".gm-wings{transform-box:view-box;transform-origin:100px 118px;",
+    "animation:gmFlap 2.6s ease-in-out infinite;}",
+    ".gg-g-me svg{animation:gmBreathe 3.4s ease-in-out infinite;}",
+
+    /* A CSS translate in px on an SVG child is in USER UNITS, so 2.6 here is
+       2.6 viewBox units and needs no conversion. */
+    ".gm-eyes{transition:transform .22s ease-out;}",
+
+    "@media (prefers-reduced-motion:reduce){",
+    ".gm-wings,.gg-g-me svg{animation:none !important;}",
+    ".gm-eyes{transition:none !important;}}",
 
     /* It arrives rather than appearing, once, and never again. */
     "#gg-guide{opacity:0;transform:translateY(14px);",
@@ -157,6 +193,55 @@
 
   /* ───────────────────────────────────────────────────────────────── the build */
   var root = null, bubble = null, me = null, holdT = 0, current = "";
+  var reactT = 0;
+  var look = { x: 0, y: 0, live: false, lx: 0, ly: 0 };
+
+  /* HOW FAR AN EYE MAY TRAVEL, in viewBox units. The eye is a circle of
+     radius 5.4 sitting on a face about 100 units across, so 2.6 is about half
+     an eye's width: enough to read as a glance and nowhere near enough to
+     look like the eyes are sliding off. Pushed further it stops being a look
+     and becomes a squint. */
+  var GAZE = 2.6;
+
+  function aimEyes() {
+    if (!me) return;
+    var g = me.querySelector(".gm-eyes");
+    if (!g) return;
+    var dx = 0, dy = 0;
+    if (look.live) {
+      var r = me.getBoundingClientRect();
+      if (r.width) {
+        var cx = r.left + r.width / 2;
+        /* The eyes sit at y 112 of a 200 unit box, which is above the middle,
+           so the gaze is measured from THERE rather than from the centre of
+           the figure. Measured from the middle it looked down at everything. */
+        var cy = r.top + r.height * (112 / 200);
+        var vx = look.x - cx, vy = look.y - cy;
+        var d = Math.sqrt(vx * vx + vy * vy) || 1;
+        /* Normalised, then eased in over the first 260 pixels so a pointer
+           right beside it does not slam the eyes to full deflection. */
+        var k = Math.min(1, d / 260);
+        dx = (vx / d) * GAZE * k;
+        dy = (vy / d) * GAZE * k * 0.75;   /* less vertical: a face has less room up and down */
+      }
+    }
+    if (Math.abs(dx - look.lx) < 0.1 && Math.abs(dy - look.ly) < 0.1) return;
+    look.lx = dx; look.ly = dy;
+    g.style.transform = "translate(" + dx.toFixed(2) + "px," + dy.toFixed(2) + "px)";
+  }
+
+  /* A BEAT OF DELIGHT, then back to whatever the section was saying. It is
+     deliberately SHORTER than the bubble's own hold, so the face settles
+     while the words are still readable rather than the two ending together
+     and the whole thing going quiet at once. */
+  function react() {
+    setPose("planted");
+    clearTimeout(reactT);
+    reactT = setTimeout(function () {
+      var e = SAYS[current];
+      setPose(e ? e.pose : "welcome");
+    }, 1400);
+  }
 
   function met() {
     try { return localStorage.getItem(MET_KEY) === "1"; } catch (e) { return true; }
@@ -192,16 +277,41 @@
     me.innerHTML = window.GardenMascot.svg("welcome", 92);
 
     root.querySelector(".gg-g-x").addEventListener("click", putAway);
-    /* Tapping the mascot says the current section's line again. A companion
-       you cannot ask to repeat itself is one you have to catch first time. */
-    me.addEventListener("click", function () { if (current) say(current, true); });
+
+    /* TAPPING IT DOES SOMETHING VISIBLE, which it did not before. It repeated
+       the line, and if the bubble was already up that is a press with no
+       answer at all, so the character read as inert. It now BEAMS and throws
+       the project's own four pointed sparkle for a beat, which is the
+       `planted` pose, and then goes back to whatever the section was. */
+    me.addEventListener("click", function () {
+      if (current) say(current, true);
+      react();
+    });
+
+    /* IT WATCHES THE POINTER. One document level listener rather than one per
+       element, passive so it can never hold up a scroll, and it only writes a
+       transform when the eyes have actually moved by a tenth of a unit, so a
+       pointer drifting across the page does not set a style sixty times a
+       second for a picture that has not changed. */
+    document.addEventListener("pointermove", function (e) {
+      if (e.pointerType === "touch") return;   /* a finger is not a gaze */
+      look.x = e.clientX; look.y = e.clientY; look.live = true;
+      aimEyes();
+    }, { passive: true });
+    document.addEventListener("pointerleave", function () { look.live = false; aimEyes(); });
   }
 
   var pose = "welcome";
 
   function setPose(p) {
     pose = p || pose;
-    me.innerHTML = window.GardenMascot.svg(pose, window.innerWidth <= 768 ? 62 : 92);
+    /* 140 AND 90, UP FROM 92 AND 62. At the old size it weighed the same as
+       the ambient butterflies `garden-life.js` flies across the hero, so it
+       read as a third piece of scenery rather than as somebody talking to
+       you. Half as large again is what separates a character from the life
+       around it. */
+    me.innerHTML = window.GardenMascot.svg(pose, window.innerWidth <= 768 ? 90 : 140);
+    aimEyes();
   }
 
   /* A WIDTH CHANGE ONLY, never any resize. The size is chosen when the figure
