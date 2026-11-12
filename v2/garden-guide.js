@@ -26,6 +26,17 @@
   if (!window.GardenMascot) return;        /* no drawing, no guide */
 
   var SEEN_KEY = "gg_guide_off";           /* sessionStorage: put away for this visit */
+  var MET_KEY  = "gg_met_hortus";          /* localStorage: has it introduced itself */
+
+  /* ────────────────────────────────────────────────────────────── THE NAME
+     HORTUS, Latin for garden. It names the PLACE rather than the creature,
+     which is why it beat the butterfly words: a mascot called Butterfly is a
+     label, and this one is the garden itself come to meet you. It is also
+     short, has no English homonym to trip over, and a tester can say it out
+     loud in an interview without asking how.
+
+     ONE CONSTANT, read everywhere, so renaming is this line. */
+  var NAME = "Hortus";
 
   /* ═══════════════════════════════════════════════════ THE FERTILIZER OF THE DAY
      ╔═══════════════════════════════════════════════════════════════════════╗
@@ -147,6 +158,12 @@
   /* ───────────────────────────────────────────────────────────────── the build */
   var root = null, bubble = null, me = null, holdT = 0, current = "";
 
+  function met() {
+    try { return localStorage.getItem(MET_KEY) === "1"; } catch (e) { return true; }
+  }
+  function meet() {
+    try { localStorage.setItem(MET_KEY, "1"); } catch (e) {}
+  }
   function off() {
     try { return sessionStorage.getItem(SEEN_KEY) === "1"; } catch (e) { return false; }
   }
@@ -164,10 +181,10 @@
     root.id = "gg-guide";
     root.innerHTML =
       "<div class='gg-g-say' role='status' aria-live='polite'>" +
-        "<button class='gg-g-x' type='button' aria-label='Hide the guide'>&#215;</button>" +
+        "<button class='gg-g-x' type='button' aria-label='Hide " + NAME + "'>&#215;</button>" +
         "<span class='gg-g-text'></span>" +
       "</div>" +
-      "<button class='gg-g-me' type='button' aria-label='Say something else'></button>";
+      "<button class='gg-g-me' type='button' aria-label='" + NAME + ", say that again'></button>";
     document.body.appendChild(root);
 
     bubble = root.querySelector(".gg-g-say");
@@ -205,6 +222,19 @@
     if (!e) return;
     current = id;
     var words = e.line === null ? today() : e.line;
+
+    /* IT SAYS ITS NAME ONCE, EVER, AND THEN NEVER AGAIN. A character that
+       introduces itself every visit is a character that has not remembered
+       you, which is the opposite of what a companion is for. It rides on the
+       FRONT of the day's line rather than taking a bubble of its own: two
+       bubbles in a row the moment somebody arrives is the crowding the letter
+       already waits to avoid.
+
+       `localStorage`, not `sessionStorage`, for the same reason the letter
+       uses it: meeting somebody is not a thing that happens again next week.
+       The guide's own put-away flag stays in `sessionStorage`, because that
+       IS about this visit. */
+    if (e.line === null && !met()) { words = "Hello, I am " + NAME + ". " + words; meet(); }
     root.querySelector(".gg-g-text").textContent = words;
     setPose(e.pose);
 
@@ -286,6 +316,9 @@
     say: say,
     putAway: putAway,
     fertilizer: today,
-    reset: function () { try { sessionStorage.removeItem(SEEN_KEY); } catch (e) {} }
+    name: NAME,
+    reset: function () {
+      try { sessionStorage.removeItem(SEEN_KEY); localStorage.removeItem(MET_KEY); } catch (e) {}
+    }
   };
 })();

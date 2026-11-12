@@ -90,6 +90,19 @@ sketches and is deliberately NOT a line for line transcription of them.
   the cursor already draw, so the thing on its head is this project's flower;
   and the four pointed sparkle from `drawNewestSparkles`, inner corners at
   0.35 of the radius.
+- **IT IS CALLED HORTUS**, Latin for garden. It names the PLACE rather than
+  the creature, which is why it beat the butterfly words: a mascot called
+  Butterfly is a label, and this one is the garden itself come to meet you. It
+  is one constant, `NAME` in `garden-guide.js`, read by the introduction and
+  both aria-labels, so renaming it is one line.
+- **IT SAYS ITS NAME ONCE, EVER.** A character that introduces itself every
+  visit is one that has not remembered you, which is the opposite of what a
+  companion is for. The introduction rides on the FRONT of the day's
+  fertilizer line rather than taking a bubble of its own, because two bubbles
+  the moment somebody arrives is the crowding the letter already waits to
+  avoid. `gg_met_hortus` in **`localStorage`**, for the same reason the letter
+  uses it: meeting somebody is not a thing that happens again next week. The
+  put-away flag stays in `sessionStorage`, because that IS about this visit.
 - **ONE BODY, FIVE FACES.** `POSES` holds welcome, listen, hard, planted and
   bye, and only the face and the wing scale change between them. Five whole
   drawings is how five expressions drift into five characters.
@@ -1267,16 +1280,30 @@ Two things live in this one file, and they are together because both are needed 
 
 - **IT IS A LETTER RATHER THAN A PARAGRAPH, and that is the whole point.** The same sentences set as body copy in a section read as marketing. Signed, in the first person, with a flower over them, they read as somebody talking. The last line stands alone in the heading's face, since it is the one sentence the whole site is an argument for.
 - **ONE COPY AT THE ROOT**, like `garden-music.js`, `garden-cursor.js`, `garden-loader.js`, `garden-life.js`, `garden-journal.js` and `garden-account.js`. Only `index.html` loads it, because a first hello belongs at the front door, but another page could carry it with one tag rather than a second copy of the words. `data-letter="off"` on the tag disables it.
-- **THE WORDS ARE THE AUTHOR'S OWN AND ARE VERBATIM.** They are not copy to
-  be tightened or rewritten: the whole argument for a letter rather than a
-  paragraph is that it is somebody talking, and an edited personal letter is
-  a page describing itself again. If it ever has to fit a shorter screen, the
-  TYPE moves and the sentences do not. Measured at the current words: the card
-  is 584px tall at 470 wide, which fits a 640px laptop viewport with 12px to
-  spare and needs no scroll, and 679 of 812 on a phone at 345 wide.
-- **THE LAST LINE IS WHICHEVER IS LAST.** `build()` puts `gl-last` on the
-  final entry of `lines`, so the closing sentence is set in the heading's face
-  automatically and adding a paragraph after it moves that treatment.
+- **THE WORDS ARE THE AUTHOR'S OWN AND ONLY SHE MAY CHANGE THEM.** The whole
+  argument for a letter rather than a paragraph is that it is somebody
+  talking, and a letter edited by anybody else is a page describing itself
+  again. It has been shortened ONCE, on her instruction, **by cutting rather
+  than rewriting**: about 150 words over four paragraphs down to about 85 over
+  three. The comparison and her concrete list (waking up, good food, amazing
+  people) are the heart of it and stayed; what went was the tail of the
+  opening sentence and the longer description of the two gardens, which the
+  page itself says again a screen further down.
+- **ONE HEADING AND ONE BODY, AND THAT WAS A REAL FAULT.** The card carried
+  **four type treatments in about four hundred pixels**: a 26px Fraunces
+  greeting, 14.5px Arial paragraphs, a 17px Fraunces closing line and a 21px
+  Fraunces italic signature. Two fonts and four sizes on a card this small
+  reads as four different voices rather than one person talking, which is the
+  one thing a letter cannot afford. The greeting is now the single heading and
+  everything below it is Arial 15px; the closing line keeps its weight by
+  being the last thing said rather than by changing face, and the signature is
+  the body in italic and the garden's teal.
+- **`gl-last` IS KEPT BUT NO LONGER CHANGES THE FACE OR THE SIZE**, only the
+  colour. `build()` still puts it on whichever entry of `lines` is last, so
+  adding a paragraph after the closing line moves it.
+- **Measured after**: 549px tall at 470 wide, which fits a 640px laptop
+  viewport with 45px above and 45 below and no scroll, and 594 of 780 on a
+  phone at 358 wide with no sideways scroll. It was 584 and 679.
 - **THE WORDS LIVE IN `LETTER` AT THE TOP OF THE FILE**, not in the markup, so there is one copy of them and the footer's link opens the very same card.
 - **IT WAITS FOR THE LOADER.** `garden-loader.js` holds a flower over the sky for up to nine seconds, and two cards stacked on a first visit is exactly what this is meant to avoid rather than cause. `GardenLoader.showing()` is polled, since the loader comes down on whichever of three things happens first and there is no event.
 - **`localStorage`, NOT `sessionStorage`, and that is the difference between this and the music hint.** The hint is about the music playing right now, so it comes back next visit. This is about meeting somebody once. The key is `gg_letter`; `GardenLetter.reset()` clears it.

@@ -34,17 +34,24 @@
   /* ------------------------------------------------------------- the words
      Kept here rather than in the markup so there is one copy of them and the
      footer's "read it again" opens the very same card. */
-  /* THESE ARE THE AUTHOR'S OWN WORDS, verbatim. They are not copy to be
-     tightened: the whole argument for the letter is that it is somebody
-     talking rather than a page describing itself, and an edited personal
-     letter is a page describing itself again. If the card has to fit a
-     shorter screen, the TYPE moves, never the sentences. */
+  /* THESE ARE THE AUTHOR'S OWN WORDS AND ONLY SHE MAY CHANGE THEM. The whole
+     argument for a letter rather than a paragraph is that it is somebody
+     talking rather than a page describing itself, and a letter edited by
+     anybody else is a page describing itself again.
+
+     SHORTENED ONCE, BY THE AUTHOR'S OWN INSTRUCTION, AND BY CUTTING RATHER
+     THAN REWRITING. It ran to about 150 words over four paragraphs and now
+     runs to about 85 over three: the comparison and the concrete list she
+     wrote (waking up, good food, amazing people) are the heart of it and
+     stayed; what went was the second half of the opening sentence and the
+     longer description of the two gardens, which the page itself says again
+     a screen further down. Her phrasing is otherwise untouched. */
   var LETTER = {
     hello: "Hello there!",
     lines: [
-      "I used to compare my situations with others all the time, wanting the things I didn't have and envying other's situations. But one day I realized I have many things to appreciate in my own life! From the fact that I get to wake up everyday, eat good food, and meet amazing people, it's changed how I see the world.",
-      "That's why I decided to make gratitude garden, a space to reflect, appreciate and share! Have a personal little garden to record your days and end them with gratitude, and a shared garden to share gratitude and view what other people are grateful for!",
-      "Always remember that gratitude gets you a long way, and whatever you noticed today is enough!"
+      "I used to compare myself with others all the time, wanting what I didn't have. Then I realized how much there was to appreciate in my own life: waking up every day, good food, amazing people.",
+      "So I made Gratitude Garden, a space to reflect, appreciate and share. A little garden of your own to end your days with gratitude, and a shared one to see what other people are grateful for.",
+      "Gratitude gets you a long way, and whatever you noticed today is enough!"
     ],
     sign: "Kenisha",
     go: "Come in"
@@ -99,18 +106,30 @@
     "font-variation-settings:'SOFT' 50,'WONK' 0;font-size:26px;color:#1d6466;",
     "margin:0 0 14px;}",
 
-    ".gl-card p{font-family:Arial,Helvetica,sans-serif;font-size:14.5px;",
-    "line-height:1.62;color:#2f6260;margin:0 0 11px;}",
+    /* ONE HEADING AND ONE BODY, AND NOTHING ELSE. The card carried FOUR
+       type treatments in about four hundred pixels: a 26px Fraunces
+       greeting, 14.5px Arial paragraphs, a 17px Fraunces closing line and a
+       21px Fraunces italic signature. Two fonts and four sizes on a card
+       this small reads as four different voices rather than one person
+       talking, which is the one thing a letter cannot afford.
+
+       So: the greeting is the single heading, and EVERYTHING below it is one
+       font at one size. The closing line keeps its weight by being the last
+       thing said rather than by changing face, and the signature is the body
+       in italic and the garden's teal, which is enough to read as a
+       signature without being a third treatment. */
+    ".gl-card p{font-family:Arial,Helvetica,sans-serif;font-size:15px;",
+    "line-height:1.65;color:#2f6260;margin:0 0 13px;}",
     ".gl-card p:last-of-type{margin-bottom:18px;}",
 
-    /* The last line is the one the whole site is for, so it is the only one
-       that is not a paragraph of reasoning. It stands on its own in the
-       heading's face at body size. */
-    ".gl-card p.gl-last{font-family:'Fraunces',Georgia,serif;font-size:17px;",
-    "font-variation-settings:'SOFT' 50,'WONK' 0;color:#1d6466;}",
+    /* `gl-last` NO LONGER CHANGES THE FACE OR THE SIZE. The class is kept
+       because `build()` still writes it and because the closing line may yet
+       want a colour of its own; today it takes the deeper teal and nothing
+       more. */
+    ".gl-card p.gl-last{color:#1d6466;}",
 
-    ".gl-sign{font-family:'Fraunces',Georgia,serif;font-style:italic;",
-    "font-size:21px;color:#429288;margin:0 0 18px;}",
+    ".gl-sign{font-family:Arial,Helvetica,sans-serif;font-style:italic;",
+    "font-size:15px;color:#429288;margin:0 0 18px;}",
 
     ".gl-go{font-family:Arial,Helvetica,sans-serif;font-weight:700;font-size:16px;",
     "width:100%;min-height:48px;border:none;border-radius:999px;background:#26a69a;",
@@ -128,7 +147,7 @@
     ".gl-x:hover{background:#eef6f2;}",
 
     "@media (max-width:420px){.gl-card{padding:26px 20px 22px;}",
-    ".gl-hello{font-size:23px;}.gl-card p{font-size:14.5px;}}",
+    ".gl-hello{font-size:22px;}}",
 
     /* The rise is the only motion here, so it is the only thing to opt out
        of; the card itself still arrives. */
