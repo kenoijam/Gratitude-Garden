@@ -39,9 +39,18 @@
      talking rather than a page describing itself, and a letter edited by
      anybody else is a page describing itself again.
 
-     SHORTENED TWICE, BOTH TIMES ON THE AUTHOR'S OWN INSTRUCTION AND BOTH
-     TIMES BY CUTTING RATHER THAN REWRITING. It ran to about 150 words over
-     four paragraphs; it is about 70 over TWO. The comparison and the
+     SHORTENED THREE TIMES, EVERY TIME ON THE AUTHOR'S OWN INSTRUCTION AND
+     EVERY TIME BY CUTTING RATHER THAN REWRITING. It ran to about 150 words
+     over four paragraphs; it is about 45 over TWO, which is roughly the
+     length of the One Year card it is modelled on.
+
+     THE THIRD CUT TOOK THE TWO CONCRETE DETAILS, and that was the trade. The
+     list (waking up, good food, amazing people) and the sentence describing
+     the two gardens were both good; what they were not was NECESSARY, since
+     the page itself describes the gardens a screen further down and the card
+     is meant to be read in one breath rather than studied. The turn, that she
+     made it, and the closing line are what is left, which is the argument
+     with nothing round it. The comparison and the
      concrete list she wrote (waking up, good food, amazing people) are the
      heart of it and have never been touched. What went: the tail of the
      opening sentence, the longer description of the two gardens, which the
@@ -57,8 +66,8 @@
   var LETTER = {
     hello: "Hello there!",
     lines: [
-      "I used to compare myself with others all the time, wanting what I didn't have. Then I realized how much there was to appreciate in my own life: waking up every day, good food, amazing people. So I made Gratitude Garden, a little garden of your own to end your days with gratitude, and a shared one to see what other people are grateful for.",
-      "Gratitude gets you a long way, and whatever you noticed today is enough!"
+      "I used to compare myself with others, wanting what I didn't have. Then I realized how much there already was to appreciate in my own life. So I made this: a garden of your own, and a shared one.",
+      "Whatever you noticed today is enough!"
     ],
     sign: "Kenisha",
     go: "Come in"

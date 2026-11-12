@@ -241,16 +241,28 @@
 
     /* feet, under the body so the body hides where they join, the way the
        foreground hill buries a stem in both gardens */
-    /* LOW ENOUGH TO BE SEEN. The body's lowest pixel is 117+49=166, so feet
-       centred at 161 showed about two pixels of themselves. At 168 they clear
-       it by nine, which is a foot rather than a bump. */
-    s += '<ellipse cx="85" cy="168" rx="12" ry="7.5" fill="' + C.foot + '"/>';
-    s += '<ellipse cx="115" cy="168" rx="12" ry="7.5" fill="' + C.foot + '"/>';
+    /* LOW ENOUGH TO BE SEEN, AND THE EGG MOVED THEM. The body's lowest pixel
+       was 166 as an ellipse and is 167 as an egg, so the feet went 168 to
+       171: at 168 they would show four pixels of themselves, at 171 they
+       clear it by about eleven, which is a foot rather than a bump. */
+    s += '<ellipse cx="85" cy="171" rx="12" ry="7.5" fill="' + C.foot + '"/>';
+    s += '<ellipse cx="115" cy="171" rx="12" ry="7.5" fill="' + C.foot + '"/>';
 
-    /* the body, and its depth: one deeper butter low in it, clipped to the
-       silhouette. No outline, no texture. */
-    s += '<clipPath id="mclip-' + pose + '"><ellipse cx="100" cy="117" rx="51" ry="49"/></clipPath>';
-    s += '<ellipse cx="100" cy="117" rx="51" ry="49" fill="' + C.body + '"/>';
+    /* ─────────────────────────────────────────────────── THE BODY IS AN EGG
+       IT WAS A TRUE ELLIPSE AND THE SKETCH IS NOT. What the author drew is
+       narrower at the top and heavier at the bottom, and a perfect ellipse is
+       both rounder and blander than that: a disc has no direction, so the
+       face floats in the middle of it with nothing to sit on. An egg gives
+       the eyes a brow to be under and the cheeks a cheek to be on, and it is
+       what makes the figure read as having a head rather than as being one.
+
+       The widest point is at y 126, BELOW the middle, which is the whole of
+       what makes it an egg rather than an ellipse rotated. Half width runs
+       about 40 at eye level and 46 at the cheeks, against the old flat 51. */
+    var BODY = "M100 68C126 68 143 96 146 126C149 152 128 167 100 167" +
+               "C72 167 51 152 54 126C57 96 74 68 100 68Z";
+    s += '<clipPath id="mclip-' + pose + '"><path d="' + BODY + '"/></clipPath>';
+    s += '<path d="' + BODY + '" fill="' + C.body + '"/>';
     s += '<g clip-path="url(#mclip-' + pose + ')">' +
          '<ellipse cx="100" cy="186" rx="60" ry="42" fill="' + C.bodyLow + '"/></g>';
 

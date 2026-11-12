@@ -82,13 +82,32 @@
      writing step, and a goodbye when a flower has been planted. Spending them
      on a marketing section would leave nothing for the moments that need
      them. */
+  /* ─────────────────────────────────────── IT FLIES DOWN THE PAGE WITH YOU
+     `spot` is [SIDE, BOTTOM]: which edge it rests against and how far up from
+     the foot of the window, both in the VIEWPORT, since the element is fixed.
+
+     IT ALTERNATES SIDES, which is what reads as flying down a page rather
+     than as a badge in a corner changing its words. The heights vary with it
+     so the path is not a straight zigzag.
+
+     THE LEFT EDGE IS ONLY FREE LOW DOWN. The side nav is a vertical column of
+     48px circles at `left: 14` above 1100px, CENTRED vertically, so its
+     lowest button sits around the middle of the window and anything below
+     about 200px from the foot is clear of it. Every left spot here is inside
+     that, and every spot was swept with `document.elementFromPoint`. */
   var SAYS = {
-    home:    { pose: "welcome", line: null },       /* null: the fertilizer goes here */
-    about:   { pose: "listen",  line: "One small thing a day. That is the whole of it." },
-    gardens: { pose: "welcome", line: "Two places to do it. Pick whichever suits today." },
-    flowers: { pose: "planted", line: "Every flower here stands for something. Yours is chosen for you." },
-    wisdom:  { pose: "listen",  line: "No streaks, no catching up. Miss a day and the garden waits." },
-    start:   { pose: "planted", line: "Whatever you noticed today is enough. Go and plant it." }
+    home:    { pose: "welcome", line: null,          /* null: the fertilizer goes here */
+               spot: ["right", 18] },
+    about:   { pose: "listen",  line: "One small thing a day. That is the whole of it.",
+               spot: ["left", 40] },
+    gardens: { pose: "welcome", line: "Two places to do it. Pick whichever suits today.",
+               spot: ["right", 120] },
+    flowers: { pose: "planted", line: "Every flower here stands for something. Yours is chosen for you.",
+               spot: ["left", 90] },
+    wisdom:  { pose: "listen",  line: "No streaks, no catching up. Miss a day and the garden waits.",
+               spot: ["right", 60] },
+    start:   { pose: "planted", line: "Whatever you noticed today is enough. Go and plant it.",
+               spot: ["left", 30] }
   };
 
   var HOLD = 7000;        /* how long a line stays up before it goes quiet */
@@ -101,9 +120,26 @@
        dust is at 6, so this clears the page; the music button is 260, the
        flower modal 300, the side nav 9000 and the letter 9500, so it goes
        under every one of those rather than over them. */
-    "#gg-guide{position:fixed;right:18px;bottom:18px;z-index:240;",
+    /* ANCHORED BY BOTH EDGES AND MOVED WITH `left`/`right`, not a transform.
+       A transform would be the smoother choice, except the column is also
+       where the heart is positioned from and a transformed ancestor would
+       drag it along; and `position:fixed` inside a transformed element is a
+       trap this project has already recorded twice. The flight is long and
+       eased, so the cheaper property is not noticeable. */
+    "#gg-guide{position:fixed;right:18px;left:auto;bottom:18px;z-index:240;",
     "display:flex;flex-direction:column;align-items:flex-end;gap:8px;",
-    "pointer-events:none;}",
+    "pointer-events:none;",
+    "transition:right .9s cubic-bezier(.33,.9,.35,1),left .9s cubic-bezier(.33,.9,.35,1),",
+    "bottom .9s cubic-bezier(.33,.9,.35,1),opacity .5s ease,transform .5s ease;}",
+
+    /* ON THE LEFT THE WHOLE COLUMN FLIPS, bubble and notch together. A panel
+       right aligned over a figure on the left points its notch at empty air,
+       which is the fault the landing page's own gardener bubble records. */
+    "#gg-guide[data-side='left']{align-items:flex-start;}",
+    "#gg-guide[data-side='left'] .gg-g-say{padding:12px 14px 12px 32px;}",
+    "#gg-guide[data-side='left'] .gg-g-say::after{right:auto;left:26px;}",
+    "#gg-guide[data-side='left'] .gg-g-x{right:auto;left:6px;}",
+    "#gg-guide[data-side='left'] .gg-g-heart{right:auto;left:38px;}",
     "#gg-guide[hidden]{display:none !important;}",
 
     /* THE BUBBLE TAKES POINTER EVENTS BACK FOR ITSELF. The column is
@@ -197,8 +233,17 @@
     /* A PHONE HAS NO ROOM FOR A 92px COMPANION IN THE CORNER. It comes down to
        62 and the bubble is capped against the screen rather than a fixed
        width, so a long line wraps instead of running off. */
-    "@media (max-width:768px){#gg-guide{right:12px;bottom:12px;gap:6px;}",
-    ".gg-g-say{max-width:min(72vw,240px);font-size:12.5px;padding:10px 30px 10px 12px;}}",
+    /* A PHONE HAS NO ROOM TO FLY. 375 wide with a 90px figure and a bubble
+       beside it is the whole screen, so it stays in one corner and only the
+       words change. The `!important` is against the inline left/right/bottom
+       the flight writes. */
+    "@media (max-width:768px){",
+    "#gg-guide{right:12px !important;left:auto !important;bottom:12px !important;gap:6px;",
+    "align-items:flex-end !important;}",
+    "#gg-guide .gg-g-say{padding:10px 30px 10px 12px !important;}",
+    "#gg-guide .gg-g-say::after{right:26px !important;left:auto !important;}",
+    "#gg-guide .gg-g-x{right:6px !important;left:auto !important;}",
+    ".gg-g-say{max-width:min(72vw,240px);font-size:12.5px;}}",
 
     /* No cursor rule: `button` is already in garden-cursor.js's clickable
        list, and a rule here would lose to it anyway since every rule that
@@ -349,6 +394,51 @@
 
   var pose = "welcome";
 
+  /* ONE PLACE DECIDES WHERE IT IS. Writes the inline anchors and the side
+     flag together, so the bubble and the notch can never disagree with the
+     figure about which edge it is on. Under 768 it does nothing at all: the
+     stylesheet pins it there with `!important` and a flight written on top
+     would be dead inline style fighting a rule it cannot beat. */
+  function moveTo(spot) {
+    if (!root || !spot || window.innerWidth <= 768) return;
+    var side = spot[0], up = spot[1];
+    root.setAttribute("data-side", side);
+    if (side === "left") {
+      root.style.left = "18px"; root.style.right = "auto";
+      /* THE LEFT EDGE IS THE SIDE NAV'S LANE AND THE CLEARANCE IS MEASURED,
+         NOT GUESSED. That rail is a vertical column of 48px circles at
+         `left: 14` above 1100px, CENTRED, so how far down the window its last
+         button reaches depends on the window's own height: a hand tuned
+         `bottom` that clears it at 900 sits on top of it at 1100. A sweep
+         with `document.elementFromPoint` caught exactly that at the flower
+         guide, where the figure landed on a `.side-nav-item`.
+
+         So the requested height is CLAMPED to whatever leaves the figure's
+         top below the rail's last button. If a spot cannot clear it at all,
+         which can only happen in a very short window, it goes to the right
+         instead rather than sitting on a control. */
+      /* `offsetParent` IS NULL FOR A `position:fixed` ELEMENT, so the usual
+         "is it on screen" test reports a visible side nav as hidden and the
+         clamp below never fires. That is exactly what happened: the sweep
+         still found the rail under the figure after this clamp was added.
+         Measure the RECT and read `display` instead. */
+      var nav = document.querySelector(".side-nav");
+      var nr = nav && nav.getBoundingClientRect();
+      if (nav && nr && nr.height > 0 && getComputedStyle(nav).display !== "none") {
+        var nb = nr.bottom;
+        var h = root.offsetHeight || 220;
+        var maxUp = window.innerHeight - nb - 12 - h;
+        if (maxUp < 0) {
+          root.setAttribute("data-side", "right");
+          root.style.right = "18px"; root.style.left = "auto";
+        } else if (up > maxUp) {
+          up = Math.max(12, maxUp);
+        }
+      }
+    } else { root.style.right = "18px"; root.style.left = "auto"; }
+    root.style.bottom = up + "px";
+  }
+
   function setPose(p) {
     pose = p || pose;
     /* 140 AND 90, UP FROM 92 AND 62. At the old size it weighed the same as
@@ -371,12 +461,22 @@
     if (window.innerWidth === lastW) return;
     lastW = window.innerWidth;
     if (me) setPose(pose);
+    /* COMING BACK OVER 768 HAS TO PUT IT WHERE THE SECTION SAYS, and going
+       under it has to CLEAR the inline anchors, or a left spot written on a
+       laptop would sit in the phone rule's way as dead inline style. */
+    if (window.innerWidth <= 768) {
+      root.removeAttribute("data-side");
+      root.style.left = root.style.right = root.style.bottom = "";
+    } else if (SAYS[current]) {
+      moveTo(SAYS[current].spot);
+    }
   });
 
   function say(id, again) {
     var e = SAYS[id];
     if (!e) return;
     current = id;
+    moveTo(e.spot);
     var words = e.line === null ? today() : e.line;
 
     /* IT SAYS ITS NAME ONCE, EVER, AND THEN NEVER AGAIN. A character that

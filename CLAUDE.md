@@ -169,6 +169,42 @@ sketches and is deliberately NOT a line for line transcription of them.
   Butterfly is a label, and this one is the garden itself come to meet you. It
   is one constant, `NAME` in `garden-guide.js`, read by the introduction and
   both aria-labels, so renaming it is one line.
+- **THE BODY IS AN EGG, NOT AN ELLIPSE, and that is closer to the sketch.**
+  What the author drew is narrower at the top and heavier at the bottom; a
+  true ellipse is rounder and blander, and a disc has no direction, so the
+  face floated in the middle of it with nothing to sit on. The widest point is
+  at y 126, BELOW the middle, which is the whole of what makes it an egg
+  rather than an ellipse. Half width runs about 40 at eye level and 46 at the
+  cheeks, against the old flat 51, and the feet moved 168 to 171 with the new
+  bottom edge at 167.
+- **IT FLIES DOWN THE PAGE, ALTERNATING SIDES.** `spot` on each `SAYS` entry
+  is `[side, bottom]` in the VIEWPORT, since the element is fixed. Alternating
+  is what reads as travelling down a page rather than as a badge in a corner
+  changing its words, and the heights vary so the path is not a straight
+  zigzag.
+  - **ON THE LEFT THE WHOLE COLUMN FLIPS**, bubble, notch, close cross and
+    heart together. A panel right aligned over a figure on the left points its
+    notch at empty air, which is the fault the landing band's own gardener
+    bubble already records.
+  - **THE LEFT EDGE IS THE SIDE NAV'S LANE AND THE CLEARANCE IS MEASURED.**
+    That rail is 48px circles at `left: 14` above 1100px, CENTRED, so how far
+    down the window its last button reaches depends on the window's own
+    height: a hand tuned `bottom` that clears it at 900 sits on it at 1100.
+    `moveTo` clamps the requested height against the rail's measured bottom,
+    and falls back to the right edge if a spot cannot clear it at all.
+  - **`offsetParent` IS NULL FOR A `position:fixed` ELEMENT, and that cost a
+    round.** The first clamp tested `nav.offsetParent !== null` to decide
+    whether the rail was on screen, which reports a perfectly visible fixed
+    nav as hidden, so the clamp never fired and the sweep still found a
+    `.side-nav-item` under the figure. Measure the RECT and read `display`.
+  - **SWEPT AT EVERY SPOT** with `document.elementFromPoint`, every 8px over
+    the whole box: all six clear at 1440 by 900, with the flower guide's
+    clamping itself from 90 to 64. **Re-run that sweep if any spot moves.**
+  - **A PHONE PINS IT** bottom right with `!important`, since 375 wide with a
+    90px figure and a bubble beside it is the whole screen. `moveTo` returns
+    early under 768, and a width change back over it re-applies the section's
+    spot while a change under it CLEARS the inline anchors, or a left spot
+    written on a laptop sits in the phone rule's way as dead inline style.
 - **IT IS 140px, UP FROM 92, AND THE REASON IS THE MEADOW'S OWN BUTTERFLIES.**
   `garden-life.js` flies ambient butterflies across the hero at roughly the
   size the mascot was sitting at, so a butterfly mascot in the corner read as
