@@ -1283,12 +1283,19 @@ Two things live in this one file, and they are together because both are needed 
 - **THE WORDS ARE THE AUTHOR'S OWN AND ONLY SHE MAY CHANGE THEM.** The whole
   argument for a letter rather than a paragraph is that it is somebody
   talking, and a letter edited by anybody else is a page describing itself
-  again. It has been shortened ONCE, on her instruction, **by cutting rather
-  than rewriting**: about 150 words over four paragraphs down to about 85 over
-  three. The comparison and her concrete list (waking up, good food, amazing
-  people) are the heart of it and stayed; what went was the tail of the
-  opening sentence and the longer description of the two gardens, which the
-  page itself says again a screen further down.
+  again. It has been shortened TWICE, both times on her instruction and both
+  times **by cutting rather than rewriting**: about 150 words over four
+  paragraphs down to about 70 over **two**. Her comparison and her concrete
+  list (waking up, good food, amazing people) are the heart of it and have
+  never been touched. What went: the tail of the opening sentence, the longer
+  description of the two gardens, which the page itself says again a screen
+  further down, and "a space to reflect, appreciate and share", which was the
+  same idea as the clause directly after it.
+- **THE CLOSING LINE KEPT ITS OWN PARAGRAPH AND THE STORY GAVE UP ITS TWO.**
+  Going to two paragraphs meant merging somewhere, and merging the last line
+  into the one before it would have buried the single sentence the whole site
+  is an argument for at the end of a block of reasoning. The story is one
+  paragraph; what it is FOR is the other.
 - **ONE HEADING AND ONE BODY, AND THAT WAS A REAL FAULT.** The card carried
   **four type treatments in about four hundred pixels**: a 26px Fraunces
   greeting, 14.5px Arial paragraphs, a 17px Fraunces closing line and a 21px
@@ -1301,9 +1308,9 @@ Two things live in this one file, and they are together because both are needed 
 - **`gl-last` IS KEPT BUT NO LONGER CHANGES THE FACE OR THE SIZE**, only the
   colour. `build()` still puts it on whichever entry of `lines` is last, so
   adding a paragraph after the closing line moves it.
-- **Measured after**: 549px tall at 470 wide, which fits a 640px laptop
-  viewport with 45px above and 45 below and no scroll, and 594 of 780 on a
-  phone at 358 wide with no sideways scroll. It was 584 and 679.
+- **Measured after**: 487px tall at 470 wide, which fits a 640px laptop
+  viewport with 77px above and 77 below and no scroll. It was 584 at four
+  paragraphs and 549 at three.
 - **THE WORDS LIVE IN `LETTER` AT THE TOP OF THE FILE**, not in the markup, so there is one copy of them and the footer's link opens the very same card.
 - **IT WAITS FOR THE LOADER.** `garden-loader.js` holds a flower over the sky for up to nine seconds, and two cards stacked on a first visit is exactly what this is meant to avoid rather than cause. `GardenLoader.showing()` is polled, since the loader comes down on whichever of three things happens first and there is no event.
 - **`localStorage`, NOT `sessionStorage`, and that is the difference between this and the music hint.** The hint is about the music playing right now, so it comes back next visit. This is about meeting somebody once. The key is `gg_letter`; `GardenLetter.reset()` clears it.

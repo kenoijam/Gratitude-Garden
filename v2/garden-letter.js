@@ -39,18 +39,25 @@
      talking rather than a page describing itself, and a letter edited by
      anybody else is a page describing itself again.
 
-     SHORTENED ONCE, BY THE AUTHOR'S OWN INSTRUCTION, AND BY CUTTING RATHER
-     THAN REWRITING. It ran to about 150 words over four paragraphs and now
-     runs to about 85 over three: the comparison and the concrete list she
-     wrote (waking up, good food, amazing people) are the heart of it and
-     stayed; what went was the second half of the opening sentence and the
-     longer description of the two gardens, which the page itself says again
-     a screen further down. Her phrasing is otherwise untouched. */
+     SHORTENED TWICE, BOTH TIMES ON THE AUTHOR'S OWN INSTRUCTION AND BOTH
+     TIMES BY CUTTING RATHER THAN REWRITING. It ran to about 150 words over
+     four paragraphs; it is about 70 over TWO. The comparison and the
+     concrete list she wrote (waking up, good food, amazing people) are the
+     heart of it and have never been touched. What went: the tail of the
+     opening sentence, the longer description of the two gardens, which the
+     page itself says again a screen further down, and "a space to reflect,
+     appreciate and share", which was the same idea as the clause directly
+     after it.
+
+     WHY THE CLOSING LINE IS THE ONE THAT KEPT ITS OWN PARAGRAPH. Going to
+     two meant merging somewhere, and merging the last line into the one
+     before it would have buried the single sentence the whole site is an
+     argument for at the end of a block of reasoning. The story is one
+     paragraph; what it is FOR is the other. */
   var LETTER = {
     hello: "Hello there!",
     lines: [
-      "I used to compare myself with others all the time, wanting what I didn't have. Then I realized how much there was to appreciate in my own life: waking up every day, good food, amazing people.",
-      "So I made Gratitude Garden, a space to reflect, appreciate and share. A little garden of your own to end your days with gratitude, and a shared one to see what other people are grateful for.",
+      "I used to compare myself with others all the time, wanting what I didn't have. Then I realized how much there was to appreciate in my own life: waking up every day, good food, amazing people. So I made Gratitude Garden, a little garden of your own to end your days with gratitude, and a shared one to see what other people are grateful for.",
       "Gratitude gets you a long way, and whatever you noticed today is enough!"
     ],
     sign: "Kenisha",
