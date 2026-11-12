@@ -224,12 +224,28 @@
     })();
   }
 
+  /* ─────────────────────────────────────────── IS A LETTER STILL COMING?
+     ANYTHING THAT ARRIVES AFTER THE LETTER HAS TO BE ABLE TO ASK, and before
+     this it could not. The mascot guide in v2 looked for `#gg-letter` to
+     decide whether to wait, and on a first visit there is no such element
+     yet: this module builds it only once the loader has cleared, several
+     hundred milliseconds later. So the guide saw no letter, concluded none
+     was coming, and started talking underneath the one that then appeared.
+
+     `settled` is false until boot has DECIDED, either way. That is the state
+     the DOM cannot report, and it is why asking the element was never going
+     to work. Same shape as `GardenLoader.showing()`, and for the same reason:
+     there is no event to listen for. */
+  var settled = false;
+
   function boot() {
-    if (seen()) return;
-    waitForLoader(function () { setTimeout(open, 340); });
+    if (seen()) { settled = true; return; }
+    waitForLoader(function () {
+      setTimeout(function () { open(); settled = true; }, 340);
+    });
   }
 
-  if (tag && tag.getAttribute("data-letter") === "off") return;
+  if (tag && tag.getAttribute("data-letter") === "off") { settled = true; return; }
   if (document.readyState === "complete") boot();
   else window.addEventListener("load", boot);
 
@@ -238,6 +254,11 @@
   window.GardenLetter = {
     open: open,
     close: close,
-    reset: function () { try { localStorage.removeItem(KEY); } catch (e) {} }
+    reset: function () { try { localStorage.removeItem(KEY); } catch (e) {} },
+    /* Is the card on screen right now. */
+    showing: function () { return !!(el && !el.hidden); },
+    /* Has this module finished deciding whether to show one. False means
+       WAIT: a letter may still be on its way. */
+    pending: function () { return !settled; }
   };
 })();

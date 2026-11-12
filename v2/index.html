@@ -32,6 +32,15 @@
        footer's "Why this exists" brings it back. -->
   <script src="garden-letter.js"></script>
 
+  <!-- THE MASCOT, v2 ONLY, AND IT LOADS AFTER THE LETTER ON PURPOSE.
+       `garden-guide.js` returns at once if `GardenMascot` is missing, so the
+       drawing has to be parsed first; and the guide waits for both the loader
+       and the letter to clear before it says anything, which is the whole
+       reason the letter exists rather than two things greeting somebody at
+       once. Neither of those fires an event, so it polls. -->
+  <script src="garden-mascot.js"></script>
+  <script src="garden-guide.js"></script>
+
   <!-- The account chip and the friends panel. Top right here, beside the
        music button, since the landing page keeps its controls in the top
        corners and has nothing in the bottom one. -->

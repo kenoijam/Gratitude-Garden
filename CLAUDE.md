@@ -91,6 +91,67 @@ and is deliberately NOT a line for line transcription of them.
   teal band and the meadow's grass) and at 200, 120, 84, 56 and 40px. It holds
   to 56 comfortably and still reads at 40.
 
+## THE MASCOT WALKS DOWN THE PAGE (`v2/garden-guide.js`), v2 ONLY
+
+**It says one line per section as you scroll, and the first one is the
+fertilizer of the day.** This REPLACED the planned storytelling rewrite, and
+the reason is worth keeping: a character saying the line leaves every
+section's own words untouched, so the before and the after differ by a
+feature somebody can point at in an interview rather than by a hundred small
+copy edits nobody can.
+
+- **IT SPEAKS ON ARRIVAL AND THEN STOPS**, `HOLD` 7000ms. A companion that
+  talks while you read is the one everybody closes.
+- **THE FERTILIZER LIST IS THE AUTHOR'S TO FILL** and is marked as such in a
+  box at the top of the file. Three placeholders are in it so the rotation can
+  be demonstrated. It is picked **by the date**, not at random, so it is the
+  same line all day for everybody and a reload is not a reroll.
+- **ENCOURAGEMENT, NEVER ADVICE ABOUT GRATITUDE.** The Wisdom section already
+  gives advice, so advice here would be the same thing said twice. What
+  nothing else on the site says is that you are doing all right, which is what
+  the perched gardeners were written for.
+- **ASK THE MODULE, NEVER THE DOM, and this was a real bug.** The first
+  version looked for `#gg-letter` to decide whether to wait for the letter. On
+  a first visit there is no such element yet: `garden-letter.js` builds it only
+  once the loader has cleared, several hundred milliseconds later. So the guide
+  found nothing, concluded no letter was coming, and said its line underneath
+  the one that then appeared. **`garden-letter.js` gained `showing()` and
+  `pending()` for this**, the same contract `GardenLoader` already offers and
+  for the same reason: there is no event to listen for. `pending()` is false
+  only once boot has DECIDED either way, which is the state the DOM cannot
+  report.
+- **A CACHED SCRIPT COST A ROUND HERE TOO.** The pane kept running the old
+  `garden-letter.js` through a reload, so `pending` was not a function, the
+  guard fell through and the measurement looked exactly like the bug not being
+  fixed. `fetch(url, {cache:"reload"})` on the script then a reload is the fix,
+  which is the third time this project has recorded it.
+- **`hard` AND `bye` ARE DELIBERATELY UNUSED ON THIS PAGE.** They belong where
+  somebody is actually having a day: a hard day in the personal garden's
+  writing step, and a goodbye once a flower is planted. Spending them on a
+  marketing section leaves nothing for the moments that need them.
+- **z-index 240, measured.** Section content tops out at 5 and the page dust is
+  6, so it clears the page; the music button is 260, the flower modal 300, the
+  side nav 9000 and the letter 9500, so it goes under all of those.
+- **`#gg-guide[hidden]{display:none !important}` IS LOAD BEARING.** `hidden`
+  loses to any author rule and this element sets its own `display:flex`.
+  **Fifth time in this project.**
+- **THE COLUMN IS `pointer-events:none` AND THE TWO CONTROLS TAKE THEIR OWN
+  BACK**, which is the rule `#daily-note` already follows. Swept every 8px over
+  the whole 260 by 165 box with `document.elementFromPoint`: nothing clickable
+  underneath it at 1280. **Re-run that sweep if it moves.**
+- **THE SIZE FOLLOWS A WIDTH CHANGE ONLY.** The figure picks 62 or 92 when it
+  is drawn, so without a resize handler a phone turned on its side keeps the
+  size it had when it last spoke. Height is ignored because iOS collapses its
+  address bar as you scroll and that fires a resize.
+- **THE OBSERVER PICKS WHICHEVER SECTION COVERS THE MIDDLE OF THE SCREEN**, not
+  whichever the callback happened to list first: several can be intersecting at
+  once on a fast scroll.
+- **Verified**: silent and un-arrived for the full 8 seconds the letter is up,
+  then arrives within 400ms of it closing; all six sections fire their own
+  line; dismiss sets `gg_guide_off` in `sessionStorage` and the element
+  genuinely goes to `display:none`; at a true 390 viewport the mascot is 62px,
+  the box sits inside the screen and there is no sideways scroll.
+
 ## THE PROJECT IS SHOWING TWO GARDENS ONLY, AND IT IS TEMPORARY
 
 **Read this before anything else below, because most of this file describes pages the site no longer links to.** The feedback was that four destinations read as a feature party, so the project was narrowed to **The Personal Garden and The Shared Garden**. Everything else is still on disk, untouched, and unlinked.
