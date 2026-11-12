@@ -169,8 +169,24 @@
        2.6 viewBox units and needs no conversion. */
     ".gm-eyes{transition:transform .22s ease-out;}",
 
+    /* THE HEART RISES OUT OF THE CROWN. Positioned from the FOOT of the
+       column, because the mascot sits at the bottom of it and the bubble
+       above can be any height; measured from the top it would start from
+       wherever the words happened to end. */
+    ".gg-g-heart{position:absolute;right:38px;bottom:92px;width:26px;height:26px;",
+    "pointer-events:none;opacity:0;transform:translateY(0) scale(0.6);}",
+    ".gg-g-heart svg{width:100%;height:100%;display:block;",
+    "filter:drop-shadow(0 2px 4px rgba(29,100,102,0.18));}",
+    ".gg-g-heart[data-rise='1']{animation:gmHeart 1.3s ease-out forwards;}",
+    "@keyframes gmHeart{0%{opacity:0;transform:translateY(0) scale(0.6);}",
+    "18%{opacity:1;transform:translateY(-10px) scale(1.05);}",
+    "60%{opacity:1;transform:translateY(-34px) scale(1);}",
+    "100%{opacity:0;transform:translateY(-58px) scale(0.9);}}",
+    "@media (max-width:768px){.gg-g-heart{right:26px;bottom:62px;width:20px;height:20px;}}",
+
     "@media (prefers-reduced-motion:reduce){",
     ".gm-wings,.gg-g-me svg{animation:none !important;}",
+    ".gg-g-heart[data-rise='1']{animation:none !important;opacity:1;transform:translateY(-30px);}",
     ".gm-eyes{transition:none !important;}}",
 
     /* It arrives rather than appearing, once, and never again. */
@@ -230,17 +246,47 @@
     g.style.transform = "translate(" + dx.toFixed(2) + "px," + dy.toFixed(2) + "px)";
   }
 
+  /* ─────────────────────────────────────────────────────── A HEAD PAT
+     THE GESTURE IS THE PROJECT'S OWN, NOT A NEW ONE. Both gardens and the
+     avatar studio already answer a press on the gardener with `AvatarDraw`'s
+     pat: one eye winks and a heart rises out of the crown. Hortus takes the
+     same, so there is one grammar for "you touched me" rather than two.
+
+     THE HEART IS A SEPARATE ELEMENT, NOT PART OF THE FIGURE, and that is what
+     lets a second pat fire straight away. Inside the SVG it would be redrawn
+     with the pose and its animation would restart from wherever the string
+     rebuild happened to leave it; outside, the old one is simply thrown away
+     and a new one begins.
+
+     IT LEAVES THE TOP OF THE HEAD, never the middle of the face, because the
+     antennae and their flowers are up there and anything rising from the face
+     would be rising out of the flower. Same reasoning `AvatarDraw` records. */
+  function heart() {
+    var h = document.createElement("div");
+    h.className = "gg-g-heart";
+    h.innerHTML =
+      "<svg viewBox='0 0 24 24' aria-hidden='true'><path d='M12 21s-8-5.1-8-10.2A4.8 4.8 0 0 1 12 7a4.8 4.8 0 0 1 8 3.8C20 15.9 12 21 12 21z' fill='#f4a0ad'/></svg>";
+    root.appendChild(h);
+    /* A forced reflow before the class, or the browser coalesces the two and
+       it simply appears at the end of its own path. */
+    void h.offsetWidth;
+    h.setAttribute("data-rise", "1");
+    setTimeout(function () { if (h.parentNode) h.parentNode.removeChild(h); }, 1300);
+  }
+
   /* A BEAT OF DELIGHT, then back to whatever the section was saying. It is
      deliberately SHORTER than the bubble's own hold, so the face settles
      while the words are still readable rather than the two ending together
-     and the whole thing going quiet at once. */
+     and the whole thing going quiet at once. 1100ms is `AvatarDraw`'s own pat
+     length, so a pat lasts the same here as it does on a gardener. */
   function react() {
-    setPose("planted");
+    setPose("pat");
+    heart();
     clearTimeout(reactT);
     reactT = setTimeout(function () {
       var e = SAYS[current];
       setPose(e ? e.pose : "welcome");
-    }, 1400);
+    }, 1100);
   }
 
   function met() {

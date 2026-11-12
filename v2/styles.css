@@ -428,8 +428,13 @@ section { padding: 5rem 5rem; }
   display: grid;
   grid-template-columns: 1fr 1fr;
   grid-template-rows: auto auto;
+  /* THE TITLE SPANS BOTH COLUMNS. It used to be `"title ."`, which left the
+     whole right half of the title row EMPTY: a 571px void beside the heading
+     on a 1440 screen, with the four cards starting below it. Spanned, the
+     heading sits over the whole section the way every other section's does
+     and the void is gone. */
   grid-template-areas:
-    "title ."
+    "title title"
     "body  cards";
   column-gap: 4rem;
   row-gap: 1rem;

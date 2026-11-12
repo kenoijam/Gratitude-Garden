@@ -215,6 +215,32 @@ sketches and is deliberately NOT a line for line transcription of them.
   avoid. `gg_met_hortus` in **`localStorage`**, for the same reason the letter
   uses it: meeting somebody is not a thing that happens again next week. The
   put-away flag stays in `sessionStorage`, because that IS about this visit.
+- **THE WINGS ARE THE AMBIENT BUTTERFLIES', and that was a gap worth closing.**
+  `garden-life.js` is the one other place this project draws a butterfly, and
+  its ambient ones carry two things the mascot did not: a thin darker keyline
+  at `lineWidth` 0.09 of their own size, and ONE pale spot per wing at alpha
+  0.55, with the note that at that size a pattern is mud but a single lighter
+  mark is what stops a wing reading as a flat petal. Both are true here and a
+  mascot built differently from the butterflies flying past it is the odd one
+  out. The mascot's stroke is 2.6 against a 200 unit box, which is the same
+  weight scaled up.
+- **THE EDGE BELONGS TO THE WINGS AND NOT TO THE BODY.** That is where this
+  project puts a stroke; the flowers, the gardener and the mascot's own body
+  are solid fills and stay that way.
+- **A HEAD PAT IS A WINK AND A HEART, AND IT IS NOT INVENTED HERE.**
+  `AvatarDraw.patFx` already decides what a pat looks like everywhere else:
+  one eye winks, the smile widens, and a heart rises out of the crown, and the
+  gardener takes it in both gardens and in the studio. Hortus takes the same,
+  at the same 1100ms, so there is one grammar for "you touched me". The wink
+  is an ARC rather than a dash, which is that module's own note: a flat line
+  is a closed eye on a sleeping face.
+  - **THE HEART IS A SEPARATE ELEMENT, NOT PART OF THE FIGURE.** Inside the
+    SVG it would be redrawn with the pose and its animation would restart from
+    wherever the string rebuild left it; outside, a second pat throws the old
+    one away and starts a new one cleanly.
+  - **It leaves the TOP OF THE HEAD**, never the face, because the antennae
+    and their flowers are up there and anything rising from the face would be
+    rising out of the flower. `AvatarDraw` records the same reasoning.
 - **ONE BODY, FIVE FACES.** `POSES` holds welcome, listen, hard, planted and
   bye, and only the face and the wing scale change between them. Five whole
   drawings is how five expressions drift into five characters.
@@ -1229,6 +1255,17 @@ The meadows were once full-bleed backdrops behind the copy under a gradient, and
 **Every card and the About copy name the ACCOUNT, and that was a gap rather than a polish.** All of it was written before there were accounts, usernames, friends, likes or a history, so the page described three separate places with nothing joining them. The personal card said only that you see it; it now says it follows you between devices and keeps what you have planted. The shared card now says signing in lets you like a flower or write back, and its small print carries the one a day limit. The bouquet card says it can go straight to a friend as well as by link. About gained a fourth paragraph naming what one account actually does, and saying you can skip it entirely.
 
 **The three cards' paragraphs are cut to FOUR LINES and their small print to a chip, and the reason is a bug rather than taste.** `.garden-card-desc` carried `margin-bottom: -0.5rem`, which pulled the small print 9px UP into the paragraph's last line on all three cards at once: a paragraph leaves no 9px of slack under its final line, so the pull came straight out of the text. It is **+0.55rem** now, which measures as a 9px gap; at 0 the chip sat directly on the text with only the line's own leading between them. It was also hiding a second fault, since a paragraph running to five lines grows past the four reserved by `min-height`, and the personal card's body came out 330px against the other two at 302 with the row of pictures no longer level. **Keep every one of the three to four lines, and if the gap under a paragraph ever needs closing, take it off the note's own padding rather than off the paragraph.** The notes are chips now, "Private", "Open to all", "By link or to a friend", because a sentence in a 12px rounded box is not a chip.
+
+**THE ABOUT TITLE SPANS BOTH COLUMNS, AND ITS LEDE NO LONGER REPEATS IT
+(v2).** Two separate faults sat on top of each other. The grid areas were
+`"title ." / "body cards"`, so the whole right half of the title row was
+EMPTY: a 571px void beside the heading on a 1440 screen. And the first
+sentence read "One practice, two ways, grown from the same eight flowers"
+directly under a heading reading "One practice, two places", which is the
+heading doing no work at all. The title now spans, and the lede is "One you
+keep, one you share", which is the shortest true summary and is also what the
+phone shows before Read more, so it has to stand alone. "Reflect, and share"
+went with it, being the next section's heading said early.
 
 **THE ABOUT GRID'S BOTTOM ROW IS THE PRACTICE, NOT A THIRD AND FOURTH PLACE.** The heading over it says ONE PRACTICE, TWO PLACES, so the top row is the two places and the bottom row has to be what they have in common. It held **"Your history"** and **"Your account"** and both leant at the personal garden: the history is that garden alone, and the account's real sell is your own garden following you between devices. They are **"A flower that grows"** and **"The same eight"** now. The grid is two by two, so the count must stay at four.
 

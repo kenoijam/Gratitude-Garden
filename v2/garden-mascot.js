@@ -42,6 +42,18 @@
                              step are one part. */
     wing:     "#b7e4e7",  /* sky */
     wingLit:  "#dcf4f5",
+    /* THE EDGE AND THE SPOT ARE BORROWED FROM `garden-life.js`, which is the
+       one other place this project draws a butterfly. Its ambient ones carry
+       a thin darker keyline (`lineWidth` 0.09 of their own size) and ONE pale
+       spot per wing, with the note that at that size a pattern is mud but a
+       single lighter mark is what stops a wing reading as a flat petal. Both
+       are true here too, and a mascot whose wings are built differently from
+       the butterflies flying past it is the odd one out.
+
+       THE BODY STAYS UNOUTLINED. The edge belongs to the WINGS, because that
+       is where this project puts it; the flowers, the gardener and the body
+       are solid fills with no stroke and stay that way. */
+    wingEdge: "#6eb3b8",
     cheek:    "#f4c6c6",
     ink:      "#1d6466",  /* dark teal: what this project draws a line in */
     stem:     "#277c43",  /* hsl(140,52%,32%), both gardens' stem */
@@ -120,6 +132,21 @@
     '<path d="M113 98Q120 95 126 99" fill="none" stroke="' + C.ink +
     '" stroke-width="2.4" stroke-linecap="round"/>';
 
+  /* THE PAT IS A WINK AND A HEART, AND IT IS NOT INVENTED HERE.
+     `AvatarDraw.patFx` already decides what a pat looks like everywhere else
+     in this project: one eye winks, the smile widens a little, and a heart
+     rises out of the crown. The gardener takes it in both gardens and in the
+     studio. A mascot that answered a pat some other way would be a second
+     grammar for the same gesture.
+
+     THE WINK IS AN ARC, NOT A DASH, which is that module's own note: a flat
+     line reads as a closed eye on a sleeping face, where a shallow curve
+     bending up is what a wink is. */
+  function eyeWink() {
+    return '<circle cx="' + EYE_L + '" cy="' + EYE_Y + '" r="5.4" fill="' + C.ink + '"/>' +
+           arc(EYE_R - 7, EYE_Y + 2, EYE_R + 7, EYE_Y + 2, EYE_R, EYE_Y - 8);
+  }
+
   var POSES = {
     welcome: { face: eyesOpen()  + MOUTH.smile, wings: 1.00 },
     listen:  { face: eyesShut()  + MOUTH.smile, wings: 0.88 },
@@ -127,6 +154,9 @@
     planted: { face: eyesHappy() + MOUTH.beam,  wings: 1.08,
                extra: '<path d="' + starPath(38, 62, 9) + '" fill="' + C.pollen + '"/>' +
                       '<path d="' + starPath(163, 70, 7) + '" fill="' + C.wing + '"/>' },
+    /* the pat: a wink and a wider smile, with the heart released by the
+       guide as a separate element so it can be re-fired without redrawing */
+    pat:     { face: eyeWink()   + MOUTH.beam,  wings: 1.06 },
     bye:     { face: eyesShut()  + MOUTH.hush,  wings: 0.90,
                extra: '<text x="150" y="60" font-family="Fraunces,Georgia,serif" ' +
                       'font-size="20" font-style="italic" fill="' + C.wing + '">z</text>' }
@@ -172,13 +202,23 @@
     var LOWER = "M100 114C126 116 162 128 168 152C172 174 146 182 128 168" +
                 "C114 157 100 138 100 114Z";
 
+    /* 2.6 against a 200 unit box is the same weight as the ambient
+       butterfly's 0.09 against its own 1.0, scaled up. */
+    var EDGE = ' stroke="' + C.wingEdge + '" stroke-width="2.6" stroke-linejoin="round"';
+
     function side() {
-      return '<path d="' + UPPER + '" fill="' + C.wing + '"/>' +
+      return '<path d="' + UPPER + '" fill="' + C.wing + '"' + EDGE + '/>' +
              '<ellipse cx="157" cy="76" rx="24" ry="17" fill="' + C.wingLit +
              '" transform="rotate(-20 157 76)"/>' +
-             '<path d="' + LOWER + '" fill="' + C.wing + '"/>' +
+             /* ONE PALE SPOT PER WING, the ambient butterfly's own marking,
+                at its alpha of 0.55. */
+             '<ellipse cx="160" cy="72" rx="11" ry="14" fill="#ffffff" ' +
+             'fill-opacity="0.55" transform="rotate(-20 160 72)"/>' +
+             '<path d="' + LOWER + '" fill="' + C.wing + '"' + EDGE + '/>' +
              '<ellipse cx="140" cy="147" rx="15" ry="10" fill="' + C.wingLit +
-             '" transform="rotate(28 140 147)"/>';
+             '" transform="rotate(28 140 147)"/>' +
+             '<ellipse cx="142" cy="146" rx="7" ry="9" fill="#ffffff" ' +
+             'fill-opacity="0.55" transform="rotate(28 142 146)"/>';
     }
 
     /* `gm-wings` AND `gm-eyes` EXIST FOR THE ANIMATION AND FOR NOTHING ELSE.
