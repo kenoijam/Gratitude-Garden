@@ -790,18 +790,21 @@
        repeats are pulled well apart: three sunflowers at 44, 18 and 62 rather
        than 44, 38 and 50, and the two daisies at 15 and 52. At a few degrees
        apart a repeat reads as the same flower drawn twice. */
+    /* A NINTH COLUMN: the species id, so a hovered bloom can be named. It is
+       an id rather than a name, because the words come from `flowerData`,
+       which is the one place any of the eight is described. */
     var allFlowers=[
-      [100, 95,3,  drawDaisy,    16, 15,55,76],   // peach daisy
-      [222,115,3,  drawSunflower,19, 44,62,65],   // golden sunflower
-      [348,130,3.5,drawTulip,    19,290,52,62],   // purple tulip
-      [476,100,3,  drawRose,     17,350,58,55],   // deep pink rose
-      [608,150,4,  drawSunflower,23, 18,62,60],   // orange sunflower
-      [735,112,3.5,drawLily,     17,185,42,70],   // teal lily
-      [858, 96,3,  drawHibiscus, 16,352,62,58],   // red hibiscus
-      [985,142,4,  drawOrchid,   17,305,50,68],   // orchid
-      [1105,108,3, drawLavender, 14,268,56,68],   // lavender
-      [1226,136,3.5,drawSunflower,21, 62,58,64],  // lemon sunflower
-      [1340, 92,3, drawDaisy,    15, 52,52,74]    // butter daisy
+      [100, 95,3,  drawDaisy,    16, 15,55,76, 'daisy'],
+      [222,115,3,  drawSunflower,19, 44,62,65, 'sunflower'],
+      [348,130,3.5,drawTulip,    19,290,52,62, 'tulip'],
+      [476,100,3,  drawRose,     17,350,58,55, 'rose'],
+      [608,150,4,  drawSunflower,23, 18,62,60, 'sunflower'],
+      [735,112,3.5,drawLily,     17,185,42,70, 'lily'],
+      [858, 96,3,  drawHibiscus, 16,352,62,58, 'hibiscus'],
+      [985,142,4,  drawOrchid,   17,305,50,68, 'orchid'],
+      [1105,108,3, drawLavender, 14,268,56,68, 'lavender'],
+      [1226,136,3.5,drawSunflower,21, 62,58,64, 'sunflower'],
+      [1340, 92,3, drawDaisy,    15, 52,52,74, 'daisy']
     ];
     /* Birds, before the hills, so the hills cut them off at the horizon the
        way they cut off anything distant. The hero names its own bands rather
@@ -815,9 +818,16 @@
        among the clouds. */
 
     // 1. Back hills (behind flowers)
+    /* THE HILLS LEAN FURTHEST, WHICH IS WHAT MAKES IT DEPTH RATHER THAN A
+       SLIDE. Nearer things move more: the hills take HILL_MAX, the clouds
+       take 8px and the sun 4px, both of those set as CSS variables on the
+       hero. Safe to shift because these five ellipses already run from -80 to
+       1600 against a 1440 scene, so a dozen units either way cannot open a
+       gap at either edge. */
+    var hillDX = (!reduced && ptr.on) ? HILL_MAX * ptr.hx : 0;
     ctx.fillStyle='#a9d9cf';
     [[-80,258,500,92],[360,265,540,88],[870,268,580,86],[1400,262,540,88],[1600,258,500,92]].forEach(function(e){
-      ctx.beginPath(); ctx.ellipse(e[0],e[1],e[2],e[3],0,0,Math.PI*2); ctx.fill();
+      ctx.beginPath(); ctx.ellipse(e[0]+hillDX,e[1],e[2],e[3],0,0,Math.PI*2); ctx.fill();
     });
     // 2. Flowers in front of back hills, fewer on smaller screens
     // Space flowers evenly: on small screens use only every Nth flower
@@ -844,17 +854,51 @@
        that survived `minSpacing`, so what is tappable is exactly what is on
        the screen. */
     hits.length = 0;
-    allFlowers.forEach(function(row){
+    allFlowers.forEach(function(row, i){
       var lx = row[0] * xk;
       var screenX = lx * scale; // convert logical x to screen pixels
       if(row[0] > LOGICAL_W - 60) return;
       if(minSpacing > 0 && screenX - lastDrawnX < minSpacing) return;
       lastDrawnX = screenX;
-      var pos=stem(lx,row[1],row[2], SWAY * Math.sin(phase + row[0] * 0.011));
+
+      /* ── THE POINTER PARTS THE MEADOW ────────────────────────────────────
+         Each bloom is pushed AWAY from the pointer and springs back when it
+         has gone, so walking the cursor along the row opens it ahead of you
+         and closes it behind.
+
+         THE SHAPE IS `u * exp(-(u^2+v^2))`, A GAUSSIAN DERIVATIVE, and the
+         reason is the stem the pointer is directly over. The obvious
+         `sign(dx) * falloff` is DISCONTINUOUS there: the flower snaps from
+         full lean one way to full lean the other as the cursor crosses it.
+         This is odd in u and smoothly zero at the middle, so a bloom is
+         pushed ahead of the pointer, passes through upright as it goes by,
+         and is pushed the other way behind it. That IS parting.
+
+         It peaks at u = 0.707 where `u*exp(-u^2)` is 0.429, so the 2.33
+         scales the peak to `LEAN_MAX` exactly. */
+      var tLean = 0, tLift = 0;
+      if (ptr.on && !reduced) {
+        var u = (lx - ptr.x) / LEAN_R;
+        var v = ((GY - row[1]) - ptr.y) / LEAN_R;
+        tLean = LEAN_MAX * (u * Math.exp(-(u * u + v * v))) * 2.33;
+      }
+      if (hoverIdx === i && !reduced) tLift = LIFT_MAX;
+
+      /* A DAMPED SPRING RATHER THAN AN EASE, because springing back is the
+         half that reads as a plant. An exponential approach arrives and
+         stops; a spring overshoots a little and settles, which is what a
+         stem that has been pushed actually does. */
+      leanV[i] = ((leanV[i] || 0) + (tLean - (lean[i] || 0)) * SPRING_K) * SPRING_D;
+      lean[i] = (lean[i] || 0) + leanV[i];
+      liftV[i] = ((liftV[i] || 0) + (tLift - (lift[i] || 0)) * SPRING_K) * SPRING_D;
+      lift[i] = (lift[i] || 0) + liftV[i];
+
+      var pos=stem(lx,row[1] + lift[i],row[2],
+                   SWAY * Math.sin(phase + row[0] * 0.011) + lean[i]);
       ctx.save(); ctx.translate(pos[0],pos[1]);
       row[3](row[4],row[5],row[6],row[7]);
       ctx.restore();
-      hits.push({ lx: pos[0], ly: pos[1], R: row[4], hue: row[5] });
+      hits.push({ i: i, lx: pos[0], ly: pos[1], R: row[4], hue: row[5], sp: row[8] });
     });
     // 3. Front ground strip over stem bases, so flowers appear to grow from ground
     ctx.fillStyle='#8fcfbe'; ctx.fillRect(-20,GY,1480,60);
@@ -957,26 +1001,150 @@
      bloom actually landed, in logical units; this converts the pointer into
      the same space and takes the nearest within reach. */
   var hits = [];
-  function tapAt(clientX, clientY) {
-    if (!geom || !hits.length) return;
+
+  /* ONE CONVERSION, USED BY EVERY POINTER THING HERE. The rect is in the
+     page's own pixels and the canvas may be laid out at a different size to
+     its CSS width, so go through the ratio rather than assuming the two
+     agree. Returns LOGICAL units, which is what `hits` and the draw are in. */
+  function toLogical(clientX, clientY) {
     var r = c.getBoundingClientRect();
-    /* The rect is in the page's own pixels and the canvas may be laid out at
-       a different size to its CSS width, so go through the ratio rather than
-       assuming the two agree. */
     var k = (r.width ? (geom.W / r.width) : 1) / geom.scale;
-    var px = (clientX - r.left) * k, py = (clientY - r.top) * k;
+    return { x: (clientX - r.left) * k, y: (clientY - r.top) * k, rect: r };
+  }
+
+  function hitAt(clientX, clientY) {
+    if (!geom || !hits.length) return null;
+    var p = toLogical(clientX, clientY);
     var best = null, bestD = Infinity;
     for (var i = 0; i < hits.length; i++) {
       var h = hits[i];
-      var d = Math.hypot(px - h.lx, py - h.ly);
+      var d = Math.hypot(p.x - h.lx, p.y - h.ly);
       var reach = Math.max(30, h.R * 1.8);
       if (d < reach && d < bestD) { bestD = d; best = h; }
     }
+    return best;
+  }
+
+  function tapAt(clientX, clientY) {
+    var best = hitAt(clientX, clientY);
     if (best) burst(best.lx, best.ly, best.hue);
+  }
+
+  /* ── A FLOWER ANSWERS A HOVER, NOT ONLY A TAP ────────────────────────────
+     It lifts, and it says what it stands for. The words come from
+     `window._flowerMeanings`, which is `flowerData` itself, so the meadow
+     cannot drift from the catalogue or from either garden.
+
+     IT IS A DOM NODE, NOT PAINTED ON THE CANVAS. Real text in the page's own
+     type, readable by a screen reader, crisp at any pixel ratio, and it needs
+     no font metrics work. That is the rule the card tooltips further down the
+     page already follow. */
+  var tip = null, hoverIdx = -1;
+
+  function makeTip() {
+    if (tip) return tip;
+    tip = document.createElement('div');
+    tip.className = 'meadow-tip';
+    tip.setAttribute('aria-hidden', 'true');
+    (c.parentElement || document.body).appendChild(tip);
+    return tip;
+  }
+
+  function showTip(h) {
+    var data = window._flowerMeanings && window._flowerMeanings[h.sp];
+    if (!data) return hideTip();          /* no words, no label */
+    var t = makeTip();
+    t.innerHTML = "<b>" + data.name + "</b><span>" + data.meaning + "</span>";
+
+    /* Placed from the canvas's own offset inside the meadow box rather than
+       assuming the two share an origin: the canvas is the window's width
+       inside a box that is 10rem wider, so they do not. */
+    var sx = h.lx * geom.scale + c.offsetLeft;
+    var sy = h.ly * geom.scale + c.offsetTop;
+    t.style.visibility = 'hidden';
+    t.setAttribute('data-on', '1');
+    var w = t.offsetWidth, hh = t.offsetHeight;
+    /* Clamped inside the canvas, which is what the gardens do with their own
+       tooltips: a bloom near an edge gets a box that is no longer centred on
+       it, and that is the behaviour rather than a bug. */
+    var left = Math.max(c.offsetLeft + 4,
+               Math.min(sx - w / 2, c.offsetLeft + c.offsetWidth - w - 4));
+    t.style.left = Math.round(left) + 'px';
+    /* CLAMPED AT THE TOP, NOT FLIPPED BELOW. `.meadow-scene` carries
+       `overflow:hidden`, so a box that runs off the top of the canvas is cut
+       in half rather than merely sitting high; and dropping it under the
+       bloom would cover the very flower it is naming. Clamping is what both
+       gardens already do with their own flower boxes, so a bloom near the top
+       gets a box no longer centred on it, and that is the behaviour rather
+       than a bug. The tallest hero flower is the orange sunflower at stem 150,
+       which lands this at about 9px without the clamp ever firing. */
+    t.style.top = Math.max(c.offsetTop + 4,
+                           Math.round(sy - h.R * geom.scale - hh - 10)) + 'px';
+    t.style.visibility = '';
+  }
+
+  function hideTip() {
+    if (tip) tip.removeAttribute('data-on');
+  }
+
+  /* ── THE PAGE LEANS WITH YOU ─────────────────────────────────────────────
+     `ptr` is the pointer in LOGICAL units for the meadow, plus a -1..1 pair
+     the parallax reads. The clouds and the sun are CSS, so they take it as
+     custom properties on the hero and transition it themselves; the hills are
+     canvas and read `ptr.hx` in `draw()`.
+
+     THE TRANSFORM GOES ON `.cloud-wrap`, NEVER ON A `.cloud`. Each cloud is
+     already running a `translateX` keyframe across the sky, and a transform
+     on the same element would replace it outright and freeze the drift. */
+  var ptr = { x: 0, y: 0, hx: 0, hy: 0, on: false };
+  var LEAN_R = 170, LEAN_MAX = 14, LIFT_MAX = 7, HILL_MAX = 12;
+  var SPRING_K = 0.18, SPRING_D = 0.76;
+  var lean = [], leanV = [], lift = [], liftV = [];
+  var hero = document.getElementById('home');
+
+  function onMove(e) {
+    /* A touch screen has no hover, so none of this is for it. The tap and its
+       sparkle are untouched. */
+    if (e.pointerType === 'touch' || !geom) return;
+    var p = toLogical(e.clientX, e.clientY);
+    ptr.x = p.x; ptr.y = p.y; ptr.on = true;
+
+    if (hero) {
+      var hr = hero.getBoundingClientRect();
+      ptr.hx = Math.max(-1, Math.min(1, (e.clientX - (hr.left + hr.width / 2)) / (hr.width / 2)));
+      ptr.hy = Math.max(-1, Math.min(1, (e.clientY - (hr.top + hr.height / 2)) / (hr.height / 2)));
+      if (!reduced) {
+        hero.style.setProperty('--hx', ptr.hx.toFixed(3));
+        hero.style.setProperty('--hy', ptr.hy.toFixed(3));
+      }
+    }
+
+    var h = hitAt(e.clientX, e.clientY);
+    var idx = h ? h.i : -1;
+    if (idx !== hoverIdx) {
+      hoverIdx = idx;
+      if (h) showTip(h); else hideTip();
+    }
+  }
+
+  function onLeave() {
+    ptr.on = false; hoverIdx = -1; hideTip();
+    if (hero && !reduced) {
+      hero.style.setProperty('--hx', '0');
+      hero.style.setProperty('--hy', '0');
+    }
   }
 
   c.style.pointerEvents = 'auto';
   c.addEventListener('pointerdown', function (e) { tapAt(e.clientX, e.clientY); });
+  /* Listened for on the WHOLE HERO rather than on the canvas, so the meadow
+     already knows where the pointer is before it reaches the flowers and the
+     parallax works over the copy as well. Passive: it must never hold up a
+     scroll. */
+  if (hero) {
+    hero.addEventListener('pointermove', onMove, { passive: true });
+    hero.addEventListener('pointerleave', onLeave);
+  }
 
   function drawAfterLayout(){ measure(); draw(); setTimeout(function(){ measure(); draw(); }, 100); }
   if(document.readyState==='loading'){ document.addEventListener('DOMContentLoaded', drawAfterLayout); }
@@ -1547,6 +1715,15 @@
     poppy:     { name: 'Poppy',     meaning: 'Memory & reflection',  keywords: ['grateful','memory','remember','appreciating','thankful'], quote: 'You noticed something worth holding onto today. That kind of awareness is rare and beautiful.' },
     chrysanth: { name: 'Chrysanthemum', meaning: 'Reflection & presence', keywords: ['grateful','memory','notice','appreciating','thankful'], quote: 'You noticed something worth holding onto today. That kind of awareness is rare and beautiful.' }
   };
+
+  /* THE HERO NAMES ITS BLOOMS FROM THIS AND NOT FROM A SECOND COPY. Hovering
+     a flower in the meadow says what it stands for, and those words have to
+     be the ones the catalogue and both gardens already use: one flower says
+     one thing everywhere is this project's oldest rule. `flowerData` is a
+     `const` inside this IIFE, so the hero's own block cannot see it; this is
+     the whole bridge, and it is the same device `window._bloomFns` already
+     uses further down. */
+  window._flowerMeanings = flowerData;
 
   /* A SAFETY NET FOR A BROKEN PAGE, and it covers SIX of the eight now.
      It is only ever reached when `window._bloomFns` is missing, which means

@@ -70,6 +70,80 @@ one. That needs both online at the same time, so:
   `.section-dust` canvases, and the personal garden's sign in gate with the
   same twelve scripts.
 
+## THE MEADOW ANSWERS THE POINTER (v2 ONLY)
+
+Three things, all in `v2/index.html`'s hero script block and the rules at the
+END of `v2/styles.css`. The root copy has none of them.
+
+- **THE POINTER PARTS THE MEADOW.** Each bloom is pushed AWAY from the pointer
+  and springs back, so walking the cursor along the row opens it ahead of you
+  and closes it behind.
+  - **THE SHAPE IS `u * exp(-(u^2+v^2))`, A GAUSSIAN DERIVATIVE, and the stem
+    the pointer sits directly over is why.** The obvious `sign(dx) * falloff`
+    is DISCONTINUOUS there: the flower snaps from full lean one way to full
+    lean the other as the cursor crosses it. This one is odd in u and smoothly
+    zero at the middle, so a bloom is pushed ahead of the pointer, passes
+    through upright as it goes by, and is pushed the other way behind it.
+    **That IS parting.**
+  - **It peaks at u = 0.707 where `u*exp(-u^2)` is 0.429**, so the 2.33 in the
+    expression scales that peak to `LEAN_MAX` exactly. Change one and the
+    other is wrong.
+  - **A DAMPED SPRING, NOT AN EASE.** `SPRING_K` 0.18 and `SPRING_D` 0.76 at
+    the loop's 30fps. An exponential approach arrives and stops; a spring
+    overshoots a little and settles, which is what a pushed stem does.
+  - **The state lives OUTSIDE `draw()`**, in four arrays keyed by the flower's
+    index, because `allFlowers` and every `draw*` function are declared inside
+    it and nothing outside can see them.
+  - **Measured rather than eyeballed**: with the pointer parked 70 logical
+    units to the LEFT of the rose, its painted centroid moved 17 device pixels
+    to the RIGHT, and after `pointerleave` it returned to within the sway's own
+    swing.
+- **A FLOWER ANSWERS A HOVER.** It lifts (`LIFT_MAX` 7, added to the stem
+  length so the stem follows rather than the bloom detaching) and a label says
+  what it stands for.
+  - **THE WORDS COME FROM `flowerData` ITSELF**, exposed as
+    `window._flowerMeanings`, because one flower says one thing everywhere is
+    this project's oldest rule and a second copy of eight meanings would drift.
+    `flowerData` is a `const` inside an IIFE, so the hero block cannot reach
+    it; that one line is the whole bridge, the same device `window._bloomFns`
+    already uses.
+  - **`allFlowers` GAINED A NINTH COLUMN**, the species id, so a hit can be
+    named at all.
+  - **IT IS A DOM NODE, NOT PAINTED ON THE CANVAS**: real text in the page's
+    own type, readable by a screen reader, crisp at any pixel ratio.
+  - **PLACED FROM `c.offsetLeft`/`offsetTop`, NEVER FROM THE BOX ORIGIN.** The
+    canvas is the window's width inside a `.meadow-scene` that is 10rem wider,
+    so the two do not share an origin.
+  - **CLAMPED AT THE TOP, NOT FLIPPED BELOW.** `.meadow-scene` carries
+    `overflow:hidden`, so a box running off the top is cut in half; and under
+    the bloom it would cover the flower it is naming. Both gardens clamp their
+    own flower boxes for the same reason. Measured across the tallest, the
+    shortest and both edge blooms: all four stay inside the canvas, the
+    tallest landing at top 7.
+  - **`pointer-events:none` on the tip**, or it steals the hover from the very
+    flower it describes the moment it opens over it.
+- **THE PAGE LEANS WITH YOU.** Nearer layers move more: hills 12 logical units
+  inside the canvas, clouds 8px, sun 4px, all in the pointer's own direction.
+  - **THE TRANSFORM GOES ON `.cloud-wrap`, NEVER ON A `.cloud`.** Each cloud is
+    already running a `translateX` keyframe across the sky and a transform on
+    the same element replaces it outright and freezes the drift. Verified
+    after: all five are still running `cloudDrift1/2/3`.
+  - **The hills are safe to shift** because those five ellipses already run
+    from -80 to 1600 against a 1440 scene, so a dozen units cannot open a gap.
+  - **The sun rule is scoped `html:not([data-hero])`**, since the `?hero=`
+    drafts set their own transform on it to centre it.
+  - **It is a TRANSITION, not a per-frame write.** The layers arrive a beat
+    after the pointer, which is what reads as leaning rather than as the sky
+    being dragged.
+- **ALL THREE ARE OFF FOR TOUCH AND FOR REDUCED MOTION.** `pointerType ===
+  "touch"` returns early (a finger is not a hover), and `@media (hover:none)`
+  drops the transforms and hides the tip. The tap and its sparkle burst are
+  untouched, since that answers a finger somebody deliberately put on a flower.
+- **One listener on the HERO, not on the canvas**, passive, so the parallax
+  works over the copy too and nothing can hold up a scroll.
+- **Verified at 390**: no sideways scroll, a touch pointermove sets no
+  parallax variable and opens no tip, and no console errors.
+
 ## THE MASCOT (`v2/garden-mascot.js`), v2 ONLY
 
 **A round butter BUTTERFLY with pale blue wings and a flower on each antenna,
