@@ -53,9 +53,9 @@ one. That needs both online at the same time, so:
 
 ## THE MASCOT (`v2/garden-mascot.js`), v2 ONLY
 
-**A round butter bee with pale blue wings and a flower on each antenna, drawn
-in code like everything else here.** It came from the author's own sketches
-and is deliberately NOT a line for line transcription of them.
+**A round butter BUTTERFLY with pale blue wings and a flower on each antenna,
+drawn in code like everything else here.** It came from the author's own
+sketches and is deliberately NOT a line for line transcription of them.
 
 - **WHY IT LOST ITS OUTLINE, ITS TEXTURE AND ITS BLACK EYES.** The sketches
   carry a 3px dark brown keyline round every shape, a diagonal hatch over the
@@ -80,10 +80,28 @@ and is deliberately NOT a line for line transcription of them.
   same step are one part.**
 - **THE FEET HAVE TO CLEAR THE BODY.** Its lowest pixel is 117+49=166, so feet
   centred at 161 showed two pixels of themselves. They are at 168.
-- **THE WINGS HAVE TO CLEAR IT TOO.** At `cx 100 +- 50, rx 33` against a body
-  of `rx 51` the body covered most of each wing and they read as pale smudges.
-  At `+- 58, rx 37` the outer edge reaches 95, so two thirds of the wing is in
-  clear air, which is what makes the silhouette a winged thing.
+- **IT IS A BUTTERFLY, NOT A BEE, AND THE WINGS ARE THE ONLY THING THAT SAYS
+  SO.** This was got wrong twice and both failures are worth keeping.
+  - **ELLIPSES MADE A BEE.** Four of them at `cy 98` and `cy 137`, with the
+    upper pair's top edge at y 73 against a body whose own top is 68, so no
+    wing ever rose above the shoulder and both sat tight against the flanks.
+    Small wings held low IS a bee. A butterfly's wings are larger than its
+    body and the upper pair clears the shoulder, and that is what the eye
+    reads before it reads the face, the antennae or anything else.
+  - **THE FIRST PATHS CAME OUT SMALLER THAN THE ELLIPSES THEY REPLACED**,
+    because **a bezier falls well short of its control points**. Written to
+    controls at x 188 the curve actually topped out near 180, where the old
+    ellipse reached 195. **This project has now been caught by that three
+    times**: the basket's handle, the hair's side parting, and here. Aim a
+    curve by the shape it draws, never by the numbers that steer it, and
+    MEASURE the result.
+  - **THE FIGURES THAT HOLD, read back off the rendered path**: the upper wing
+    spans y 42 to 117 and reaches x 191, against a body that tops out at 68
+    and reaches 151. So it clears the shoulder by 26 and the flank by 40.
+  - **ONE SIDE IS DRAWN AND MIRRORED** by `translate(200,0) scale(-1,1)` about
+    x=100, never written out twice, or the two halves drift.
+  - **THE WINGS GO DOWN FIRST**, before the antennae and the body, so both of
+    those pass in front of them.
 - **THE HARD DAY MOUTH IS NOT A FROWN.** A small line with the faintest dip
   reads as concern; a drawn frown reads as sulking, which is the wrong thing
   to say to somebody having a hard day.

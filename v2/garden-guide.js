@@ -1,5 +1,6 @@
 /* ═══════════════════════════════════════════════════════════════════════════
    THE MASCOT WALKS DOWN THE PAGE WITH YOU, v2 only.
+   (The mascot is a BUTTERFLY. `garden-mascot.js` draws it.)
 
    WHAT THIS REPLACED. The plan before it was to rewrite every section's copy
    so the page told one story as you scrolled. A character saying the line is

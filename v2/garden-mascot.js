@@ -140,33 +140,58 @@
     var w = p.wings;
     var s = "";
 
-    /* antennae first, so the head sits over where they root */
+    /* ───────────────────────────────────────────────────────── THE WINGS
+       IT IS A BUTTERFLY, NOT A BEE, AND THE WINGS ARE THE ONLY THING THAT
+       SAYS SO. The first version drew four ellipses at `cy 98` and `cy 137`
+       with the upper one's top edge at y 73 against a body whose own top is
+       at 68, so no wing ever rose above the shoulder and both sat tight to
+       the sides. That is a bee: small wings, low, held against the body. A
+       butterfly's wings are LARGER THAN ITS BODY and the upper pair clears
+       the shoulder, which is what the eye reads before it reads anything
+       else.
+
+       So they are paths rather than ellipses now. The upper wing sweeps up
+       and out to a rounded outer corner at y 58, ten pixels above the top of
+       the body, and reaches x 188 against the body's 151; the lower is
+       smaller and tucked under it, which is the pairing every butterfly has
+       and no bee does.
+
+       DRAWN FIRST, before the antennae and the body, so both of those pass in
+       front of them. Mirrored about x=100 by `translate(200,0) scale(-1,1)`
+       rather than written out twice, or the two sides drift. */
+    /* A BEZIER FALLS WELL SHORT OF ITS CONTROL POINTS, and the first pass at
+       these paths forgot it: written to controls at x 188 they actually
+       topped out near 180, so the wings came out SMALLER than the ellipses
+       they replaced rather than larger. This project has now been caught by
+       that three times, on the basket's handle, the hair's parting and here.
+       **Aim a curve by the shape it draws, never by the numbers that steer
+       it.** Measured on these: the upper reaches x 190 and y 42, against a
+       body that reaches 151 and 68. */
+    var UPPER = "M100 96C110 60 140 36 170 44C196 51 198 92 176 108" +
+                "C160 120 126 120 100 110Z";
+    var LOWER = "M100 114C126 116 162 128 168 152C172 174 146 182 128 168" +
+                "C114 157 100 138 100 114Z";
+
+    function side() {
+      return '<path d="' + UPPER + '" fill="' + C.wing + '"/>' +
+             '<ellipse cx="157" cy="76" rx="24" ry="17" fill="' + C.wingLit +
+             '" transform="rotate(-20 157 76)"/>' +
+             '<path d="' + LOWER + '" fill="' + C.wing + '"/>' +
+             '<ellipse cx="140" cy="147" rx="15" ry="10" fill="' + C.wingLit +
+             '" transform="rotate(28 140 147)"/>';
+    }
+
+    s += '<g transform="translate(100 118) scale(' + w + ') translate(-100 -118)">' +
+         side() +
+         '<g transform="translate(200,0) scale(-1,1)">' + side() + '</g>' +
+         '</g>';
+
+    /* antennae, over the wings and under the head */
     s += '<path d="M88 78Q78 52 68 38" fill="none" stroke="' + C.stem +
          '" stroke-width="3.2" stroke-linecap="round"/>';
     s += '<path d="M112 78Q122 52 132 38" fill="none" stroke="' + C.stem +
          '" stroke-width="3.2" stroke-linecap="round"/>';
     s += bloom(66, 33, 15, 0) + bloom(134, 33, 15, 36);
-
-    /* wings, behind the body. Two a side, the upper the larger, each with one
-       paler fill inside it rather than a highlight stroke. */
-    s += '<g transform="translate(100 118) scale(' + w + ') translate(-100 -118)">';
-    [[-1, 1], [1, 1]].forEach(function (m) {
-      var k = m[0];
-      /* FURTHER OUT AND BIGGER THAN THE FIRST ATTEMPT. At cx 100+-50 with rx 33
-         the body (rx 51) covered most of each wing and they read as pale smudges
-         either side rather than as wings. Pushed to +-58 with rx 37 the wing's
-         outer edge reaches 95 against the body's 51, so two thirds of it is in
-         clear air, which is what makes the silhouette a winged thing. */
-      s += '<ellipse cx="' + (100 + k * 58) + '" cy="98" rx="37" ry="25" fill="' + C.wing +
-           '" transform="rotate(' + (k * -17) + ' ' + (100 + k * 58) + ' 98)"/>';
-      s += '<ellipse cx="' + (100 + k * 60) + '" cy="93" rx="21" ry="13" fill="' + C.wingLit +
-           '" transform="rotate(' + (k * -17) + ' ' + (100 + k * 60) + ' 93)"/>';
-      s += '<ellipse cx="' + (100 + k * 50) + '" cy="137" rx="26" ry="17" fill="' + C.wing +
-           '" transform="rotate(' + (k * 13) + ' ' + (100 + k * 50) + ' 137)"/>';
-      s += '<ellipse cx="' + (100 + k * 52) + '" cy="134" rx="14" ry="9" fill="' + C.wingLit +
-           '" transform="rotate(' + (k * 13) + ' ' + (100 + k * 52) + ' 134)"/>';
-    });
-    s += '</g>';
 
     /* feet, under the body so the body hides where they join, the way the
        foreground hill buries a stem in both gardens */
