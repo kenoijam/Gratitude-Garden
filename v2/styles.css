@@ -1,0 +1,2088 @@
+/* ── Fraunces, a real variable font, finally present ──
+   The pages spent their whole life falling back to Georgia, because the two
+   Mauritius files the old @font-face rules named were never in the repo. These
+   are here. It is ONE family with a variable weight axis from 100 to 900, so a
+   semibold genuinely exists now and `font-weight: 600` is no longer just bold.
+   The italic is a second face on the same family, so `font-style: italic`
+   picks it up on its own; the bouquet's letter needs nothing else.
+   SOFT 50 rounds the terminals, which is the friendliness the font was chosen
+   for. WONK stays 0: its slanted alternates are charming in a wordmark and
+   distracting in a paragraph. Both are set on the heading rules rather than
+   globally, so body text in Arial is untouched. */
+@font-face {
+  font-family: 'Fraunces';
+  src: url('Fraunces.ttf') format('truetype');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Fraunces';
+  src: url('Fraunces-Italic.ttf') format('truetype');
+  font-weight: 100 900;
+  font-style: italic;
+  font-display: swap;
+}
+
+:root {
+--cream: #fff9e3; --sky: #b7e4e7; --teal: #429288; --lightsky: #e1f7f7;
+--yellow: #fbe484; --darkteal: #1d6466; --white: #ffffff;
+/* the meadow's ground, painted on the hero canvas. About's curve carries it
+   down into the cream, so the two must match: the canvas literal is
+   `ctx.fillStyle='#7ec4b4'` in index.html. */
+--grass: #7ec4b4;
+/* Ink for the bouquet card. Its ground is the meadow's teal, and plain
+   --darkteal on that measures 3.86, under the 4.5 body text needs. This is
+   5.68. Anything written on that card uses it. */
+/* Ink for whichever card is PALE. It was called --bouquet-ink when the
+     bouquet held the pale teal; the personal card holds it now. Plain
+     --darkteal on that teal measures 3.86, under the 4.5 body text needs;
+     this is 5.68. */
+  --pale-card-ink: #14494b;
+--shadow: 0 4px 20px rgba(29,100,102,0.11); --shadowlg: 0 12px 40px rgba(29,100,102,0.15);
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; font-size: 17px; }
+body { font-family: 'Fraunces','Georgia',serif; background: var(--cream); color: var(--darkteal); overflow-x: clip; }
+body, .cta { background-color: #fff9e3; }
+
+/* ── TOP NAV (hidden) ── */
+nav:not(.side-nav) { display: none !important; }
+body { padding-left: 0 !important; }
+.nav-logo { font-family: 'Fraunces','Georgia',serif; font-size: 1.35rem; color: var(--darkteal); text-decoration: none; display: flex; align-items: center; gap: 0.4rem; }
+.nav-logo .dot { width: 8px; height: 8px; background: var(--yellow); border: 2px solid var(--teal); border-radius: 50%; }
+
+/* ── FLOATING SIDE NAV ── */
+.side-nav { position: fixed; left: 14px; top: 50%; transform: translateY(-50%); z-index: 9000; display: flex; flex-direction: column; gap: 7px; align-items: center; }
+.side-nav-item { width: 48px; height: 48px; border-radius: 50%; background: rgba(255,249,227,0.92); border: 1.5px solid var(--sky); display: flex; align-items: center; justify-content: center; text-decoration: none; transition: all 0.25s; box-shadow: 0 2px 10px rgba(29,100,102,0.14); position: relative; }
+.side-nav-item svg { width: 22px; height: 22px; display: block; }
+.side-nav-item:hover, .side-nav-item.active { background: var(--darkteal); border-color: var(--darkteal); }
+.side-nav-item:hover svg *, .side-nav-item.active svg * { stroke: var(--cream) !important; fill: none; }
+.side-nav-item::after { content: attr(data-label); position: absolute; left: 56px; top: 50%; transform: translateY(-50%); background: var(--darkteal); color: var(--cream); font-family: Arial,Helvetica,sans-serif; font-size: 0.7rem; font-weight: 700; padding: 0.3rem 0.7rem; border-radius: 6px; white-space: nowrap; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
+.side-nav-item:hover::after { opacity: 1; }
+/* GONE ON A PHONE, not shrunk. It was 36px circles at left 8, and on a narrow
+   screen the copy runs the full width, so the column sat straight on top of
+   the hero's paragraph and down the left edge of every section after it. What
+   it offers is a jump between sections, which on a phone is what scrolling
+   already is, so it was paying for itself in covered text and giving nothing
+   back. */
+/* HIDDEN UP TO 1100, NOT 768, and the two numbers have to agree. The rail is
+   48px circles at left 14, so it owns everything out to 62px. Below 1100 the
+   sections and the footer drop to 2.5rem of side padding, which puts their
+   first character at 42.5 and straight underneath it: at 800px wide the rail's
+   last button sat on the G of "Gratitude Garden" in the footer. 1100 is where
+   that padding rule starts, so the rail now goes exactly when the copy moves
+   into its lane. Above it the padding is 5rem and there is room for both. */
+@media (max-width: 1100px) { .side-nav { display: none; } }
+
+/* ── HERO ── */
+.hero { height: 100vh; min-height: 100vh; background: linear-gradient(180deg, var(--sky) 0%, var(--lightsky) 58%, var(--cream) 100%); display: flex; flex-direction: column; align-items: center; justify-content: flex-start; position: relative; overflow: hidden; padding-top: 0; padding-bottom: 0; padding-left: 0; padding-right: 0; }
+/* 132px, not 88, and positioned off its CORE rather than its box. The svg is
+   180 units wide but its disc is only 120 of that, the rest being the rays, so
+   at 132px the disc is still the 88px the old circle was. top and right are
+   shifted by the 22px of ray that now sits outside it, which keeps the sun
+   where it has always been. */
+.hero-sun { position: absolute; top: 68px; right: calc(10% - 22px); width: 132px; height: 132px; z-index: 2; }
+.cloud-wrap { position: absolute; top: 0; left: 0; right: 0; bottom: 0; pointer-events: none; overflow: hidden; z-index: 2; }
+.cloud { position: absolute; pointer-events: none; }
+.cloud .body { position: absolute; background: rgba(255,255,255,0.9); border-radius: 50px; }
+.cloud .bump1, .cloud .bump2 { position: absolute; background: rgba(255,255,255,0.9); border-radius: 50%; }
+/* FIVE clouds in TWO speed groups, and the numbers were searched rather than
+   picked. A cloud "arrives" when it crosses the left edge, and with the old
+   three, at 22, 30 and 25 seconds, the longest stretch with no arrival at all
+   was 22 SECONDS: the sky emptied on the left and the next cloud only turned
+   up once the others had gone.
+
+   Even spacing needs a shared period, since arrivals from clouds of unrelated
+   periods drift in and out of phase; but one shared period means one speed,
+   and clouds that never overtake each other read as printed on a sheet. Two
+   groups is the compromise. Three at 24s spread a third of a cycle apart give
+   an arrival every 8s on their own, and two at 33s cross more slowly over the
+   top of them. Worst stretch with no arrival: 8 seconds.
+
+   A NEGATIVE animation-delay starts the cloud part way through its cycle, so
+   the sky is already populated on the first frame rather than filling up over
+   the first half minute. */
+.cloud-1 { animation: cloudDrift1 24s linear infinite; top: 13%; } @keyframes cloudDrift1 { 0% { transform: translateX(-220px); } 100% { transform: translateX(calc(100vw + 220px)); } }
+.cloud-1 .body { width: 160px; height: 44px; top: 30px; left: 0; } .cloud-1 .bump1 { width: 72px; height: 72px; top: 0; left: 22px; } .cloud-1 .bump2 { width: 52px; height: 52px; top: 8px; left: 72px; }
+.cloud-2 { animation: cloudDrift2 33s linear infinite; top: 19%; animation-delay: -16s; } @keyframes cloudDrift2 { 0% { transform: translateX(-280px); } 100% { transform: translateX(calc(100vw + 280px)); } }
+.cloud-2 .body { width: 220px; height: 56px; top: 40px; left: 0; } .cloud-2 .bump1 { width: 92px; height: 92px; top: 0; left: 34px; } .cloud-2 .bump2 { width: 68px; height: 68px; top: 10px; left: 104px; }
+.cloud-3 { animation: cloudDrift3 24s linear infinite; top: 10%; animation-delay: -8s; } @keyframes cloudDrift3 { 0% { transform: translateX(-200px); } 100% { transform: translateX(calc(100vw + 200px)); } }
+.cloud-3 .body { width: 130px; height: 36px; top: 26px; left: 0; } .cloud-3 .bump1 { width: 56px; height: 56px; top: 0; left: 16px; } .cloud-3 .bump2 { width: 40px; height: 40px; top: 8px; left: 58px; }
+.cloud-4 { animation: cloudDrift3 24s linear infinite; top: 22%; animation-delay: -16s; }
+.cloud-4 .body { width: 146px; height: 40px; top: 28px; left: 0; } .cloud-4 .bump1 { width: 64px; height: 64px; top: 0; left: 18px; } .cloud-4 .bump2 { width: 46px; height: 46px; top: 8px; left: 66px; }
+.cloud-5 { animation: cloudDrift2 33s linear infinite; top: 7%; }
+.cloud-5 .body { width: 188px; height: 50px; top: 34px; left: 0; } .cloud-5 .bump1 { width: 80px; height: 80px; top: 0; left: 28px; } .cloud-5 .bump2 { width: 58px; height: 58px; top: 9px; left: 88px; }
+/* Centred in the sky, by auto margins rather than a padding.
+   .meadow-scene already carries `margin-top: auto`, so with a second auto
+   margin here the free space is split evenly between the two and the block
+   lands halfway between the top of the page and the flowers, at any window
+   height. With a fixed 140px padding it sat 160 from the top and 316 above the
+   meadow, which was obvious once the button under it went. The 2.5rem below is
+   gone with it: that gap only ever separated the text from the button. */
+.hero-text-block { text-align: center; position: relative; z-index: 5; padding: 0 1.5rem; margin-top: auto; margin-bottom: 0; max-width: 740px; width: 100%; animation: fadeUp 0.9s ease both; }
+.hero-eyebrow { font-family: Arial,Helvetica,sans-serif; font-size: 0.72rem; letter-spacing: 0.22em; text-transform: uppercase; color: var(--teal); display: block; margin-bottom: 0.8rem; }
+.hero-title {
+  font-variation-settings: 'SOFT' 50, 'WONK' 0; font-family: 'Fraunces','Georgia',serif; font-size: clamp(2.2rem,4.5vw,4rem); line-height: 1.05; color: var(--darkteal); margin-bottom: 1rem; }
+.hero-title em { font-family: 'Fraunces','Georgia',serif; font-style: italic; color: var(--teal); }
+/* Solid, never translucent. At `opacity: 0.76` this measured 3.50 against the
+   hero sky at 17.85px, the same bug .section-desc carried and for the same
+   reason: an opacity mixes the text with whatever is behind it. #2f6260 is the
+   body copy floor this page already uses. */
+.hero-subtitle { font-family: Arial,Helvetica,sans-serif; font-size: 1.05rem; color: #2f6260; max-width: 600px; margin: 0 auto; line-height: 1.75; }
+/* The 1.8rem that used to sit under the subtitle is gone for the same reason
+   the 2.5rem under the block is: it separated the copy from the buttons. Left
+   in, it was 30px of dead space inside the block and the auto margins centred
+   the block rather than the words, which came out 190 above and 150 below. */
+/* Three buttons need 690px and the hero text block is 740px wide, which after
+   its own padding leaves 689px: they missed fitting on one line by a single
+   pixel. A slightly tighter gap settles it, and they still wrap on narrow
+   screens, which is what should happen there. */
+.meadow-scene { margin-top: auto; flex: 0 0 auto; position: relative; margin-left: -5rem; margin-right: -5rem; margin-bottom: 0; line-height: 0; overflow: visible; display: block; }
+.meadow-scene canvas { display: block; }
+
+/* ── HERO OBJECTS, A DRAFT ────────────────────────────────────────────────
+   Off unless the page is opened with ?hero=2, which sets data-hero on <html>.
+   Delete that one gate to promote it, or delete this block to drop it.
+
+   After uncomfyworld.com: objects scattered on an open ground, each one
+   sparkling, each naming itself under the cursor, each going somewhere. The
+   mechanic transferred; the brown desk did not, because this hero is a pale
+   teal sky and that is the page's own opening colour.
+
+   Z-INDEX 4 IS THE ONLY VALUE THAT WORKS. The clouds and the sun are at 2,
+   the birds at 3 and the copy at 5, and the meadow canvas is in normal flow
+   with no z-index of its own. So 4 puts the objects in front of the meadow
+   and the sky and behind the headline, which is what standing IN the garden
+   means here. */
+.hero-objects, .hero-mark { display: none; }
+/* THREE DRAFTS ON ONE GATE, and the shared rules key off `[data-hero]` with
+   no value rather than listing every variant: the gate only sets the
+   attribute when ?hero= is present at all, so the bare selector cannot be
+   matched by accident and it stops growing every time a draft is added.
+     ?hero=2  copy in the middle, objects around it, the garden behind
+     ?hero=3  the same with no headline at all
+     ?hero=4  copy in the middle, objects around it, NO garden behind
+*/
+[data-hero] .hero-objects {
+  display: block; position: absolute; inset: 0; z-index: 4;
+  /* the layer must not eat the meadow's own taps: a flower in it pops the
+     gardens' sparkle burst, and a full width sheet over the top would
+     swallow every one of them. Each object takes its events back. */
+  pointer-events: none;
+}
+.ho {
+  position: absolute; pointer-events: auto; text-decoration: none;
+  display: flex; flex-direction: column; align-items: center;
+  transform: translateX(-50%);
+}
+/* A SHADOW THAT DOES NOT BOB. It sits on the anchor rather than on the art,
+   because the art is what floats: a shadow rising and falling with the object
+   reads as the ground moving rather than as the object leaving it. */
+.ho::after {
+  content: ""; position: absolute; left: 50%; bottom: 26px;
+  width: 58%; height: 13px; transform: translateX(-50%);
+  background: radial-gradient(ellipse at center,
+              rgba(29,100,102,0.20) 0%, rgba(29,100,102,0.10) 45%, rgba(29,100,102,0) 72%);
+  transition: width .35s ease, opacity .35s ease; z-index: -1;
+}
+.ho:hover::after, .ho:focus-visible::after { width: 50%; opacity: .75; }
+.ho-art { display: block; animation: hoBob 5.2s ease-in-out infinite; }
+/* THE BOB AND THE LIFT ARE ON TWO DIFFERENT ELEMENTS, and they have to be:
+   both are transforms, so on one element the hover would simply replace the
+   idle float and the object would drop to the ground as you reached it.
+   `.ho-lift` is also what lets the sparkles ride with the object: they are an
+   svg laid over a CANVAS on three of the four now, so the two have to be
+   lifted together rather than each carrying its own transform. */
+.ho-lift {
+  position: relative; display: block;
+  transition: transform .34s cubic-bezier(.34,1.3,.5,1);
+  filter: drop-shadow(0 4px 10px rgba(29,100,102,0.14));
+}
+.ho-lift > .ho-canvas, .ho-lift > .ho-draw {
+  display: block; width: var(--ho-w, 130px); height: auto;
+}
+/* THE SECOND STATE IS STACKED, NOT SWAPPED. Canvas art cannot be animated by
+   CSS and a repaint on pointerenter is a hard cut, so the open book is a
+   second canvas laid over the shut one in the same box and the two cross
+   fade. The box is sized for the OPEN spread, so nothing changes size and the
+   label underneath never moves. */
+.ho-lift > .ho-alt {
+  position: absolute; inset: 0; width: 100%; height: auto;
+  opacity: 0; transition: opacity .3s ease;
+}
+.ho-lift > .ho-canvas:not(.ho-alt) { transition: opacity .3s ease; }
+.ho:hover .ho-lift > .ho-alt, .ho:focus-visible .ho-lift > .ho-alt { opacity: 1; }
+.ho:hover .ho-lift > .ho-canvas:not(.ho-alt),
+.ho:focus-visible .ho-lift > .ho-canvas:not(.ho-alt) { opacity: 0; }
+/* the sparkle layer sits OVER the art and matches its box, so each one keeps
+   its own viewBox and the stars are never stretched */
+.ho-lift > svg.ho-spark {
+  position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none;
+}
+.ho:hover .ho-lift, .ho:focus-visible .ho-lift { transform: translateY(-13px) scale(1.07); }
+@keyframes hoBob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-7px); } }
+/* each on its own period, or the three rise and fall together and the row
+   reads as the page tilting. Same rule the hero's flowers sway by. */
+.ho-personal .ho-art { animation-duration: 5.2s; }
+.ho-shared   .ho-art { animation-duration: 6.4s; animation-delay: -2.1s; }
+.ho-bouquet  .ho-art { animation-duration: 5.8s; animation-delay: -3.6s; }
+
+/* THE SPARKLE IS THE PROJECT'S OWN, four outer points with the inner corners
+   at 0.35 of the radius, which is `drawNewestSparkles` exactly: the shape the
+   gardens throw when a flower is planted and the shape the page's drifting
+   motes are drawn as. Borrowing the reference's would have put a fourth kind
+   of sparkle on a site that already has one. */
+.ho-spark path { fill: #fbe484; opacity: 0; transition: opacity .3s ease; }
+.ho:hover .ho-spark path, .ho:focus-visible .ho-spark path {
+  opacity: 1; animation: hoTwinkle 1.7s ease-in-out infinite;
+}
+.ho-spark path:nth-child(2) { animation-delay: .34s; }
+.ho-spark path:nth-child(3) { animation-delay: .68s; }
+@keyframes hoTwinkle { 0%, 100% { opacity: 1; } 50% { opacity: .35; } }
+
+.ho-name {
+  font-family: 'Fraunces', 'Georgia', serif; font-variation-settings: 'SOFT' 50, 'WONK' 0;
+  /* --pale-card-ink, NOT --darkteal, and it was measured. These labels land
+     on the meadow's own grass, and #1d6466 on #7ec4b4 is 3.40 against the 4.5
+     body text needs: on screen it read as pale rather than as dark, which is
+     exactly what that ratio looks like. #14494b is 5.01 there and 6.9 on the
+     sky above it, so it passes wherever the object happens to stand. */
+  font-weight: 600; font-size: 1.02rem; color: var(--pale-card-ink);
+  margin-top: 10px; white-space: nowrap;
+  opacity: 0; transform: translateY(5px);
+  transition: opacity .28s ease, transform .28s ease;
+}
+.ho:hover .ho-name, .ho:focus-visible .ho-name { opacity: 1; transform: translateY(0); }
+
+/* THE COPY AND THE OBJECTS BOTH FOLLOW THE WINDOW, and the fixed 540 they
+   replace is a bug worth recording. The headline's size is a `clamp` on `vw`
+   while the copy was capped at a constant, so the WIDER the window the more
+   lines the title wrapped to: measured, two lines at 1024 and FOUR at about
+   1400, which is what "crowded in the middle" was. The same constant left
+   lanes of about 430px either side holding a 122px object, which is what
+   "looks empty" was. One cause, both complaints.
+
+   `--copy-w` is a share of the window with a ceiling, `--lane` is what is
+   left beside it, and everything else is derived from those two, so the two
+   can no longer disagree. */
+[data-hero] {
+  --copy-w: min(640px, 46vw);
+  --lane: calc((100vw - var(--copy-w)) / 2);
+}
+[data-hero] .hero-text-block { max-width: var(--copy-w); }
+/* and the title comes down with it, so it sits on TWO lines at every width */
+[data-hero] .hero-title { font-size: clamp(1.95rem, 3.5vw, 3.05rem); }
+
+/* EACH FLANKING OBJECT IS CENTRED IN ITS OWN LANE, so it can never overlap the
+   copy however the window changes, and it moves outward exactly as fast as the
+   copy's edge does.
+   THE RIGHT HAND PAIR ARE ANCHORED BY `right`, NOT by `left: 100vw - ...`.
+   `100vw` counts the scrollbar and `innerWidth` does not, so a right edge
+   computed from it lands about 15px past the window. Anchoring each side to
+   its own edge cancels that. */
+.ho { --ho-w: clamp(112px, calc(var(--lane) * 0.62), 258px); }
+.ho-personal, .ho-shared  { left: calc(var(--lane) / 2); }
+.ho-bouquet, .ho-gardener { left: auto; right: calc(var(--lane) / 2);
+                            transform: translateX(50%); }
+/* TWO TO A LANE, staggered, which is what fills the height. One to a lane with
+   a third at the foot left the whole lower half empty. The two gardens read
+   down the left and the two things you make read down the right. */
+.ho-personal { bottom: 54%; }
+.ho-shared   { bottom: 14%; --ho-w: clamp(130px, calc(var(--lane) * 0.74), 300px); }
+.ho-bouquet  { bottom: 54%; }
+.ho-gardener { bottom: 14%; }
+
+/* TWO CLOUDS, NOT FIVE. The five were searched so the sky is never empty for
+   more than 8 seconds, which is right for a hero that is mostly sky; with four
+   objects, a sun, birds, motes and a meadow in it the same five are three too
+   many. The two kept are one from each speed group, so they still overtake
+   each other rather than reading as printed on a sheet. */
+[data-hero] .cloud-3, [data-hero] .cloud-4, [data-hero] .cloud-5 { display: none; }
+
+/* ?hero=3: the headline goes and the wordmark is the only type on the page */
+[data-hero="3"] .hero-text-block { display: none; }
+
+/* ?hero=4: NO GARDEN BEHIND THE OBJECTS. The meadow is eleven flowers, three
+   hills, a ground, butterflies and motes, and every one of them is a detailed
+   thing competing with the detailed things in front of it. Without it the hero
+   is the sky gradient alone, which already ends in cream at the foot, so the
+   objects stand on a pale surface with their own soft shadows under them.
+
+   THE COPY NEEDS ITS SECOND AUTO MARGIN BACK. `.hero` is a flex column and
+   `.hero-text-block` is centred by having `margin-top: auto` against the
+   meadow's own `margin-top: auto` below it, the two splitting the free space.
+   Remove the meadow and that single auto margin pushes the copy to the BOTTOM
+   of the hero instead. */
+[data-hero="4"] .meadow-scene { display: none; }
+[data-hero="4"] .hero-text-block { margin-bottom: auto; }
+
+.hero-mark {
+  position: absolute; top: 30px; left: 40px; z-index: 6; text-decoration: none;
+  font-family: 'Fraunces', 'Georgia', serif; font-variation-settings: 'SOFT' 50, 'WONK' 0;
+  font-weight: 600; font-size: 1.24rem; color: var(--darkteal); letter-spacing: .01em;
+}
+.hero-mark em { font-style: italic; color: var(--teal); }
+[data-hero] .hero-mark { display: block; }
+
+/* THE SUN MOVES TO THE TOP CENTRE, and it has to. It lives at `right: 10%`,
+   which is the middle of the right hand LANE, so the object standing there had
+   the sun's rays glowing through it: measured, the bouquet spanned 799 to 972
+   against a sun at 812 to 944. The corner is not available once the lanes are
+   in use, and the top centre was empty anyway, so it fills the one part of the
+   picture nothing else reaches. */
+[data-hero] .hero-sun {
+  top: 40px; right: auto; left: 50%; transform: translateX(-50%);
+}
+
+/* NO CURSOR RULE HERE. `a` is already in garden-cursor.js's clickable list,
+   so these take the sparkle pointer for free, and a `cursor: pointer` written
+   in this stylesheet would lose to it anyway: every rule that file writes
+   carries !important. */
+
+@media (hover: none) {
+  /* A LABEL NOBODY CAN HOVER IS A LABEL NOBODY READS. The reference gets away
+     with hiding its names because a book and an envelope say what they are; a
+     pot and a patch of ground do not say which garden they open. */
+  .ho-name { opacity: 1; transform: none; }
+  .ho-spark path { opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ho-art { animation: none; }
+  .ho:hover .ho-art svg, .ho:focus-visible .ho-art svg { transform: none; }
+  .ho:hover .ho-spark path, .ho:focus-visible .ho-spark path { animation: none; }
+}
+@media (max-width: 1000px) {
+  /* one row along the foot, since three points of an arc need width the
+     phone does not have, and the copy above them grows taller as it wraps */
+  /* LANES NEED WIDTH A PHONE HAS NOT GOT. Below 1000 the copy takes the
+     column back and the four objects fall into two rows of two under it. */
+  [data-hero] { --copy-w: 92vw; }
+  [data-hero] .hero-text-block { max-width: 740px; }
+  [data-hero] .hero-title { font-size: clamp(1.7rem, 9vw, 2.6rem); }
+  .ho { --ho-w: clamp(64px, 20vw, 104px); }
+  .ho-shared { --ho-w: clamp(84px, 26vw, 140px); }
+  .ho-personal, .ho-shared { left: 24%; }
+  .ho-bouquet, .ho-gardener { left: auto; right: 24%; transform: translateX(50%); }
+  /* THE COPY GOES TO THE TOP AND THE OBJECTS FILL BELOW IT. On a laptop the
+     copy is centred by auto margins top and bottom and the objects stand
+     either side of it in their own lanes. A phone has no lanes, so the same
+     centring dropped the copy straight through the upper pair: measured, the
+     title ran to y 560 with the pot and the bouquet starting at 452, and both
+     labels landed on the subtitle. */
+  [data-hero] .hero-text-block { margin-top: 90px; margin-bottom: auto; }
+  /* 31, not 34: at 34 the upper row's art began 11px under the subtitle */
+  .ho-personal, .ho-bouquet { bottom: 31%; }
+  .ho-shared, .ho-gardener  { bottom: 5%; }
+  /* the corner is free again with no lanes in it, and a sun in the middle of
+     a phone's sky sits behind the headline */
+  [data-hero] .hero-sun {
+    left: auto; right: -18px; top: 18px; transform: none; width: 104px; height: 104px;
+  }
+  .hero-mark { top: 18px; left: 18px; font-size: 1.05rem; }
+  .ho-name { font-size: .82rem; margin-top: 6px; }
+  .ho::after { bottom: 20px; height: 9px; }
+}
+
+/* ── BUTTONS ── */
+.btn-primary { background: var(--darkteal); color: var(--cream); padding: 0.9rem 2.4rem; border-radius: 50px; font-family: Arial,Helvetica,sans-serif; font-size: 1rem; font-weight: 700; text-decoration: none; border: none; cursor: pointer; transition: background 0.3s,transform 0.2s,box-shadow 0.3s; box-shadow: 0 4px 16px rgba(29,100,102,0.28); display: inline-flex; align-items: center; justify-content: center; }
+.btn-primary:hover { background: var(--teal); transform: translateY(-2px); color: var(--cream); }
+.btn-outline { background: transparent; color: var(--darkteal); padding: 0.9rem 2.4rem; border-radius: 50px; font-family: Arial,Helvetica,sans-serif; font-size: 1rem; font-weight: 700; text-decoration: none; border: 2.5px solid var(--darkteal); cursor: pointer; transition: all 0.3s; display: inline-flex; align-items: center; justify-content: center; }
+.btn-outline:hover { background: var(--darkteal); color: var(--cream); transform: translateY(-2px); }
+
+/* ── SECTIONS ── */
+section { padding: 5rem 5rem; }
+.section-label { font-family: Arial,Helvetica,sans-serif; font-size: 0.72rem; letter-spacing: 0.22em; text-transform: uppercase; color: var(--teal); display: block; margin-bottom: 0.5rem; }
+.section-title {
+  font-variation-settings: 'SOFT' 50, 'WONK' 0; font-family: 'Fraunces','Georgia',serif; font-size: clamp(2.2rem,3.8vw,3.4rem); line-height: 1.1; color: var(--darkteal); margin-bottom: 1rem; }
+.section-title em { font-family: 'Fraunces','Georgia',serif; font-style: italic; color: var(--teal); }
+/* Solid, not 80 percent of dark teal: at 0.8 the colour was mixed with whatever
+   was behind it, so on a section that faded the text changed value down the
+   paragraph and read as blurred.
+
+   And dark enough to pass. The first solid value, #457f7f, was the colour that
+   blend produced over cream, and it failed WCAG AA everywhere it was used:
+   4.33 on cream, 4.10 on pale blue, 3.32 on the stronger blue, against a 4.5
+   requirement. This is 6.56, 6.21 and 5.03. */
+.section-desc { font-family: Arial,Helvetica,sans-serif; font-size: 1.05rem; line-height: 1.8; color: #2f6260; max-width: 700px; }
+
+/* ── ABOUT: 2-col grid, title spans left col row1, cards align to body text row2 ── */
+/* Cream, flat, and so are the cards below it: About and the three cards are one
+   continuous cream run with no join to draw between them. The cards do that work
+   themselves, being three strong blocks of green, yellow and blue sitting on it.
+   The page's one warm to cool change is at the flower guide.
+
+   Its TOP edge is deliberately straight. The meadow's ground already has a
+   curved top from the hills, so a curve here put a second curve a few pixels
+   under the first; the grass now ends on a clean horizon instead.
+
+   It is also padded more than a standard section, 130px rather than 85px. At
+   the standard padding it was 0.74 of a screen wedged between a 1.00 hero and
+   a 1.23 cards section, and read as a strip rather than a stop. */
+.about {
+  background: var(--cream);
+  padding-top: 116px;   /* 100px clear of the curve, see the headroom note */
+  padding-bottom: 124px;  /* 100px below the copy, matching the 100 above it */
+  position: relative;
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: auto auto;
+  grid-template-areas:
+    "title ."
+    "body  cards";
+  column-gap: 4rem;
+  row-gap: 1rem;
+  align-items: start;
+}
+/* The meadow's ground curving down into the cream. Note the ground ALREADY has
+   a curved top edge from the hills, so this is a second curve a short way below
+   the first; it is here on purpose, to see whether it reads as layered ground
+   or as a mistake. If it is the second, this block is what to delete. */
+.about::before {
+  content: ''; position: absolute; top: -60px; left: 50%; transform: translateX(-50%);
+  width: 110%; height: 100px; background: var(--grass); border-radius: 0 0 50% 50%;
+}
+.about-title, .about-body, .about-right { position: relative; z-index: 1; }
+.about-title { grid-area: title; }
+.about-body  { grid-area: body;  display: flex; flex-direction: column; gap: 1rem; }
+.about-body .section-desc { max-width: 100%; }
+.about-right { grid-area: cards; display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; align-content: start; padding-top: 0; }
+.feature-card { background: var(--white); border-radius: 16px; padding: 1.2rem 1.3rem; border: 1.5px solid var(--sky); display: flex; align-items: flex-start; gap: 0.85rem; }
+.feature-icon { width: 40px; height: 40px; flex-shrink: 0; display: block; margin-top: 2px; }
+.feature-title { font-family: 'Fraunces','Georgia',serif; font-size: 1rem; color: var(--darkteal); margin-bottom: 0.2rem; }
+.feature-desc { font-family: Arial,Helvetica,sans-serif; font-size: 0.85rem; color: var(--teal); line-height: 1.55; }
+/* A LINK IN A FEATURE CARD GOES DARKER, NOT BLUER. `--teal` is already at the
+   edge of readable at this size, and the browser's own link blue is the one
+   colour on this page that belongs to nothing. Underlined, because colour
+   alone is not a link. */
+.feature-desc a { color: var(--darkteal); text-decoration: underline; text-underline-offset: 2px; }
+
+/* ── GARDENS ── */
+/* White, and this was measured rather than chosen. The three cards are a dark
+   green, a pale yellow and a pale blue, and white is the only ground where none
+   of them blends into it:
+
+     ground     green   yellow        blue
+     cream      L3.95   L1.10 dH5     L1.17
+     white      L4.17   L1.16 dH52    L1.23
+     pale blue  L3.74   L1.04         L1.10 dH3
+     sky        L3.03   L1.19         L1.12 dH1
+
+   L is luminance contrast and dH is hue distance; a card needs one or the other
+   to separate. On cream the yellow card is five degrees of hue and 1.10 away
+   and nearly vanishes; on any blue the bouquet card is one to three degrees
+   away. Check any future colour for this section against all three.
+
+   It also splits what was a 1858px cream run, two full screens, against a page
+   whose other sections are around one. */
+/* ── Headroom under a curve ──
+   Every curve is `top: -60px; height: 100px`, so it dips 40px INTO the
+   section it sits on. The gap between that and the first line of copy is
+   what reads as headroom, and it was 20px in the footer against 124 in
+   the closing section, which is why some joins looked cramped and others
+   did not. Every curved section now clears the curve by 100px.
+   The top padding is NOT the clearance: `.about`, `.gardens`,
+   `.catalogue` and `.cta` each carry 24px between their padding and
+   their first painted element, and `.wisdom` and the footer carry none,
+   which is why 116 and 140 both land on 100. Measure the first element,
+   do not read the padding. */
+.gardens {
+  background: var(--lightsky);
+  padding-top: 116px;
+  position: relative;
+  overflow: hidden;
+}
+/* Cream on white is a soft join, L1.04, so this curve is close to a whisper.
+   It is here anyway: every join on the page is a curve, and a consistent idea
+   quietly stated beats an inconsistent one. */
+.gardens::before {
+  content: ''; position: absolute; top: -60px; left: 50%; transform: translateX(-50%);
+  width: 110%; height: 100px; background: var(--cream); border-radius: 0 0 50% 50%;
+}
+.gardens-header, .gardens-grid { position: relative; z-index: 1; }
+.gardens-header { text-align: center; margin-bottom: 3rem; }
+.gardens-header .section-desc { margin: 0 auto; max-width: 520px; }
+/* TWO CARDS, NOT THREE, while the project shows the two gardens only. The
+   bouquet card is commented out of the markup rather than deleted, so this
+   is the one line that has to move with it: left at three the row would hold
+   two cards in two thirds of the width with a column of nothing beside them.
+   `grid-auto-rows: 1fr` still matters, and for the same reason as before: it
+   is what keeps the pair level however much copy each one carries. */
+.gardens-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.6rem;
+  grid-auto-rows: 1fr;
+}
+
+.garden-card {
+  border-radius: 28px;
+  overflow: hidden;
+  box-shadow: 0 8px 32px rgba(29,100,102,0.10);
+  transition: transform 0.3s, box-shadow 0.3s;
+  /* NO `cursor: pointer` here. `cursor` INHERITS, so a value on the card beat
+     the flower the project draws everywhere else and the pointer turned into
+     the operating system's hand over a third of the landing page. The card is
+     only a link on a phone, and the phone block is where that now lives. */
+  display: flex;
+  flex-direction: column;
+}
+.garden-card:hover { transform: translateY(-6px); box-shadow: 0 16px 48px rgba(29,100,102,0.18); }
+
+.garden-card-inner {
+  padding: 2.2rem 1.9rem 1.9rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  position: relative;
+  overflow: hidden;
+  gap: 0.6rem;
+  flex: 1;
+}
+
+.card-private {
+  /* Darkened so its cream text passes. At #3a9e90 the lightest stop gave cream
+     only 3.08, under the 4.5 body text needs, and no text colour could fix it
+     because cream is already the lightest thing available. The LIGHTEST STOP is
+     what decides this, not the middle: it is the bottom corner of the card and
+     the whole gradient has to clear the bar. #2a8378 was tried first and gave
+     4.31, still short. This gives 4.85. */
+  /* It drifts in HUE as well as lightness, which is the only reason the yellow
+     card beside it reads as a gradient at all. All three stops used to sit at
+     roughly hue 163, so a 0.084 luminance range, wider than the yellow card's
+     0.062, still looked like one flat colour. The last stop is 52 degrees away
+     now, the same drift the yellow card makes to pale green, and the range is
+     0.188. The top half stays teal, so the card is still the teal one. */
+  background: linear-gradient(165deg, #a6dacc 0%, #8fcfbe 52%, #c9e6c4 100%);
+}
+.card-public {
+  background: linear-gradient(165deg, #fef7cc 0%, #fdf0a0 50%, #e8f5e0 100%);
+}
+/* The meadow's own teal, the front strip of the hero's ground. Sky blue was
+   here and measured well, 1.23 against the section, but it sat FOUR degrees of
+   hue from it: the eye read the two as one colour whatever the luminance said.
+   This is 1.59 and sixteen degrees, and it ties the card back to the meadow at
+   the top of the page.
+
+     candidate   vs ground        vs the yellow card beside it
+     sky         L1.23  dH4       L1.19
+     this        L1.59  dH16      L1.53
+
+   Luminance alone is not enough when two colours share a hue. */
+.card-bouquet {
+  background: linear-gradient(165deg, #144749 0%, #1c665e 55%, #277a70 100%);
+}
+
+.garden-card-inner > div,
+.garden-card-inner > a { position: relative; z-index: 1; }
+/* Centred, not stretched: a pill the full width of the card reads as a bar
+   across the bottom of it rather than as a button. */
+.garden-card-inner > a { align-self: center; }
+/* The slack in a card goes to the gap above the picture, never to the copy.
+   Given to the copy, whichever card carries the least text pushes its own
+   picture down and the row of three loses its line. */
+.garden-card-body { flex: 0 0 auto; }
+
+/* Badge */
+.garden-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.4rem 1rem;
+  border-radius: 50px;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: 0.6rem;
+  width: fit-content;
+}
+.badge-private { background: rgba(29,100,102,0.11); color: var(--pale-card-ink); border: 1.5px solid rgba(29,100,102,0.22); }
+.badge-public  { background: rgba(29,100,102,0.11); color: var(--darkteal); border: 1.5px solid rgba(29,100,102,0.22); }
+.badge-bouquet { background: rgba(255,255,255,0.14); color: rgba(255,249,227,0.95); border: 1.5px solid rgba(255,255,255,0.24); }
+.badge-icon { width: 13px; height: 13px; }
+
+/* Title */
+.garden-card-title {
+  font-variation-settings: 'SOFT' 50, 'WONK' 0;
+  font-family: 'Fraunces', 'Georgia', serif;
+  font-size: 2.1rem;
+  margin-bottom: 0.5rem;
+  line-height: 1.08;
+  /* Two lines held open on every card. "The Bouquet Builder" wraps and "The
+     Shared Garden" may not, and without this the paragraph below started at a
+     different height on each of the three. */
+  min-height: calc(2 * 2.1rem * 1.08);
+}
+.card-private .garden-card-title { color: var(--pale-card-ink); }
+.card-public  .garden-card-title { color: var(--darkteal); }
+.card-bouquet .garden-card-title { color: var(--cream); }
+
+/* Description */
+.garden-card-desc {
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 0.95rem;
+  line-height: 1.75;
+  /* NO negative margin. It was -0.5rem, which pulled the small print 9px UP
+     into the paragraph's last line on all three cards at once: a paragraph
+     does not leave 9px of slack under its final line, so the pull came
+     straight out of the text. If the gap ever needs closing again, take it
+     off the note's own padding, not off the paragraph.
+
+     It was also hiding a second fault. A paragraph that runs to five lines
+     grows past the four reserved here, so the personal card's body came out
+     330px against the other two at 302 and the row of pictures stopped
+     lining up. The copy is cut to four lines on all three, and the
+     reservation is what keeps them level if one ever runs short. */
+  /* A small, POSITIVE gap. It was -0.5rem, which pulled the small print 9px
+     up into the paragraph's last line on all three cards; then 0, which left
+     the chip sitting directly on the text with only the line's own leading
+     between them. 0.55rem is the gap, and because all three paragraphs are
+     held to the same four lines below, it moves all three chips together. */
+  margin-bottom: 0.55rem;
+  max-width: 420px;
+  min-height: calc(4 * 0.95rem * 1.75);
+}
+/* Solid, not translucent. At 0.78 and 0.82 these were being mixed with the card
+   behind them and every one of the three failed WCAG AA for body text: 3.19 on
+   the green card, 3.77 on the yellow and 3.30 on the blue, against 4.5. The
+   card titles are large text and pass at the 3.0 threshold on their own. */
+.card-private .garden-card-desc { color: var(--pale-card-ink); }
+.card-public  .garden-card-desc { color: #1d6466; }
+.card-bouquet .garden-card-desc { color: #fff9e3; }
+
+/* Password / info note */
+.password-note {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  border-radius: 12px;
+  padding: 0.55rem 1rem;
+  margin-bottom: 1rem;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 0.82rem;
+  backdrop-filter: blur(4px);
+}
+.card-private .password-note {
+  /* a tint, not a white pill. At 0.58 white this read as a solid chip while
+     the other two cards carried an 0.08 to 0.15 wash, so the personal card
+     looked heavier than the row it sits in. This is the yellow card's own
+     treatment, which is the other pale card. */
+  background: rgba(29,100,102,0.08);
+  border: 1.5px solid rgba(29,100,102,0.25);
+  color: var(--pale-card-ink);
+  font-weight: 400;
+}
+/* The badge's own tint, to the value. It carried a yellow wash while
+   .badge-bouquet directly above it carried a white one, so the two chips on
+   the same card were different colours; on the other two cards the badge and
+   the note already share a tint. The text stays solid cream rather than the
+   badge's 0.95, because this is a sentence and that is a label. */
+.bouquet-note {
+  background: rgba(255,255,255,0.14) !important;
+  border: 1.5px solid rgba(255,255,255,0.24) !important;
+  color: #fff9e3 !important;
+}
+.public-note {
+  background: rgba(29,100,102,0.08) !important;
+  border: 1.5px solid rgba(29,100,102,0.25) !important;
+  color: #1d6466 !important;
+  font-weight: 400 !important;
+}
+
+/* Buttons */
+.btn-card-light {
+  background: var(--cream);
+  color: var(--darkteal);
+  padding: 0.85rem 1.8rem;
+  border-radius: 50px;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 0.92rem;
+  font-weight: 700;
+  text-decoration: none;
+  border: none;
+  cursor: pointer;
+  width: fit-content;
+  display: inline-block;
+  transition: transform 0.2s, box-shadow 0.3s;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.10);
+}
+.btn-card-light:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.15); }
+
+.btn-card-dark {
+  background: var(--darkteal);
+  color: var(--cream);
+  padding: 0.85rem 1.8rem;
+  border-radius: 50px;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 0.92rem;
+  font-weight: 700;
+  text-decoration: none;
+  border: none;
+  cursor: pointer;
+  width: fit-content;
+  display: inline-block;
+  transition: transform 0.2s, box-shadow 0.3s;
+  box-shadow: 0 4px 16px rgba(29,100,102,0.22);
+}
+.btn-card-dark:hover { transform: translateY(-2px); color: var(--cream); box-shadow: 0 6px 20px rgba(29,100,102,0.30); }
+
+/* ── One button, three grounds ──
+   All three cards carry the same dark teal fill and cream label. It measures
+   4.06 on the pale teal card and 6.04 on the yellow one, but 1.24 on the dark
+   green card, and no single fill can fix that: clearing 3:1 against the yellow
+   card needs a luminance under 0.26 and clearing it against the dark green
+   card needs over 0.52. So the dark card's button keeps the same fill and adds
+   a cream ring, and it is the ring that draws the shape there. `.btn-card-light`
+   is kept for anything that needs a cream fill; nothing on the page does now. */
+.btn-on-dark { box-shadow: inset 0 0 0 2px rgba(255,249,227,0.85); }
+.btn-on-dark:hover { box-shadow: inset 0 0 0 2px rgba(255,249,227,0.95), 0 6px 20px rgba(0,0,0,0.28); }
+
+
+/* ── The fold, small screens only ──
+   Three full cards stacked run to nearly three screens of scrolling on a
+   phone, so each one collapses to its badge and title. The button is hidden
+   entirely above 768px, where the row of three needs no folding. */
+.card-fold { display: none; }
+
+@media (max-width: 768px) {
+  .card-fold {
+    display: block; position: absolute; top: 1.5rem; right: 1.3rem; z-index: 4;
+    width: 34px; height: 34px; padding: 0; cursor: pointer;
+    background: rgba(255,255,255,0.16); border: 1px solid rgba(255,255,255,0.34);
+    border-radius: 50%;
+  }
+  .card-public .card-fold, .card-private .card-fold {
+    background: rgba(29,100,102,0.07); border-color: rgba(29,100,102,0.22);
+  }
+  .card-fold-chev {
+    display: block; width: 9px; height: 9px; margin: -3px auto 0;
+    border-right: 2px solid currentColor; border-bottom: 2px solid currentColor;
+    transform: rotate(45deg); transition: transform 0.2s;
+  }
+  .garden-card-inner:not(.folded) .card-fold-chev { transform: rotate(225deg); margin: 3px auto 0; }
+  .card-private .card-fold-chev { color: var(--pale-card-ink); }
+  .card-public .card-fold-chev { color: var(--darkteal); }
+  .card-bouquet .card-fold-chev { color: var(--cream); }
+
+  .garden-card-inner.folded { padding-bottom: 1.5rem; }
+  .garden-card-inner.folded .garden-card-desc,
+  .garden-card-inner.folded .password-note,
+  .garden-card-inner.folded .card-art-slot,
+  .garden-card-inner.folded > a { display: none; }
+  /* the reserved lines exist to keep a row of three level; folded there is no
+     row to keep level and they only add empty space */
+  .garden-card-inner.folded .garden-card-title { min-height: 0; margin-bottom: 0; }
+
+  /* lighter outlines: 2.5px reads as heavy at phone size, where the button is
+     already full width and cannot be mistaken for anything else */
+  .btn-outline { border-width: 1.5px; border-color: rgba(29,100,102,0.5); }
+  .btn-card-light, .btn-card-dark { border-width: 1.5px; }
+
+  /* THE HINT GETS A STRIP OF ITS OWN, UNDER THE PICTURE. It is absolutely
+     positioned along the slot's bottom edge, which on a wide card sits on
+     canvas the flowers never reach. On a phone the card is narrower, the
+     description is hidden and everything closes up, so "Tap or hover a
+     flower" landed on the picture above it and on the button below. Giving
+     the slot a margin and dropping the line into that margin means the strip
+     belongs to the hint and to nothing else. */
+  .card-art-slot { margin-bottom: 1.7rem; }
+  .cs-hint { bottom: -1.45rem; font-size: 0.72rem; opacity: 1; }
+}
+
+/* ── FLOWER CATALOGUE ── */
+/* ── Section dividers ──
+   Every section is one flat colour and every join is a CURVE, not a fade: an
+   ellipse in the neighbouring section's colour, pulled 60px outside the section
+   and clipped by `overflow: hidden`, so the edge reads as a soft roll. This is
+   the treatment the tips section always used, now used everywhere.
+
+   A curve is a shape, which is why it beats a gradient here. Fades across a
+   section kept washing over the copy, twice: the text sat on a ground that
+   changed value as you read down it and looked blurred. A curve cannot do that,
+   and it reads as a join rather than as a section that could not decide on a
+   colour. Content inside a section with a curve needs `position: relative` and
+   a z-index, or the curve paints over it. */
+/* Where the page turns cool, and so where the curve goes: the cream above
+   spilling down into the pale blue. Content inside needs `position: relative`
+   and a z-index or the curve paints over it. */
+.catalogue {
+  background: var(--cream);
+  padding-top: 116px;
+  position: relative;
+  overflow: hidden;
+}
+.catalogue::before {
+  content: ''; position: absolute; top: -60px; left: 50%; transform: translateX(-50%);
+  width: 110%; height: 100px; background: var(--lightsky); border-radius: 0 0 50% 50%;
+}
+.catalogue-header, .flowers-grid { position: relative; z-index: 1; }
+.catalogue-header { margin-bottom: 2.5rem; }
+.flowers-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 1.2rem; width: 100%; min-width: 0; }
+
+.flower-tile { background: var(--white); border-radius: 18px; padding: 1.4rem 1rem; text-align: center; border: 1.5px solid var(--sky); transition: transform 0.2s,box-shadow 0.2s,border-color 0.2s; display: flex; flex-direction: column; align-items: center; gap: 0.3rem; min-width: 0; overflow: hidden; }
+.flower-tile:hover { transform: translateY(-4px); box-shadow: 0 10px 28px rgba(29,100,102,0.14); border-color: var(--teal); }
+.flower-svg-wrap { height: 150px; width: 100%; position: relative; display: block; margin-bottom: 0.5rem; }
+canvas.flower-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: block; }
+.flower-name { font-family: 'Fraunces','Georgia',serif; font-size: 1.15rem; color: var(--darkteal); }
+.flower-mood { font-family: Arial,Helvetica,sans-serif; font-size: 0.8rem; color: var(--teal); font-style: italic; }
+.flower-chip { display: inline-block; padding: 0.25rem 0.75rem; border-radius: 50px; font-family: Arial,Helvetica,sans-serif; font-size: 0.72rem; font-weight: 600; margin-top: 0.2rem; }
+.chip-rose { background:#fde8e8;color:#b05070; } .chip-sun { background:#fffacc;color:#8a6a00; }
+.chip-peony { background:#fbe3ee;color:#9c4a72; }  /* was .chip-lotus: the peony took its tile */ .chip-lav { background:#e4daf0; color:#6b4d8a; }
+.chip-daisy { background:#fff4d6; color:#8a6d2a; } .chip-tulip { background:#eef8ee;color:#386040; } 
+.chip-lily { background:#fde8f0;color:#905060; } .chip-poppy { background:#fde3e1;color:#a83a35; }  /* was .chip-sakura */
+/* the hidden florist pair: no tile uses these, kept so turning them on needs no CSS work */
+/* THE ORCHID IS PICKABLE NOW, so its chip is a real orchid purple rather
+   than the pale sky it carried while it was hidden and nothing showed it.
+   The hibiscus is the one new chip; the peony's and the poppy's stay exactly
+   as they are, because the modal still opens for a flower already planted. */
+.chip-orchid { background:#efe0f4;color:#7b4a90; } .chip-mum { background:#fde8e8;color:#b05070; }
+.chip-hibiscus { background:#fde0e3;color:#a8384a; }
+.catalogue::after { display: none; }
+.flowers-grid::before { display: none; }
+
+/* ── FLOWER MODAL ── */
+.flower-modal-overlay { display: none; position: fixed; inset: 0; z-index: 300; background: rgba(29,100,102,0.45); backdrop-filter: blur(4px); align-items: center; justify-content: center; padding: 2rem; }
+.flower-modal-overlay.open { display: flex; }
+.flower-modal { background: var(--white); border-radius: 24px; padding: 2.5rem; max-width: 520px; width: 100%; box-shadow: 0 28px 70px rgba(29,100,102,0.28); position: relative; text-align: center; animation: modalIn 0.28s ease; }
+@keyframes modalIn { from { opacity:0; transform:scale(0.94) translateY(10px); } to { opacity:1; transform:none; } }
+.flower-modal-close { position: absolute; top: 1rem; right: 1.2rem; background: none; border: none; cursor: pointer; font-size: 1.3rem; color: var(--teal); font-family: Arial,sans-serif; }
+.flower-modal-svg { margin: 0 auto 1.2rem; display: block; }
+.flower-modal-name { font-family: 'Fraunces','Georgia',serif; font-size: 2rem; color: var(--darkteal); margin-bottom: 0.25rem; }
+.flower-modal-meaning { font-family: 'Fraunces','Georgia',serif; font-style: italic; font-size: 1.05rem; color: var(--teal); margin-bottom: 0.9rem; }
+.flower-modal-keywords { display: flex; gap: 0.4rem; justify-content: center; flex-wrap: wrap; margin-bottom: 1.2rem; }
+.flower-modal-quote {
+  font-variation-settings: 'SOFT' 50, 'WONK' 0; font-family: Arial,Helvetica,sans-serif; font-size: 0.95rem; color: var(--darkteal); opacity: 0.86; line-height: 1.75; border-left: 3px solid var(--sky); padding-left: 1rem; text-align: left; font-style: italic; margin: 0 auto; max-width: 400px; }
+
+/* ── WISDOM ── */
+/* The two closing sections are the shortest on the page, 0.68 and 0.62 of a
+   screen against about 1.0 elsewhere. Extra padding brings them nearer 0.8 so
+   the page tapers rather than dropping away. Desktop only: stacked into one
+   column they are already in proportion. */
+.wisdom { background: var(--darkteal); position: relative; overflow: hidden; padding-top: 140px; padding-bottom: 100px; }
+/* the curve above is the colour of whatever section sits above it, bleeding
+   down into the dark teal. The flower guide is pale blue. */
+/* THE CURVE IS ALWAYS THE COLOUR OF THE SECTION ABOVE, and above Wisdom is
+   the flower guide's cream. It was pale blue for as long as the gardener had
+   a section of its own between them. */
+.wisdom::before { content: ''; position: absolute; top: -60px; left: 50%; transform: translateX(-50%); width: 110%; height: 100px; background: var(--cream); border-radius: 0 0 50% 50%; }
+
+/* ---------------------------------------------------- the gardener band
+   IT SHARES #gardens' GROUND rather than being a section of its own. Every
+   section on this page is one flat colour and every join is a curve painted
+   in the colour above, so a new section between the gardens and the flower
+   guide would have to be cream, which pushes the guide onto pale blue and
+   kills the --sky border on its eight white tiles. A band needs no curve, no
+   colour and no sparkle canvas of its own. */
+.gardener-band {
+  position: relative; z-index: 1;
+  max-width: 900px; margin: 72px auto 0; text-align: center;
+}
+.gardener-h {
+  font-family: Fraunces, Georgia, serif; font-weight: 700;
+  font-variation-settings: 'SOFT' 50, 'WONK' 0;
+  font-size: clamp(1.5rem, 2.6vw, 2rem); color: var(--darkteal);
+  margin: 0 0 .6rem;
+}
+.gardener-h em { font-style: italic; color: var(--teal); }
+.gardener-p {
+  font-family: Arial, Helvetica, sans-serif; font-size: 1rem;
+  color: #2f6260; line-height: 1.6;
+  max-width: 560px; margin: 0 auto;
+}
+/* FIVE ACROSS, a fixed count rather than auto-fit, which is the rule every
+   other grid on this page follows after auto-fit left uneven rows. */
+.gardener-row {
+  display: grid; grid-template-columns: repeat(5, 1fr);
+  gap: 1rem; margin: 1.8rem auto; max-width: 760px;
+}
+/* A LINK, NOT A CARD. They looked pressable and were not; each one now opens
+   the build page already wearing that gardener. No panel behind them, since
+   the band already sits on its own ground and five white cards in a row would
+   read as a second set of garden cards. */
+.gardener-card {
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  min-width: 0; text-decoration: none; padding: 6px 2px;
+  border-radius: 16px; border: 1.5px solid transparent;
+  transition: border-color .18s ease;
+}
+/* A CANVAS IS A BAD GRID ITEM: it carries an intrinsic width, so as a grid
+   item it becomes its column's minimum and 1fr stops dividing the row
+   evenly. The same fix the bouquet's tiles needed. */
+.gardener-card canvas { display: block; width: 100%; height: auto; }
+.gardener-name {
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: .82rem; color: #2f6260; font-weight: 700; letter-spacing: .02em;
+}
+/* THEY BOB, EACH ON ITS OWN PERIOD, or the five rise and fall together and
+   the row reads as the page tilting. Same rule the hero's objects follow. */
+@media (prefers-reduced-motion: no-preference) {
+  .gardener-card canvas { animation: gardenerBob 5.6s ease-in-out infinite; }
+  .gardener-card:nth-child(2) canvas { animation-duration: 6.4s; animation-delay: -1.2s; }
+  .gardener-card:nth-child(3) canvas { animation-duration: 5.2s; animation-delay: -2.6s; }
+  .gardener-card:nth-child(4) canvas { animation-duration: 6.8s; animation-delay: -0.7s; }
+  .gardener-card:nth-child(5) canvas { animation-duration: 5.9s; animation-delay: -3.3s; }
+}
+@keyframes gardenerBob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-7px); }
+}
+@media (hover: hover) {
+  .gardener-card:hover { border-color: var(--sky); }
+}
+
+/* No `::after` here. Every join on the page is a section curving DOWN into the
+   one below, so the closing section carries this one on its own top instead;
+   the tips section used to be the only one with a curve on both edges, and the
+   only one curving upward. */
+.wisdom-inner { position: relative; z-index: 1; padding: 3rem 0; }
+.wisdom .section-label { color: var(--yellow); }
+.wisdom .section-title { color: var(--cream); }
+.wisdom .section-title em { color: var(--yellow); }
+.tips-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 1.2rem; margin-top: 2.5rem; }
+.tip-card { background: rgba(255,255,255,0.08); border: 1.5px solid rgba(255,255,255,0.18); border-radius: 18px; padding: 1.4rem 1.3rem; display: flex; flex-direction: column; gap: 0; }
+.tip-icon-wrap { width: 56px; height: 56px; border-radius: 14px; background: rgba(255,255,255,0.18); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.tip-icon-svg { width: 32px; height: 32px; display: block; }
+.tip-title { font-family: 'Fraunces','Georgia',serif; font-size: 1.2rem; color: var(--cream); line-height: 1.2; }
+.tip-text  { font-family: Arial,Helvetica,sans-serif; font-size: 0.87rem; color: rgba(255,249,227,0.72); line-height: 1.68; }
+.tip-header { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.65rem; }
+.tip-header .tip-icon-wrap { margin-bottom: 0; }
+.tip-header .tip-title { margin-bottom: 0; }
+
+/* ── CTA ── */
+/* PALE BLUE, not cream. The page runs hero, cream, pale blue, cream, dark
+   teal, and this closing section made it cream twice in three, with the dark
+   teal band between them the only thing saying they were different sections.
+   In pale blue the run alternates properly and the white card lifts off it
+   more clearly than it ever did off cream.
+
+   `footer::before` is the curve INTO the footer and is painted in the colour
+   of the section above it, so it moves with this. Miss that and the footer
+   gets a cream roll off a blue section. */
+.cta {
+  background: var(--lightsky); text-align: center;
+  padding: 116px 5rem 124px;   /* 100px below the copy, matching the 100 above */
+  position: relative; overflow: hidden;
+}
+.cta::before {
+  content: ''; position: absolute; top: -60px; left: 50%; transform: translateX(-50%);
+  width: 110%; height: 100px; background: var(--darkteal); border-radius: 0 0 50% 50%;
+}
+.cta-inner { position: relative; z-index: 1; }
+/* The border does more work now than it did on cream. White on pale blue is
+   1.14:1, so the card's own fill cannot draw its edge; `--sky` against that
+   ground is 1.14 as well and drew nothing. This is the hairline the bouquet
+   swatches use, measured at 1.5:1 on both the card and the ground. */
+.cta-inner { max-width: 820px; margin: 0 auto; background: var(--white); border-radius: 28px; padding: 3rem 3.5rem 3.5rem; border: 2px solid rgba(29,100,102,0.26); box-shadow: var(--shadowlg); }
+.cta .section-desc { margin: 0 auto 2rem; text-align: center; max-width: 440px; }
+/* Wrap, never nowrap. Three nowrap buttons measured wider than the box they
+   sit in and ran straight out through both sides of it. */
+.cta-buttons { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; margin-top: 2rem; }
+.cta-buttons .btn-primary, .cta-buttons .btn-outline { white-space: nowrap; }
+
+/* ── FOOTER ── */
+/* the last join on the page, and it curves like every other one */
+footer {
+  /* 140px, not 3.5rem. At 60px the curve dipped 40 in and the first row of the
+     footer started at 60, so it had 20px of headroom against 100 everywhere
+     else, and it was the join that read as cramped. */
+  background: var(--darkteal); color: rgba(255,249,227,0.65); padding: 140px 5rem 2rem;
+  position: relative; overflow: hidden;
+}
+footer::before {
+  content: ''; position: absolute; top: -60px; left: 50%; transform: translateX(-50%);
+  /* The closing section's colour, not cream. See the note on `.cta`. */
+  width: 110%; height: 100px; background: var(--lightsky); border-radius: 0 0 50% 50%;
+}
+.footer-top, .footer-bottom { position: relative; z-index: 1; }
+
+/* ------------------------------------------------- the perched gardeners
+   TWO ON THE WHOLE PAGE AND NO MORE. It already carries eleven hero flowers,
+   three card pictures, eight guide blooms and five gardeners in the band, and
+   another repeated figure past that stops being charm and starts competing.
+   THEY SIT, LEGS OVER THE EDGE, AND THEY ANSWER WHEN YOU REACH FOR THEM.
+   They were standing and silent, and both halves changed together: a figure
+   that says something is a CONTROL, so the old note here that they are not
+   links and take no pointer events no longer applies. The rule it came from
+   still does, and it is a different rule: the flower cursor marks a control,
+   and a large box you happen to be able to click is not one. So the pointer
+   events are on the CANVAS and the hit test inside it is on the FIGURE. */
+.perch {
+  /* BIGGER THAN THE STANDING PAIR WERE, 80 against 62. A seated figure shows
+     only about a tenth of its own height below the hip, so at the old size
+     the whole of the pose was ten pixels of shin and it read as standing
+     behind the card rather than sitting on it. */
+  position: absolute; z-index: 3; cursor: pointer;
+  display: block; width: 80px; height: 116px;
+}
+/* SITTING ON THE CARD'S TOP EDGE. `bottom: 100%` puts the canvas above the
+   edge and the negative margin pulls it back down so the line crosses the
+   hip; the exact amount is set in JS from `AvatarDraw.SEAT_BOX`, since the
+   geometry belongs to the drawing rather than to this file. */
+.perch-cta { right: 9%; bottom: 100%; }
+/* FIVE ON THE PAGE NOW, NOT TWO, and they run down it rather than waiting at
+   the bottom: on the feature cards in About, on the three garden cards, on
+   the flower ring, on the closing card and on the footer's rule. The note
+   this replaces said two and no more, on the argument that the page already
+   carries eleven hero flowers, three card pictures and eight guide blooms.
+   What changed is that they are no longer decoration: they SIT, and they say
+   something when you reach for them, so each is a thing to find rather than
+   the same figure printed again.
+   EVERY HOST NEEDS `position: relative`, or `bottom: 100%` resolves against
+   whatever ancestor happens to be positioned and the figure lands in another
+   section entirely. */
+.about-right, .gardens-grid { position: relative; }
+.perch-about   { left: 4%;  bottom: 100%; }
+/* ABOUT'S ONE GOES EARLIER THAN THE REST, at 1100 rather than 768, and it is
+   measured rather than cautious: that section is a grid of title, copy and
+   cards, and below about 1000 it STACKS, which puts the copy column directly
+   above the cards and the figure straight on top of the Read more fold.
+   1100 is where the page's side padding already drops, so it is the width the
+   rest of this layout already treats as narrow. */
+@media (max-width: 1100px) { .perch-about { display: none; } }
+.perch-gardens { right: 3%; bottom: 100%; }
+.perch-ring    { left: 2%;  bottom: 100%; }
+@media (prefers-reduced-motion: no-preference) {
+  /* EACH ON ITS OWN PERIOD, or the five rise and fall together and the page
+     reads as tilting. Same rule the gardener band and the hero objects
+     already follow. */
+  .perch-about   { animation-duration: 5.8s; animation-delay: -1.4s; }
+  .perch-gardens { animation-duration: 6.6s; animation-delay: -3.0s; }
+  .perch-ring    { animation-duration: 5.1s; animation-delay: -0.6s; }
+}
+/* ON THE RIGHT, because the LEFT of the rule is where the social icons end
+   and she sat on top of them. The right side above the rule is the foot of
+   the Explore column, which runs out four links earlier. */
+.perch-footer { right: 8%; bottom: 100%; }
+
+/* WHAT THEY SAY. A small cream panel above the head, pointing down at it.
+   It is `pointer-events: none` so that reaching past it to the button
+   underneath is never intercepted: the bubble is an answer, not a control. */
+.perch-say {
+  position: absolute; z-index: 4; pointer-events: none;
+  width: max-content; max-width: 210px;
+  padding: 9px 13px 10px; border-radius: 14px;
+  background: var(--cream); color: var(--darkteal);
+  border: 1.5px solid rgba(29, 100, 102, 0.18);
+  box-shadow: 0 6px 20px rgba(29, 100, 102, 0.13);
+  font-size: .82rem; line-height: 1.35; text-align: left;
+  opacity: 0; transform: translateY(4px);
+  transition: opacity .22s ease, transform .22s ease;
+}
+.perch-say.is-on { opacity: 1; transform: translateY(0); }
+/* THE NOTCH IS TWO ROTATED SQUARES, NOT ONE, which is the same fix the
+   music hint already carries: a single bordered square shows its own upper
+   edges through the panel it is meant to be part of, so the back one carries
+   the border colour and the front one, 2px higher, carries the fill. */
+/* THE NOTCH POINTS AT THE FIGURE, NOT AT THE MIDDLE OF THE PANEL. These sit
+   8 and 9 percent from the right edge, so the panel is pulled back inside the
+   window and its centre is nowhere near the head it belongs to; at `left:50%`
+   it pointed at empty air beside them. `--notch` is set in JS. */
+.perch-say::before, .perch-say::after {
+  content: ""; position: absolute; left: var(--notch, 50%); width: 10px; height: 10px;
+  margin-left: -5px; transform: rotate(45deg);
+}
+.perch-say::before { bottom: -6px; background: rgba(29, 100, 102, 0.18); }
+.perch-say::after  { bottom: -4px; background: var(--cream); }
+@media (prefers-reduced-motion: reduce) {
+  .perch-say { transition: none; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .perch { animation: perchBob 6.2s ease-in-out infinite; }
+  .perch-footer { animation-duration: 5.4s; animation-delay: -2.1s; }
+}
+@keyframes perchBob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
+}
+@media (max-width: 768px) {
+  /* GONE ON A PHONE. The column is 375 wide and either of these would be
+     sitting on copy rather than beside it, bubble and all. */
+  .perch, .perch-say { display: none; }
+}
+/* TWO COLUMNS, NOT TWO EDGES. `space-between` on a 939px row holding 403px
+   of content left a 535px gulf between Gratitude Garden and Explore, so the
+   footer read as two things that had drifted apart rather than as a row.
+   An even two column grid gives each half a column and a real gap, and it is
+   what lets the links be left aligned below. */
+.footer-top { display: grid; grid-template-columns: 1fr 1fr; gap: 0 3rem;
+  align-items: start; margin-bottom: 2rem; }
+.footer-brand-logo {
+  font-variation-settings: 'SOFT' 50, 'WONK' 0; font-family: 'Fraunces','Georgia',serif; font-size: 1.4rem; color: var(--yellow); margin-bottom: 0.2rem; display: block; text-decoration: none; }
+/* `.footer-desc` IS GONE, not merely unused: it held the whole project
+   described again at the foot of the page that describes it. If a paragraph
+   is ever wanted back here, it belongs in About instead. */
+/* ------------------------------------------------- the footer's invitation
+   THE SIGN UP MAKES AN ACCOUNT, not a mailing list, so it is a BUTTON and not
+   a field: an input would promise that typing in it is the thing that signs
+   you up, and the real form has two fields and lives in the account module. */
+.footer-join {
+  display: inline-flex; align-items: center; gap: .5rem;
+  margin: .85rem 0 .5rem; padding: 11px 20px; min-height: 44px;
+  border: 1.5px solid rgba(255,249,227,0.5); border-radius: 50px;
+  background: none; color: var(--cream);
+  font-family: Arial, Helvetica, sans-serif; font-size: .88rem; font-weight: 700;
+  transition: background .25s, border-color .25s;
+}
+.footer-join[disabled] { opacity: .6; }
+.footer-join-note {
+  font-family: Arial, Helvetica, sans-serif; font-size: .78rem;
+  line-height: 1.6; color: rgba(255,249,227,0.55); max-width: 340px; margin: 0;
+}
+/* `.footer-col ul` ALREADY SETS `flex-direction: column` and outranks a bare
+   class, so this has to be scoped the same way or the two icons stack. */
+.footer-col ul.footer-social {
+  list-style: none; display: flex; flex-direction: row; gap: .55rem;
+  margin: .85rem 0 0; padding: 0; align-items: center;
+}
+.footer-social a {
+  display: flex; align-items: center; justify-content: center;
+  width: 38px; height: 38px; border-radius: 50%;
+  border: 1.5px solid rgba(255,249,227,0.3);
+  color: rgba(255,249,227,0.75);
+  transition: color .25s, border-color .25s;
+}
+@media (hover: hover) {
+  .footer-join:hover { background: rgba(255,249,227,0.1); border-color: var(--yellow); }
+  .footer-social a:hover { color: var(--yellow); border-color: var(--yellow); }
+}
+
+.footer-col h4 {
+  font-variation-settings: 'SOFT' 50, 'WONK' 0; font-family: 'Fraunces','Georgia',serif; font-size: 1.4rem; font-weight: normal; color: var(--yellow); margin-bottom: 0.9rem; text-align: left; }
+/* Left aligned, like the column opposite. Ragged down their left side against
+   the right edge of the page, the three links had no edge to read down. */
+.footer-col ul { list-style: none; display: flex; flex-direction: column; gap: 0.55rem; align-items: flex-start; }
+.footer-col ul a { font-family: Arial,Helvetica,sans-serif; color: rgba(255,249,227,0.55); text-decoration: none; font-size: 0.88rem; transition: color 0.3s; }
+.footer-col ul a:hover { color: var(--yellow); }
+/* THE LETTER'S WAY BACK IS A BUTTON, because it opens a card rather than
+   going anywhere, and a href to nowhere is a lie the keyboard finds first.
+   It is dressed exactly as the links beside it so the column still reads as
+   one list; everything a `button` brings of its own (its font, its padding,
+   its border and its left alignment) has to be taken off by hand. */
+.footer-col ul button.footer-as-link { font-family: Arial,Helvetica,sans-serif; color: rgba(255,249,227,0.55); font-size: 0.88rem; background: none; border: none; padding: 0; text-align: left; transition: color 0.3s; }
+.footer-col ul button.footer-as-link:hover { color: var(--yellow); }
+.footer-bottom { border-top: 1px solid rgba(255,255,255,0.1);
+  /* 1.8rem, not 2.5: the row centres its credit in what is left, which adds
+     about 12px on top of the padding, so the gap UNDER the divider reads 43
+     and matches the 43 above it. Measured, not assumed. */
+  padding-top: 1.8rem; display: flex; justify-content: space-between; align-items: center; font-family: Arial,Helvetica,sans-serif; font-size: 0.82rem; }
+.footer-credit { display: flex; flex-direction: column; gap: 0.2rem; }
+.footer-name-bottom { font-family: 'Fraunces','Georgia',serif; font-size: 0.8rem; color: rgba(255,249,227,0.65); }
+.footer-logo-link { display: flex; align-items: center; text-decoration: none; opacity: 0.85; transition: opacity 0.2s; }
+.footer-logo-link:hover { opacity: 1; }
+.footer-logo-img { height: 40px; width: auto; filter: brightness(0) invert(1) opacity(0.75); }
+
+/* ── MAX WIDTH for HD screens ── */
+@media (min-width: 1440px) {
+section { padding-left: max(5rem, calc((100vw - 1380px)/2 + 5rem)); padding-right: max(5rem, calc((100vw - 1380px)/2 + 5rem)); }
+footer { padding-left: max(5rem, calc((100vw - 1380px)/2 + 5rem)); padding-right: max(5rem, calc((100vw - 1380px)/2 + 5rem)); }
+.hero-text-block { max-width: 780px; }
+}
+@media (min-width: 1920px) {
+section { padding-left: calc((100vw - 1400px)/2); padding-right: calc((100vw - 1400px)/2); }
+footer { padding-left: calc((100vw - 1400px)/2); padding-right: calc((100vw - 1400px)/2); }
+}
+
+/* ── SCROLL REVEAL ── */
+.reveal { opacity: 0; transform: translateY(24px); transition: opacity 0.65s ease, transform 0.65s ease; }
+.reveal.visible { opacity: 1; transform: none; }
+@keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+/* ── RESPONSIVE ── */
+
+/* ── Tablet (≤1100px) ── */
+@media (max-width: 1100px) {
+section { padding: 3.5rem 2.5rem; }
+.about { grid-template-columns: 1fr; grid-template-areas: "title" "body" "cards"; gap: 1.5rem; }
+.about-right { margin-top: 0; padding-top: 0; }
+.gardens-grid { grid-template-columns: 1fr; }
+.flowers-grid { grid-template-columns: repeat(2,1fr); }
+.tips-grid { grid-template-columns: 1fr 1fr; }
+.meadow-scene { margin-left: -2.5rem; margin-right: -2.5rem; }
+footer { padding: 140px 2.5rem 2rem; }   /* 100px clear, matching the sections, which keep their desktop padding down to 768 */
+}
+
+/* ── Mobile (max 768px), SINGLE CONSOLIDATED BLOCK ── */
+@media (max-width: 768px) {
+
+  /* Section spacing */
+  section { padding: 2.8rem 3.6rem; }
+
+  /* The side nav is hidden on a phone: see the note beside its own rule. */
+
+  /* Hero. 82 of top padding rather than 70: the account and music buttons are
+     fixed at the top right and end at 52 on a phone, and the eyebrow used to
+     start level with them. */
+  .hero { padding-top: 82px; min-height: 100dvh; height: auto; overflow: visible; }
+  /* height is auto here, so the auto margins collapse and the block needs its
+     own gap above the meadow again */
+  /* PUSHED DOWN, so the birds and the clouds have the top of the sky to
+     themselves. On a wide screen the copy is a centred column with empty sky
+     either side of it and nothing ever crosses; on a phone the words run the
+     full width, so a cloud drifting past at 7 to 22 percent of the height and
+     a skein of birds at 8 to 30 pass straight through the headline. Starting
+     the copy below that band is the only thing that separates them, since
+     both are painted on canvases behind it. */
+  .hero-text-block { padding: 3.4rem 1.5rem 0; max-width: 100%; margin-bottom: 2.5rem; }
+  /* The hero has to stay ahead of the section titles above, which are now 9vw
+     themselves. */
+  .hero-title { font-size: clamp(2.3rem, 10.5vw, 3.4rem); line-height: 1.06; }
+  .hero-subtitle { font-size: 0.9rem; max-width: 100%; }
+  .meadow-scene { margin-left: -3.6rem; margin-right: -3.6rem; }
+
+  /* About: horizontal scroll cards */
+  .about { grid-template-columns: 1fr; grid-template-areas: "title" "body" "cards"; gap: 1.8rem; }
+  .about-right {
+    display: flex;
+    flex-direction: row;
+    gap: 0.8rem;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    padding-top: 0;
+    margin-top: 0;
+    padding-bottom: 0.8rem;
+    scrollbar-width: thin;
+    scrollbar-color: var(--sky) transparent;
+    max-width: 100%;
+  }
+  .feature-card {
+    flex: 0 0 55vw;
+    max-width: 220px;
+    min-height: 180px;
+    scroll-snap-align: start;
+    min-width: 0;
+    padding: 1.2rem;
+    gap: 0.6rem;
+    flex-direction: column;
+  }
+  .feature-icon { width: 32px; height: 32px; }
+  .feature-title { font-size: 0.88rem; }
+  .feature-desc { font-size: 0.78rem; }
+  /* A section title on a phone was 27.2px against a 34px control in the
+     corner and a 16.15px line underneath it, so the loudest thing on the
+     screen was a button and the title read as a subheading. The ratio to the
+     line under it was 1.68 against the desktop's 3.06. At 9vw it is 35 on a
+     390 screen, which clears the control and gets the ratio back to 2.2. */
+  .section-title { font-size: clamp(2.05rem, 9vw, 2.9rem); }
+  .section-desc { font-size: 0.95rem; }
+
+  /* Gardens */
+  /* auto rows, not 1fr. `grid-auto-rows: 1fr` is what keeps the row of three
+     level on a wide screen, but stacked into one column it makes every row as
+     tall as the tallest, so opening one folded card stretched the two closed
+     ones to match it and the fold saved nothing. */
+  /* About's extra room is a desktop problem: there it is a short section wedged
+     between two tall ones. Stacked into one column its copy wraps and it is
+     already the tallest thing on the page, so the 130px would only pad out
+     something that needs no help. This keeps the same ratio to the smaller
+     section padding phones use. */
+  /* Stacked into one column the copy wraps and these are already the tallest
+     things on the page, so the desktop padding would pad out something that
+     needs no help. The curve still dips its 40px though, so the TOP of each
+     curved section is set for a uniform 56px of headroom, the same way the
+     desktop block is set for 100. .wisdom and the footer carry no 24px offset
+     between their padding and their first element, so they take 96 where the
+     rest take 72. */
+  /* 29 below, not 72: about carries 27px of its own margin down there, so 29
+     of padding is the 56px of clearance the top has. It was the only section
+     on a phone with more room below its copy than above. */
+  .about { padding-top: 72px; padding-bottom: 29px; }
+  .gardens, .catalogue { padding-top: 72px; }
+  .wisdom { padding-top: 96px; padding-bottom: 56px; }
+  .cta { padding-top: 72px; padding-bottom: 56px; }
+  footer { padding-top: 96px; }
+
+  .gardens-grid { grid-template-columns: 1fr; gap: 1.4rem; grid-auto-rows: auto; }
+  .garden-card-inner { padding: 2rem 1.6rem 1.8rem; }
+  .garden-card-title { font-size: 1.6rem; }
+  .garden-card-desc { font-size: 0.88rem; }
+
+  /* Flower catalogue: hide mood and tile chips, keep modal chips visible */
+  .flowers-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 0.8rem;
+    position: relative;
+    padding-top: 1.8rem;
+  }
+
+  /* SQUARE on a phone. The mood line and the chip are already hidden here, so
+     a tile is a flower and a name and nothing else, and left to size itself it
+     came out 130 wide by 209 tall: a tall box round a round thing. A square
+     reads as a card of one flower, and two of them side by side fill the width
+     without a ragged edge below. `justify-content: center` is what stops the
+     pair sitting at the top of the box once the height is no longer theirs. */
+  .flower-tile { padding: 0.45rem 0.35rem; aspect-ratio: 1; justify-content: center; }
+  /* 86, not 68. `renderFlowerCanvas` takes its radius from `min(W*.30, H*.28)`
+     and in a square tile the HEIGHT is what binds, so a short picture box made
+     every bloom small: the tulip filled a fifth of its tile. */
+  .flower-svg-wrap { height: 86px; margin-bottom: 0.2rem; }
+  .flower-name { font-size: 0.9rem; }
+  .flower-mood { display: none; }
+  .flower-tile > .flower-chip { display: none; }
+  .catalogue::after { display: none; }
+
+  /* Wisdom tips: horizontal scroll */
+  .tips-grid {
+    display: flex;
+    flex-direction: row;
+    gap: 0.8rem;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 0.8rem;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255,255,255,0.35) transparent;
+    max-width: 100%;
+  }
+  .tip-card {
+    flex: 0 0 55vw;
+    max-width: 220px;
+    min-height: 200px;
+    scroll-snap-align: start;
+    min-width: 0;
+    padding: 1.2rem;
+  }
+  .tip-title { font-size: 1rem; }
+  .tip-text { font-size: 0.82rem; }
+
+  /* CTA */
+  .cta { padding: 72px 3.6rem 56px; }   /* top matches the headroom rule above */
+  .cta-inner { padding: 2rem 1.2rem 2.2rem; }
+  .cta-buttons { flex-direction: column; align-items: center; gap: 0.6rem; margin-top: 1.5rem; }
+  /* SMALLER THAN FULL WIDTH, and shorter. At 320px wide with 1rem type and
+     0.9rem of padding, three stacked pills stood taller than the heading they
+     belong to and read as the section rather than as its actions: the title
+     resolves to about 34px on a 375 screen and each button was 51px of solid
+     colour. 240 and 0.72rem puts them back under it. */
+  .cta-buttons .btn-primary,
+  .cta-buttons .btn-outline {
+    width: 100%; max-width: 240px; text-align: center;
+    padding: 0.72rem 1.5rem; font-size: 0.92rem;
+  }
+
+  /* Footer */
+  footer { padding: 96px 3.6rem 1.5rem; }   /* top matches the headroom rule above */
+  /* Stacked, and each fold takes the WHOLE width. As flex items they were
+     shrink to fit, so the summary was only as wide as its own heading and the
+     chevron sat against the text instead of out at the right edge where a
+     control belongs. `gap` goes because each fold carries its own rule and
+     padding now, and the two together left a hole under the closed one. */
+  .footer-top { grid-template-columns: 1fr; flex-direction: column; gap: 0; align-items: stretch;
+    /* 2.5rem left a hole between the last fold's own rule and the divider
+       above the credit. The folds carry their own spacing now. */
+    margin-bottom: 1.1rem; }
+  .footer-col h4 { text-align: left; }
+  .footer-col ul { align-items: flex-start; }
+  .footer-bottom { flex-direction: row; justify-content: space-between; align-items: center; gap: 0; text-align: left; }
+  .footer-credit { flex-direction: row; align-items: center; gap: 0.65rem; }
+
+  /* Scroll hints */
+  .about-right::before { display: none; }
+  .about::after {
+    content: 'Swipe to see more →';
+    display: block;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 0.72rem;
+    color: var(--teal);
+    opacity: 0.6;
+    text-align: right;
+    padding-top: 0.4rem;
+  }
+  .tips-grid::after { content: ''; }
+  .wisdom-inner::after {
+    content: 'Swipe to see more →';
+    display: block;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 0.72rem;
+    color: rgba(255,249,227,0.5);
+    text-align: right;
+    padding-top: 0.4rem;
+  }
+}
+
+/* ── Small mobile (≤480px) ── */
+@media (max-width: 480px) {
+section { padding: 2.2rem 3.4rem; }
+
+.about-right { grid-template-columns: 1fr; }
+.flowers-grid { grid-template-columns: 1fr 1fr; }
+.tips-grid { grid-template-columns: 1fr; }
+.hero-title { font-size: clamp(1.7rem, 10vw, 2.6rem); }
+.garden-card-inner { padding: 1.5rem 1.2rem; }
+}
+
+/* ── The picture on each of the three cards ──
+   One slot, one position, one height, so the row reads as three of a kind.
+   The two meadows used to bleed across the whole card behind the copy under a
+   gradient; the bouquet could not join them there, because a bouquet is tall
+   and its paper and ribbon sit at the bottom, exactly where such a gradient is
+   at its most opaque, so the card erased the most recognisable part of its own
+   picture. The scenes came out of the background instead and stand where the
+   bouquet stands, under the copy and above the button.
+   The slot is positioned rather than flexed on purpose: a canvas carries an
+   intrinsic size and a flex item may shrink below its stated width, so a
+   canvas laid out by flex collapses to its intrinsic width. */
+#bouquetShow { overflow: hidden; }
+/* ── The bouquet's own panel ──
+   The two garden cards paint a rounded sky panel behind their flowers, and
+   without one the bouquet was the only picture in the row with no frame. It is
+   the builder's own backdrop form, `linear-gradient(160deg, ...)` from
+   bouquet-sketch.js:175, filled with the garden's sky rather than one of the
+   eight presets, so it belongs to both pages at once. No hills and no ground:
+   a cut bouquet is not planted in a meadow.
+
+   It is a ::before on the SLOT, not a fill on the canvas. The letter tag tucks
+   under the wrap at z-index 1 with the canvas at 2, so an opaque canvas would
+   swallow it; at z-index 0 the panel sits behind both. It stops 22px short of
+   the bottom because that strip belongs to the hint line, which is where the
+   garden canvases stop too. */
+#bouquetShow::before {
+  content: ''; position: absolute; inset: 0 0 22px 0; z-index: 0;
+  border-radius: 14px;
+  /* It ends on the garden's back hill tone rather than its lightest sky. Run
+     to #f9ffff the panel averaged 0.898 luminance against the two garden
+     panels' 0.72, and sitting on the dark card it separated at 6.09 against
+     their 1.18 and 1.32, so the third card pulled the whole row. This averages
+     0.716, which is the gardens' weight. */
+  background: linear-gradient(160deg, #cfeef0 0%, #a9d9cf 100%);
+  box-shadow: inset 0 0 0 2px rgba(20,73,75,0.40);
+}
+.card-art-slot {
+  position: relative;
+  /* 300, not 250. A bouquet is taller than it is wide, and at 250 it could
+     only be shown by cropping it through the middle of the wrap, which read
+     as an open envelope rather than a bouquet. At 300 the whole thing fits
+     with no crop and no fade, and the garden flowers get more room too. */
+  height: 300px;
+  margin-top: auto;
+  padding-top: 0.9rem;
+}
+/* pointer-events must stay auto here. The garden canvases hit test the flower
+   under the cursor themselves, and with this set to none they never receive a
+   real pointer event at all. Dispatching events straight at the canvas still
+   "works" in that state, because that bypasses hit testing, so a test written
+   that way will pass over a card nobody can actually hover. */
+.card-art-slot > canvas {
+  position: absolute;
+  bottom: 0;
+  display: block;
+}
+/* ── The three cards' picture ──
+   One still picture each, no slides and no timer. It shows the thing you end
+   up with: a day planted in the personal garden, three people's flowers in the
+   shared one, a bouquet with its note. The flowers are drawn at the size the
+   garden actually draws them, radius about 32 with a 13 or 16px label across
+   the head, and they are hoverable the same way, so this is a small window
+   onto the real page rather than a picture of it. */
+.cs-garden { position: absolute; left: 0; top: 0; display: block; pointer-events: auto; }
+.cs-hint {
+  position: absolute; left: 0; right: 0; bottom: 0;
+  font-family: Arial, Helvetica, sans-serif; font-size: 0.68rem;
+  /* 0.87, not 0.62. At 0.62 this measured 2.76, 2.75 and 3.11 on the three
+     cards, which is the smallest text on them failing hardest. An opacity is
+     still a mix with the ground, so the number that matters is the rendered
+     one: 0.87 is the point all three clear 4.5. */
+  text-align: center; margin: 0; opacity: 0.87;
+}
+
+/* ── The tooltip, as each garden actually draws it ──
+   The personal garden stacks the species and its meaning in bold, then Mood,
+   Shaped by, the entry, a rule and the date in grey, left aligned at 12px on
+   white. The shared garden is simpler: the gratitude sentence, black on white
+   at 14px. `.ct-plain` is the shared one. It is placed by the gardens' own
+   arithmetic, above the flower and pulled back inside the frame if it will
+   not fit, so it lands where a tooltip in the real garden lands. */
+.card-tip {
+  position: absolute; z-index: 3; max-width: 260px;
+  background: rgba(255,255,255,0.99); color: #1a1a1a;
+  border: 1px solid #e6efed; border-radius: 10px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.16);
+  font-family: Arial, Helvetica, sans-serif; font-size: 12px;
+  padding: 11px; text-align: left; pointer-events: none;
+}
+.card-tip.ct-plain { border-radius: 8px; font-size: 14px; padding: 12px; }
+.card-tip .ct-line { margin: 0; line-height: 15px; }
+.card-tip.ct-plain .ct-line { line-height: 18px; }
+.card-tip .ct-line.b { font-weight: 700; }
+.card-tip .ct-line.m { color: rgba(26,26,26,0.55); }
+.card-tip hr { border: 0; border-top: 1px solid rgba(26,26,26,0.18); margin: 4px 0; }
+
+/* The letter tucked into the wrap, the same shape and the same tilt the
+   recipient's page gives it, and BEHIND the canvas so the paper hides its
+   inner edge and it reads as tucked in rather than propped beside. The
+   bouquet is pushed left of centre for it, and the two are set to overlap by
+   about 30px: with no overlap the card reads as propped next to the flowers
+   rather than slid into them. */
+/* Placed against the centre, not the right edge, so it keeps the same grip on
+   the paper whatever width the slot is. These numbers were measured off the
+   painted canvas: at this height the sleeve's right edge is about 24px inside
+   the tag's left edge, so that much of the card is genuinely hidden behind the
+   paper. Positioned from the right edge instead, a narrower card pulled the
+   tag clear of the wrap and it read as propped beside the flowers. */
+/* Tucked under the wrap's right edge again, now that the whole wrap is in
+   view. Placed from JS against the paper's measured edge rather than from a
+   fixed offset, since that edge moves with the slot's width. Behind the
+   canvas, so the paper covers its inner half. */
+.cs-tag {
+  position: absolute; z-index: 1;
+  width: 62px; height: 46px; transform: rotate(6deg);
+}
+.cs-tag-face {
+  position: absolute; inset: 0; border-radius: 7px;
+  background: hsl(45,80%,92%);
+  border: 1px solid rgba(29,100,102,0.18); box-shadow: 0 4px 10px rgba(29,100,102,0.18);
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 0.52rem; font-weight: 700; color: var(--darkteal); text-align: center; padding: 3px;
+}
+.cs-tag-face svg { width: 18px; height: 13px; }
+.cs-tag-open { font-weight: 400; opacity: 0.7; font-size: 0.46rem; }
+.cs-tag { cursor: pointer; }
+.cs-tag:focus-visible { outline: 2px solid var(--darkteal); outline-offset: 3px; }
+.card-tip .ct-line.f { text-align: right; font-weight: 700; }
+.card-tip .ct-line.i { font-style: italic; line-height: 1.5; }
+/* the note takes the card's own paper, so opening it reads as the same object
+   rather than a white box appearing from somewhere else */
+.card-tip.ct-letter {
+  background: hsl(45,80%,92%);
+  border-color: hsl(45,44%,80%);
+  font-family: 'Fraunces','Georgia',serif;
+  color: var(--darkteal);
+  max-width: 220px;
+}
+.card-tip.ct-letter .ct-line { line-height: 1.45; }
+/* The hint takes its contrast from the card it sits on. */
+.card-private .cs-hint { color: var(--pale-card-ink); }
+.card-public  .cs-hint { color: var(--darkteal); }
+.card-bouquet .cs-hint { color: #fff9e3; }   /* was 0.94 alpha, 3.68 */
+
+/* The bouquet is drawn LARGER than the slot and cropped, which is the only way
+   its blooms reach the size the flowers on the other two cards are: at a width
+   that fits, each bloom came out at radius 13 against the gardens' 30 to 34.
+   It is about 25 percent wider than the slot, which costs nothing because the
+   bunch only occupies the middle half of its 400 unit canvas, and it is far
+   taller, so the paper below the flowers runs off the bottom and is faded out
+   there by a mask rather than stopping at a hard line. Width and mask are set
+   from JS, since both depend on the measured slot. */
+/* Whole bouquet, nothing cropped and nothing faded. Its width is set from JS
+   to whatever keeps its full height inside the frame. */
+#landingBouquet {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  top: 8px;
+  z-index: 2;
+  display: block;
+  /* none, so the letter tucked underneath is tappable across its whole face.
+     The canvas box is a rectangle whatever the bouquet's silhouette, so with
+     events on it swallowed everything but a sliver of the card's right edge.
+     This canvas carries data-no-tooltip, so it wants no events of its own. */
+  pointer-events: none;
+  filter: drop-shadow(0 10px 22px rgba(29,100,102,0.16));
+}
+#landingBouquet.fade { animation: bouquetFade 0.55s ease; }
+@keyframes bouquetFade { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+
+@media (prefers-reduced-motion: reduce) {
+  #landingBouquet.fade { animation: none; }
+}
+
+
+
+/* The page wide motes. z-index 6 puts them over every section and every card,
+   whose own z-indexes top out at 5, and under the flower modal at 300, the
+   music button at 260 and the side nav at 9000. They never take a pointer. */
+/* The sparkles, one canvas per section.
+
+   z-index -1 is the whole point and the only value that works. It paints
+   ABOVE the section's own background colour and BELOW everything in it, which
+   is the gap a fixed canvas cannot reach: in front of the section it would
+   cover the cards, behind it the section's background would hide it.
+
+   It is `sticky`, not `absolute`, so the backing store is one viewport rather
+   than one whole section. On a 7500px page that is the difference between a
+   few megabytes and tens of them, and the negative margin is what keeps it
+   out of the flow while sticky still works.
+
+   The section must NOT create a stacking context of its own, or z-index -1
+   is trapped inside it and painted behind the background after all.
+   `position: relative` with no z-index is exactly right. Adding a transform,
+   a filter or an opacity to any of these sections would break it. */
+.section-dust {
+  position: sticky;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh;
+  display: block;
+  margin-bottom: -100vh;
+  pointer-events: none;
+  z-index: -1;
+  /* `.about` is a GRID, so its canvas is a grid item and would otherwise be
+     dealt into a cell: it came out 561px wide in one column instead of 1190
+     across the section, and it added an implicit row to the layout. Spanning
+     every track puts it back over the whole section, and on the five block
+     sections these two lines do nothing at all. */
+  grid-column: 1 / -1;
+  grid-row: 1;
+}
+.about, .gardens, .catalogue, .wisdom, .cta, footer { position: relative; }
+
+/* The hero's birds. Same layer as the clouds and the sun, so they read as
+   part of the sky, and under .hero-text-block at 5 so they never cross the
+   headline. The meadow canvas cannot hold them: it starts where the meadow
+   does, which is far below the clouds. */
+#hero-sky { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 3; }
+
+
+
+
+/* ===========================================================================
+   THE FLOWER RING
+   ===========================================================================
+   The eight blooms drawn close up and set round a circle, with a hairline
+   running out of whichever one is under the pointer to its own meaning. It is
+   a botanical plate: the specimen in the middle of the page and the naming
+   off to the side on a leader line, rather than a caption sitting under a
+   picture in a box.
+
+   The grid above it is the same eight flowers and is kept, because a ring of
+   eight has nowhere to put a label on a narrow screen. Exactly one of the two
+   is on screen at any width, and both open the same entry, so nothing is
+   lost either way.
+
+   Everything is POSITIONED FROM JS against a measured stage, not from
+   percentages: a label's own width decides how far it may sit from the ring,
+   and CSS cannot read that. The stylesheet only holds the look. */
+.catalogue-split { position: relative; z-index: 1; }
+.flower-ring {
+  position: relative;
+  z-index: 1;
+  display: none;                     /* the media query below turns it on */
+  margin: 0 auto;
+  width: 100%;
+  /* 900. It was 1160 while the title lived in the middle, and 1020 before
+     that. With the title back on top the section carries the header's height
+     as well as the ring's, so the ring has to give some back: at 1020 the
+     section ran 1.35 screens against the page's rule of not much past one.
+     The middle now only has to clear a one line hint.
+
+     1240. The ring itself is a circle capped at a 215 radius, so it does not
+     fill this on its own; the two corner notes do, and the width is here to
+     give them somewhere to sit. It was briefly 860, which left 316px of empty
+     cream on each side while the sections above and below filled the lot, and
+     briefly an ellipse, which filled the width with flowers instead. */
+  max-width: 1240px;
+}
+.flower-ring .fr-lines {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;              /* the line is drawn ON the blooms, never over them */
+  z-index: 1;
+}
+.fr-centre {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  margin: 0;
+  /* Narrow enough to clear the INSIDE of the ring at its smallest, which is
+     the case that matters: at the minimum radius the nearest bloom's edge is
+     only about 76px from the middle, and the old three line box cornered at
+     97 and sat on the lotus. One short line at 7.4em corners at 65. */
+  width: 7.4em;
+  font-size: 1.05rem;
+  text-align: center;
+  font-family: 'Fraunces', 'Georgia', serif;
+  font-style: italic;
+  font-weight: 400;
+  font-variation-settings: 'SOFT' 50, 'WONK' 0;
+  line-height: 1.45;
+  /* The body copy floor on this page, measured against the darkest ground any
+     of it sits on. Nothing here goes lighter. */
+  color: #2f6260;
+  pointer-events: none;
+  transition: opacity .22s ease;
+}
+.flower-ring[data-hot="1"] .fr-centre { opacity: 0; }
+
+/* One bloom. A button, because it opens the entry, and the canvas inside it is
+   the only painted thing: the ring's own circle is drawn by the svg. */
+.fr-bloom {
+  position: absolute;
+  padding: 0;
+  border: none;
+  background: none;
+  line-height: 0;
+  z-index: 2;
+  transform: translate(-50%, -50%) scale(1);
+  transition: transform .24s cubic-bezier(.34,1.4,.5,1);
+}
+.fr-bloom canvas { display: block; }
+.fr-bloom:hover, .fr-bloom:focus-visible { transform: translate(-50%, -50%) scale(1.13); }
+.fr-bloom:focus-visible { outline: none; }
+.fr-bloom:focus-visible canvas {
+  outline: 2px solid var(--teal);
+  outline-offset: 4px;
+  border-radius: 12px;
+}
+
+/* The label at the far end of the leader line. It is in the page's own type
+   rather than the canvas's, so it is real selectable text at any zoom. */
+.fr-label {
+  position: absolute;
+  z-index: 3;
+  /* The label's width is the ring's whole budget: `layoutRing` subtracts it
+     from the half width, twice, and builds the ring out of what is left. So
+     this number and the ring's size move against each other, and it is set as
+     tight as the longest meaning allows rather than as loose as it looks nice.
+
+     5.9em, down from 7.6. What bought it is the meaning dropping to 0.72rem,
+     a caption size rather than a body size, and the name to 1.08rem. Every
+     0.1em taken off here is about 2 pixels of radius given back, twice over.
+
+     THE FLOOR IS THE WORD "SUNFLOWER". Measured at 1.08rem it is 92px, and
+     the longest meaning, "Renewal & change", is 103 at its own size; at 5.9em
+     the box is 100, so the name holds one line and the meanings take one or
+     two. Any narrower and the widest NAME wraps, which is the one thing in
+     the label that must not. */
+  width: 5.9em;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .2s ease;
+}
+.fr-label[data-on="1"] { opacity: 1; }
+.fr-label .fr-name {
+  display: block;
+  font-family: 'Fraunces', 'Georgia', serif;
+  font-weight: 600;
+  font-variation-settings: 'SOFT' 50, 'WONK' 0;
+  font-size: 1.08rem;
+  line-height: 1.2;
+  color: var(--darkteal);
+}
+.fr-label .fr-mean {
+  display: block;
+  margin-top: 0.16rem;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 0.72rem;
+  line-height: 1.4;
+  color: #2f6260;
+}
+.fr-label[data-side="l"] { text-align: right; }
+.fr-label[data-side="r"] { text-align: left; }
+.fr-label[data-side="c"] { text-align: center; }
+
+/* THE TWO SIDE NOTES.
+
+   A circle leaves space around it and these fill the widest part of it, one
+   either side at mid height. They were in the top left and bottom right
+   corners first, which is where the page is emptiest but also furthest from
+   anything: the top one ended eighty pixels above the ring even began, so
+   both read as stray paragraphs rather than as notes on the diagram. Beside
+   it they flank the circle at its broadest and read as annotation, which is
+   what the leader lines are already doing.
+
+   They also let the section say two things it otherwise could not: that a
+   meaning is fixed across the whole project, and that how you come by a
+   flower differs from page to page.
+
+   THE WIDTH IS MEASURED AGAINST THE LABELS. Four of the eight blooms sit at
+   22.5 degrees either side of the horizontal, so their labels reach out
+   across exactly this band: at a 1440 window they stop 198px short of the
+   box's edge, and at 1360, the narrowest width these appear at, 189px. A
+   170px column leaves 19px at the worst of it. **Re-measure after changing
+   this width, the radius, the label width or the leader lines**; all four
+   move the same gap.
+
+   Centred by top/bottom and flex rather than a transform: `.flower-ring`
+   carries the `reveal` class and `.reveal.visible` sets `transform: none`,
+   which has silently wiped a `translateY(-50%)` in this file before.
+
+   Hidden below 1360, where that band is too narrow to hold a column. The two
+   sentences are a bonus, not something the section depends on. */
+.fr-note {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 170px;
+  margin: 0;
+  display: none;
+  align-items: center;
+  font-family: Arial, Helvetica, sans-serif;
+  /* The same size as `.section-desc`, the line under every section title, so
+     these read as part of the page's copy rather than as small print. The
+     SENTENCES had to shorten for it: at 1.05rem a 170px column holds about
+     twenty characters a line, and the column cannot widen without the ring
+     giving up radius. */
+  font-size: 1.05rem;
+  line-height: 1.55;
+  /* The body copy floor on this page, measured against the darkest ground any
+     of it sits on. Nothing here goes lighter. */
+  color: #2f6260;
+  pointer-events: none;
+}
+.fr-note-a { left: 0; text-align: right; }
+.fr-note-b { right: 0; text-align: left; }
+@media (min-width: 1360px) { .fr-note { display: flex; } }
+
+@media (min-width: 880px) {
+  .flower-ring { display: block; }
+  .catalogue .flowers-grid { display: none; }
+  /* One column at every width now. The heading and the ring were two columns
+     for a while, and the problem was a gutter: the ring's box reserves room
+     for a label on BOTH sides and the left one is empty until something is
+     hovered, so a heading beside it sat across a permanent strip of nothing.
+     Centred above, or better still inside, that strip has page either side of
+     it and stops reading as a gap. */
+  .catalogue-header { margin: 0 auto 1.4rem; text-align: center; max-width: 620px; }
+}
+
+/* THE HEADING STAYS ON TOP, and this is settled rather than open.
+
+   It was in the middle of the ring for a while, which was distinctive and
+   wrong. Every other section on this page opens the same way, an eyebrow and
+   a title near the top, and all five land within 75px of each other; the
+   flower guide hiding its title inside its content was the one section that
+   announced itself differently, and it read as belonging to another site.
+
+   It also cost. Type in the middle needs a wide empty circle, a wide circle
+   needs a big radius, and a big radius made the section a screen and a
+   quarter. On top, the middle only has to hold the hover hint, which is a
+   caption and is meant to be small.
+
+   The layout that went with it is deleted: `.catalogue-header` as an absolute
+   overlay, the 430px block inside it, and the 1340px breakpoint. **Do not
+   reinstate it without re-reading that first paragraph.** */
+
+/* A ring has no hover, so on a touch screen the grid is the one that works.
+   This sits after the rule above so it wins at any width. */
+@media (hover: none) {
+  .flower-ring { display: none !important; }
+  .catalogue .flowers-grid { display: grid !important; }
+
+  /* NO HOVER EFFECTS ON A TOUCH SCREEN, and this is why a button sometimes
+     needed pressing twice. Safari on iOS has no pointer to hover with, so it
+     fakes one: the first tap on something carrying a `:hover` rule APPLIES
+     that rule instead of activating the thing, and the tap that does the work
+     is the second. Every lift and colour change on this page was a `:hover`,
+     so every one of them could eat a tap.
+
+     They are turned off rather than rewritten because a lift means nothing
+     on a screen with no cursor to lift away from. */
+  .btn-primary:hover, .btn-outline:hover, .btn-on-dark:hover,
+  .btn-card-light:hover, .btn-card-dark:hover,
+  .garden-card:hover, .flower-tile:hover, .side-nav-item:hover,
+  .card-fold-toggle:hover, .cs-tag:hover, .flower-modal-close:hover {
+    transform: none;
+    box-shadow: inherit;
+  }
+}
+
+/* THE OTHER HALF OF THE SAME PROBLEM. A browser waits about 300ms after a tap
+   on anything it might have to double tap to zoom, and a press that does
+   nothing for a third of a second reads as a press that did not register, so
+   you press again. `manipulation` says this element is never a zoom target,
+   which removes the wait entirely. */
+button, a, [role="button"], summary, input[type="range"], label[for] {
+  touch-action: manipulation;
+}
+@media (prefers-reduced-motion: reduce) {
+  .fr-bloom, .fr-label, .fr-centre { transition: none; }
+  .fr-bloom:hover, .fr-bloom:focus-visible { transform: translate(-50%, -50%) scale(1); }
+}
+
+
+/* ===========================================================================
+   THE WIGGLING WORDS
+   ===========================================================================
+   Two words in the hero spring letter by letter, once on arrival and again
+   when the pointer crosses them. The script splits each into one span per
+   letter; everything below is the movement.
+
+   It is deliberately NOT a loop. A headline that never stops moving is a
+   headline nobody reads, and on a page whose whole subject is slowing down it
+   would be the one thing on screen refusing to. */
+/* INLINE, not inline-block. The animated elements are the individual letter
+   spans; the word itself only needs to hold them. As an inline-block a
+   two word emphasis like "symbolic bloom" became one unbreakable box and
+   overflowed a phone.
+
+   `.ww` is one word, and it is what stops a line breaking BETWEEN LETTERS.
+   Every letter is its own inline-block box, so without a nowrap word around
+   them the browser is free to break anywhere: "symbolic bloom" came out as
+   "symbolic bloo" with the "m" on the next line, and so did "waiting" and
+   "places". Breaks now happen only at real spaces. */
+.wig { display: inline; }
+.wig .ww { display: inline-block; white-space: nowrap; }
+.wig .wl {
+  display: inline-block;
+  /* Each letter leaves 38ms after the one before it, which is what makes it a
+     run along the word rather than the whole word jumping. */
+  animation-delay: calc(var(--i) * 38ms);
+}
+.wig:hover .wl,
+.wig.wig-run .wl {
+  animation-name: wiggle-letter;
+  animation-duration: 0.62s;
+  animation-timing-function: cubic-bezier(.34, 1.5, .5, 1);
+  animation-fill-mode: both;
+}
+@keyframes wiggle-letter {
+  0%   { transform: translateY(0) rotate(0deg); }
+  /* Up and back on the way out, then two smaller settles. One overshoot alone
+     reads as a bounce off a floor; two read as something springy coming to
+     rest. */
+  28%  { transform: translateY(-0.22em) rotate(-5deg); }
+  55%  { transform: translateY(0.06em) rotate(3deg); }
+  78%  { transform: translateY(-0.02em) rotate(-1.2deg); }
+  100% { transform: translateY(0) rotate(0deg); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .wig:hover .wl, .wig.wig-run .wl { animation: none; }
+}
+
+
+/* ===========================================================================
+   THE FOOTER FOLDS ON A PHONE
+   ===========================================================================
+   Both blocks are `<details open>`. On a wide screen they sit side by side
+   with room to spare, so the marker is hidden and they behave exactly as the
+   two plain divs they replaced. On a phone the footer is otherwise a screen
+   of stacked text arriving after everything else, so each closes to its own
+   heading with a chevron.
+
+   THE `open` ATTRIBUTE IS IN THE MARKUP ON PURPOSE. A details element with no
+   `open` arrives shut before any stylesheet can say otherwise, which would
+   hide the page's only navigation at the foot of a desktop view for a frame
+   and for anyone browsing without CSS. The phone rule closes them instead. */
+.footer-fold > summary {
+  list-style: none;
+  cursor: pointer;
+}
+.footer-fold > summary::-webkit-details-marker { display: none; }
+.footer-fold > summary > h4,
+.footer-fold > summary > .footer-brand-logo { display: inline-block; margin: 0; }
+
+@media (max-width: 768px) {
+  .footer-fold {
+    width: 100%;
+    border-bottom: 1px solid rgba(255,249,227,0.16);
+    padding-bottom: 0.7rem;
+    margin-bottom: 0.7rem;
+  }
+  .footer-fold:last-of-type { border-bottom: none; }
+  .footer-fold > summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.35rem 0;
+  }
+  /* The chevron is drawn on the summary rather than added to the markup, so
+     the two blocks need nothing of their own. It turns when the block opens. */
+  .footer-fold > summary::after {
+    content: '';
+    width: 9px;
+    height: 9px;
+    flex: 0 0 auto;
+    border-right: 2px solid var(--cream);
+    border-bottom: 2px solid var(--cream);
+    transform: rotate(45deg) translate(-2px, -2px);
+    transition: transform 0.22s ease;
+    opacity: 0.75;
+  }
+  .footer-fold[open] > summary::after { transform: rotate(-135deg) translate(-3px, -3px); }
+  .footer-fold > :not(summary) { margin-top: 0.5rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .footer-fold > summary::after { transition: none; }
+}
+
+
+/* ===========================================================================
+   PHONE: LESS TO READ
+   ===========================================================================
+   The page is read on a phone as one long column, and everything that is a
+   comfortable paragraph beside a picture becomes a screenful on its own. None
+   of this removes information; it moves it behind a tap or swaps it for a
+   shorter version of the same sentence. */
+
+/* Two versions of the hero's line, one shown at a time. */
+.phone-only { display: none; }
+@media (max-width: 768px) {
+  .wide-only { display: none; }
+  .phone-only { display: inline; }
+
+  /* The card's paragraph goes. What is left is the badge, the title, the
+     small print and the picture, and the picture says more than the four
+     lines did. The `min-height` that reserves those lines goes with it, or
+     the card keeps their height and shows nothing in it. */
+  .garden-card-desc { display: none; }
+
+  /* The whole card is a link here, so it has to look like one. */
+  .garden-card-inner { cursor: pointer; }
+}
+
+/* About's Read more. Open on a wide screen and closed on a phone, by the same
+   script that handles the footer; the summary is only ever visible where it
+   does something. */
+.about-more { margin: 0; }
+.about-more > summary { display: none; }
+.about-more > .section-desc { margin-top: 1rem; }
+@media (max-width: 768px) {
+  .about-more > summary {
+    display: inline-block;
+    list-style: none;
+    cursor: pointer;
+    margin-top: 0.4rem;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--teal);
+    border-bottom: 1.5px solid rgba(66,146,136,0.45);
+    padding-bottom: 1px;
+  }
+  .about-more > summary::-webkit-details-marker { display: none; }
+  .about-more[open] > summary { margin-bottom: 0.2rem; }
+}
+
+@media (max-width: 768px) {
+  /* THE 16px FLOOR ON ANYTHING YOU TYPE INTO, and it is not a style choice.
+     iOS zooms the whole page in when a focused field is under 16px and does
+     not zoom back out, which leaves somebody stranded at 1.3x with the rest
+     of the interface off the side of the screen. The garden pages used to
+     block that with `maximum-scale=1` in their viewport meta, which also
+     takes pinch zoom away from anyone who needs to magnify the page; the
+     floor does the same job and costs nobody anything.
+
+     It is written WIDE on purpose. The account overlay, the claim screen and
+     the friends panel are all built against `document.body` by other modules
+     with their own markup, so a selector scoped to a card would miss them
+     and the miss would only show on a real iPhone. */
+  input[type="text"], input[type="email"], input[type="password"],
+  input[type="search"], input[type="number"], input[type="tel"],
+  input[type="date"], textarea, select {
+    font-size: 16px !important;
+  }
+}
+
+/* ---------------------------------------- the gardener band, on a phone
+   LAST in the file, like every other phone block in this project. A later
+   rule beats an earlier one at equal specificity, so a phone override written
+   above the base declaration it is overriding does nothing at all, silently,
+   and that trap has now been hit on four separate stylesheets here. */
+@media (max-width: 768px) {
+  .gardener-band { margin-top: 44px; }
+  /* THREE AND TWO, not five. Five across a 375 wide screen gives each
+     gardener about 62px of column, at which the flower on their head is ten
+     pixels and the row reads as five smudges. */
+  .gardener-row { grid-template-columns: repeat(3, 1fr); gap: .7rem; max-width: 330px; }
+}

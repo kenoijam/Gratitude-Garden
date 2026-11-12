@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- Supabase client, and the keys it reads.
+       These two MUST stay inside <head>. They were briefly above <!DOCTYPE>,
+       which is never valid: anything before the doctype makes the browser
+       ignore it and render the whole page in QUIRKS MODE, which silently
+       changes layout on every one of these pages. -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+  <script src="../config.js"></script>
+  <meta charset="UTF-8">
+  <!-- THE VIEWPORT META, and it is load bearing rather than boilerplate.
+       Without it a phone lays this page out at 980 CSS pixels and scales the
+       whole thing down, so the 768px block at the foot of the stylesheet
+       NEVER MATCHES and every phone size written there is dead. That is the
+       whole reason the gardens read as tiny on a phone: not that the sizes
+       were wrong, but that the page never admitted it was on a phone.
+
+       It also changes what p5 measures. `width` becomes the real device
+       width, around 390 rather than 980, so every `width < 720` branch in
+       the sketch now fires on a phone, which is what those branches were
+       written for.
+
+       There is deliberately NO `maximum-scale`: blocking pinch zoom takes a
+       page away from anyone who needs to magnify it. The only reason it was
+       ever wanted here was iOS zooming in on a focused input under 16px, and
+       the phone block now sets every input to exactly 16. -->
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Gratitude Garden</title>
+  <link rel="stylesheet" href="personal-garden-style.css" />
+
+  <script src="personal-garden-p5.min.js"></script>
+<script src="personal-garden-p5.dom.min.js"></script>
+
+<script src="personal-garden-p5.party.js"></script>
+
+<!-- Accounts. The sketch is deliberately NOT loaded here: p5 starts as soon as
+     it is parsed and its preload() cannot wait on a promise, so the auth module
+     injects the sketch once there is a garden to draw. With the placeholders
+     still in /config.js this signs nobody in and the garden saves to this
+     browser, exactly as it did before.
+
+     The Supabase client and the config are loaded ONCE, at the top of this
+     head. They used to be loaded a second time here as well, and the second
+     copy of the config reassigned both keys back to their placeholders, so
+     real keys pasted into /config.js were silently thrown away and accounts
+     simply never switched on. One config, at the repo root, for all four
+     pages. -->
+<!-- The ambient life: butterflies, a skein of birds and a few motes of light.
+     One shared module for the hero and both gardens, drawn on a raw 2D
+     context, which is why it can serve a p5 sketch and a plain canvas at
+     once. It must load BEFORE any sketch draws. -->
+<script src="../garden-life.js"></script>
+
+  <!-- One cursor for the whole project: a leaf at rest, a bloom over
+       anything clickable. -->
+  <script src="../garden-cursor.js"></script>
+  <!-- One flower opening while the page gets ready. Loaded on all four, not
+       just the slow one: a loader that appears on a single page reads as that
+       page being broken. It caps itself, so it can never outlive its page. -->
+  <script src="../garden-loader.js"></script>
+
+  <!-- One account across the whole project: the client, the session, the
+       username and the friends list. Must load BEFORE the page modules,
+       which borrow its client rather than making a second one. -->
+  <script src="../garden-account.js"></script>
+
+  <!-- The day by day log. Loaded after the account module, whose client it
+       borrows for the parts that follow somebody between devices. -->
+  <script src="../garden-journal.js"></script>
+
+  <!-- THE GARDENER'S THREE TAGS STOOD HERE: `bouquet/bouquet-sketch.js` for the
+     real 2D bloom they wear, the avatar's own drawing for the figure, and
+     `garden-gardener.js` for whose it is. The project is showing the two
+     gardens only for now, so nobody stands in them.
+     NOTHING ELSE HAD TO CHANGE, and that is worth knowing before putting them
+     back: every path that draws or pats a gardener already guarded on
+     `window.AvatarDraw` and `window.GardenGardener` being present, so the
+     sketches simply skip it. The shared garden's "who is this from" row asks
+     `haveGardener()` and so builds itself with two choices instead of three.
+     Restore these three tags and all of it returns. -->
+
+<script src="personal-garden-auth.js"></script>
+
+</head>
+<body>
+    <div id="ui-root"></div>
+    <a href="../index.html" id="back-to-home" aria-label="Home" style="position:fixed;top:20px;left:14px;z-index:200;display:inline-flex;align-items:center;gap:6px;background:rgba(255,249,227,0.92);color:#1d6466;border:1.5px solid #b7e4e7;border-radius:50px;padding:7px 16px 7px 12px;font-family:Arial,Helvetica,sans-serif;font-size:13px;font-weight:700;text-decoration:none;box-shadow:0 2px 10px rgba(29,100,102,0.14);transition:background 0.2s,transform 0.15s;" onmouseover="this.style.background='#e1f7f7';this.style.transform='translateY(-1px)'" onmouseout="this.style.background='rgba(255,249,227,0.92)';this.style.transform='none'">
+      <svg width="15" height="15" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M2 7.1 8 2.2l6 4.9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M3.5 6.6V13a.7.7 0 0 0 .7.7h2.4V10a.7.7 0 0 1 .7-.7h1.4a.7.7 0 0 1 .7.7v3.7h2.4a.7.7 0 0 0 .7-.7V6.6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Home
+    </a>
+
+
+  <!-- Background music. Relaxing calm: D major pentatonic, the slowest and lowest of the four.
+       One shared engine, synthesised live, no audio files. The mood is the
+       only thing that differs per page. -->
+  <script src="../garden-music.js" data-mood="calm"></script>
+</body>
+
+</html>

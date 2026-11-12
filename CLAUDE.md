@@ -6,6 +6,91 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 "Gratitude Garden" is a static, dependency-free web project by Kenisha Gabriella Wijaya. Users answer reflection prompts and a flower is planted in a generative garden scene. There is no build system, no package manager, no tests, and no git repository. Every file is served as-is.
 
+## THERE ARE TWO SITES IN THIS REPO NOW: THE ROOT IS FROZEN, `/v2/` IS THE WORK
+
+**Read this before the section below, because it decides WHICH COPY a change
+belongs in.** The project is being user tested as a before and an after: an
+interview against the site as it stands, then an interview against a changed
+one. That needs both online at the same time, so:
+
+| | | |
+|---|---|---|
+| `/` | the BEFORE | **frozen. Do not change it.** |
+| `/v2/` | the AFTER | every new feature goes here |
+
+- **`/v2/` IS A SELF CONTAINED COPY, NOT A SET OF OVERRIDES.** It carries its
+  own `index.html`, `styles.css`, `config.js`, fonts, images, every root
+  `garden-*.js`, and its own `personal-garden/` and `shared-garden/`. Every
+  path inside those pages is already relative (`../garden-music.js`), so the
+  copy needed **zero path edits**: verified by loading `/v2/` and reading the
+  network log, where all eleven requests resolved under `/v2/` and not one
+  reached back to the root.
+- **A SECOND COPY OF THE SHARED FILES IS NORMALLY THE THING THIS PROJECT
+  FIGHTS, and here it is the point.** The whole file is about one flower
+  living in seven places and drifting. A frozen before has the opposite
+  requirement: it must NOT follow the after. A copy that cannot drift is
+  exactly what a control condition is.
+- **`garden3d/`, `bouquet/`, `avatar/` AND `guestbook/` ARE NOT COPIED.** None
+  is linked from the site, and `garden3d` alone is 884KB of vendored three.js.
+  If the after ever links one, copy it in then.
+- **BOTH COPIES SHARE ONE SUPABASE PROJECT AND ONE p5.PARTY ROOM**, and both
+  are worth knowing before testing.
+  - Supabase: one account works on both, which is wanted. But the v2 URL has
+    to be added to Supabase's **Site URL and Redirect URLs** or password
+    recovery sends people to the root copy. That is step 5 of
+    `SUPABASE-SETUP.md`.
+  - p5.party: `partyConnect(..., "gratitude_garden")` and the date room key are
+    identical, so **a flower planted in the v2 shared garden appears in the
+    root one and the other way round.** For an A/B test that may be wrong, and
+    changing it is one string in `v2/shared-garden/shared-garden-sketch.js`.
+    It is deliberately NOT changed yet: an empty meadow is a bad first
+    impression in a demo, and which matters more is the author's call.
+- **VERIFIED IDENTICAL AFTER THE COPY, by measurement rather than by looking**:
+  `/` and `/v2/` both report `CSS1Compat`, a 2560 by 552 meadow canvas at 1280
+  wide, the ground pixel at `#8fcfbe` and the back hill at `#a9d9cf`, six
+  `.section-dust` canvases, and the personal garden's sign in gate with the
+  same twelve scripts.
+
+## THE MASCOT (`v2/garden-mascot.js`), v2 ONLY
+
+**A round butter bee with pale blue wings and a flower on each antenna, drawn
+in code like everything else here.** It came from the author's own sketches
+and is deliberately NOT a line for line transcription of them.
+
+- **WHY IT LOST ITS OUTLINE, ITS TEXTURE AND ITS BLACK EYES.** The sketches
+  carry a 3px dark brown keyline round every shape, a diagonal hatch over the
+  body and the wings, and black dot eyes. **Nothing else in this project has
+  any of the three.** All twelve species, the gardener and every icon are
+  solid fills with no stroke, and they build depth by laying a second fill at
+  a lower lightness over the first; the only stroked thing in the whole flower
+  set is the orchid's horseshoe, which is recorded as the exception it is. An
+  outlined mascot would be the one outlined object on the site.
+- **WHAT IT TOOK FROM THE PROJECT INSTEAD**: the palette exactly; the STEM
+  GREEN `hsl(140,52%,32%)` for the antennae rather than brown, which is what
+  every stem in both gardens is drawn in; the five petal bloom the letter and
+  the cursor already draw, so the thing on its head is this project's flower;
+  and the four pointed sparkle from `drawNewestSparkles`, inner corners at
+  0.35 of the radius.
+- **ONE BODY, FIVE FACES.** `POSES` holds welcome, listen, hard, planted and
+  bye, and only the face and the wing scale change between them. Five whole
+  drawings is how five expressions drift into five characters.
+- **DEPTH BY LIGHTNESS NEEDS A STEP PER PART, which the feet proved.** Drawn
+  in `bodyLow` they were the same colour as the body's own bottom shading and
+  disappeared into it. They are a third step, `#e7bf43`. **Two parts on the
+  same step are one part.**
+- **THE FEET HAVE TO CLEAR THE BODY.** Its lowest pixel is 117+49=166, so feet
+  centred at 161 showed two pixels of themselves. They are at 168.
+- **THE WINGS HAVE TO CLEAR IT TOO.** At `cx 100 +- 50, rx 33` against a body
+  of `rx 51` the body covered most of each wing and they read as pale smudges.
+  At `+- 58, rx 37` the outer edge reaches 95, so two thirds of the wing is in
+  clear air, which is what makes the silhouette a winged thing.
+- **THE HARD DAY MOUTH IS NOT A FROWN.** A small line with the faintest dip
+  reads as concern; a drawn frown reads as sulking, which is the wrong thing
+  to say to somebody having a hard day.
+- **CHECKED ON ALL FOUR GROUNDS IT CAN STAND ON** (cream, pale sky, the dark
+  teal band and the meadow's grass) and at 200, 120, 84, 56 and 40px. It holds
+  to 56 comfortably and still reads at 40.
+
 ## THE PROJECT IS SHOWING TWO GARDENS ONLY, AND IT IS TEMPORARY
 
 **Read this before anything else below, because most of this file describes pages the site no longer links to.** The feedback was that four destinations read as a feature party, so the project was narrowed to **The Personal Garden and The Shared Garden**. Everything else is still on disk, untouched, and unlinked.

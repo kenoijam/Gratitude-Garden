@@ -1,0 +1,4004 @@
+/* Personal Gratitude Garden - Memory Journal */
+/* One flower a day. The daily gate below is the whole point of the garden:
+   it is a practice you come back to, not something to fill in one sitting. */
+const BASE_W = 1440;
+const BASE_H = 900;
+const isTouchDevice = /Mobi|Android|iPhone|iPad|iPod/.test(
+  navigator.userAgent || ""
+);
+
+let step = "prompt1";
+let dayRating = "";
+let dayShaper = "";
+let journalEntry = "";
+/* THE GRATITUDE LINE, WHICH IS ITS OWN SCREEN AND ITS OWN FIELD. It is not
+   part of `journalEntry` for two reasons: the book prints them separately,
+   the ask above the writing and the writing under it, and a day written
+   before this screen existed has a journal and no gratitude, which has to
+   stay tellable from a day that simply skipped it. */
+let gratitudeText = "";
+let chosenSpecies = null;
+let chosenHue = 280;
+let flowers = [];
+let swayOn = true;
+let clouds = [];
+let groundLevel;
+let isSaving = false;
+let flowerCounter = 0;
+let gardenScale = 1;
+let logoDiv;
+let nameSuffixEl = null;
+let fitTitle = () => {};
+
+/* The garden's own title. It was 15px Arial against a 21px serif "Garden Tips"
+   in the corner, so the loudest heading on the page was a side note. 26px is
+   the size a heading inside a card takes across this project, and it is the
+   serif every other page puts its headings in. The note under it takes 15px,
+   the 0.58 ratio the bouquet's steps use under their own 26px heading. */
+const NAME_FONT = "'Fraunces', 'Georgia', serif";
+const NAME_PX = 28;
+/* 13, not 15. The garden's name and the line under it are a title and its
+   subtext like any other, and Georgia has no semibold to lean on, so the ratio
+   is what gives the title its presence: 2.15 here, the same as a bouquet step. */
+const NOTE_PX = 13;
+/* #name-wrap is nowrap and centred, so at 26px it cannot fall back to a second
+   line: "Keni's Gratitude Garden" alone is 336px, and the field takes names up
+   to 30 characters. fitTitle shrinks the whole title until it fits the window,
+   down to a floor, rather than letting a long name run off both edges. */
+/* 13, not 15: a 30 character name at 15px is still 356px, which is wider
+   than a 380px layout leaves. Only the longest names on the narrowest layouts
+   ever reach the floor. */
+/* 16 ON A PHONE, 13 anywhere else, and the 16 is not a design choice. iOS
+   zooms the page in when a focused input is under 16px and does not zoom back
+   out, and the garden's name IS an input. The phone block's blanket 16px floor
+   on text fields was doing that job and getting it wrong in the process: it
+   raised the INPUT and not the "'s Gratitude Garden" beside it, so the title
+   came out in two different sizes. Setting the floor here instead keeps
+   `fitTitle` the one thing that decides, and it sizes both halves together. */
+const NAME_PX_MIN = (typeof window !== "undefined" && window.innerWidth <= 768) ? 16 : 13;
+let titlePx = NAME_PX;
+
+let prompt1Wrap, prompt2Wrap, prompt3Wrap, prompt4Wrap, flowerPreviewWrap, gardenWrap;
+let continueBtn1, continueBtn2, continueBtn3;
+let journalField, gratitudeField, gladBtn;
+let colorPickerSelect, plantBtn;
+let saveBtn, tipsCard, dailyNote;
+/* The photo picked on the journal step, held until the flower is planted. */
+let photoInput = null, photoThumb = null, photoFile = null;
+let previewGraphics;
+let gardenName = "";
+
+const STORAGE_KEY = "personal_gratitude_garden";
+const LAST_PLANT_KEY = "gratitude_last_planted";
+
+// Preset options
+const dayRatingOptions = ["calm", "happy", "tired", "stressed", "anxious", "grateful", "hopeful", "loved"];
+const dayShaperOptions = ["work/school", "relationships", "rest or energy", "a small joy", "an unexpected event", "nothing special"];
+
+// Flower meanings, selection keywords, and supportive quotes
+const flowerMeanings = {
+  sunflower: {
+    keywords: ["happy", "happiness", "joy", "joyful", "excited", "elated", "positive", "energized", "upbeat", "cheerful", "wonderful", "amazing", "thrilled", "delighted", "proud"],
+    meaning: "joy & warmth",
+    quote: "Something good happened and you noticed it. Naming it is what makes it stay."
+  },
+  rose: {
+    keywords: ["love", "loved", "longing", "heartbreak", "vulnerable", "romantic", "miss", "missed", "hurt", "connection", "relationship", "grief", "loss", "heart", "caring"],
+    meaning: "love & connection",
+    quote: "Feeling deeply is a kind of courage. Your heart is open and that is a beautiful thing."
+  },
+  daisy: {
+    keywords: ["calm", "content", "simple", "okay", "fine", "gentle", "quiet", "peaceful", "neutral", "ordinary", "steady", "balanced", "comfortable", "relaxed", "mellow"],
+    meaning: "simplicity & contentment",
+    quote: "There is real wisdom in finding beauty in the ordinary. Today was enough, and so are you."
+  },
+  tulip: {
+    keywords: ["change", "new", "starting", "beginning", "moving", "fresh", "ready", "transition", "growing", "next chapter", "different", "renewing", "turning point", "opportunity", "stepping"],
+    meaning: "hope & new beginnings",
+    quote: "Something new is taking root in you. Trust the direction you are growing in."
+  },
+  lily: {
+    keywords: ["tired", "exhausted", "drained", "resting", "burned out", "burnt out", "heavy", "slow", "recovering", "weary", "fatigued", "sleepy", "needed rest", "low energy", "recharging", "faith", "believe", "trust", "prayer", "blessed", "held"],
+    meaning: "trust & faith",
+    quote: "You are carried further than you can see. Rest is allowed, and so is believing it will hold."
+  },
+  /* HIBISCUS: what is fleeting. A hibiscus bloom opens and is finished inside
+     a day, which is the flower saying the thing the meaning says. */
+  hibiscus: {
+    keywords: ["grateful", "gratitude", "fleeting", "moment", "passing", "temporary", "brief", "noticing", "noticed", "present", "savoured", "savored", "today", "right now", "appreciating", "thankful", "while it lasts", "cherish"],
+    meaning: "presence & impermanence",
+    quote: "Nothing about today was going to stay. You noticed it anyway, and that is the whole of it."
+  },
+  /* RETIRED, NOT DELETED, and the keyword lists follow the rule the pair
+     below already follow: EMPTY, never missing, with the real list parked
+     alongside. `chooseFlowerForMood` reads `.keywords` off entries here, so a
+     removed field throws the moment anybody writes a journal entry. Every
+     flower already planted carries its species, so a peony from last month
+     still draws and still says what it meant. */
+  poppy: {
+    keywords: [],
+    keywordsHidden: ["grateful", "gratitude", "reflecting", "nostalgic", "memory", "memories", "remember", "remembering", "appreciating", "thankful", "looked back", "bittersweet", "cherish", "noticing", "missed them"],
+    meaning: "memory & reflection",
+    quote: "You noticed something worth holding onto today. That kind of awareness is rare and beautiful."
+  },
+  peony: {
+    keywords: [],
+    keywordsHidden: ["difficult", "struggling", "overwhelmed", "swamped", "pushing through", "accepting", "strong", "despite", "kept going", "still here", "persevering", "surviving", "managing", "enduring", "holding on"],
+    meaning: "honour & strength",
+    quote: "You moved through something hard today. That quiet strength matters more than you know."
+  },
+  /* HIDDEN. The orchid and the chrysanthemum below are drawn everywhere the
+     other eight are, but they are in no picker and no mood map, so nothing can
+     plant one. They were built as florist orderable stand ins for the lotus and
+     the sakura; that is meant to become its own separate thing for the real
+     bouquet rather than a change to this garden.
+
+     Their keyword lists are EMPTY, not missing. `chooseFlowerForMood` reads
+     `.keywords` off entries here, so a removed or renamed field throws the
+     moment anyone writes a journal entry. The real lists are parked alongside
+     under `keywordsHidden`, ready to swap back in. */
+  /* THE ORCHID IS PICKABLE NOW, and its keyword list is simply the one that
+     was parked under `keywordsHidden` waiting for it. It was drawn in all
+     seven sites the whole time it was hidden, which is the entire reason
+     turning it on was a data edit rather than a drawing job. */
+  orchid: {
+    keywords: ["difficult", "struggling", "overwhelmed", "swamped", "pushing through", "accepting", "strong", "despite", "kept going", "still here", "persevering", "surviving", "managing", "enduring", "holding on", "held it together", "composed", "grew", "growth", "came through", "survived"],
+    meaning: "strength & resilience",
+    quote: "You moved through something hard, and you are not the same on the other side of it. That is growth."
+  },
+  /* RETIRED, not deleted, and their keyword lists follow the same rule as the
+     pair above: EMPTY, never missing, with the real list parked alongside.
+     Every flower already planted carries its species, so a garden holding a
+     lotus from last year still draws it and still has something to say about
+     it when it is tapped. */
+  sakura: {
+    keywords: [],
+    keywordsHidden: ["grateful", "gratitude", "reflecting", "nostalgic", "memory", "memories", "appreciating", "thankful", "fleeting", "aware", "bittersweet", "cherish", "present", "noticing", "savoring"],
+    meaning: "reflection & presence",
+    quote: "You noticed something worth holding onto today. That kind of awareness is rare and beautiful."
+  },
+  lotus: {
+    keywords: [],
+    keywordsHidden: ["difficult", "struggling", "overwhelmed", "swamped", "pushing through", "accepting", "strong", "despite", "kept going", "still here", "persevering", "surviving", "managing", "enduring", "holding on"],
+    meaning: "strength & rising",
+    quote: "You moved through something hard today. That quiet strength matters more than you know."
+  },
+  chrysanth: {
+    keywords: [],
+    keywordsHidden: ["grateful", "gratitude", "thankful", "noticed", "noticing", "memory", "remember", "appreciating", "appreciate", "present", "savoured", "savored", "small moment", "took it in", "paused"],
+    meaning: "reflection & presence",
+    quote: "You noticed something worth holding onto today. That kind of awareness is rare and beautiful."
+  },
+  lavender: {
+    keywords: ["anxious", "anxiety", "tense", "tension", "stressed", "stress", "nervous", "worried", "worrying", "uneasy", "panicking", "overwhelmed", "on edge", "unsettled", "restless"],
+    meaning: "calm & safety",
+    quote: "You made it through the noise today. Take a breath. You are safe, and you are okay."
+  }
+};
+
+let hoveredFlower = null;
+
+// Growth stages
+const GROWTH_STAGES = {
+  BUD: 0,
+  STEM: 1,
+  BLOOM: 2
+};
+
+let canvas;
+
+function preload() {
+  loadGarden();
+}
+
+function loadGarden() {
+  const boot = window.__gardenBoot || { flowers: [], name: "" };
+  flowers = Array.isArray(boot.flowers) ? boot.flowers : [];
+  flowerCounter = flowers.length;
+  // Loaded flowers are already fully grown, so force the BLOOM stage
+  flowers.forEach(f => {
+    f.growthStage = GROWTH_STAGES.BLOOM;
+    f.growthStartTime = 0;
+    f.isOld = true;
+  });
+  gardenName = boot.name || "";
+  if (flowers.length > 0) {
+  flowers.forEach(f => f.isLatest = false);
+  flowers[flowers.length - 1].isLatest = true;
+}
+}
+
+function saveGarden() {
+  if (window.GardenStore) window.GardenStore.save(flowers);
+}
+
+// Direct mapping from prompt selections to flower species
+const ratingFlowerMap = {
+  "calm":       "daisy",
+  "happy":      "sunflower",
+  "tired":      "lily",
+  "stressed":   "orchid",
+  "anxious":    "lavender",
+  "grateful":   "hibiscus",
+  "hopeful":    "tulip",
+  "loved":      "rose"
+};
+
+const shaperFlowerMap = {
+  "work/school":         "orchid",
+  "relationships":       "rose",
+  "rest or energy":      "lily",
+  "a small joy":         "hibiscus",
+  "an unexpected event": "tulip",
+  "nothing special":     "daisy",
+  "worries":             "lavender"
+};
+
+// Analyze text and choose appropriate flower
+function chooseFlowerForMood(dayRating, dayShaper, journal) {
+  const votes = {
+    sunflower: 0, rose: 0, daisy: 0, tulip: 0,
+    lily: 0, hibiscus: 0, orchid: 0, lavender: 0
+  };
+
+  const ratingFlower = ratingFlowerMap[dayRating];
+  if (ratingFlower) votes[ratingFlower] += 4;
+
+  const shaperFlower = shaperFlowerMap[dayShaper];
+  if (shaperFlower) votes[shaperFlower] += 3;
+
+  if (journal) {
+    const jText = journal.toLowerCase();
+    /* Only species that can actually be planted are counted. `flowerMeanings`
+       also holds the hidden orchid and chrysanthemum, and without this guard a
+       keyword hit on one of those would write `votes[undefined]` and quietly
+       poison the result. */
+    Object.keys(votes).forEach(species => {
+      const m = flowerMeanings[species];
+      if (!m || !m.keywords) return;
+      m.keywords.forEach(keyword => {
+        if (jText.includes(keyword)) votes[species] += 2;
+      });
+    });
+  }
+
+  let bestFlower = ratingFlower || "daisy";
+  let bestScore = 0;
+  Object.keys(votes).forEach(species => {
+    if (votes[species] > bestScore) {
+      bestScore = votes[species];
+      bestFlower = species;
+    }
+  });
+
+  return bestFlower;
+}
+
+function speciesPetalCount(id) {
+  return {
+    daisy: 16,
+    tulip: 6,
+    rose: 8,
+    sunflower: 24,
+    lily: 12,
+    sakura: 5,
+    hibiscus: 5,
+    peony: 22,
+    poppy: 4,
+    orchid: 5,
+    chrysanth: 18
+  }[id] || 16;
+}
+
+function defaultSat(sp) {
+  return { daisy: 45, tulip: 50, rose: 55, sunflower: 60, lily: 40, sakura: 40, lotus: 50, peony: 52, poppy: 58, orchid: 50, chrysanth: 48, lavender: 55, hibiscus: 62 }[sp] || 45;
+}
+
+function defaultLight(sp) {
+  return { daisy: 65, tulip: 60, rose: 55, sunflower: 65, lily: 70, sakura: 75, lotus: 70, peony: 70, poppy: 58, orchid: 68, chrysanth: 72, lavender: 68, hibiscus: 58 }[sp] || 65;
+}
+
+function getTodayDate() {
+  const d = new Date();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day   = String(d.getDate()).padStart(2, '0');
+  const year  = d.getFullYear();
+  return `${month}/${day}/${year}`;
+}
+
+/* The marker is a cache; the garden is the truth.
+   Every flower carries the date it was planted, so "have I planted today" is
+   answerable from the flowers alone. The marker is still read first because it
+   is what follows an account between devices, but when the two disagree the
+   garden wins and the marker is repaired. This only ever unblocks: a marker
+   that says today with no flower dated today is stale, and before this it shut
+   the prompts off with nothing on screen to say why and no way back except
+   clearing storage by hand.
+
+   loadGarden() runs in preload(), which p5 finishes before setup(), so
+   `flowers` is populated by the time anything asks. */
+function hasPlantedToday() {
+  const today = getTodayDate();
+  const last = window.GardenStore ? window.GardenStore.lastPlanted() : "";
+  if (last !== today) return false;
+  if (flowers.some(f => f && f.date === today)) return true;
+  if (window.GardenStore) window.GardenStore.markPlanted("");
+  return false;
+}
+
+function markPlantedToday() {
+  if (window.GardenStore) window.GardenStore.markPlanted(getTodayDate());
+}
+
+function addFlower(dayRating, dayShaper, journal, species, hue, gratitude) {
+  if (hasPlantedToday()) return;
+  const flowerCount = flowers.length;
+  let size;
+  if (flowerCount < 10) {
+    size = random(28, 36);
+  } else if (flowerCount < 30) {
+    size = random(24, 32);
+  } else if (flowerCount < 60) {
+    size = random(20, 28);
+  } else {
+    size = random(16, 24);
+  }
+
+  const groundLevel = height * 0.76;
+
+  const frontFlowers = flowers.filter(f => f.layer === "front");
+  const midFlowers   = flowers.filter(f => f.layer === "mid");
+  const backFlowers  = flowers.filter(f => f.layer === "back");
+
+  const ROW_CAPACITY = 8;
+
+  let chosenLayer, baseY, stemLen;
+
+  let targetLayer, targetBaseY, minStem, maxStem;
+  if (frontFlowers.length < ROW_CAPACITY) {
+const t = frontFlowers.length / ROW_CAPACITY;
+targetLayer = "front";
+targetBaseY = groundLevel;
+/* no narrow-screen shrink here: see stemNorm below */ const stemScale = 1;
+minStem = height * lerp(0.13, 0.19, t) * stemScale;
+maxStem = height * lerp(0.17, 0.23, t) * stemScale;
+  } else if (midFlowers.length < ROW_CAPACITY) {
+const t = midFlowers.length / ROW_CAPACITY;
+targetLayer = "mid";
+targetBaseY = groundLevel - height * 0.10;
+/* no narrow-screen shrink here: see stemNorm below */ const stemScale = 1;
+minStem = height * lerp(0.17, 0.23, t) * stemScale;
+maxStem = height * lerp(0.21, 0.27, t) * stemScale;
+} else {
+const t = backFlowers.length / ROW_CAPACITY;
+targetLayer = "back";
+targetBaseY = groundLevel - height * 0.17;
+/* no narrow-screen shrink here: see stemNorm below */ const stemScale = 1;
+minStem = height * lerp(0.11, 0.17, t) * stemScale;
+maxStem = height * lerp(0.15, 0.21, t) * stemScale;
+}
+
+  const maxAttempts = 80;
+  let bestX = random(60, width - 60);
+  let bestClearance = -1;
+
+  for (let attempt = 0; attempt < maxAttempts; attempt++) {
+    const candidateX = random(60, width - 60);
+    const candidateStem = random(minStem, maxStem);
+    const candidateBloomY = targetBaseY - candidateStem;
+
+    let minDist = Infinity;
+    for (const f of flowers) {
+      const fx = f.xNorm != null ? f.xNorm * width : f.x;
+      const fBaseY = f.baseY || groundLevel;
+      const fStem = f.stemNorm != null ? f.stemNorm * height : f.stemLen;
+      const fBloomY = fBaseY - fStem;
+      const dx = candidateX - fx;
+      const dy = candidateBloomY - fBloomY;
+      const d = sqrt(dx * dx + dy * dy);
+      const needed = (size + (f.sizeNorm != null ? f.sizeNorm * height : f.size)) * 1.1;
+      if (d < needed) { minDist = 0; break; }
+      if (d < minDist) minDist = d;
+    }
+
+    if (minDist > bestClearance) {
+      bestClearance = minDist;
+      bestX = candidateX;
+      stemLen = candidateStem;
+    }
+    if (minDist > size * 2.5) break;
+  }
+
+  if (!stemLen) stemLen = random(minStem, maxStem);
+  const x = bestX;
+  chosenLayer = targetLayer;
+  baseY = targetBaseY;
+
+  let layer = chosenLayer;
+
+  const petals = speciesPetalCount(species);
+
+  flowers.forEach(f => f.isLatest = false);
+  
+  const newFlower = {
+    date: getTodayDate(),
+    dayRating,
+    dayShaper,
+    journal,
+    /* SEPARATE FROM `journal`, not folded into it. The book prints the ask
+       above the writing, and a day planted before this screen existed carries
+       a journal and no gratitude, which has to stay tellable from a day that
+       simply left it empty. */
+    gratitude: gratitude || "",
+    species,
+    x,
+    baseY,
+    layer,
+    stemLen,
+    size,
+
+    xNorm: x / width,
+    /* STORED AS A FRACTION OF THE HEIGHT IT WAS DRAWN AT, which is what the
+       layout multiplies it back by (`stemNorm * height`). It was divided by
+       BASE_H, the 900 of a design canvas, and planting on a phone also cut the
+       stem to 0.7 first, so a flower planted on a phone was saved short FOR
+       GOOD and then shrunk again by the phone layout. The narrow screen cap in
+       `updateResponsiveFlowerLayout` is the one place a phone shortens stems,
+       and it applies to every flower alike. */
+    stemNorm: stemLen / height,
+    sizeNorm: size / BASE_H,
+
+    phase: random(360),
+    petals,
+    hue,
+    sat: defaultSat(species),
+    light: defaultLight(species),
+
+    createdIndex: flowerCounter++,
+    growthStage: GROWTH_STAGES.BUD,
+    growthStartTime: millis(),
+    isLatest: true,
+    plantedTime: Date.now()
+  };
+
+  flowers.push(newFlower);
+  saveGarden();
+  if (typeof tintCursor === "function") tintCursor();
+  if (window.GardenJournal) {
+    const day = GardenJournal.fromUS(newFlower.date);
+    const entry = {
+      day: day, species: newFlower.species,
+      hue: Math.round(newFlower.hue), sat: Math.round(newFlower.sat),
+      light: Math.round(newFlower.light), word: "",
+      note: newFlower.journal || "", glad: newFlower.gratitude || ""
+    };
+    /* The photo goes up here, not when it was chosen, so one picked and then
+       abandoned never reaches the database. The entry is written either way:
+       an upload that fails costs the day nothing. */
+    if (photoFile && GardenJournal.uploadPhoto) {
+      GardenJournal.uploadPhoto(day, photoFile).then(function (path) {
+        if (path) { newFlower.photo = path; entry.photo = path; saveGarden(); }
+        photoFile = null;
+        GardenJournal.record("personal", entry);
+      });
+    } else {
+      GardenJournal.record("personal", entry);
+    }
+  }
+  updateResponsiveFlowerLayout();
+  markPlantedToday();
+}
+
+function speciesShapeCfg(species) {
+  return ({
+    daisy:     { w: 0.55, h: 1.10 },
+    sunflower: { w: 0.45, h: 1.25 },
+    rose:      { w: 0.60, h: 1.05 },
+    lily:     { w: 0.70, h: 1.00 },
+    tulip:     { w: 0.80, h: 1.10 },
+    sakura:    { w: 0.75, h: 1.00 },
+    hibiscus:  { w: 0.95, h: 0.97 },
+    peony:     { w: 0.62, h: 0.84 },
+    poppy:     { w: 0.80, h: 1.00 },
+    orchid:    { w: 0.72, h: 1.00 },
+    chrysanth: { w: 0.60, h: 1.10 }
+  }[species] || { w: 0.55, h: 1.10 });
+}
+
+function buildClouds(reset = false) {
+  const n = 8;
+  if (reset) clouds = [];
+  for (let i = 0; i < n; i++) {
+    clouds[i] = clouds[i] || {};
+    clouds[i].x = reset ? random(-180, width + 180) : (clouds[i].x ?? random(-180, width + 180));
+    clouds[i].y = random(height * 0.10, height * 0.30);
+    clouds[i].speed = random(0.25, 0.6);
+    clouds[i].size = random(70, 120);
+  }
+}
+
+function drawSky() {
+  for (let y = 0; y < height; y++) {
+    const t = y / height;
+    const c = lerpColor(color("#cfeef0"), color("#f9ffff"), t);
+    stroke(c);
+    line(0, y, width, y);
+  }
+}
+
+function drawSunGradient() {
+  const sx = width * 0.85;
+  const sy = height * 0.18;
+
+  noStroke();
+  for (let r = 60; r > 0; r -= 8) {
+    const a = map(r, 60, 0, 0.15, 1);
+    fill(255, 220, 120, 255 * a);
+    circle(sx, sy, r * 2);
+  }
+
+  stroke(255, 210, 120, 120);
+  for (let i = 0; i < 12; i++) {
+    const a = i * 30;
+    const x1 = sx + cos(a) * 55;
+    const y1 = sy + sin(a) * 55;
+    const x2 = sx + cos(a) * 90;
+    const y2 = sy + sin(a) * 90;
+    line(x1, y1, x2, y2);
+  }
+}
+
+/* The hero's cloud, not three circles.
+   index.html's hero draws a rounded bar with two circles sitting on it,
+   asymmetric, and the gardens drew a symmetric trio, so the same page carried
+   two different clouds. These are the hero's own proportions, averaged across
+   its three sizes and taken relative to the bar's width W:
+
+     bar     W wide, 0.269W tall, its top 0.19W down
+     bump 1  0.433W across, at 0.138W from the left, flush with the top
+     bump 2  0.314W across, at 0.456W from the left, 0.052W down
+
+   `c.size` stays the centre circle diameter it always was, so the stored
+   clouds do not change; W is 1.6 of it, which is the width the old trio
+   spanned. The alpha is the hero's 0.9, not the old 205. */
+function drawClouds() {
+  noStroke();
+  for (const c of clouds) {
+    c.x += c.speed;
+    if (c.x > width + 170) c.x = -170;
+
+    fill(255, 255, 255, 230);
+    const W = c.size * 1.6;
+    const x = c.x - W / 2, y = c.y - W * 0.22;
+    const bodyH = W * 0.269, b1 = W * 0.433, b2 = W * 0.314;
+    rect(x, y + W * 0.19, W, bodyH, bodyH / 2);
+    circle(x + W * 0.138 + b1 / 2, y + b1 / 2, b1);
+    circle(x + W * 0.456 + b2 / 2, y + W * 0.052 + b2 / 2, b2);
+  }
+}
+
+function drawHillsBack() {
+  noStroke();
+  fill("#a9d9cf");
+  beginShape();
+  for (let x = 0; x <= width + 20; x += 10) {
+    vertex(x, height * 0.56 + noise(x * 0.002, 0.1) * 52);
+  }
+  vertex(width + 20, height);
+  vertex(0, height);
+  endShape(CLOSE);
+}
+
+function drawHillsFront() {
+  noStroke();
+  fill("#8fcfbe");
+  beginShape();
+  for (let x = 0; x <= width + 20; x += 12) {
+    vertex(x, height * 0.64 + noise(x * 0.0025, 20.2) * 16);
+  }
+  vertex(width + 20, height);
+  vertex(0, height);
+  endShape(CLOSE);
+}
+
+/* ------------------------------------------------------------- the gardener
+   YOUR GARDENER STANDS IN THE GARDEN, which is the promise the build page
+   has always made on its first screen and nothing kept until now.
+
+   THEY PAINT BEFORE `drawForegroundHill()`, so the hill buries their feet
+   exactly the way it buries a stem, and AFTER the front row, so they stand
+   in front of the flowers rather than among them. `drawAllDates()` runs
+   later still, so a gardener can never hide a date label.
+
+   BOTTOM CENTRE, because it is the only quadrant with nothing in it: the
+   Garden Tips card owns bottom left, the friends button bottom right, and
+   the daily note and the four round icons own the top. */
+var gardenerHit = null;
+function gardenerHillTop(x) {
+  /* the SAME expression `drawForegroundHill` draws its edge with, so the
+     feet follow the ground rather than a guess at where it is */
+  return height * 0.75 - noise(x * 0.002, 321.45) * height * 0.02;
+}
+function drawGardener() {
+  if (!window.GardenGardener || !window.GardenGardener.has()) return;
+  if (!window.AvatarDraw || typeof window.drawSpeciesBloom !== "function") return;
+  /* SIZED AGAINST THE SMALLER OF THE TWO DIMENSIONS. Taken off the height
+     alone a phone drew somebody 154 tall in a window 375 wide, which is 41
+     percent of it: a person filling the garden they are standing in. */
+  var h = Math.max(96, Math.min(Math.min(height * 0.19, width * 0.34), 180));
+  var gx = width * 0.5;
+  /* SUNK BY A TENTH OF THEIR OWN HEIGHT, so what the hill covers is the
+     shoes and a little ankle whatever size the window is. A fixed pixel
+     amount buries a phone gardener to the knee. */
+  var gy = gardenerHillTop(gx) + h * 0.10;
+  window.GardenGardener.paintAt(drawingContext, null, gx, gy, h,
+    window.GardenGardener.patNow());
+  /* WHERE THEY WERE DRAWN, kept so a tap can find them. The hit box is the
+     BODY, not the whole 360 box: most of that box is clear margin above the
+     flower, and a tap in empty sky two heads up should not pat anybody. */
+  gardenerHit = { x: gx, y: gy, w: h * 0.42, h: h * 0.72 };
+}
+/* A PAT IS A TAP ON THE GARDENER, and it is checked BEFORE the flowers: they
+   stand in front of the front row, so a bloom behind them must not answer a
+   tap that landed on a person. */
+function gardenerPatted(mx, my) {
+  var g = gardenerHit;
+  if (!g || !window.GardenGardener || !window.GardenGardener.has()) return false;
+  if (Math.abs(mx - g.x) > g.w / 2) return false;
+  if (my > g.y || my < g.y - g.h) return false;
+  window.GardenGardener.pat();
+  return true;
+}
+
+function drawForegroundHill() {
+  noStroke();
+  fill("#7ec4b4");
+  beginShape();
+  for (let x = 0; x <= width + 20; x += 10) {
+    const bump = noise(x * 0.002, 321.45) * height * 0.02;
+    const y = height * 0.75 - bump;
+    vertex(x, y);
+  }
+  vertex(width + 20, height);
+  vertex(0, height);
+  endShape(CLOSE);
+}
+
+function drawGround() {
+  noStroke();
+  const groundTop = height * 0.805;
+  fill('#dff0e8');
+  rect(0, groundTop, width + 20, height - groundTop);
+}
+
+/* ONE CONNECTED TULIP. It used to be three overlapping pieces, a notched
+   crown on top, a round bowl under it and a pale oval over the middle, all
+   slightly see through, so a darker band showed where the crown overlapped the
+   bowl, the crown's sides stepped in from the bowl's, and the oval floated. It
+   read as a flower in parts. Now: the back petals as one solid silhouette
+   rising from the base to two outer tips, the front petal rising unbroken from
+   the same base to the centre tip, and a soft highlight that follows the front
+   petal. The same shapes in all seven copies. Extents barely moved (the centre
+   tip is 0.06 Rt taller), and BLOOM_BOX and BLOOM_METRICS were re-measured. */
+function drawTulipBloom(R, hue, sat, light) {
+  noStroke();
+  const Rt = R * 1.15;
+  fill(hue, sat, light - 7, 1);
+  beginShape();
+  vertex(Rt * 0, Rt * 0.8);
+  bezierVertex(Rt * -0.34, Rt * 0.8, Rt * -0.54, Rt * 0.58, Rt * -0.53, Rt * 0.24);
+  bezierVertex(Rt * -0.52, Rt * -0.08, Rt * -0.44, Rt * -0.4, Rt * -0.3, Rt * -0.62);
+  bezierVertex(Rt * -0.24, Rt * -0.5, Rt * -0.14, Rt * -0.4, Rt * 0, Rt * -0.36);
+  bezierVertex(Rt * 0.14, Rt * -0.4, Rt * 0.24, Rt * -0.5, Rt * 0.3, Rt * -0.62);
+  bezierVertex(Rt * 0.44, Rt * -0.4, Rt * 0.52, Rt * -0.08, Rt * 0.53, Rt * 0.24);
+  bezierVertex(Rt * 0.54, Rt * 0.58, Rt * 0.34, Rt * 0.8, Rt * 0, Rt * 0.8);
+  endShape(CLOSE);
+  fill(hue, sat, light, 1);
+  beginShape();
+  vertex(Rt * 0, Rt * 0.8);
+  bezierVertex(Rt * -0.26, Rt * 0.78, Rt * -0.4, Rt * 0.5, Rt * -0.38, Rt * 0.14);
+  bezierVertex(Rt * -0.36, Rt * -0.2, Rt * -0.2, Rt * -0.48, Rt * 0, Rt * -0.66);
+  bezierVertex(Rt * 0.2, Rt * -0.48, Rt * 0.36, Rt * -0.2, Rt * 0.38, Rt * 0.14);
+  bezierVertex(Rt * 0.4, Rt * 0.5, Rt * 0.26, Rt * 0.78, Rt * 0, Rt * 0.8);
+  endShape(CLOSE);
+  /* NO HIGHLIGHT on the tulip. It was the set's only translucent fill and its only asymmetric marking; see CLAUDE.md. */
+}
+
+function drawRoseBloom(R, hue, sat, light) {
+  push();
+  colorMode(HSL, 360, 100, 100, 1);
+  angleMode(DEGREES);
+  noStroke();
+
+  function petal(rotation, distance, w, h, sMod, lMod) {
+    push();
+    rotate(rotation);
+    translate(0, -distance);
+
+    fill(hue, sat * sMod, light + lMod, 1);
+
+    const width  = w;
+    const height = h;
+
+    beginShape();
+    vertex(0, 12);
+    bezierVertex(-width / 3.2, 5,
+                 -width / 1.4, -height / 3.5,
+                 -width / 4.5, -height * 0.75);
+    bezierVertex(-width / 12, -height * 0.82,
+                 width / 12,  -height * 0.82,
+                 width / 4.5, -height * 0.75);
+    bezierVertex(width / 1.4,  -height / 3.5,
+                 width / 3.2,  5,
+                 0,            12);
+    endShape(CLOSE);
+
+    pop();
+  }
+
+  const scaleAmount = R / 70;
+  push();
+  scale(scaleAmount, scaleAmount);
+
+  for (let i = 0; i < 8; i++) petal(i * 45, 35, 75, 44, 1.0, -10);
+  for (let i = 0; i < 8; i++) petal(i * 45 + 22.5, 26, 65, 38, 0.95, -5);
+  for (let i = 0; i < 6; i++) petal(i * 60 + 15, 18, 52, 32, 0.9, 0);
+  for (let i = 0; i < 5; i++) petal(i * 72 + 20, 11, 40, 26, 0.85, 5);
+  for (let i = 0; i < 5; i++) petal(i * 72 + 56, 6, 30, 22, 0.8, 10);
+
+  fill(hue, sat, light - 10); circle(0, 0, 24);
+  fill(hue, sat * 0.95, light - 5); circle(0, 0, 19);
+  fill(hue, sat * 0.9, light); circle(0, 0, 14);
+  fill(hue, sat * 0.85, light + 5); circle(0, 0, 9);
+  fill(hue, sat * 0.8, light + 10); circle(0, 0, 5);
+
+  pop();
+  pop();
+}
+
+function drawSunflowerBloom(R, hue, sat, light) {
+  noStroke();
+
+  const petals = 18;
+  const w = R * 0.45;
+  const h = R * 1.25;
+
+  for (let i = 0; i < petals; i++) {
+    push();
+    rotate(i * (360 / petals));
+    fill(hue, sat * 0.9, light + 12, 0.95);
+    ellipse(0, -R * 0.72, w, h);
+    pop();
+  }
+
+  fill(28, 45, 42);
+  circle(0, 0, R * 1.35);
+
+  fill(23, 40, 58);
+  circle(0, 0, R * 1.05);
+}
+
+/* =========================================================================
+   PEONY and POPPY, which replaced the lotus and the sakura.
+
+   THE PEONY IS THREE RINGS AND A PALE CENTRE. A peony is a dense, ruffled
+   bloom, so it is rings of ROUNDED petals rather than the daisy's sixteen
+   narrow ones: an outer petal is nearly as wide as it is long, which is what
+   a peony petal actually is, and each ring inward is smaller, deeper in tone
+   and turned half a step so its petals fall into the gaps behind them. The
+   small warm centre is the tell that separates it from the rose, whose
+   middle is a spiral of ever smaller petals in the flower's own colour.
+
+   THE POPPY IS FOUR PETALS AND A DARK EYE, and both halves are load bearing.
+   Nothing else in the set has four petals and nothing else has a centre that
+   goes nearly black, so with the colour removed it is the easiest of the
+   eight to name. The eye keeps a little of the flower's own hue rather than
+   being flat black, or a re-coloured poppy reads as a sticker on a bloom.
+   ========================================================================= */
+function drawPeonyBloom(R, hue, sat, light) {
+  push();
+  noStroke();
+  const petal = (ang, d, w, h, s, l) => {
+    push();
+    rotate(ang);
+    translate(0, -d);
+    fill(hue, s, constrain(l, 18, 96), 1);
+    ellipse(0, 0, w, h);
+    pop();
+  };
+  /* TEN outer petals at 36 degrees, alternating length and tone. Two rings of
+     five shared a start angle and left the bloom measurably lopsided. */
+  for (let i = 0; i < 10; i++) {
+    petal(i * 36, i % 2 ? R * 0.537 : R * 0.657, R * 0.388, i % 2 ? R * 0.627 : R * 0.686,
+          i % 2 ? sat * 0.78 : sat * 0.62, i % 2 ? light + 8 : light + 16);
+  }
+  for (let i = 0; i < 6; i++) petal(i * 60 + 18, R * 0.299, R * 0.299, R * 0.478, sat * 0.92, light - 3);
+  fill(48, 80, 86, 1);
+  ellipse(0, 0, R * 0.27, R * 0.27);
+  pop();
+}
+
+/* EIGHT PETALS, in two layers: four deep ones on the axes and four brighter
+   ones turned 45 degrees over them. Four petals alone read as a cross with
+   gaps in it; the second layer fills those gaps and is what makes it a
+   flower rather than a symbol, and the two tones are what keep the layers
+   apart when a sender re-colours the whole bloom. Geometry ported from the
+   reference drawing: back d 0.475 of R, front 0.45, and a dark eye with its
+   ribs and six stamen dots. */
+/* HIBISCUS: five broad petals, a deep throat, and the stamen column at
+   FULL botanical length, which is the one thing no other species in the
+   set has. The throat is what names it at garden size and the column is
+   what names it in the guide, where a bloom is drawn large. */
+function drawHibiscusBloom(R, hue, sat, light) {
+  push();
+  noStroke();
+  push();
+  fill(hue, sat, light-2, 1);
+  ellipse(R*0, R*-0.44, R*0.92, R*1.06);
+  pop();
+  push();
+  rotate(72);
+  fill(hue, sat, light-2, 1);
+  ellipse(R*0, R*-0.44, R*0.92, R*1.06);
+  pop();
+  push();
+  rotate(144);
+  fill(hue, sat, light-2, 1);
+  ellipse(R*0, R*-0.44, R*0.92, R*1.06);
+  pop();
+  push();
+  rotate(216);
+  fill(hue, sat, light-2, 1);
+  ellipse(R*0, R*-0.44, R*0.92, R*1.06);
+  pop();
+  push();
+  rotate(288);
+  fill(hue, sat, light-2, 1);
+  ellipse(R*0, R*-0.44, R*0.92, R*1.06);
+  pop();
+  push();
+  fill(hue, sat+14, light-14, 1);
+  ellipse(R*0, R*-0.45, R*0.045, R*0.7);
+  pop();
+  push();
+  rotate(72);
+  fill(hue, sat+14, light-14, 1);
+  ellipse(R*0, R*-0.45, R*0.045, R*0.7);
+  pop();
+  push();
+  rotate(144);
+  fill(hue, sat+14, light-14, 1);
+  ellipse(R*0, R*-0.45, R*0.045, R*0.7);
+  pop();
+  push();
+  rotate(216);
+  fill(hue, sat+14, light-14, 1);
+  ellipse(R*0, R*-0.45, R*0.045, R*0.7);
+  pop();
+  push();
+  rotate(288);
+  fill(hue, sat+14, light-14, 1);
+  ellipse(R*0, R*-0.45, R*0.045, R*0.7);
+  pop();
+  push();
+  fill(hue, sat+16, light-24, 1);
+  ellipse(R*0, R*0, R*0.58, R*0.58);
+  pop();
+  push();
+  fill(hue, sat+22, light-34, 1);
+  ellipse(R*0, R*0, R*0.32, R*0.32);
+  pop();
+  push();
+  rotate(128);
+  fill(hue, sat*0.42, light+24, 1);
+  ellipse(R*0, R*-0.7, R*0.058, R*1.22);
+  pop();
+  push();
+  rotate(128);
+  fill(46, 74, 60, 1);
+  ellipse(R*0.04, R*-0.95, R*0.085, R*0.085);
+  pop();
+  push();
+  rotate(128);
+  fill(46, 74, 60, 1);
+  ellipse(R*-0.04, R*-1.03, R*0.085, R*0.085);
+  pop();
+  push();
+  rotate(128);
+  fill(46, 74, 60, 1);
+  ellipse(R*0.04, R*-1.11, R*0.085, R*0.085);
+  pop();
+  push();
+  rotate(128);
+  fill(46, 74, 60, 1);
+  ellipse(R*-0.04, R*-1.19, R*0.085, R*0.085);
+  pop();
+  push();
+  rotate(128);
+  fill(46, 74, 60, 1);
+  ellipse(R*0, R*-1.26, R*0.085, R*0.085);
+  pop();
+  push();
+  rotate(128);
+  fill(hue, sat+18, light-30, 1);
+  ellipse(R*0, R*-1.385, R*0.095, R*0.095);
+  pop();
+  push();
+  rotate(128);
+  fill(hue, sat+18, light-30, 1);
+  ellipse(R*0.0713, R*-1.3332, R*0.095, R*0.095);
+  pop();
+  push();
+  rotate(128);
+  fill(hue, sat+18, light-30, 1);
+  ellipse(R*0.0441, R*-1.2493, R*0.095, R*0.095);
+  pop();
+  push();
+  rotate(128);
+  fill(hue, sat+18, light-30, 1);
+  ellipse(R*-0.0441, R*-1.2493, R*0.095, R*0.095);
+  pop();
+  push();
+  rotate(128);
+  fill(hue, sat+18, light-30, 1);
+  ellipse(R*-0.0713, R*-1.3332, R*0.095, R*0.095);
+  pop();
+  pop();
+}
+
+function drawPoppyBloom(R, hue, sat, light) {
+  push();
+  noStroke();
+  const petal = (ang, d, w, h, s, l) => {
+    push();
+    rotate(ang);
+    translate(0, -d);
+    fill(hue, min(100, s), constrain(l, 10, 96), 1);
+    ellipse(0, 0, w, h);
+    pop();
+  };
+  for (let i = 0; i < 4; i++) petal(i * 90,      R * 0.475, R * 0.675, R * 1.05, sat * 1.05, light - 13);
+  for (let i = 0; i < 4; i++) petal(i * 90 + 45, R * 0.450, R * 0.650, R * 1.00, sat, light + (i % 2 ? -4 : 2));
+  fill(hue, 34, 13, 1);
+  ellipse(0, 0, R * 0.40, R * 0.50);
+  fill(hue, 30, 27, 1);
+  for (let i = -1; i < 2; i++) ellipse(0, R * 0.1125 * i, R * 0.275, R * 0.022);
+  fill(hue, 40, 7, 1);
+  for (let i = 0; i < 6; i++) {
+    const a = i * 60 + 30;
+    ellipse(sin(a) * R * 0.2875, -cos(a) * R * 0.2875, R * 0.043, R * 0.043);
+  }
+  pop();
+}
+
+function drawPeonyBloomOnGraphics(pg, R, hue, sat, light) {
+  pg.push();
+  pg.noStroke();
+  const petal = (ang, d, w, h, s, l) => {
+    pg.push();
+    pg.rotate(ang);
+    pg.translate(0, -d);
+    pg.fill(hue, s, constrain(l, 18, 96), 1);
+    pg.ellipse(0, 0, w, h);
+    pg.pop();
+  };
+  /* TEN outer petals at 36 degrees, alternating length and tone. Two rings of
+     five shared a start angle and left the bloom measurably lopsided. */
+  for (let i = 0; i < 10; i++) {
+    petal(i * 36, i % 2 ? R * 0.537 : R * 0.657, R * 0.388, i % 2 ? R * 0.627 : R * 0.686,
+          i % 2 ? sat * 0.78 : sat * 0.62, i % 2 ? light + 8 : light + 16);
+  }
+  for (let i = 0; i < 6; i++) petal(i * 60 + 18, R * 0.299, R * 0.299, R * 0.478, sat * 0.92, light - 3);
+  pg.fill(48, 80, 86, 1);
+  pg.ellipse(0, 0, R * 0.27, R * 0.27);
+  pg.pop();
+}
+
+function drawHibiscusBloomOnGraphics(pg, R, hue, sat, light) {
+  pg.push();
+  pg.noStroke();
+  pg.push();
+  pg.fill(hue, sat, light-2, 1);
+  pg.ellipse(R*0, R*-0.44, R*0.92, R*1.06);
+  pg.pop();
+  pg.push();
+  pg.rotate(72);
+  pg.fill(hue, sat, light-2, 1);
+  pg.ellipse(R*0, R*-0.44, R*0.92, R*1.06);
+  pg.pop();
+  pg.push();
+  pg.rotate(144);
+  pg.fill(hue, sat, light-2, 1);
+  pg.ellipse(R*0, R*-0.44, R*0.92, R*1.06);
+  pg.pop();
+  pg.push();
+  pg.rotate(216);
+  pg.fill(hue, sat, light-2, 1);
+  pg.ellipse(R*0, R*-0.44, R*0.92, R*1.06);
+  pg.pop();
+  pg.push();
+  pg.rotate(288);
+  pg.fill(hue, sat, light-2, 1);
+  pg.ellipse(R*0, R*-0.44, R*0.92, R*1.06);
+  pg.pop();
+  pg.push();
+  pg.fill(hue, sat+14, light-14, 1);
+  pg.ellipse(R*0, R*-0.45, R*0.045, R*0.7);
+  pg.pop();
+  pg.push();
+  pg.rotate(72);
+  pg.fill(hue, sat+14, light-14, 1);
+  pg.ellipse(R*0, R*-0.45, R*0.045, R*0.7);
+  pg.pop();
+  pg.push();
+  pg.rotate(144);
+  pg.fill(hue, sat+14, light-14, 1);
+  pg.ellipse(R*0, R*-0.45, R*0.045, R*0.7);
+  pg.pop();
+  pg.push();
+  pg.rotate(216);
+  pg.fill(hue, sat+14, light-14, 1);
+  pg.ellipse(R*0, R*-0.45, R*0.045, R*0.7);
+  pg.pop();
+  pg.push();
+  pg.rotate(288);
+  pg.fill(hue, sat+14, light-14, 1);
+  pg.ellipse(R*0, R*-0.45, R*0.045, R*0.7);
+  pg.pop();
+  pg.push();
+  pg.fill(hue, sat+16, light-24, 1);
+  pg.ellipse(R*0, R*0, R*0.58, R*0.58);
+  pg.pop();
+  pg.push();
+  pg.fill(hue, sat+22, light-34, 1);
+  pg.ellipse(R*0, R*0, R*0.32, R*0.32);
+  pg.pop();
+  pg.push();
+  pg.rotate(128);
+  pg.fill(hue, sat*0.42, light+24, 1);
+  pg.ellipse(R*0, R*-0.7, R*0.058, R*1.22);
+  pg.pop();
+  pg.push();
+  pg.rotate(128);
+  pg.fill(46, 74, 60, 1);
+  pg.ellipse(R*0.04, R*-0.95, R*0.085, R*0.085);
+  pg.pop();
+  pg.push();
+  pg.rotate(128);
+  pg.fill(46, 74, 60, 1);
+  pg.ellipse(R*-0.04, R*-1.03, R*0.085, R*0.085);
+  pg.pop();
+  pg.push();
+  pg.rotate(128);
+  pg.fill(46, 74, 60, 1);
+  pg.ellipse(R*0.04, R*-1.11, R*0.085, R*0.085);
+  pg.pop();
+  pg.push();
+  pg.rotate(128);
+  pg.fill(46, 74, 60, 1);
+  pg.ellipse(R*-0.04, R*-1.19, R*0.085, R*0.085);
+  pg.pop();
+  pg.push();
+  pg.rotate(128);
+  pg.fill(46, 74, 60, 1);
+  pg.ellipse(R*0, R*-1.26, R*0.085, R*0.085);
+  pg.pop();
+  pg.push();
+  pg.rotate(128);
+  pg.fill(hue, sat+18, light-30, 1);
+  pg.ellipse(R*0, R*-1.385, R*0.095, R*0.095);
+  pg.pop();
+  pg.push();
+  pg.rotate(128);
+  pg.fill(hue, sat+18, light-30, 1);
+  pg.ellipse(R*0.0713, R*-1.3332, R*0.095, R*0.095);
+  pg.pop();
+  pg.push();
+  pg.rotate(128);
+  pg.fill(hue, sat+18, light-30, 1);
+  pg.ellipse(R*0.0441, R*-1.2493, R*0.095, R*0.095);
+  pg.pop();
+  pg.push();
+  pg.rotate(128);
+  pg.fill(hue, sat+18, light-30, 1);
+  pg.ellipse(R*-0.0441, R*-1.2493, R*0.095, R*0.095);
+  pg.pop();
+  pg.push();
+  pg.rotate(128);
+  pg.fill(hue, sat+18, light-30, 1);
+  pg.ellipse(R*-0.0713, R*-1.3332, R*0.095, R*0.095);
+  pg.pop();
+  pg.pop();
+}
+
+function drawPoppyBloomOnGraphics(pg, R, hue, sat, light) {
+  pg.push();
+  pg.noStroke();
+  const petal = (ang, d, w, h, s, l) => {
+    pg.push();
+    pg.rotate(ang);
+    pg.translate(0, -d);
+    pg.fill(hue, min(100, s), constrain(l, 10, 96), 1);
+    pg.ellipse(0, 0, w, h);
+    pg.pop();
+  };
+  for (let i = 0; i < 4; i++) petal(i * 90,      R * 0.475, R * 0.675, R * 1.05, sat * 1.05, light - 13);
+  for (let i = 0; i < 4; i++) petal(i * 90 + 45, R * 0.450, R * 0.650, R * 1.00, sat, light + (i % 2 ? -4 : 2));
+  pg.fill(hue, 34, 13, 1);
+  pg.ellipse(0, 0, R * 0.40, R * 0.50);
+  pg.fill(hue, 30, 27, 1);
+  for (let i = -1; i < 2; i++) pg.ellipse(0, R * 0.1125 * i, R * 0.275, R * 0.022);
+  pg.fill(hue, 40, 7, 1);
+  for (let i = 0; i < 6; i++) {
+    const a = i * 60 + 30;
+    pg.ellipse(sin(a) * R * 0.2875, -cos(a) * R * 0.2875, R * 0.043, R * 0.043);
+  }
+  pg.pop();
+}
+
+function drawCherryBloom(R, hue, sat, light) {
+  noStroke();
+  const Rb = R * 1.7;
+
+  for (let i = 0; i < 5; i++) {
+    const angle = i * 72;
+    push();
+    rotate(angle);
+
+    fill(hue, sat * 0.8, light + 15, 0.85);
+    beginShape();
+    vertex(0, -Rb * 0.65);
+    bezierVertex(Rb * 0.28, -Rb * 0.52,
+                 Rb * 0.40, -Rb * 0.20,
+                 Rb * 0.28, 0);
+    bezierVertex(Rb * 0.18, Rb * 0.12,
+                 0, Rb * 0.18,
+                 -Rb * 0.18, Rb * 0.12);
+    bezierVertex(-Rb * 0.28, 0,
+                 -Rb * 0.40, -Rb * 0.20,
+                 -Rb * 0.28, -Rb * 0.52);
+    endShape(CLOSE);
+
+    pop();
+  }
+
+  fill(hue, sat * 0.6, light - 5);
+  circle(0, 0, Rb * 0.24);
+}
+
+function drawLilyBloom(R, hue, sat, light) {
+  noStroke();
+  const Rl = R * 1.08;
+  const petals = 6;
+
+  for (let i = 0; i < petals; i++) {
+    const a = i * 60;
+    push();
+    rotate(a);
+
+    fill(hue, sat * 0.85, light + 8, 0.9);
+    beginShape();
+    vertex(0, -Rl * 1.0);
+    bezierVertex(Rl * 0.30, -Rl * 0.72,
+                 Rl * 0.42, -Rl * 0.30,
+                 Rl * 0.22, Rl * 0.04);
+    bezierVertex(Rl * 0.12, Rl * 0.20,
+                 0, Rl * 0.26,
+                 -Rl * 0.12, Rl * 0.20);
+    bezierVertex(-Rl * 0.22, Rl * 0.04,
+                 -Rl * 0.42, -Rl * 0.30,
+                 -Rl * 0.30, -Rl * 0.72);
+    endShape(CLOSE);
+
+    pop();
+  }
+
+  fill(hue, sat * 0.65, light - 5);
+  circle(0, 0, Rl * 0.36);
+  fill(hue, sat * 0.45, light + 10);
+  circle(0, 0, Rl * 0.20);
+}
+
+function drawDaisyBloom(R, hue, sat, light) {
+  noStroke();
+
+  const petals = 16;
+  const cfg = speciesShapeCfg("daisy");
+  const Rd = R * 0.8;
+  const wBase = Rd * cfg.w;
+  const hBase = Rd * cfg.h;
+
+  for (let i = 0; i < petals; i++) {
+    const a = i * (360 / petals);
+    push();
+    rotate(a);
+
+    fill(hue, sat * 0.9, light + 10, 0.85);
+    ellipse(0, -Rd * 0.7, wBase, hBase);
+
+    pop();
+  }
+
+  fill(50, 80, 70);
+  circle(0, 0, Rd * 0.5);
+  fill(45, 70, 75);
+  circle(0, 0, Rd * 0.35);
+}
+
+function drawLotusBloom(R, hue, sat, light) {
+  push();
+  noStroke();
+  
+  let drawPetal = (x, y, scX, scY, rot, c) => {
+    push();
+    translate(x, y);
+    rotate(rot);
+    scale(scX, scY);
+    fill(c);
+    beginShape();
+    vertex(0, 0); 
+    bezierVertex(R * 0.5, R * -0.5, R * 0.5, R * -1.5, 0, R * -2);
+    bezierVertex(-R * 0.5, R * -1.5, -R * 0.5, R * -0.5, 0, 0);
+    endShape(CLOSE);
+    pop();
+  };
+
+  let col = color(hue, sat, light, 0.8);
+
+  drawPetal(0, 0, 0.9, 1, 0, col);
+  drawPetal(0, 0, 0.9, 0.75, -50, col);
+  drawPetal(0, 0, 0.9, 0.75, 50, col);
+  drawPetal(0, 0, 0.9, 0.9, -30, col);
+  drawPetal(0, 0, 0.9, 0.9, 30, col);
+  drawPetal(0, 0, 0.9, 1, 0, col);
+  pop();
+}
+
+/* Phalaenopsis, face on. Three narrow sepals behind (one up, two down), two
+   broad petals in front, and the lip at the bottom in a deeper tone. The lip
+   is what makes it read as an orchid rather than a generic five petalled
+   bloom, so it keeps real contrast. Unlike the lotus it replaces, this is a
+   CENTRED bloom, so it needs none of lotus's origin nudge or label offset. */
+function drawOrchidBloom(R, hue, sat, light) {
+  noStroke();
+  const Ro = R * 1.28;
+  const lobe = (ang, len, wid, sa, li, al, pinch, oy, ox) => {
+    push();
+    translate(ox || 0, oy || 0);
+    rotate(ang + 90);
+    fill(hue, sa, li, al);
+    beginShape();
+    vertex(0, 0);
+    bezierVertex(wid, -len * (pinch || 0.22), wid, -len * 0.82, 0, -len);
+    bezierVertex(-wid, -len * 0.82, -wid, -len * (pinch || 0.22), 0, 0);
+    endShape(CLOSE);
+    pop();
+  };
+  lobe(-90, Ro * 0.97, Ro * 0.34, sat * 0.72, light + 13, 0.95, 0.34);
+  lobe(50, Ro * 0.96, Ro * 0.38, sat * 0.72, light + 13, 0.95, 0.40);
+  lobe(130, Ro * 0.96, Ro * 0.38, sat * 0.72, light + 13, 0.95, 0.40);
+  lobe(-22, Ro * 1.00, Ro * 0.66, sat * 0.80, light + 17, 1.00, 0.52);
+  lobe(-158, Ro * 1.00, Ro * 0.66, sat * 0.80, light + 17, 1.00, 0.52);
+  /* the centre, off the flat reference: the lip's side lobes are ONE
+     horseshoe curling in round the column, drawn as a thick arc with
+     round caps and a gap left at the top for the pale anther cap to
+     sit in, with the midlobe flaring below */
+  push();
+  noFill();
+  stroke(hue, sat + 24, light - 26, 1);
+  strokeWeight(Ro * 0.10);
+  strokeCap(ROUND);
+  arc(0, Ro * 0.02, Ro * 0.31, Ro * 0.27, 316.00, 584.00);
+  pop();
+  fill(hue, sat + 24, light - 26, 1);
+  ellipse(0, Ro * 0.12, Ro * 0.09, Ro * 0.23);
+  ellipse(0, Ro * 0.25, Ro * 0.26, Ro * 0.18);
+  fill(hue, sat * 0.35, light + 27, 1);
+  ellipse(0, -Ro * 0.12, Ro * 0.15, Ro * 0.15);
+}
+
+/* Pompom chrysanthemum: concentric rings of short rounded petals, lightening
+   inward so it reads as a ball rather than a disc. Drawn as a pompom and not
+   as a single flat bloom for a specific reason: a chrysanthemum is in the same
+   family as the daisy, and drawn simply the two are the same picture twice. */
+function drawChrysanthBloom(R, hue, sat, light) {
+  noStroke();
+  const Rm = R * 1.12;
+  const rings = [
+    { n: 18, r: 0.92, pw: 0.23, ph: 0.32, dl: -9, a: 0.95 },
+    { n: 16, r: 0.70, pw: 0.21, ph: 0.29, dl: -3, a: 1 },
+    { n: 12, r: 0.49, pw: 0.19, ph: 0.26, dl:  4, a: 1 },
+    { n: 8,  r: 0.27, pw: 0.17, ph: 0.23, dl: 10, a: 1 }
+  ];
+  for (let ri = 0; ri < rings.length; ri++) {
+    const ring = rings[ri];
+    for (let i = 0; i < ring.n; i++) {
+      push();
+      /* each ring is offset, or the petals line up into spokes */
+      rotate(i * (360 / ring.n) + ri * 11);
+      fill(hue, sat, light + ring.dl, ring.a);
+      ellipse(0, -Rm * ring.r, Rm * ring.pw, Rm * ring.ph);
+      pop();
+    }
+  }
+  fill(hue, sat * 0.6, light + 16, 1);
+  circle(0, 0, Rm * 0.14);
+}
+
+function drawLavenderBloom(h, hue, sat, light) {
+  push();
+  noStroke();
+
+  let levels = 8; 
+  let spacing = (h / levels) * 1.15; 
+
+  for (let i = 0; i < levels; i++) {
+    let t = i / (levels - 1);
+    let y = -10 - i * spacing;
+    let pWidth = lerp(14, 7, t); 
+    let pHeight = pWidth * 1.6;
+    let xOffset = lerp(7, 2, t);
+    let baseLight = lerp(light - 10, light + 10, t);
+
+    fill(hue, sat, baseLight - 5, 0.9);
+    push();
+    translate(-xOffset, y); 
+    rotate(-40);
+    ellipse(0, 0, pWidth, pHeight);
+    pop();
+
+    fill(hue, sat, baseLight - 2, 0.9);
+    push();
+    translate(xOffset, y);
+    rotate(40);
+    ellipse(0, 0, pWidth, pHeight);
+    pop();
+
+    if (i < levels - 1) {
+      fill(hue, sat - 5, baseLight + 5, 0.8);
+      push();
+      translate(0, y - spacing * 0.45); 
+      ellipse(0, 0, pWidth * 0.65, pHeight * 0.85);
+      pop();
+    }
+
+    if (i === levels - 1) {
+      fill(hue, sat + 5, light + 15);
+      ellipse(0, y - 10, 6, 11);
+    }
+  }
+  
+  pop();
+}
+
+/* ONE soft shadow for the whole flower.
+
+   The garden's ground runs #a9d9cf, #8fcfbe and #7ec4b4, all pale teals, and
+   the planter picks the hue freely, so a pale teal or pale blue bloom sat on
+   that ground at almost no contrast and disappeared into the grass. A shadow
+   works whatever hue is chosen, where an outline or a floor on lightness
+   would fight the choice the person just made.
+
+   The first version set drawingContext.shadow* and let EVERY PETAL cast one.
+   That reads as petal by petal shading rather than as a flower standing on
+   grass, because a petal's shadow falls on the petals around it. Canvas has
+   no way to shadow a group of shapes as one, and an exact silhouette would
+   mean rendering the bloom to an offscreen buffer, which these sketches
+   cannot do: the species functions draw through p5's globals, and the only
+   parallel families that take a buffer are the PREVIEW ones, which are
+   separate copies and would put a different flower's outline under the
+   flower actually drawn.
+
+   So it is one ellipse, per bloom, sized from each species' MEASURED painted
+   extent. It is drawn far off canvas and brought back purely as its own
+   shadow, which is what makes it a single soft shape with one alpha and no
+   seams anywhere.
+
+   BLOOM_BOX is [centre y, half width, half height] as multiples of R,
+   measured by rendering each species alone and reading back its painted
+   bounding box. Lotus and lavender grow UPWARD from an origin that
+   bloomOriginNudge pushes down, which is why their centre y is negative and
+   why a shadow centred on the origin would have sat below the flower.
+*/
+var BLOOM_BOX = {
+  /* RE-MEASURED, by painting each species alone through `drawBloom` at R 60
+     and reading back its bounding box, in both gardens, which agree exactly.
+     The old figures ran about 8 percent large and 0.05 R low across the set,
+     and two were plainly wrong: the lotus sat 0.08 R lower than its petals
+     and 0.08 R wider, and the lavender was recorded at 0.48 R wide for a spike
+     that paints 0.26, so it wore a halo nearly twice its own width. Re-measure
+     if any species' drawing changes. */
+  tulip:     [ 0.08, 0.61, 0.84],   /* re-measured for the connected tulip */
+  rose:      [ 0.00, 1.00, 1.00],
+  sunflower: [ 0.00, 1.32, 1.35],
+  sakura:    [-0.06, 1.05, 1.05],
+  /* MEASURED at R 100, like every row here. The hibiscus is the widest thing
+     in the set at 1.13 R, and all of that is the stamen column: the petals
+     themselves stop at 0.97. */
+  hibiscus:  [-0.03, 1.13, 0.95],
+  peony:     [-0.08, 0.96, 0.92],  /* measured: the ruffled ring is not symmetric */
+  poppy:     [ 0.00, 1.00, 1.00],
+  lily:      [ 0.00, 0.94, 1.08],
+  daisy:     [ 0.00, 1.00, 1.00],
+  lotus:     [-1.00, 1.15, 1.00],
+  lavender:  [-0.97, 0.26, 0.96],
+  orchid:    [-0.14, 1.21, 1.10],
+  chrysanth: [ 0.00, 1.19, 1.21]
+};
+
+/* HALO_BOX is the ellipse that best FITS each silhouette, which is not the
+   box that bounds it. BLOOM_BOX above is the true painted extent and stays
+   that way; the halo is the only thing that reads this.
+
+   THE PEONY IS WHY. Its ruffled outline reaches 0.96 R at its longest petals
+   and stops at 0.61 R between them, so an ellipse sized to the bounding box
+   sat 15 percent outside the flower in those gaps and showed there as a dark
+   patch. Fitting the ellipse to the outline by least squares over 720
+   directions puts it between the notches and the tips instead, which is what
+   a shadow of that flower would actually be.
+
+   THE LAVENDER HAD THE SAME FAULT THE OTHER WAY. It is a spike, so its
+   bounding box is mostly empty air either side of it and the halo was nearly
+   twice the width of anything it was under.
+
+   Measured, not chosen: every figure is BLOOM_BOX times that species' own
+   fitted shrink, and the shrink is capped at 1 so no halo grew. A solid
+   bloom barely moves (rose 0.99, tulip 1.00, daisy 0.96) and a notched or
+   thin one tightens (peony 0.86, lily 0.94 by 0.81, lavender 0.67 wide).
+   Re-measure with the silhouette fit if any species' drawing changes. */
+var HALO_BOX = {
+  tulip:     [ 0.08, 0.61, 0.83],
+  rose:      [ 0.00, 0.99, 1.00],
+  sunflower: [ 0.00, 1.15, 1.16],
+  sakura:    [-0.06, 0.99, 0.99],
+  /* SIZED TO THE PETALS, NOT THE COLUMN, which is the peony's rule applied to
+     the opposite problem: an ellipse stretched to cover a 1.3 R spike is the
+     lavender's fog again. Measured radially over 720 directions with the
+     column's own sector skipped: 0.74 at the notch, 0.98 at the tip, 0.89
+     between them. */
+  hibiscus:  [ 0.00, 0.89, 0.89],
+  peony:     [-0.08, 0.68, 0.68],   /* sized to its NOTCH, not its tips */
+  poppy:     [ 0.00, 0.90, 0.90],
+  lily:      [ 0.00, 0.88, 0.87],
+  daisy:     [ 0.00, 0.96, 0.96],
+  lotus:     [-1.00, 1.05, 0.83],
+  lavender:  [-0.97, 0.24, 0.96],
+  orchid:    [-0.14, 1.20, 1.05],
+  chrysanth: [ 0.00, 1.05, 1.13]
+};
+
+/* A BLOOM CASTS NO SHADOW ON THE SKY, and that is the whole of this.
+
+   The halo exists because a pale bloom on the pale teal ground can vanish
+   into it: swept over every species at every hue the planter can pick, the
+   worst case against the grass is 1.00, which is invisible. Against the SKY
+   the same sweep never falls below 1.26, because the sky runs #cfeef0 to
+   #f9ffff and every bloom is darker than that. So up there the halo buys
+   nothing, and it costs plenty: dark teal fog reads far louder on near white
+   than it does on mid teal grass, which is what a tall flower's bloom looked
+   like against the sky.
+
+   It is also what a shadow IS. A flower casts one on the ground it stands
+   on, not on the air behind it.
+
+   So the strength is how much of the bloom actually overlaps the ground,
+   ramped rather than switched, or a bloom drifting across the skyline would
+   pop. The line is the BACK hill's own edge at this bloom's x, the same
+   expression drawHillsBack draws, since that is the highest ground edge on
+   the page and everything above it is sky whatever layer the flower is in.
+
+   IT READS THE LIVE TRANSFORM for the same reason bloomShadow does: the
+   opening scales the bloom, so its extent on the canvas is not R alone. */
+function groundK(ctx, R, box) {
+  var tf = ctx.getTransform(), dens = pixelDensity();
+  var sc = Math.sqrt(tf.a * tf.a + tf.b * tf.b) / dens;
+  var ox = tf.e / dens, oy = tf.f / dens;
+  var top = oy + (box[0] - box[2]) * R * sc;
+  var bot = oy + (box[0] + box[2]) * R * sc;
+  if (!(bot > top)) return 0;
+  var ground = height * 0.56 + noise(ox * 0.002, 0.1) * 52;
+  return Math.max(0, Math.min(1, (bot - ground) / (bot - top)));
+}
+
+/* A little smaller than the bloom, so the flower overhangs its own shadow
+   rather than sitting inside a dark halo the same size as itself. */
+var SHADOW_FIT = 0.82;
+
+/* The shortest stem each layer can be planted with, from `addFlower`'s own
+   ranges at their lowest. Used to lift flowers that were saved short. */
+const STEM_FLOOR = { front: 0.13, mid: 0.17, back: 0.11 };
+
+function bloomShadow(f, R, alphaK) {
+  var k = (alphaK === undefined) ? 1 : alphaK;
+  if (k <= 0) return;
+  var box = HALO_BOX[f.species] || HALO_BOX.daisy;
+  var ctx = drawingContext;
+  var rx = box[1] * R * SHADOW_FIT;
+  var ry = box[2] * R * SHADOW_FIT;
+  if (!(rx > 0 && ry > 0)) return;
+
+  /* A RADIAL GRADIENT, NOT THE CANVAS SHADOW API. The halo used to be an
+     ellipse drawn 6000 units off to the right and dragged back as its own
+     shadow, with the offset and blur converted by hand from the transform.
+     That arithmetic was right and it still came out wrong on an iPhone:
+     WebKit handles canvas shadow offsets and blur differently from Chrome
+     under a scaled context, and an offset of 18000 device pixels at a pixel
+     density of 3 is exactly where engines disagree. A gradient is drawn in
+     the current transform like any other shape, so it lands in the same
+     place, at the same softness, in every browser, and it costs less.
+
+     WHAT READ AS HARSH WAS THE REACH, NOT THE DARKNESS AT THE RIM. The old
+     halo darkened the ground by 15 out of 255 and was STILL doing it 24px
+     out from the petals of a 46px bloom, which is a disc drawn around the
+     flower rather than something the flower is standing on. Sampled just
+     outside the petals at 2, 6, 10, 16, 24 and 34px, a pale daisy now
+     darkens the ground by 7.8, 3, 0, 0, 0 and 0, against that flat 15 at
+     every one of them: about half as dark where it is seen at all, and gone
+     within 10px instead of carrying on past 34.
+
+     THREE THINGS DO THAT, and the first two are what matter. There is NO
+     FLAT CORE any more: a constant alpha out to (rx - blur) ended on a
+     visible rim, and that rim is the edge that read as hard. The fit is
+     0.82 rather than 0.90, so the strong part of the gradient no longer
+     reaches the full width of the painted box and cannot show through the
+     gaps between petals. The alpha is 0.15.
+
+     TIGHTENING THE FIT FURTHER IS THE WRONG LEVER, and the sweep is worth
+     keeping because it looks like the obvious next step. From 0.82 down to
+     0.74 the rim a pale daisy casts falls 7.8, 5.7, 4.7, 3.7 and the
+     sunflower's falls 4, 1.7, 0, 0, so the round blooms lose the halo
+     altogether well before a notched one loses its overhang. At 0.70 it
+     ended inside the petals and did nothing whatever: the pixel just outside
+     them measured identical with it on and off, which is the feature
+     switched off rather than softened. It has to reach a little PAST the
+     bloom or it is not lifting anything off the grass.
+
+     THE PEONY STILL SHOWS A HALO IN ITS NOTCHES, and that is a silhouette
+     property rather than a size one, which is why the sweep above cannot
+     fix it. Its outline is ruffled, so measured from its own centre the
+     petals stop at 29px in two places and at 46px in another, while the
+     ellipse is sized to the box the longest petals set. In those gaps the
+     halo reads 13.5 at 12px out where the daisy's is already 0. Over the
+     same sweep it only goes 13.5, 11.5, 10.7, 9.7, so it costs every other
+     species its rim to buy almost nothing here. It is left alone: it is
+     still short of the old halo, which was 15 at 24px on every species at
+     every angle. A per species halo shape is the fix if it ever matters.
+
+     CENTRING WAS NEVER THE FAULT, and it was measured rather than assumed.
+     Every species' BLOOM_BOX matches its painted box exactly, and the
+     rendered halo's midpoint sits within half a pixel of that box's centre
+     on all ten. Only the reach moved. */
+  /* THE SOFT EDGE IS A FRACTION OF THE HALO, NOT OF R, and the lavender is
+     what proved it. The gradient is drawn inside a scale(1, ry / rx), so a
+     blur given in x is multiplied by the aspect ratio in y. The lavender's
+     halo is 6px wide and 36 tall, an aspect of 5.7, so a 15.6px blur became
+     88px vertically: a 124px tall fog around a 44px spike. At 0.43 of rx the
+     whole ellipse simply grows by 43 percent in both axes, so the soft edge
+     is proportional to the shape rather than to the canvas. A round bloom is
+     unchanged, the daisy's blur measuring 15.57 against the old 15.64. */
+  var blur = rx * 0.43;
+  var outer = rx + blur;
+  var a = 0.15 * k * groundK(ctx, R, box);
+  if (!(a > 0)) return;
+  var ink = "rgba(18,62,56,";
+  ctx.save();
+  ctx.translate(0, box[0] * R);
+  ctx.scale(1, ry / rx);
+  var g = ctx.createRadialGradient(0, 0, 0, 0, 0, outer);
+  g.addColorStop(0.00, ink + a.toFixed(3) + ")");
+  g.addColorStop(0.60, ink + (a * 0.88).toFixed(3) + ")");
+  g.addColorStop(0.80, ink + (a * 0.62).toFixed(3) + ")");
+  g.addColorStop(1.00, ink + "0)");
+  ctx.fillStyle = g;
+  ctx.beginPath();
+  ctx.arc(0, 0, outer, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
+}
+/* `shadowK` scales the drop shadow, 0 for none. A growing bloom passes a
+   ramp so the shadow arrives with the flower rather than appearing whole on
+   one frame. Everything else leaves it out and gets the full shadow. */
+function drawBloom(f, shadowK) {
+  colorMode(HSL, 360, 100, 100, 1);
+  noStroke();
+
+  const R     = f.size;
+  const hue   = f.hue;
+  const sat   = f.sat;
+  const light = f.light;
+  bloomShadow(f, R, shadowK);
+
+  if (f.species === "tulip") {
+    drawTulipBloom(R, hue, sat, light);
+  } else if (f.species === "rose") {
+    drawRoseBloom(R, hue, sat, light);
+  } else if (f.species === "sunflower") {
+    drawSunflowerBloom(R, hue, sat, light);
+  } else if (f.species === "hibiscus") {
+    drawHibiscusBloom(R, hue, sat, light);
+  } else if (f.species === "peony") {
+    drawPeonyBloom(R, hue, sat, light);          /* retired, drawn anyway */
+  } else if (f.species === "poppy") {
+    drawPoppyBloom(R, hue, sat, light);
+  } else if (f.species === "sakura") {
+    drawCherryBloom(R, hue, sat, light);
+  } else if (f.species === "chrysanth") {
+    drawChrysanthBloom(R, hue, sat, light);       /* hidden from the picker, drawn anyway */
+  } else if (f.species === "orchid") {
+    drawOrchidBloom(R, hue, sat, light);          /* hidden from the picker, drawn anyway */
+  } else if (f.species === "lily") {
+    drawLilyBloom(R, hue, sat, light);
+  } else if (f.species === "lotus"){
+    drawLotusBloom(R, hue, sat, light);
+  } else if (f.species === "lavender"){
+    drawLavenderBloom(R * 1.5, hue, sat, light);
+  } else {
+    drawDaisyBloom(R, hue, sat, light);
+  }
+
+  colorMode(RGB);
+}
+
+function drawPreviewFlower(pg, species, hue) {
+  pg.push();
+  pg.colorMode(pg.HSL, 360, 100, 100, 1);
+  pg.angleMode(pg.DEGREES);
+  pg.noStroke();
+
+  const R = 40;
+  const sat = defaultSat(species);
+  const light = defaultLight(species);
+
+  pg.translate(pg.width / 2, pg.height / 2 + 10);
+
+  if (species === "lotus") {
+    pg.translate(0, R * 0.8);
+  } else if (species === "lavender") {
+    pg.translate(0, R * 1.0);
+  }
+
+  if (species === "tulip") {
+    drawTulipBloomOnGraphics(pg, R, hue, sat, light);
+  } else if (species === "rose") {
+    drawRoseBloomOnGraphics(pg, R, hue, sat, light);
+  } else if (species === "sunflower") {
+    drawSunflowerBloomOnGraphics(pg, R, hue, sat, light);
+  } else if (species === "hibiscus") {
+    drawHibiscusBloomOnGraphics(pg, R, hue, sat, light);
+  } else if (species === "peony") {
+    drawPeonyBloomOnGraphics(pg, R, hue, sat, light);   /* retired */
+  } else if (species === "poppy") {
+    drawPoppyBloomOnGraphics(pg, R, hue, sat, light);
+  } else if (species === "sakura") {
+    drawCherryBloomOnGraphics(pg, R, hue, sat, light);
+  } else if (species === "chrysanth") {
+    drawChrysanthBloomOnGraphics(pg, R, hue, sat, light);
+  } else if (species === "orchid") {
+    drawOrchidBloomOnGraphics(pg, R, hue, sat, light);
+  } else if (species === "lily") {
+    drawLilyBloomOnGraphics(pg, R, hue, sat, light);
+  } else if (species === "lotus") {
+    drawLotusBloomOnGraphics(pg, R, hue, sat, light);
+  } else if (species === "lavender") {
+    drawLavenderBloomOnGraphics(pg, R * 1.5, hue, sat, light);
+  } else {
+    drawDaisyBloomOnGraphics(pg, R, hue, sat, light);
+  }
+
+  pg.pop();
+}
+
+function drawTulipBloomOnGraphics(pg, R, hue, sat, light) {
+  pg.noStroke();
+  const Rt = R * 1.15;
+  pg.fill(hue, sat, light - 7, 1);
+  pg.beginShape();
+  pg.vertex(Rt * 0, Rt * 0.8);
+  pg.bezierVertex(Rt * -0.34, Rt * 0.8, Rt * -0.54, Rt * 0.58, Rt * -0.53, Rt * 0.24);
+  pg.bezierVertex(Rt * -0.52, Rt * -0.08, Rt * -0.44, Rt * -0.4, Rt * -0.3, Rt * -0.62);
+  pg.bezierVertex(Rt * -0.24, Rt * -0.5, Rt * -0.14, Rt * -0.4, Rt * 0, Rt * -0.36);
+  pg.bezierVertex(Rt * 0.14, Rt * -0.4, Rt * 0.24, Rt * -0.5, Rt * 0.3, Rt * -0.62);
+  pg.bezierVertex(Rt * 0.44, Rt * -0.4, Rt * 0.52, Rt * -0.08, Rt * 0.53, Rt * 0.24);
+  pg.bezierVertex(Rt * 0.54, Rt * 0.58, Rt * 0.34, Rt * 0.8, Rt * 0, Rt * 0.8);
+  pg.endShape(pg.CLOSE);
+  pg.fill(hue, sat, light, 1);
+  pg.beginShape();
+  pg.vertex(Rt * 0, Rt * 0.8);
+  pg.bezierVertex(Rt * -0.26, Rt * 0.78, Rt * -0.4, Rt * 0.5, Rt * -0.38, Rt * 0.14);
+  pg.bezierVertex(Rt * -0.36, Rt * -0.2, Rt * -0.2, Rt * -0.48, Rt * 0, Rt * -0.66);
+  pg.bezierVertex(Rt * 0.2, Rt * -0.48, Rt * 0.36, Rt * -0.2, Rt * 0.38, Rt * 0.14);
+  pg.bezierVertex(Rt * 0.4, Rt * 0.5, Rt * 0.26, Rt * 0.78, Rt * 0, Rt * 0.8);
+  pg.endShape(pg.CLOSE);
+  /* NO HIGHLIGHT on the tulip. It was the set's only translucent fill and its only asymmetric marking; see CLAUDE.md. */
+}
+
+function drawRoseBloomOnGraphics(pg, R, hue, sat, light) {
+  pg.push();
+  function petal(rotation, distance, w, h, sMod, lMod) {
+    pg.push();
+    pg.rotate(rotation);
+    pg.translate(0, -distance);
+    pg.fill(hue, sat * sMod, light + lMod, 1);
+    pg.beginShape();
+    pg.vertex(0, 12);
+    pg.bezierVertex(-w / 3.2, 5, -w / 1.4, -h / 3.5, -w / 4.5, -h * 0.75);
+    pg.bezierVertex(-w / 12, -h * 0.82, w / 12, -h * 0.82, w / 4.5, -h * 0.75);
+    pg.bezierVertex(w / 1.4, -h / 3.5, w / 3.2, 5, 0, 12);
+    pg.endShape(pg.CLOSE);
+    pg.pop();
+  }
+  const scaleAmount = R / 70;
+  pg.scale(scaleAmount, scaleAmount);
+  for (let i = 0; i < 8; i++) petal(i * 45, 35, 75, 44, 1.0, -10);
+  for (let i = 0; i < 8; i++) petal(i * 45 + 22.5, 26, 65, 38, 0.95, -5);
+  for (let i = 0; i < 6; i++) petal(i * 60 + 15, 18, 52, 32, 0.9, 0);
+  for (let i = 0; i < 5; i++) petal(i * 72 + 20, 11, 40, 26, 0.85, 5);
+  for (let i = 0; i < 5; i++) petal(i * 72 + 56, 6, 30, 22, 0.8, 10);
+  pg.fill(hue, sat, light - 10); pg.circle(0, 0, 24);
+  pg.fill(hue, sat * 0.95, light - 5); pg.circle(0, 0, 19);
+  pg.fill(hue, sat * 0.9, light); pg.circle(0, 0, 14);
+  pg.fill(hue, sat * 0.85, light + 5); pg.circle(0, 0, 9);
+  pg.fill(hue, sat * 0.8, light + 10); pg.circle(0, 0, 5);
+  pg.pop();
+}
+
+function drawSunflowerBloomOnGraphics(pg, R, hue, sat, light) {
+  pg.noStroke();
+  const petals = 18;
+  const w = R * 0.45;
+  const h = R * 1.25;
+  for (let i = 0; i < petals; i++) {
+    pg.push();
+    pg.rotate(i * 20);
+    pg.fill(hue, sat * 0.9, light + 12, 0.95);
+    pg.ellipse(0, -R * 0.72, w, h);
+    pg.pop();
+  }
+  pg.fill(28, 45, 42);
+  pg.circle(0, 0, R * 1.35);
+  pg.fill(23, 40, 58);
+  pg.circle(0, 0, R * 1.05);
+}
+
+function drawCherryBloomOnGraphics(pg, R, hue, sat, light) {
+  pg.noStroke();
+  const Rb = R * 1.7;
+  for (let i = 0; i < 5; i++) {
+    const angle = i * 72;
+    pg.push();
+    pg.rotate(angle);
+    pg.fill(hue, sat * 0.8, light + 15, 0.85);
+    pg.beginShape();
+    pg.vertex(0, -Rb * 0.65);
+    pg.bezierVertex(Rb * 0.28, -Rb * 0.52, Rb * 0.40, -Rb * 0.20, Rb * 0.28, 0);
+    pg.bezierVertex(Rb * 0.18, Rb * 0.12, 0, Rb * 0.18, -Rb * 0.18, Rb * 0.12);
+    pg.bezierVertex(-Rb * 0.28, 0, -Rb * 0.40, -Rb * 0.20, -Rb * 0.28, -Rb * 0.52);
+    pg.endShape(pg.CLOSE);
+    pg.pop();
+  }
+  pg.fill(hue, sat * 0.6, light - 5);
+  pg.circle(0, 0, Rb * 0.24);
+}
+
+function drawLilyBloomOnGraphics(pg, R, hue, sat, light) {
+  pg.noStroke();
+  const Rl = R * 1.08;
+  const petals = 6;
+  for (let i = 0; i < petals; i++) {
+    const a = i * 60;
+    pg.push();
+    pg.rotate(a);
+    pg.fill(hue, sat * 0.85, light + 8, 0.9);
+    pg.beginShape();
+    pg.vertex(0, -Rl * 1.0);
+    pg.bezierVertex(Rl * 0.30, -Rl * 0.72, Rl * 0.42, -Rl * 0.30, Rl * 0.22, Rl * 0.04);
+    pg.bezierVertex(Rl * 0.12, Rl * 0.20, 0, Rl * 0.26, -Rl * 0.12, Rl * 0.20);
+    pg.bezierVertex(-Rl * 0.22, Rl * 0.04, -Rl * 0.42, -Rl * 0.30, -Rl * 0.30, -Rl * 0.72);
+    pg.endShape(pg.CLOSE);
+    pg.pop();
+  }
+  pg.fill(hue, sat * 0.65, light - 5);
+  pg.circle(0, 0, Rl * 0.36);
+  pg.fill(hue, sat * 0.45, light + 10);
+  pg.circle(0, 0, Rl * 0.20);
+}
+
+function drawDaisyBloomOnGraphics(pg, R, hue, sat, light) {
+  pg.noStroke();
+  const petals = 16;
+  const cfg = speciesShapeCfg("daisy");
+  const Rd = R * 0.8;
+  const wBase = Rd * cfg.w;
+  const hBase = Rd * cfg.h;
+  for (let i = 0; i < petals; i++) {
+    const a = i * (360 / petals);
+    pg.push();
+    pg.rotate(a);
+    pg.fill(hue, sat * 0.9, light + 10, 0.85);
+    pg.ellipse(0, -Rd * 0.7, wBase, hBase);
+    pg.pop();
+  }
+  pg.fill(50, 80, 70);
+  pg.circle(0, 0, Rd * 0.5);
+  pg.fill(45, 70, 75);
+  pg.circle(0, 0, Rd * 0.35);
+}
+
+function drawLotusBloomOnGraphics(pg, R, hue, sat, light) {
+  pg.push();
+  pg.noStroke();
+  let drawPetal = (x, y, scX, scY, rot, c) => {
+    pg.push();
+    pg.translate(x, y);
+    pg.rotate(rot);
+    pg.scale(scX, scY);
+    pg.fill(c);
+    pg.beginShape();
+    pg.vertex(0, 0);
+    pg.bezierVertex(R * 0.5, R * -0.5, R * 0.5, R * -1.5, 0, R * -2);
+    pg.bezierVertex(-R * 0.5, R * -1.5, -R * 0.5, R * -0.5, 0, 0);
+    pg.endShape(pg.CLOSE);
+    pg.pop();
+  };
+  let col = pg.color(hue, sat, light, 0.8);
+  drawPetal(0, 0, 0.9, 1, 0, col);
+  drawPetal(0, 0, 0.9, 0.75, -50, col);
+  drawPetal(0, 0, 0.9, 0.75, 50, col);
+  drawPetal(0, 0, 0.9, 0.9, -30, col);
+  drawPetal(0, 0, 0.9, 0.9, 30, col);
+  drawPetal(0, 0, 0.9, 1, 0, col);
+  pg.pop();
+}
+
+function drawOrchidBloomOnGraphics(pg, R, hue, sat, light) {
+  pg.push();
+  pg.noStroke();
+  const Ro = R * 1.28;
+  const lobe = (ang, len, wid, sa, li, al, pinch, oy, ox) => {
+    pg.push();
+    pg.translate(ox || 0, oy || 0);
+    pg.rotate(ang + 90);
+    pg.fill(hue, sa, li, al);
+    pg.beginShape();
+    pg.vertex(0, 0);
+    pg.bezierVertex(wid, -len * (pinch || 0.22), wid, -len * 0.82, 0, -len);
+    pg.bezierVertex(-wid, -len * 0.82, -wid, -len * (pinch || 0.22), 0, 0);
+    pg.endShape(pg.CLOSE);
+    pg.pop();
+  };
+  lobe(-90, Ro * 0.97, Ro * 0.34, sat * 0.72, light + 13, 0.95, 0.34);
+  lobe(50, Ro * 0.96, Ro * 0.38, sat * 0.72, light + 13, 0.95, 0.40);
+  lobe(130, Ro * 0.96, Ro * 0.38, sat * 0.72, light + 13, 0.95, 0.40);
+  lobe(-22, Ro * 1.00, Ro * 0.66, sat * 0.80, light + 17, 1.00, 0.52);
+  lobe(-158, Ro * 1.00, Ro * 0.66, sat * 0.80, light + 17, 1.00, 0.52);
+  /* the centre, off the flat reference: the lip's side lobes are ONE
+     horseshoe curling in round the column, drawn as a thick arc with
+     round caps and a gap left at the top for the pale anther cap to
+     sit in, with the midlobe flaring below */
+  pg.push();
+  pg.noFill();
+  pg.stroke(hue, sat + 24, light - 26, 1);
+  pg.strokeWeight(Ro * 0.10);
+  pg.strokeCap(ROUND);
+  pg.arc(0, Ro * 0.02, Ro * 0.31, Ro * 0.27, 316.00, 584.00);
+  pg.pop();
+  pg.fill(hue, sat + 24, light - 26, 1);
+  pg.ellipse(0, Ro * 0.12, Ro * 0.09, Ro * 0.23);
+  pg.ellipse(0, Ro * 0.25, Ro * 0.26, Ro * 0.18);
+  pg.fill(hue, sat * 0.35, light + 27, 1);
+  pg.ellipse(0, -Ro * 0.12, Ro * 0.15, Ro * 0.15);
+  pg.pop();
+}
+
+function drawChrysanthBloomOnGraphics(pg, R, hue, sat, light) {
+  pg.push();
+  pg.noStroke();
+  const Rm = R * 1.12;
+  const rings = [
+    { n: 18, r: 0.92, pw: 0.23, ph: 0.32, dl: -9, a: 0.95 },
+    { n: 16, r: 0.70, pw: 0.21, ph: 0.29, dl: -3, a: 1 },
+    { n: 12, r: 0.49, pw: 0.19, ph: 0.26, dl:  4, a: 1 },
+    { n: 8,  r: 0.27, pw: 0.17, ph: 0.23, dl: 10, a: 1 }
+  ];
+  for (let ri = 0; ri < rings.length; ri++) {
+    const ring = rings[ri];
+    for (let i = 0; i < ring.n; i++) {
+      pg.push();
+      pg.rotate(i * (360 / ring.n) + ri * 11);
+      pg.fill(hue, sat, light + ring.dl, ring.a);
+      pg.ellipse(0, -Rm * ring.r, Rm * ring.pw, Rm * ring.ph);
+      pg.pop();
+    }
+  }
+  pg.fill(hue, sat * 0.6, light + 16, 1);
+  pg.circle(0, 0, Rm * 0.14);
+  pg.pop();
+}
+
+function drawLavenderBloomOnGraphics(pg, h, hue, sat, light) {
+  pg.push();
+  pg.noStroke();
+  let levels = 8;
+  let spacing = (h / levels) * 1.15;
+  for (let i = 0; i < levels; i++) {
+    let t = i / (levels - 1);
+    let y = -10 - i * spacing;
+    let pWidth = pg.lerp(14, 7, t);
+    let pHeight = pWidth * 1.6;
+    let xOffset = pg.lerp(7, 2, t);
+    let baseLight = pg.lerp(light - 10, light + 10, t);
+    pg.fill(hue, sat, baseLight - 5, 0.9);
+    pg.push();
+    pg.translate(-xOffset, y);
+    pg.rotate(-40);
+    pg.ellipse(0, 0, pWidth, pHeight);
+    pg.pop();
+    pg.fill(hue, sat, baseLight - 2, 0.9);
+    pg.push();
+    pg.translate(xOffset, y);
+    pg.rotate(40);
+    pg.ellipse(0, 0, pWidth, pHeight);
+    pg.pop();
+    if (i < levels - 1) {
+      pg.fill(hue, sat - 5, baseLight + 5, 0.8);
+      pg.push();
+      pg.translate(0, y - spacing * 0.45);
+      pg.ellipse(0, 0, pWidth * 0.65, pHeight * 0.85);
+      pg.pop();
+    }
+    if (i === levels - 1) {
+      pg.fill(hue, sat + 5, light + 15);
+      pg.ellipse(0, y - 10, 6, 11);
+    }
+  }
+  pg.pop();
+}
+
+function drawNewestSparkles() {
+  let newest = flowers.find(f => f.isLatest);
+  if (!newest) return;
+  if (newest.growthStage !== GROWTH_STAGES.BLOOM) return;
+
+  const alpha = 1;
+
+  const t = frameCount * 0.01 + newest.phase * 0.001;
+  const swayNoise = swayOn ? map(noise(t), 0, 1, -1, 1) * 4 : 0;
+  const cx = newest.x + swayNoise;
+  const baseCy = newest.baseY - newest.stemLen;
+
+  let cyOffset, orbitW, orbitH;
+  if (newest.species === "lavender") {
+    const h = newest.size * 1.5;
+    cyOffset = -(10 + h * 0.5);
+    orbitW   = newest.size * 0.75;
+    orbitH   = h * 0.6;
+  } else if (newest.species === "lotus") {
+    cyOffset = -newest.size * 0.6;
+    orbitW   = newest.size * 0.85;
+    orbitH   = newest.size * 0.85;
+  } else {
+    cyOffset = 0;
+    orbitW   = newest.size * 1.4;
+    orbitH   = newest.size * 1.0;
+  }
+
+  const cy = baseCy + cyOffset;
+  const R = newest.size;
+
+  push();
+  colorMode(HSL, 360, 100, 100, 1);
+
+  const numParticles = 8;
+
+  for (let i = 0; i < numParticles; i++) {
+    const angle = (frameCount * 1.8 + i * (360 / numParticles)) % 360;
+    const wobble = sin(frameCount * 3 + i * 47) * R * 0.1;
+    const px = cx + cos(angle) * (orbitW + wobble);
+    const py = cy + sin(angle) * (orbitH + wobble);
+
+    const twinkle = map(sin(frameCount * 4 + i * 33), -1, 1, 2, 5);
+
+    const sparkHue = (i % 2 === 0) ? newest.hue : (newest.hue + 40) % 360;
+    const sparkLight = (i % 2 === 0) ? 95 : 80;
+
+    fill(sparkHue, 80, sparkLight, alpha);
+    noStroke();
+
+    push();
+    translate(px, py);
+    rotate(frameCount * 2 + i * 45);
+    beginShape();
+    for (let s = 0; s < 4; s++) {
+      const outerA = s * 90;
+      const innerA = outerA + 45;
+      vertex(cos(outerA) * twinkle, sin(outerA) * twinkle);
+      vertex(cos(innerA) * twinkle * 0.35, sin(innerA) * twinkle * 0.35);
+    }
+    endShape(CLOSE);
+    pop();
+  }
+
+  colorMode(RGB);
+  pop();
+}
+
+function drawAllDates() {
+  for (const f of flowers) {
+    if (f.growthStage !== GROWTH_STAGES.BLOOM) continue;
+    const t = frameCount * 0.01 + f.phase * 0.001;
+    const swayNoise = swayOn ? map(noise(t), 0, 1, -1, 1) * 4 : 0;
+
+    push();
+    translate(f.x + swayNoise, f.baseY - f.stemLen);
+    colorMode(HSL, 360, 100, 100, 1);
+
+    const scaleFactor = (width < 720 ? gardenScale : 1);
+    const labelSize = max(10, 13 * scaleFactor);
+    const o = 1 * scaleFactor;
+    const labelY = (f.species === "lotus") ? -f.size * 0.6
+                 : (f.species === "lavender") ? -(10 + f.size * 0.75)
+                 : 0;
+
+    textAlign(CENTER, CENTER);
+    textSize(labelSize);
+    noStroke();
+
+    const displayDate = f.date || "";
+    const outlineSat   = f.sat * 0.85;
+    const outlineLight = f.light - 20;
+
+    fill(f.hue, outlineSat, outlineLight, 0.85);
+    text(displayDate, -o, labelY);
+    text(displayDate,  o, labelY);
+    text(displayDate,  0, labelY - o);
+    text(displayDate,  0, labelY + o);
+
+    fill(0, 0, 100);
+    text(displayDate, 0, labelY);
+
+    colorMode(RGB);
+    pop();
+  }
+}
+
+function drawLeafOnStem(x0, y0, c1x, c1y, c2x, c2y, x3, y3, t, side, len) {
+  const px = bezierPoint(x0, c1x, c2x, x3, t);
+  const py = bezierPoint(y0, c1y, c2y, y3, t);
+  const tx = bezierTangent(x0, c1x, c2x, x3, t);
+  const ty = bezierTangent(y0, c1y, c2y, y3, t);
+
+  const stemAngle = atan2(ty, tx);
+  const flareDeg = 55;
+  const angle = stemAngle + side * flareDeg;
+
+  const scaleFactor = (width < 720 ? gardenScale : 1);
+
+  push();
+  translate(px, py);
+  rotate(angle);
+
+  const w = len * scaleFactor;
+  const h = len * 0.45 * scaleFactor;
+
+  noStroke();
+  fill(120, 210, 90);
+
+  beginShape();
+  vertex(0, 0);
+  quadraticVertex(w * 0.15, -h * 0.06,
+                  w * 0.40, -h * 0.30);
+  quadraticVertex(w * 0.80, -h * 0.55,
+                  w,        -h * 0.05);
+  quadraticVertex(w * 0.82,  h * 0.22,
+                  w * 0.35,  h * 0.16);
+  quadraticVertex(w * 0.10,  h * 0.04,
+                  0, 0);
+  endShape(CLOSE);
+
+  stroke(70, 150, 85);
+  strokeWeight(1.3 * scaleFactor);
+  line(0, 0, w * 0.9, 0);
+
+  pop();
+}
+
+/* `lenK` is how far the pair has unfolded, 1 when finished, and `tAt` is
+   where on the curve they sit. Both are optional: every finished flower
+   calls this with neither and gets exactly what it always got. A growing one
+   passes both, because on a half risen stem the attachment point is at a
+   different PARAMETER even though it is at the same HEIGHT. */
+function drawLeavesOnStem(x0, y0, c1x, c1y, c2x, c2y, x3, y3, lenK, tAt) {
+  const tAttach = (tAt === undefined) ? LEAF_T : tAt;
+  const baseLen = 32;
+  const k = (lenK === undefined) ? 1 : lenK;
+  if (k <= 0) return;
+
+  const scaleFactor = (width < 720 ? gardenScale : 1);
+  const len = baseLen * scaleFactor * k;
+
+  drawLeafOnStem(x0, y0, c1x, c1y, c2x, c2y, x3, y3, tAttach, -1, len);
+  drawLeafOnStem(x0, y0, c1x, c1y, c2x, c2y, x3, y3, tAttach,  1, len);
+}
+
+function drawFlowerStemAndLeaves(f) {
+  const scaleFactor = (width < 720 ? gardenScale : 1);
+  const t = frameCount * 0.01 + f.phase * 0.001;
+  const swayNoise = swayOn ? map(noise(t), 0, 1, -1, 1) * 4 : 0;
+  const totalSway = swayNoise;
+
+  stroke(40, 120, 90);
+  strokeWeight(max(2, (f.size / 40) * 3) * scaleFactor);
+  noFill();
+
+  const c1x = 10;
+  const c1y = -f.stemLen * 0.4;
+  const c2x = -6;
+  const c2y = -f.stemLen * 0.7;
+  const x3  = totalSway;
+  const y3  = -f.stemLen;
+
+  bezier(0, 0, c1x, c1y, c2x, c2y, x3, y3);
+  drawLeavesOnStem(0, 0, c1x, c1y, c2x, c2y, x3, y3);
+}
+
+function drawFlowerBloom(f) {
+  const t = frameCount * 0.01 + f.phase * 0.001;
+  const swayNoise = swayOn ? map(noise(t), 0, 1, -1, 1) * 4 : 0;
+  const totalSway = swayNoise;
+
+  push();
+  translate(totalSway, -f.stemLen);
+  drawBloom(f);
+  pop();
+}
+
+/* GROWING, in two stages that lead into each other rather than cutting.
+
+   It was a green ellipse on a stub for two seconds, then a longer stem with a
+   slightly bigger green ellipse for three, and then the finished bloom at full
+   size in a single frame: three pictures rather than one thing growing.
+
+   Now the stem rises the whole way with a real BUD riding its tip, the bud
+   ripens from leaf green to the flower's own colour as it climbs, and then it
+   OPENS, the bloom scaling up out of it while the bud shrinks away behind.
+
+   THE TIMINGS AND THE SHAPES ARE THE SAME IN BOTH GARDENS, and they are
+   written out in each rather than shared, like the seven copies of the flower
+   maths, because the drawing goes through p5's globals. **Edit one and edit
+   the other.** */
+const GROW_RISE = 3400;   /* stem from nothing to full, bud on the tip */
+const GROW_OPEN = 1700;   /* the bud opens into the bloom */
+
+function growEase(t) { return 1 - Math.pow(1 - t, 3); }
+
+/* THE LEAVES. They used to arrive in a single frame at the very end, because
+   nothing drew them until growth was over and `drawFlowerStemAndLeaves` took
+   over, so a finished flower simply had leaves that the growing one never
+   had. They now unfold while the stem is still climbing.
+
+   `LEAF_T` is where they attach along the stem's curve and has always been
+   0.60. `LEAF_FRAC` is what that means as a fraction of the stem's HEIGHT,
+   and the two are not the same number. It is `bezierPoint(0, 0.4, 0.7, 1,
+   0.60)`, which is 0.6336, and it does not depend on how long the stem is:
+   the rising stem is the finished one with every control point scaled by the
+   same amount, so those 0.4 and 0.7 are constants.
+
+   That is what lets a leaf STAY WHERE IT CAME OUT while the stem goes on
+   growing past it, which is what a plant does. Drawn at a fixed parameter
+   instead, the leaves slide up the stem with the tip. */
+const LEAF_T = 0.60;
+const LEAF_FRAC = 0.6336;   /* bezierPoint(0, 0.4, 0.7, 1, LEAF_T) */
+/* The moment the tip first reaches that height, inverting `growEase`. */
+const LEAF_AT = GROW_RISE * (1 - Math.cbrt(1 - LEAF_FRAC));
+
+/* THE LEAVES FINISH WITH THE BLOOM, not before it. They used to unfold over
+   900ms and then sit at full size for the remaining three seconds, so the
+   one thing still visibly growing while the flower opened was the flower,
+   and the leaves read as having been dropped in and stopped. They now run
+   from the moment they appear all the way to the end of the whole sequence.
+
+   `leafEase` is a smoothstep, NOT the cubic ease-out the stem uses.
+   `growEase` is 0.93 of the way done by the time the bloom starts opening,
+   which over a four second ramp is the same early finish in a slower dress.
+   A smoothstep is 0.63 there, so a third of the growth is still to come
+   while the petals open, and it leaves and arrives gently, which is what
+   lets them start from nothing without reading as a pop. */
+function leafEase(t) { return t * t * (3 - 2 * t); }
+function leafGrowth(elapsed) {
+  const span = GROW_RISE + GROW_OPEN - LEAF_AT;
+  return leafEase(constrain((elapsed - LEAF_AT) / span, 0, 1));
+}
+
+/* Which PARAMETER on the current curve sits at a given fraction of the
+   finished stem's height. Bisection, since the cubic has no tidy inverse and
+   eighteen halvings put it well inside a pixel. */
+function stemParamAtFrac(frac) {
+  if (frac >= 1) return 1;
+  if (frac <= 0) return 0;
+  let lo = 0, hi = 1;
+  for (let i = 0; i < 18; i++) {
+    const mid = (lo + hi) * 0.5;
+    if (bezierPoint(0, 0.4, 0.7, 1, mid) < frac) lo = mid; else hi = mid;
+  }
+  return (lo + hi) * 0.5;
+}
+
+/* A closed bud: a teardrop with two sepals at its foot and one seam down it,
+   drawn around the origin so the caller only has to stand at the stem's tip.
+
+   `colorMode` is set INSIDE, because the growth pass runs in RGB (the stems
+   are `stroke(40, 120, 90)`) while a flower's own colour is HSL, and lerping
+   between the two needs them in one space. p5's push saves the mode. */
+/* The shorter of the two ways round a 360 degree wheel. See the note in
+   `drawBudShape`. Identical in both gardens. */
+function shortHue(from, to, t) {
+  const d = ((to - from + 540) % 360) - 180;
+  return (from + d * t + 360) % 360;
+}
+
+function drawBudShape(f, r, ripe) {
+  const w = r * 0.60;
+  push();
+  colorMode(HSL, 360, 100, 100, 1);
+  noStroke();
+  /* Sepals first, so the bud sits in front of them. */
+  fill(122, 34, 38);
+  ellipse(-w * 0.62, r * 0.42, w * 1.0, r * 0.62);
+  ellipse(w * 0.62, r * 0.42, w * 1.0, r * 0.62);
+  /* A BUD RIPENS THE SHORT WAY ROUND THE WHEEL, and `lerpColor` does not.
+     It moves every component in a straight line, so a green bud at hue 112
+     ripening into a rose at 350 was walked through 231 on the way: the bud
+     came out PURPLE on every warm flower, which is the one thing a red rose
+     bud must not be. Taking the shorter arc sends it 112 to 51 to 350, down
+     through yellow green and orange, which is how a bud actually colours up.
+     Saturation and lightness are straight lines; only hue is an angle. */
+  const skin = color(shortHue(112, f.hue, ripe),
+                     lerp(36, f.sat, ripe),
+                     lerp(50, f.light, ripe));
+  fill(skin);
+  beginShape();
+  vertex(0, -r);
+  bezierVertex(w * 1.06, -r * 0.44, w * 0.94, r * 0.52, 0, r * 0.64);
+  bezierVertex(-w * 0.94, r * 0.52, -w * 1.06, -r * 0.44, 0, -r);
+  endShape(CLOSE);
+  /* One seam, so it reads as wrapped rather than as a leaf. */
+  noFill();
+  stroke(hue(skin), saturation(skin), max(0, lightness(skin) - 14), 0.65);
+  strokeWeight(max(1, r * 0.1));
+  bezier(0, -r * 0.82, w * 0.42, -r * 0.3, w * 0.34, r * 0.2, 0, r * 0.5);
+  pop();
+}
+
+function drawFlowerWithGrowth(f) {
+  const elapsed = millis() - f.growthStartTime;
+  const scaleFactor = (width < 720 ? gardenScale : 1);
+  if (elapsed >= GROW_RISE + GROW_OPEN) { drawFlowerStemAndLeaves(f); return; }
+
+  const budR = max(7, f.size * 0.34 * scaleFactor);
+  const weight = max(2, (f.size / 40) * 3) * scaleFactor;
+
+  if (elapsed < GROW_RISE) {
+    /* RISING. The stem EASES OUT, so it leaves the ground quickly and slows as
+       it arrives, which is what reads as growing rather than as a line being
+       extended at a constant rate. */
+    const p = growEase(elapsed / GROW_RISE);
+    const len = f.stemLen * p;
+    push();
+    stroke(40, 120, 90);
+    strokeWeight(weight);
+    noFill();
+    bezier(0, 0, 10 * p, -len * 0.4, -6 * p, -len * 0.7, 0, -len);
+    pop();
+    /* The pair unfolds once the tip has climbed past where they belong. They
+       are placed by HEIGHT, not by parameter, so they stay put while the
+       stem carries on past them. */
+    if (p >= LEAF_FRAC) {
+      drawLeavesOnStem(0, 0, 10 * p, -len * 0.4, -6 * p, -len * 0.7, 0, -len,
+                       leafGrowth(elapsed), stemParamAtFrac(LEAF_FRAC / p));
+    }
+    const r = budR * (0.45 + 0.55 * p);
+    push();
+    translate(0, -len - r * 0.5);
+    /* Green for the first half of the climb, then ripening. */
+    drawBudShape(f, r, constrain((p - 0.55) / 0.45, 0, 1));
+    pop();
+    return;
+  }
+
+  /* OPENING. The stem is done, so the bloom scales up out of the bud while the
+     bud shrinks behind it: one becomes the other rather than swapping. */
+  const q = growEase((elapsed - GROW_RISE) / GROW_OPEN);
+  push();
+  stroke(40, 120, 90);
+  strokeWeight(weight);
+  noFill();
+  bezier(0, 0, 10, -f.stemLen * 0.4, -6, -f.stemLen * 0.7, 0, -f.stemLen);
+  pop();
+  /* STILL GROWING, and at their finished position. `leafGrowth` reaches 1
+     exactly when this phase ends, so the handover to
+     `drawFlowerStemAndLeaves`, which always draws them full size, lands on
+     the same number rather than on a step. */
+  drawLeavesOnStem(0, 0, 10, -f.stemLen * 0.4, -6, -f.stemLen * 0.7, 0, -f.stemLen,
+                   leafGrowth(elapsed));
+
+  if (q < 0.98) {
+    push();
+    translate(0, -f.stemLen - budR * 0.5 * (1 - q));
+    drawBudShape(f, budR * (1 - q * 0.72), 1);
+    pop();
+  }
+  /* NO SHADOW UNTIL THE BLOOM IS NEARLY THERE, then it comes up over the last
+     third of the opening. A bud has nothing to cast one, and a shadow that
+     simply switched on at the final frame would be the same pop in a
+     different place. */
+  push();
+  translate(0, -f.stemLen);
+  scale(0.18 + 0.82 * q);
+  drawBloom(f, constrain((q - 0.66) / 0.34, 0, 1));
+  pop();
+}
+
+// Bloomed stems only, drawn BEFORE their hill so the hill hides the base
+function drawFlowersStemsOnly(layerName) {
+  const layer = getLayerSorted(layerName);
+  for (const f of layer) {
+    if (f.growthStage !== GROWTH_STAGES.BLOOM) continue;
+    push();
+    translate(f.x, f.baseY);
+    drawFlowerStemAndLeaves(f);
+    pop();
+  }
+}
+
+// Growing sprouts, drawn AFTER their hill so they poke above it
+function drawFlowersGrowingOnly(layerName) {
+  const layer = getLayerSorted(layerName);
+  for (const f of layer) {
+    if (f.growthStage === GROWTH_STAGES.BLOOM) continue;
+    push();
+    translate(f.x, f.baseY);
+    updateGrowthStage(f);
+    drawFlowerWithGrowth(f);
+    pop();
+  }
+}
+
+// Blooms, drawn AFTER all hills so they float above the landscape
+function drawFlowersBloomsOnly(layerName) {
+  const layer = getLayerSorted(layerName);
+  for (const f of layer) {
+    if (f.growthStage !== GROWTH_STAGES.BLOOM) continue;
+    push();
+    translate(f.x, f.baseY);
+    drawFlowerBloom(f);
+    pop();
+  }
+}
+
+function updateGrowthStage(f) {
+  if (f.isOld) return; // stop old flowers from animating
+
+  const elapsed = millis() - f.growthStartTime;
+  /* The same two figures the drawing uses, or a flower would be handed to the
+     bloom pass while it is still opening and jump to full size. */
+  if (elapsed < GROW_RISE) f.growthStage = GROWTH_STAGES.BUD;
+  else if (elapsed < GROW_RISE + GROW_OPEN) f.growthStage = GROWTH_STAGES.STEM;
+  else f.growthStage = GROWTH_STAGES.BLOOM;
+}
+
+// Bloomed stems only, drawn BEFORE their hill so the hill hides the base
+function drawFlowersStemsOnly(layerName) {
+  const layer = getLayerSorted(layerName);
+  for (const f of layer) {
+    updateGrowthStage(f);
+    if (f.growthStage !== GROWTH_STAGES.BLOOM) continue;
+    push();
+    translate(f.x, f.baseY);
+    drawFlowerStemAndLeaves(f);
+    pop();
+  }
+}
+
+// Growing sprouts, drawn AFTER their hill so they poke above it
+function drawFlowersGrowingOnly(layerName) {
+  const layer = getLayerSorted(layerName);
+  for (const f of layer) {
+    updateGrowthStage(f);
+    if (f.growthStage === GROWTH_STAGES.BLOOM) continue;
+    push();
+    translate(f.x, f.baseY);
+    drawFlowerWithGrowth(f);
+    pop();
+  }
+}
+
+// Blooms, drawn AFTER all hills so they float above the landscape
+function drawFlowersBloomsOnly(layerName) {
+  const layer = getLayerSorted(layerName);
+  for (const f of layer) {
+    if (f.growthStage !== GROWTH_STAGES.BLOOM) continue;
+    push();
+    translate(f.x, f.baseY);
+    drawFlowerBloom(f);
+    pop();
+  }
+}
+
+function getLayerSorted(layerName) {
+  const layer = flowers.filter(f => f.layer === layerName);
+  layer.sort((a, b) => {
+    const aGrowing = a.growthStage !== GROWTH_STAGES.BLOOM ? 1 : 0;
+    const bGrowing = b.growthStage !== GROWTH_STAGES.BLOOM ? 1 : 0;
+    if (aGrowing !== bGrowing) return aGrowing - bGrowing;
+    return (b.createdIndex || 0) - (a.createdIndex || 0);
+  });
+  return layer;
+}
+
+/* TAP A FLOWER TO READ THE DAY, which opens the book at that flower's own
+   date. The hover box is a glance; this is the whole entry.
+
+   Three guards, and each is load bearing:
+
+   - p5 calls `mousePressed` for a press ANYWHERE in the window, not only on
+     its canvas, so without the target test this fires while somebody is
+     pressing a button on a prompt card or typing in the book itself.
+   - Only in the garden step. On the prompt screens the canvas is behind a
+     card and a flower under it is not something anybody is pointing at.
+   - `checkHover` is re-run from the press position rather than trusting
+     `hoveredFlower`, because a touch screen never fires a move first and the
+     stored value would be whatever the last mouse happened to be over.
+
+   Returning nothing rather than `false` leaves p5's own default alone. */
+function mousePressed(event) {
+  if (step !== "garden") return;
+  var t = event && event.target;
+  if (!t || String(t.tagName).toUpperCase() !== "CANVAS") return;
+  /* THE GARDENER IS ASKED FIRST. They are painted in front of the front row,
+     so a bloom behind them must not answer a tap that landed on a person. */
+  if (gardenerPatted(mouseX, mouseY)) return;
+  checkHover(mouseX, mouseY);
+  /* A TAP SHOWS A SMALL CARD, not the book. Going straight to the whole entry
+     was a lot to put in front of somebody who only wanted to know which day a
+     flower was; the card answers that, and its button opens the book for
+     anyone who wants more. A tap on empty ground puts the card away. */
+  /* THE BUTTERFLIES ARE ASKED LAST, on empty ground only, and that is a
+     choice rather than an oversight. They are drawn OVER everything, so by
+     paint order they should win; but they move and a flower does not, and
+     the flower is the point of the garden. Tapping a bloom while one happens
+     to be passing must open the bloom. */
+  if (!hoveredFlower || !hoveredFlower.date) {
+    if (window.GardenLife && GardenLife.startle(mouseX, mouseY)) return;
+    hideFlowerCard();
+    return;
+  }
+  /* A SECOND PRESS ON THE SAME FLOWER PUTS THE CARD AWAY. Without it the only
+     way to dismiss one was to find bare ground, which on a full garden is a
+     hunt. `hoverSuppress` is what stops a mouse re-opening it on the very
+     next frame: the pointer is still over that flower, so the hover tick
+     below would otherwise undo the press instantly and the card would never
+     shut. It is released as soon as the pointer moves off. */
+  if (flowerCardOpen() && flowerCardFor === hoveredFlower) {
+    hideFlowerCard();
+    hoverSuppress = hoveredFlower;
+    return;
+  }
+  showFlowerCard(hoveredFlower);
+}
+
+/* ── THE FLOWER CARD ─────────────────────────────────────────────────────
+   Species, meaning, the date written out, and one button that opens that day
+   in the book. Plain DOM against `document.body` rather than p5.dom, because
+   it has to sit over the canvas at a position worked out from the flower, and
+   nothing about it is part of `buildUI()`'s screens. */
+let flowerCardEl = null;
+let flowerCardFor = null;
+
+/* HOVERING A FLOWER OPENS THE SAME CARD A TAP DOES. It used to open on a
+   press alone, so on a laptop there was nothing at all until you clicked, and
+   the flower gave no reason to.
+
+   THE CARD HAS A BUTTON IN IT, which is what decides the closing rule. Shut
+   the moment the pointer leaves the flower and "Read this day" can never be
+   reached: it vanishes while you are moving towards it. So it stays while the
+   pointer is over the flower OR over the card, and closes a quarter of a
+   second after leaving BOTH. The delay is what lets you cross the gap between
+   the two without it snapping shut. */
+let hoverCardTimer = null;
+let pointerOnCard = false;
+let hoverSuppress = null;
+let lastPointer = { x: -1, y: -1 };
+
+/* WHETHER THE POINTER IS ON THE CARD IS ASKED OF ITS RECTANGLE, not of
+   pointerenter, and that is a fix rather than a preference. The card is
+   hidden and shown again under a pointer that has not moved, and a browser
+   fires no enter event for an element that appears beneath a stationary
+   cursor. So the flag went stale and the card closed while the pointer was
+   sitting on it, which is exactly the case the delay exists to protect.
+   The listener keeps the last position; the test is pure arithmetic. */
+function pointerOverCard() {
+  if (!flowerCardEl || flowerCardEl.hidden) return false;
+  const r = flowerCardEl.getBoundingClientRect();
+  return lastPointer.x >= r.left && lastPointer.x <= r.right &&
+         lastPointer.y >= r.top && lastPointer.y <= r.bottom;
+}
+function onCard() { return pointerOnCard || pointerOverCard(); }
+
+function hoverCardTick() {
+  if (isTouchDevice) return;                       /* a tap screen has no hover */
+  if (window.GardenJournal && GardenJournal.isOpen && GardenJournal.isOpen()) return;
+  const f = (hoveredFlower && hoveredFlower.date) ? hoveredFlower : null;
+  if (f !== hoverSuppress) hoverSuppress = null;
+  if (f && !hoverSuppress) {
+    if (hoverCardTimer) { clearTimeout(hoverCardTimer); hoverCardTimer = null; }
+    if (flowerCardFor !== f) showFlowerCard(f);
+    return;
+  }
+  if (!f && flowerCardOpen() && !onCard() && !hoverCardTimer) {
+    hoverCardTimer = setTimeout(function () {
+      hoverCardTimer = null;
+      if (!onCard() && !hoveredFlower) hideFlowerCard();
+    }, 250);
+  }
+}
+
+function flowerCardOpen() { return !!(flowerCardEl && !flowerCardEl.hidden); }
+
+function hideFlowerCard() {
+  if (flowerCardEl) flowerCardEl.hidden = true;
+  flowerCardFor = null;
+}
+
+function buildFlowerCard() {
+  if (flowerCardEl) return flowerCardEl;
+  const css = document.createElement("style");
+  css.textContent =
+    "#gg-flower-card{position:fixed;z-index:520;width:224px;box-sizing:border-box;" +
+      "padding:14px 16px 14px;background:#fffdf7;border:1px solid rgba(29,100,102,0.14);" +
+      "border-radius:16px;box-shadow:0 14px 36px rgba(29,100,102,0.22);" +
+      "font-family:Arial,Helvetica,sans-serif;color:#1d6466;text-align:left;}" +
+    "#gg-flower-card[hidden]{display:none !important;}" +
+    "#gg-flower-card .fc-name{display:flex;align-items:center;gap:8px;margin:0 0 2px;" +
+      "font-family:'Fraunces',Georgia,serif;font-weight:600;font-variation-settings:'SOFT' 50,'WONK' 0;" +
+      "font-size:18px;color:#0f5132;}" +
+    "#gg-flower-card .fc-dot{width:11px;height:11px;border-radius:50%;flex:0 0 auto;" +
+      "box-shadow:inset 0 0 0 1px rgba(0,0,0,0.12);}" +
+    "#gg-flower-card .fc-meaning{margin:0 0 6px;font-size:13px;color:#2f6260;}" +
+    "#gg-flower-card .fc-date{margin:0 0 12px;font-size:12px;color:#5a8683;}" +
+    "#gg-flower-card .fc-read{display:flex;align-items:center;justify-content:center;gap:6px;" +
+      "width:100%;height:40px;border:0;border-radius:999px;cursor:pointer;" +
+      "background:#1d6466;color:#fff9e3;font:700 14px Arial,Helvetica,sans-serif;}" +
+    "#gg-flower-card .fc-x{position:absolute;top:8px;right:8px;width:28px;height:28px;" +
+      "border:0;border-radius:50%;background:transparent;color:#5a8683;cursor:pointer;" +
+      "display:flex;align-items:center;justify-content:center;padding:0;}";
+  document.head.appendChild(css);
+
+  const el = document.createElement("div");
+  el.id = "gg-flower-card";
+  el.setAttribute("role", "dialog");
+  el.setAttribute("aria-label", "This flower");
+  el.hidden = true;
+  el.innerHTML =
+    '<button type="button" class="fc-x" aria-label="Close">' +
+      '<svg viewBox="0 0 14 14" width="12" height="12" fill="none" stroke="currentColor" ' +
+      'stroke-width="2" stroke-linecap="round"><path d="M3 3l8 8M11 3l-8 8"/></svg></button>' +
+    '<p class="fc-name"><span class="fc-dot"></span><span class="fc-species"></span></p>' +
+    '<p class="fc-meaning"></p>' +
+    '<p class="fc-date"></p>' +
+    '<button type="button" class="fc-read">Read this day</button>';
+  document.body.appendChild(el);
+
+  el.querySelector(".fc-x").addEventListener("click", hideFlowerCard);
+  el.querySelector(".fc-read").addEventListener("click", () => {
+    const f = flowerCardFor;
+    hideFlowerCard();
+    if (!f || !window.GardenJournal || !GardenJournal.openAt) return;
+    const day = GardenJournal.fromUS(f.date);
+    if (day) GardenJournal.openAt(day);
+  });
+  /* The pointer being ON the card counts as still reading it, which is what
+     keeps it open long enough to press the button inside it. */
+  document.addEventListener("pointermove", e => {
+    lastPointer.x = e.clientX; lastPointer.y = e.clientY;
+  }, { passive: true });
+  el.addEventListener("pointerenter", () => {
+    pointerOnCard = true;
+    if (hoverCardTimer) { clearTimeout(hoverCardTimer); hoverCardTimer = null; }
+  });
+  el.addEventListener("pointerleave", () => {
+    pointerOnCard = false;
+    if (hoverCardTimer) { clearTimeout(hoverCardTimer); hoverCardTimer = null; }
+    hoverCardTimer = setTimeout(function () {
+      hoverCardTimer = null;
+      if (!onCard() && !hoveredFlower) hideFlowerCard();
+    }, 250);
+  });
+  document.addEventListener("keydown", e => { if (e.key === "Escape") hideFlowerCard(); });
+  window.addEventListener("resize", hideFlowerCard);
+  flowerCardEl = el;
+  return el;
+}
+
+function showFlowerCard(f) {
+  const el = buildFlowerCard();
+  flowerCardFor = f;
+  const meta = flowerMeanings[f.species];
+  el.querySelector(".fc-species").textContent = f.species.charAt(0).toUpperCase() + f.species.slice(1);
+  el.querySelector(".fc-meaning").textContent = meta ? meta.meaning : "";
+  el.querySelector(".fc-dot").style.background =
+    "hsl(" + Math.round(f.hue || 0) + "," + Math.round(f.sat || 60) + "%," + Math.round(f.light || 65) + "%)";
+  let when = f.date;
+  const p = String(f.date || "").split("/");
+  if (p.length === 3) {
+    const d = new Date(+p[2], +p[0] - 1, +p[1]);
+    if (!isNaN(d)) when = d.toLocaleDateString(undefined, { weekday: "long", day: "numeric", month: "long" });
+  }
+  el.querySelector(".fc-date").textContent = when;
+  el.hidden = false;
+
+  /* Over the bloom where there is room, under it where there is not, and
+     always kept inside the screen with a 10px margin. */
+  /* The garden's own canvas, by reference: the page carries other canvases,
+     the loader's and the history strip's, and the first one found need not be
+     this. */
+  const rect = (canvas && canvas.elt ? canvas.elt : document.querySelector("#garden-wrap canvas, canvas")).getBoundingClientRect();
+  const sx = rect.width / width, sy = rect.height / height;
+  const bx = rect.left + f.x * sx;
+  const top = rect.top + (f.baseY - f.stemLen - f.size * 1.3) * sy;
+  const bottom = rect.top + (f.baseY - f.stemLen + f.size * 1.1) * sy;
+  const w = el.offsetWidth, h = el.offsetHeight;
+  let x = Math.max(10, Math.min(window.innerWidth - w - 10, bx - w / 2));
+  let y = top - h - 10;
+  if (y < 64) y = Math.min(window.innerHeight - h - 10, bottom + 10);
+  el.style.left = Math.round(x) + "px";
+  el.style.top = Math.round(Math.max(10, y)) + "px";
+}
+
+function checkHover(px = mouseX, py = mouseY) {
+  let best = null;
+  let bestDist = Infinity;
+
+  for (const f of flowers) {
+    const t = frameCount * 0.01 + f.phase * 0.001;
+    const swayNoise = swayOn ? map(noise(t), 0, 1, -1, 1) * 4 : 0;
+    const totalSway = swayNoise;
+
+    const fx = f.x + totalSway;
+    const fy = f.baseY - f.stemLen;
+
+    const d = dist(px, py, fx, fy);
+    if (d < f.size * 1.5 && d < bestDist) {
+      bestDist = d;
+      best = f;
+    }
+  }
+
+  hoveredFlower = best;
+}
+
+function drawHoverTooltip() {
+  if (!hoveredFlower) return;
+  /* Nothing floats over the open book. The veil takes pointer events, so the
+     hover can no longer be UPDATED once the book is up, but the last flower
+     the pointer crossed stays set and its box would go on being painted
+     underneath: a glance and the full entry on screen at once, which is the
+     doubling the book exists to remove. */
+  if (window.GardenJournal && GardenJournal.isOpen && GardenJournal.isOpen()) return;
+  /* Nor while the tap card is up: it says everything this box says. */
+  if (flowerCardOpen()) return;
+
+  const f = hoveredFlower;
+  const t = frameCount * 0.01 + f.phase * 0.001;
+  const swayNoise = swayOn ? map(noise(t), 0, 1, -1, 1) * 4 : 0;
+  
+  const flowerX = f.x + swayNoise;
+  const flowerY = f.baseY - f.stemLen;
+
+  push();
+  const boxPadding = 11;
+  const lineHeight = 15;
+  const maxWidth = 260;
+  const innerWidth = maxWidth - boxPadding * 2;
+
+  let lines = [];
+
+  const flowerMeaning = flowerMeanings[f.species];
+  if (flowerMeaning) {
+    const speciesLabel = f.species.charAt(0).toUpperCase() + f.species.slice(1);
+    const headerText = `${speciesLabel}: ${flowerMeaning.meaning}`;
+    textSize(12);
+    textStyle(BOLD);
+    if (textWidth(headerText) > innerWidth) {
+      const hWords = headerText.split(" ");
+      let hLine = "";
+      for (let word of hWords) {
+        if (textWidth(hLine + word + " ") > innerWidth) {
+          lines.push({ text: hLine.trim(), bold: true });
+          hLine = word + " ";
+        } else {
+          hLine += word + " ";
+        }
+      }
+      if (hLine.trim()) lines.push({ text: hLine.trim(), bold: true });
+    } else {
+      lines.push({ text: headerText, bold: true });
+    }
+    textStyle(NORMAL);
+  }
+
+  /* A GLANCE, NOT THE WHOLE ENTRY. This box used to carry the mood, what
+     shaped the day and the journal text as well, which is every word the
+     book now opens with when you TAP the flower. Two places saying the same
+     thing is the repetition the book was meant to remove, and the long
+     version had a real cost besides: a paragraph of journal made the box
+     taller than the flower it belonged to and it covered its own neighbours.
+
+     Species, what it stands for, the date, and a line saying there is more.
+     `Tap` rather than `Click`, since this garden is read on a phone too. */
+  lines.push({ text: "---", bold: false, divider: true });
+  lines.push({ text: f.date || "", bold: false, muted: true });
+  lines.push({ text: "Click for this day", bold: false, muted: true });
+
+  textSize(12);
+  const boxWidth = maxWidth;
+  const boxHeight = boxPadding * 2 + lines.length * lineHeight;
+
+  let tooltipX = flowerX - boxWidth / 2;
+  let tooltipY = flowerY - f.size * 1.5 - boxHeight - 5;
+
+  tooltipX = constrain(tooltipX, 10, width - boxWidth - 10);
+  tooltipY = constrain(tooltipY, 10, height - boxHeight - 10);
+
+  fill(0, 0, 0, 30);
+  noStroke();
+  rect(tooltipX + 2, tooltipY + 3, boxWidth, boxHeight, 10);
+
+  fill(255, 255, 255, 252);
+  noStroke();
+  rect(tooltipX, tooltipY, boxWidth, boxHeight, 10);
+
+  textAlign(LEFT, TOP);
+  let yPos = tooltipY + boxPadding;
+
+  for (let entry of lines) {
+    if (entry.divider) {
+      stroke(210);
+      strokeWeight(1);
+      line(tooltipX + boxPadding, yPos + lineHeight * 0.5, tooltipX + boxWidth - boxPadding, yPos + lineHeight * 0.5);
+      noStroke();
+      yPos += lineHeight;
+      continue;
+    }
+    textSize(12);
+    if (entry.bold) {
+      fill(30);
+      textStyle(BOLD);
+    } else if (entry.muted) {
+      fill(140);
+      textStyle(NORMAL);
+    } else {
+      fill(70);
+      textStyle(NORMAL);
+    }
+    text(entry.text, tooltipX + boxPadding, yPos);
+    yPos += lineHeight;
+  }
+
+  textStyle(NORMAL);
+  pop();
+}
+
+function updateResponsiveFlowerLayout() {
+  if (!flowers || !flowers.length) return;
+
+  const groundY = height * 0.76;
+
+  for (const f of flowers) {
+    if (f.layer !== "front" && f.layer !== "mid" && f.layer !== "back") {
+      f.layer = "front";
+    }
+
+    if (f.xNorm == null || f.xNorm <= 0 || f.xNorm > 1.2) {
+      f.xNorm = (f.x || random(60, width - 60)) / width;
+    }
+    if (f.stemNorm == null) f.stemNorm = f.stemLen / BASE_H;
+    if (f.sizeNorm == null) f.sizeNorm = f.size / BASE_H;
+    /* THE REPAIR FOR FLOWERS ALREADY SAVED SHORT. Anything planted on a phone
+       before the fix above carries a stem about two thirds the length it
+       should, and nothing in a saved flower says where it was planted. So each
+       layer's shortest possible stem is a floor: a flower under it was cut
+       short, one over it is left exactly as it grew. */
+    const stemFloor = STEM_FLOOR[f.layer] || STEM_FLOOR.front;
+    if (f.stemNorm < stemFloor) f.stemNorm = stemFloor;
+
+    f.x       = f.xNorm   * width;
+    f.stemLen = f.stemNorm * height;
+    f.size    = f.sizeNorm * height;
+
+    if (f.layer === "mid") {
+      f.baseY = groundY - height * 0.10;
+    } else if (f.layer === "back") {
+      f.baseY = groundY - height * 0.17;
+    } else {
+      f.baseY = groundY;
+    }
+  }
+
+  for (const f of flowers) {
+    if (f.stemNormOrig == null) f.stemNormOrig = f.stemNorm;
+    if (f.sizeNormOrig == null) f.sizeNormOrig = f.sizeNorm;
+  }
+
+  for (const f of flowers) {
+    f.stemLen = f.stemNormOrig * height;
+    f.size    = f.sizeNormOrig * height;
+  }
+
+  const minAllowedY = height * 0.32;
+  let highestBloomY = Infinity;
+  for (const f of flowers) {
+    const bloomY = f.baseY - f.stemLen - f.size;
+    if (bloomY < highestBloomY) highestBloomY = bloomY;
+  }
+
+  if (highestBloomY < minAllowedY) {
+    const scale = (groundY - minAllowedY) / (groundY - highestBloomY);
+    for (const f of flowers) {
+      f.stemLen = f.stemNormOrig * height * scale;
+      f.size    = f.sizeNormOrig * height * scale;
+      f.stemNorm = f.stemLen / height;
+      f.sizeNorm = f.size    / height;
+    }
+  }
+  keepFlowersOnScreen();
+  /* Cap stem height relative to width on narrow screens.
+     This used to reference `f` outside the `for...of` that declared it, so it
+     threw a ReferenceError on every resize under 720px and took the rest of
+     windowResized() with it. The cap was never applied to anything; it applies
+     to each flower now, which is what the loops above it do. */
+  if (width < 720) {
+    const maxStemForWidth = width * 0.45;
+    for (const f of flowers) {
+      if (f.stemLen > maxStemForWidth) f.stemLen = maxStemForWidth;
+    }
+  }
+}
+
+/* NOTHING PLANTED MAY HANG OFF THE EDGE. A flower's x is a fraction of the
+   width it was planted at, so one planted near the edge of a wide window
+   landed with half its bloom and half its date off the side of a phone. Its
+   drawn x is held far enough in for the whole date label and the bloom; its
+   stored `xNorm` is left alone, so the laptop layout does not move. */
+function keepFlowersOnScreen() {
+  if (!flowers || !flowers.length || !width) return;
+  push();
+  textSize(max(10, 13 * (width < 720 ? gardenScale : 1)));
+  for (const f of flowers) {
+    const half = Math.max(textWidth(f.date || "") / 2 + 8, (f.size || 20) * 1.4 + 6);
+    if (half * 2 < width) f.x = constrain(f.x, half, width - half);
+  }
+  pop();
+}
+
+function buildLogo() {
+  const logoImg = loadImage("LOGO-01.png", () => {
+    logoDiv = createDiv();
+    logoDiv.id("gg-logo");
+    logoDiv.parent(gardenWrap);
+    logoDiv.style("display", "none");
+    logoDiv.style("position", "absolute");
+    logoDiv.style("width", "48px");
+    logoDiv.style("height", "48px");
+    logoDiv.style("bottom", "16px");
+    logoDiv.style("right", "16px");
+    logoDiv.style("cursor", "pointer");
+    logoDiv.style("z-index", "30");
+
+    let c = createImg("LOGO-01.png", "logo");
+    c.parent(logoDiv);
+    c.style("width", "100%");
+    c.style("height", "100%");
+    c.style("object-fit", "contain");
+    c.style("pointer-events", "none");
+
+    const tag = createDiv("linktree");
+    tag.parent(logoDiv);
+    tag.style("position", "absolute");
+    tag.style("bottom", "75px");
+    tag.style("left", "50%");
+    tag.style("transform", "translateX(-50%)");
+    tag.style("color", "#0f5132");
+    tag.style("font-size", "13px");
+    tag.style("font-weight", "500");
+    tag.style("pointer-events", "none");
+    tag.style("opacity", "0");
+    tag.style("transition", "opacity 0.2s ease");
+
+    logoDiv.mouseOver(() => tag.style("opacity", "1"));
+    logoDiv.mouseOut(() => tag.style("opacity", "0"));
+
+    logoDiv.mousePressed(() => {
+      window.open("https://linktr.ee/kenoijam", "_blank");
+    });
+  });
+}
+
+/* THE SKIP IS NAMED, NOT HIDDEN, and that is the middle of the two things
+   this card could have been. Requiring an answer is the obvious reading of a
+   project called Gratitude Garden and it is the wrong one: gratitude produced
+   to get past a screen is a toll rather than gratitude, and the LAST card,
+   three questions in and one tap from the flower, is the cruellest place in
+   the flow to put a wall. Leaving it merely optional has the opposite fault,
+   since an optional box on the last card is the one a hurried visitor tabs
+   past without ever reading it. So nothing blocks, and the button says in
+   words when the box is empty, which makes skipping a thing somebody notices
+   doing rather than a default they fall through.
+
+   IT IS ONE WORD ADDED, NOT A DIFFERENT BUTTON, and that is deliberate on
+   both counts. The press does exactly the same thing either way, so a label
+   that changed wholesale would read as a different control appearing; and it
+   may not promise PLANTING, since this button opens the flower preview and
+   the planting is a tap further on. "anyway" is the card's own word, out of
+   the line this rewrite shortened: "leave it empty if today has none in it,
+   and plant anyway". It was reassurance there and it is reassurance here. */
+function gladBtnLabel() {
+  if (!gladBtn) return;
+  const has = gratitudeField && (gratitudeField.elt.value || "").trim() !== "";
+  gladBtn.html(has ? "See Your Flower" : "See Your Flower anyway");
+}
+
+function resetPromptSelections() {
+  dayRating = "";
+  dayShaper = "";
+  journalEntry = "";
+  gratitudeText = "";
+  if (journalField) journalField.value("");
+  if (gratitudeField) gratitudeField.value("");
+  gladBtnLabel();
+
+  const p1Buttons = prompt1Wrap && prompt1Wrap.elt.querySelectorAll("button");
+  if (p1Buttons) p1Buttons.forEach(b => {
+    b.style.background = "white";
+    b.style.borderColor = "#bde0d6";
+  });
+
+  const p2Buttons = prompt2Wrap && prompt2Wrap.elt.querySelectorAll("button");
+  if (p2Buttons) p2Buttons.forEach(b => {
+    b.style.background = "white";
+    b.style.borderColor = "#bde0d6";
+  });
+}
+
+/* Dead. Nothing calls this. It is showStep's logic again with different
+   reset behaviour, and it never rendered the daily note, which is the bug
+   buildUI used to carry. Route through showStep instead of reviving it. */
+function updateScreen() {
+  // ALWAYS show garden background
+  gardenWrap.style("display", "block");
+
+  // hide all overlays
+  prompt1Wrap.style("display", "none");
+  prompt2Wrap.style("display", "none");
+  prompt3Wrap.style("display", "none");
+  flowerPreviewWrap.style("display", "none");
+
+  // HIDE garden UI by default
+  if (saveBtn) saveBtn.style("display", "none");
+  if (tipsCard) tipsCard.style("display", "none");
+
+  // decide what to show
+  if (hasPlantedToday()) {
+    step = "garden";
+
+    // show garden UI again
+    if (saveBtn) saveBtn.style("display", "flex");
+    if (tipsCard) tipsCard.style("display", "block");
+    if (logoDiv) logoDiv.style("display", "block");
+
+  } else {
+    step = "prompt1";
+    prompt1Wrap.style("display", "flex");
+  }
+}
+
+function buildUI() {
+  const root = select("#ui-root");
+
+  prompt1Wrap = createDiv().id("prompt1-wrap").parent(root).addClass("gg-wrap");
+  prompt1Wrap.style("display", "flex");
+  prompt1Wrap.style("flex-direction", "column");
+  prompt1Wrap.style("align-items", "center");
+  prompt1Wrap.style("justify-content", "center");
+  prompt1Wrap.style("z-index", "100");
+  prompt1Wrap.style("pointer-events", "auto");
+  prompt1Wrap.style("gap", "0px");
+
+  const titleDiv = createDiv().parent(prompt1Wrap);
+  titleDiv.style("text-align", "center");
+  titleDiv.style("pointer-events", "none");
+  titleDiv.style("margin-bottom", "10px");
+  titleDiv.style("margin-top", "-110px");
+  createElement("h1", "Daily Reflection").addClass("gg-title").parent(titleDiv);
+
+  const card1 = createDiv().addClass("gg-card").parent(prompt1Wrap);
+  card1.style("max-width", "460px");
+  card1.style("width", "min(460px, 92vw)");
+  card1.style("box-sizing", "border-box");
+  card1.style("padding", "24px 28px 20px 28px");
+  createElement("h3", "How was your day?").style("text-align", "center").style("color", "#0f5132").style("font-size", "23px").style("font-weight", "600").style("margin", "0 0 16px 0").parent(card1);
+  
+  const btnGrid1 = createDiv().parent(card1);
+  btnGrid1.style("display", "grid");
+  btnGrid1.style("grid-template-columns", "repeat(2, 1fr)");
+  btnGrid1.style("gap", "9px");
+  btnGrid1.style("margin-bottom", "16px");
+
+  dayRatingOptions.forEach(option => {
+    const btn = createButton(option);
+    btn.parent(btnGrid1);
+    btn.style("padding", "13px");
+    btn.style("border", "2px solid #bde0d6");
+    btn.style("border-radius", "10px");
+    btn.style("background", "white");
+    btn.style("cursor", "pointer");
+    btn.style("font-size", "15px");
+    btn.style("transition", "all 0.15s");
+    btn.style("pointer-events", "auto");
+    btn.elt.addEventListener("mouseenter", () => {
+      if (btn.elt.style.background !== 'rgb(224, 242, 241)') {
+        btn.elt.style.transform = "scale(1.04)";
+      }
+    });
+    btn.elt.addEventListener("mouseleave", () => {
+      btn.elt.style.transform = "scale(1)";
+    });
+
+    btn.mousePressed(() => {
+      dayRating = option;
+      btnGrid1.elt.querySelectorAll('button').forEach(b => {
+        b.style.background = 'white';
+        b.style.borderColor = '#bde0d6';
+      });
+      btn.elt.style.background = '#e0f2f1';
+      btn.elt.style.borderColor = '#26a69a';
+      setTimeout(() => showStep("prompt2"), 180);
+    });
+  });
+
+  continueBtn1 = createButton("Continue").parent(card1);
+  continueBtn1.style("display", "none");
+  continueBtn1.style("color", "white");
+  continueBtn1.style("border", "none");
+  continueBtn1.style("border-radius", "12px");
+  continueBtn1.style("padding", "14px");
+  continueBtn1.style("font-size", "15px");
+  continueBtn1.style("font-weight", "700");
+  continueBtn1.style("width", "100%");
+  continueBtn1.style("cursor", "pointer");
+  continueBtn1.style("margin-bottom", "8px");
+  continueBtn1.style("pointer-events", "auto");
+  continueBtn1.mousePressed(() => {
+    if (!dayRating) return;
+    showStep("prompt2");
+  });
+
+  prompt2Wrap = createDiv().id("prompt2-wrap").parent(root).addClass("gg-wrap");
+  prompt2Wrap.style("z-index", "100");
+  prompt2Wrap.style("pointer-events", "auto");
+
+  const card2 = createDiv().addClass("gg-card").parent(prompt2Wrap);
+  card2.style("max-width", "460px");
+  card2.style("width", "min(460px, 92vw)");
+  card2.style("box-sizing", "border-box");
+  card2.style("padding", "24px 28px 20px 28px");
+  createElement("h3", "What shaped your day?").style("text-align", "center").style("color", "#0f5132").style("font-size", "23px").style("font-weight", "600").style("margin", "0 0 16px 0").parent(card2);
+  
+  const btnGrid2 = createDiv().parent(card2);
+  btnGrid2.style("display", "grid");
+  btnGrid2.style("grid-template-columns", "repeat(2, 1fr)");
+  btnGrid2.style("gap", "9px");
+  btnGrid2.style("margin-bottom", "16px");
+
+  dayShaperOptions.forEach(option => {
+    const btn = createButton(option);
+    btn.parent(btnGrid2);
+    btn.style("padding", "11px");
+    btn.style("border", "2px solid #bde0d6");
+    btn.style("border-radius", "10px");
+    btn.style("background", "white");
+    btn.style("cursor", "pointer");
+    btn.style("font-size", "14px");
+    btn.style("transition", "all 0.15s");
+    btn.style("pointer-events", "auto");
+    btn.elt.addEventListener("mouseenter", () => {
+      if (btn.elt.style.background !== 'rgb(224, 242, 241)') {
+        btn.elt.style.transform = "scale(1.04)";
+      }
+    });
+    btn.elt.addEventListener("mouseleave", () => {
+      btn.elt.style.transform = "scale(1)";
+    });
+
+    btn.mousePressed(() => {
+      dayShaper = option;
+      btnGrid2.elt.querySelectorAll('button').forEach(b => {
+        b.style.background = 'white';
+        b.style.borderColor = '#bde0d6';
+      });
+      btn.elt.style.background = '#e0f2f1';
+      btn.elt.style.borderColor = '#26a69a';
+      setTimeout(() => showStep("prompt3"), 180);
+    });
+  });
+
+  continueBtn2 = createButton("Continue").parent(card2);
+  continueBtn2.style("display", "none");
+  continueBtn2.style("color", "white");
+  continueBtn2.style("border", "none");
+  continueBtn2.style("border-radius", "12px");
+  continueBtn2.style("padding", "14px");
+  continueBtn2.style("font-size", "15px");
+  continueBtn2.style("font-weight", "700");
+  continueBtn2.style("width", "100%");
+  continueBtn2.style("cursor", "pointer");
+  continueBtn2.style("margin-bottom", "8px");
+  continueBtn2.style("pointer-events", "auto");
+  continueBtn2.mousePressed(() => {
+    if (!dayShaper) return;
+    showStep("prompt3");
+  });
+
+  const backBtn2 = createButton("Back").addClass("gg-back").parent(card2);
+  backBtn2.elt.style.background = "#e0e0e0";
+  backBtn2.elt.style.color = "#666";
+  backBtn2.elt.style.border = "none";
+  backBtn2.elt.style.borderRadius = "12px";
+  backBtn2.elt.style.padding = "12px";
+  backBtn2.elt.style.fontSize = "14px";
+  backBtn2.elt.style.fontWeight = "500";
+  backBtn2.elt.style.width = "100%";
+  backBtn2.elt.style.cursor = "pointer";
+  backBtn2.elt.style.pointerEvents = "auto";
+  backBtn2.mousePressed(() => showStep("prompt1"));
+
+  prompt3Wrap = createDiv().id("prompt3-wrap").parent(root).addClass("gg-wrap");
+  prompt3Wrap.style("z-index", "100");
+  prompt3Wrap.style("pointer-events", "auto");
+
+  const card3 = createDiv().addClass("gg-card").parent(prompt3Wrap);
+  card3.style("max-width", "460");
+  card3.style("width", "min(460px, 92vw)");
+  card3.style("box-sizing", "border-box");
+  card3.style("padding", "24px 28px 20px 28px");
+  createElement("h3", "Anything else?").style("text-align", "center").style("color", "#0f5132").style("font-size", "23px").style("font-weight", "600").style("margin", "0 0 2px 0").parent(card3);
+  createP("Optional, add more thoughts if you'd like").addClass("gg-sub").style("font-size", "13px").style("margin", "0 0 12px 0").style("text-align", "center").style("color", "#5a9e8e").parent(card3);
+  
+  journalField = createElement("textarea").parent(card3);
+  journalField.attribute("maxlength", "500");
+  journalField.attribute("placeholder", "Additional thoughts or reflections...");
+  journalField.style("width", "100%");
+  journalField.style("box-sizing", "border-box");
+  journalField.style("border", "2px solid #bde0d6");
+  journalField.style("border-radius", "12px");
+  journalField.style("height", "150px");
+  journalField.style("padding", "14px 16px");
+  journalField.style("font-size", "16px");
+  journalField.style("resize", "none");
+  journalField.style("pointer-events", "auto");
+  journalField.input(() => {
+    journalEntry = journalField.elt.value;
+  });
+
+  /* ------------------------------------------------------- a photo, optional
+     One picture a day, kept with the entry and shown beside that day's flower
+     in the history. It is offered here rather than afterwards because this is
+     the screen where the day is being written down.
+
+     Signed in ONLY, and the control says so rather than appearing and then
+     failing: a photo has to live somewhere that follows you, and this browser
+     is not that. Nothing about planting depends on it, so a failed upload
+     costs the entry nothing.
+
+     The FILE is held, not the upload: it goes up when the flower is planted,
+     so a photo picked and then abandoned never reaches the database. */
+  const photoRow = createDiv().parent(card3);
+  photoRow.style("display", "flex");
+  photoRow.style("align-items", "center");
+  photoRow.style("gap", "10px");
+  photoRow.style("margin", "10px 0 4px");
+  photoRow.style("pointer-events", "auto");
+
+  photoInput = createElement("input").parent(photoRow);
+  photoInput.attribute("type", "file");
+  photoInput.attribute("accept", "image/*");
+  photoInput.style("display", "none");
+
+  /* A GALLERY ICON, not a camera, and the words stay beside it. The input is
+     `accept="image/*"` with no `capture`, so a phone offers the camera and
+     the camera roll both; a camera icon would promise only the first. The
+     label stays because an unlabelled dashed box in the middle of a form is
+     a guess, and this is the one control on the step nobody is looking for.
+
+     `createButton` writes its argument as innerHTML, which is what lets the
+     icon be inline SVG rather than a file. */
+  const PHOTO_ICON =
+    '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" aria-hidden="true" ' +
+    'style="flex:0 0 auto">' +
+    '<rect x="3" y="5" width="18" height="14" rx="3" stroke="currentColor" stroke-width="2"/>' +
+    '<circle cx="8.6" cy="10" r="1.7" fill="currentColor"/>' +
+    '<path d="M4 16.4l4.3-4a1.6 1.6 0 0 1 2.2 0l3.1 2.9 2-1.8a1.6 1.6 0 0 1 2.2 0L20 15.6" ' +
+    'stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>' +
+    '</svg>';
+  const photoBtn = createButton(PHOTO_ICON + "<span>Add a photo</span>").parent(photoRow);
+  photoBtn.style("background", "none");
+  photoBtn.style("border", "2px dashed #bde0d6");
+  photoBtn.style("border-radius", "12px");
+  photoBtn.style("padding", "9px 14px");
+  photoBtn.style("font-size", "14px");
+  photoBtn.style("font-weight", "700");
+  photoBtn.style("color", "#2c7a7b");
+  photoBtn.style("cursor", "pointer");
+  photoBtn.style("pointer-events", "auto");
+  /* Flex, or the icon sits on the text's baseline and rides high. */
+  photoBtn.style("display", "inline-flex");
+  photoBtn.style("align-items", "center");
+  photoBtn.style("gap", "7px");
+  photoBtn.style("line-height", "1");
+
+  photoThumb = createElement("img").parent(photoRow);
+  photoThumb.style("display", "none");
+  photoThumb.style("width", "46px");
+  photoThumb.style("height", "46px");
+  photoThumb.style("object-fit", "cover");
+  photoThumb.style("border-radius", "10px");
+
+  const photoNote = createSpan("").parent(photoRow);
+  photoNote.style("font-size", "12.5px");
+  photoNote.style("color", "#8aa9a7");
+
+  function refreshPhotoRow() {
+    const signedIn = !!(window.GardenAccount && GardenAccount.isLive() && GardenAccount.user());
+    photoBtn.elt.disabled = !signedIn;
+    photoBtn.style("opacity", signedIn ? "1" : "0.45");
+    photoBtn.style("cursor", signedIn ? "pointer" : "not-allowed");
+    if (!signedIn) photoNote.html("Sign in to keep a photo with the day");
+    else if (!photoFile) photoNote.html("Optional, one a day");
+  }
+  refreshPhotoRow();
+  if (window.GardenAccount) GardenAccount.onChange(refreshPhotoRow);
+
+  photoBtn.mousePressed(() => { if (!photoBtn.elt.disabled) photoInput.elt.click(); });
+  photoInput.elt.addEventListener("change", () => {
+    const file = photoInput.elt.files && photoInput.elt.files[0];
+    if (!file) return;
+    /* Six megabytes is well past what a phone photo needs to be here and well
+       under what a free storage plan minds. */
+    if (file.size > 6 * 1024 * 1024) {
+      photoNote.html("That one is too big. Under 6MB please.");
+      photoInput.elt.value = "";
+      return;
+    }
+    photoFile = file;
+    photoThumb.elt.src = URL.createObjectURL(file);
+    photoThumb.style("display", "block");
+    photoNote.html("Kept with today's entry");
+  });
+
+  continueBtn3 = createButton("Continue").parent(card3);
+  continueBtn3.style("background", "#4db6ac");
+  continueBtn3.style("color", "white");
+  continueBtn3.style("border", "none");
+  continueBtn3.style("border-radius", "12px");
+  continueBtn3.style("padding", "14px");
+  continueBtn3.style("font-size", "15px");
+  continueBtn3.style("font-weight", "700");
+  continueBtn3.style("width", "100%");
+  continueBtn3.style("cursor", "pointer");
+  continueBtn3.style("margin-bottom", "8px");
+  continueBtn3.style("pointer-events", "auto");
+  continueBtn3.mousePressed(() => showStep("prompt4"));
+
+  const backBtn3 = createButton("Back").parent(card3);
+  backBtn3.style("background", "#e0e0e0");
+  backBtn3.style("color", "#666");
+  backBtn3.style("border", "none");
+  backBtn3.style("border-radius", "12px");
+  backBtn3.style("padding", "12px");
+  backBtn3.style("font-size", "14px");
+  backBtn3.style("font-weight", "500");
+  backBtn3.style("width", "100%");
+  backBtn3.style("cursor", "pointer");
+  backBtn3.style("pointer-events", "auto");
+  backBtn3.mousePressed(() => showStep("prompt2"));
+
+  /* ------------------------------------------------- one thing you were glad of
+     THE LAST QUESTION, AND THE WHOLE POINT OF THE THREE BEFORE IT. The flow
+     asked how the day felt, what shaped it, and whether there was anything
+     else, and never once asked the thing the project is named after. It is
+     its own screen rather than a second box on the one before, because a card
+     with two text areas on it is a form, and because being last is what makes
+     it the question you leave with.
+
+     IT IS SKIPPABLE, AND THAT IS THE DESIGN RATHER THAN A CONCESSION.
+     Gratitude that has to be produced on demand to get past a screen is not
+     gratitude, it is a toll. Every word here is written to invite rather than
+     require: small is explicitly fine, and the button says the flower is
+     coming either way. */
+  prompt4Wrap = createDiv().id("prompt4-wrap").parent(root).addClass("gg-wrap");
+  prompt4Wrap.style("z-index", "100");
+  prompt4Wrap.style("pointer-events", "auto");
+
+  const cardGlad = createDiv().addClass("gg-card").parent(prompt4Wrap);
+  cardGlad.style("max-width", "460");
+  cardGlad.style("width", "min(460px, 92vw)");
+  cardGlad.style("box-sizing", "border-box");
+  cardGlad.style("padding", "24px 28px 20px 28px");
+  createElement("h3", "One small gratitude?")
+    .style("text-align", "center").style("color", "#0f5132")
+    .style("font-size", "23px").style("font-weight", "600")
+    .style("margin", "0 0 2px 0").parent(cardGlad);
+  createP("A cup of tea counts. Write whatever you like.")
+    .addClass("gg-sub").style("font-size", "13px").style("margin", "0 0 12px 0")
+    .style("text-align", "center").style("color", "#5a9e8e").parent(cardGlad);
+
+  gratitudeField = createElement("textarea").parent(cardGlad);
+  gratitudeField.attribute("maxlength", "300");
+  gratitudeField.attribute("placeholder", "Today I was grateful for...");
+  gratitudeField.style("width", "100%");
+  gratitudeField.style("box-sizing", "border-box");
+  gratitudeField.style("border", "2px solid #bde0d6");
+  gratitudeField.style("border-radius", "12px");
+  gratitudeField.style("height", "112px");
+  gratitudeField.style("padding", "14px 16px");
+  gratitudeField.style("font-size", "16px");
+  gratitudeField.style("resize", "none");
+  gratitudeField.style("pointer-events", "auto");
+  gratitudeField.input(() => {
+    gratitudeText = gratitudeField.elt.value;
+    gladBtnLabel();
+  });
+
+  const continueBtn4 = createButton("See Your Flower anyway").parent(cardGlad);
+  gladBtn = continueBtn4;
+  continueBtn4.style("background", "#4db6ac");
+  continueBtn4.style("color", "white");
+  continueBtn4.style("border", "none");
+  continueBtn4.style("border-radius", "12px");
+  continueBtn4.style("padding", "14px");
+  continueBtn4.style("font-size", "15px");
+  continueBtn4.style("font-weight", "700");
+  continueBtn4.style("width", "100%");
+  continueBtn4.style("cursor", "pointer");
+  continueBtn4.style("margin-bottom", "8px");
+  continueBtn4.style("pointer-events", "auto");
+  continueBtn4.mousePressed(() => {
+    /* BOTH TEXTS FEED THE CHOICE. The keyword lists in `flowerMeanings` are
+       full of gratitude words, and this is the field most likely to hit them,
+       so leaving it out would make the one question about gratitude the one
+       question with no bearing on which flower grows. The weighting is
+       untouched: it is still two per keyword found anywhere in what was
+       written. */
+    chosenSpecies = chooseFlowerForMood(dayRating, dayShaper,
+      (journalEntry + " " + gratitudeText).trim());
+    chosenHue = random(0, 360);
+    showStep("flowerPreview");
+    updateFlowerPreview();
+  });
+
+  const backBtn4 = createButton("Back").parent(cardGlad);
+  backBtn4.style("background", "#e0e0e0");
+  backBtn4.style("color", "#666");
+  backBtn4.style("border", "none");
+  backBtn4.style("border-radius", "12px");
+  backBtn4.style("padding", "12px");
+  backBtn4.style("font-size", "14px");
+  backBtn4.style("font-weight", "500");
+  backBtn4.style("width", "100%");
+  backBtn4.style("cursor", "pointer");
+  backBtn4.style("pointer-events", "auto");
+  backBtn4.mousePressed(() => showStep("prompt3"));
+
+  flowerPreviewWrap = createDiv().id("flower-preview-wrap").parent(root).addClass("gg-wrap");
+  flowerPreviewWrap.style("z-index", "100");
+  flowerPreviewWrap.style("pointer-events", "auto");
+
+  const card4 = createDiv().addClass("gg-card").parent(flowerPreviewWrap);
+  card4.style("max-width", "460px");
+  card4.style("width", "min(460px, 92vw)");
+  card4.style("box-sizing", "border-box");
+  card4.style("padding", "24px 28px 20px 28px");
+  createElement("h2", "Your Flower").style("text-align", "center").style("color", "#0f5132").style("font-size", "26px").style("font-weight", "600").style("margin", "0 0 4px 0").parent(card4);
+  
+  const flowerNameDiv = createDiv().id("flower-name").parent(card4);
+  flowerNameDiv.style("text-align", "center");
+  flowerNameDiv.style("font-size", "13px");
+  flowerNameDiv.style("color", "#2c7a7b");
+  flowerNameDiv.style("font-style", "italic");
+  flowerNameDiv.style("margin-bottom", "10px");
+
+  const previewHolder = createDiv().id("preview-holder").parent(card4);
+  previewHolder.style("width", "160px");
+  previewHolder.style("height", "160px");
+  previewHolder.style("margin", "0 auto 10px auto");
+  previewHolder.style("display", "flex");
+  previewHolder.style("align-items", "center");
+  previewHolder.style("justify-content", "center");
+
+  const quoteDiv = createDiv().id("flower-quote").parent(card4);
+  quoteDiv.style("text-align", "center");
+  quoteDiv.style("font-size", "13px");
+  quoteDiv.style("color", "#4a7c6f");
+  quoteDiv.style("font-style", "italic");
+  quoteDiv.style("margin", "0 0 14px 0");
+  quoteDiv.style("line-height", "1.5");
+  quoteDiv.style("padding", "0 8px");
+
+  createP("Choose your flower color:").style("text-align", "center").style("font-size", "13px").style("font-weight", "600").style("color", "#0f5132").style("margin", "0 0 8px 0").parent(card4);
+
+  colorPickerSelect = createSlider(0, 360, chosenHue);
+  colorPickerSelect.parent(card4);
+  colorPickerSelect.addClass("gg-hue-slider");
+  colorPickerSelect.style("width", "100%");
+  colorPickerSelect.style("pointer-events", "auto");
+  colorPickerSelect.style("margin-bottom", "14px");
+
+  const sliderEl = colorPickerSelect.elt;
+  sliderEl.style.background =
+    "linear-gradient(90deg,#f7a9a8,#f4e98c,#9be4a5,#8dd7f5,#c9a4f9,#f79ad3,#f7a9a8)";
+  sliderEl.style.borderRadius = "999px";
+
+  colorPickerSelect.input(() => {
+    chosenHue = colorPickerSelect.value();
+    updateFlowerPreview();
+  });
+
+  plantBtn = createButton("Plant in Garden").parent(card4);
+  plantBtn.style("background", "#4db6ac");
+  plantBtn.style("color", "white");
+  plantBtn.style("border", "none");
+  plantBtn.style("border-radius", "12px");
+  plantBtn.style("padding", "14px");
+  plantBtn.style("font-size", "15px");
+  plantBtn.style("font-weight", "700");
+  plantBtn.style("width", "100%");
+  plantBtn.style("cursor", "pointer");
+  plantBtn.style("margin-bottom", "8px");
+  plantBtn.style("pointer-events", "auto");
+  plantBtn.mousePressed(() => {
+  addFlower(dayRating, dayShaper, journalEntry, chosenSpecies, chosenHue, gratitudeText);
+  flowerPreviewWrap.style("display", "none");
+  showStep("garden");
+  dayRating = "";
+  dayShaper = "";
+  journalEntry = "";
+  gratitudeText = "";
+  if (journalField) journalField.value("");
+  if (gratitudeField) gratitudeField.value("");
+  gladBtnLabel();
+});
+
+  gardenWrap = createDiv().id("garden-wrap").parent(root);
+  gardenWrap.style("pointer-events", "none");
+
+  // const clearBtn = createButton("Clear Garden").id("clear-garden-btn").parent(gardenWrap);
+  // clearBtn.style("display", "none");
+  // clearBtn.style("pointer-events", "auto");
+  // clearBtn.style("position", "absolute");
+  // clearBtn.style("top", "28px");
+  // clearBtn.style("right", "16px");
+  // clearBtn.style("background", "#e57373");
+  // clearBtn.style("color", "white");
+  // clearBtn.style("border", "none");
+  // clearBtn.style("border-radius", "999px");
+  // clearBtn.style("padding", "10px 18px");
+  // clearBtn.style("font-size", "13px");
+  // clearBtn.style("font-weight", "600");
+  // clearBtn.style("cursor", "pointer");
+  // clearBtn.style("z-index", "30");
+  // clearBtn.style("opacity", "0.85");
+  // clearBtn.mousePressed(() => {
+  //   if (confirm("Clear all flowers and start fresh?")) {
+  //     flowers = [];
+  //     flowerCounter = 0;
+  //     localStorage.removeItem(STORAGE_KEY);
+  //     localStorage.removeItem(LAST_PLANT_KEY);
+  //     hoveredFlower = null;
+  //     resetPromptSelections();
+  //     showStep("prompt1");
+  //   }
+  // });
+
+    saveBtn = createButton("").id("save-btn").parent(gardenWrap);
+  /* A camera, in slot 3 of the top right row of round icons: music at
+     right 16, the account at 62, the journal at 108, this at 154. It was
+     a labelled "Save PNG" pill, which made it the one control up there
+     that was not an icon. */
+  saveBtn.html('<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" ' +
+    'stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+    '<path d="M3 8.5h3.2l1.4-2h7.8l1.4 2H21v10.5H3z"/><circle cx="12" cy="13.5" r="3.4"/></svg>');
+  /* No `title`: it would open the operating system's own tooltip on top of
+     the project's hover label. `aria-label` is what a screen reader reads. */
+  saveBtn.attribute("aria-label", "Save a picture of your garden");
+  saveBtn.attribute("data-tip", "Save a picture");
+  saveBtn.style("display", "none");
+  saveBtn.style("pointer-events", "auto");
+  saveBtn.style("position", "fixed");
+  saveBtn.style("top", "20px");
+  saveBtn.style("right", "154px");
+  saveBtn.style("width", "38px");
+  saveBtn.style("height", "38px");
+  saveBtn.style("padding", "0");
+  saveBtn.style("border-radius", "50%");
+  saveBtn.style("align-items", "center");
+  saveBtn.style("justify-content", "center");
+  saveBtn.style("background", "rgba(255,249,227,0.92)");
+  saveBtn.style("border", "1.5px solid #b7e4e7");
+  saveBtn.style("color", "#1d6466");
+  saveBtn.style("box-shadow", "0 2px 10px rgba(29,100,102,0.14)");
+  saveBtn.style("cursor", "pointer");
+  saveBtn.style("z-index", "261");
+saveBtn.mousePressed(() => {
+    isSaving = true;
+    setTimeout(() => {
+      saveCanvas("my_gratitude_garden", "png");
+      isSaving = false;
+    }, 80);
+  });
+
+  tipsCard = createDiv().id("tips-card").parent(gardenWrap);
+  tipsCard.style("pointer-events", "none");
+  createElement("h3", "Garden Tips").parent(tipsCard);
+  /* Five fragments, about five words each, and the brevity is the point: this
+     card sits in the corner of a garden somebody is looking at, so it has to
+     be read at a glance rather than studied. They were full sentences and ran
+     to twelve words, which is a paragraph in that corner.
+
+     What they SAY was rewritten too. Nothing here said a flower can be
+     hovered for its meaning, or that every day already planted is still there
+     to look back at. */
+  const ul = createElement("ul").parent(tipsCard);
+  /* The tip has to name what the flower actually does now. Hovering gives a
+     glance; the day itself is a tap away, and nothing else on the page says
+     so, which is exactly what this card is for. */
+  createElement("li", "Tap a flower to read that day").parent(ul);
+  createElement("li", "Sparkles mark your newest bloom").parent(ul);
+  const savedWhere = (window.GardenStore && window.GardenStore.signedIn)
+    ? "Saved to your account, any device"
+    : "Saved in this browser";
+  createElement("li", savedWhere).parent(ul);
+  createElement("li", "Click the name to rename it").parent(ul);
+  createElement("li", "Top right: music, account, history, camera").parent(ul);
+  tipsCard.style("display", "none");
+
+  const nameWrap = createDiv().id("name-wrap").parent(gardenWrap);
+  nameWrap.style("display", "none");
+  nameWrap.style("pointer-events", "auto");
+  nameWrap.style("position", "absolute");
+  nameWrap.style("top", "18px");
+  nameWrap.style("left", "50%");
+  nameWrap.style("transform", "translateX(-50%)");
+  nameWrap.style("z-index", "30");
+  nameWrap.style("align-items", "baseline");
+  nameWrap.style("gap", "0px");
+  nameWrap.style("white-space", "nowrap");
+
+  const nameField = createElement("input").parent(nameWrap);
+  /* An id so the phone stylesheet's 16px floor on text fields can leave this
+     one alone. It is an input only by accident of being editable; it is the
+     page's title, and `fitTitle` is the one thing that may size it. */
+  nameField.id("gg-name");
+  nameField.attribute("type", "text");
+  nameField.attribute("placeholder", "Your name");
+  nameField.attribute("maxlength", "30");
+  nameField.style("border", "none");
+  nameField.style("border-bottom", "2px solid transparent");
+  nameField.style("border-radius", "0");
+  /* No right padding. With 4px there the input's box held the name away from
+     the "'s" that follows it and the title read as "Keni 's Gratitude Garden". */
+  nameField.style("padding", "2px 0 2px 4px");
+  nameField.style("font-family", NAME_FONT);
+  nameField.style("font-size", NAME_PX + "px");
+  nameField.style("font-weight", "600");
+  nameField.style("font-variation-settings", "'SOFT' 50, 'WONK' 0");
+  nameField.style("color", "#0f5132");
+  nameField.style("background", "transparent");
+  nameField.style("outline", "none");
+  nameField.style("width", "80px");
+  nameField.style("min-width", "40px");
+  nameField.style("max-width", "200px");
+  nameField.style("pointer-events", "auto");
+  nameField.style("text-align", "right");
+  nameField.style("cursor", "default");
+  nameField.style("transition", "border-color 0.2s");
+
+  const resizeNameField = () => {
+    const tmp = document.createElement("span");
+    /* the same font the field is in, or the measured width is wrong and the
+       name either clips or leaves a gap before the "'s" */
+    tmp.style.cssText = "font-family:" + NAME_FONT + ";font-size:" + titlePx +
+      "px;font-weight:600;visibility:hidden;position:absolute;white-space:pre;";
+    tmp.textContent = nameField.elt.value || nameField.elt.placeholder;
+    document.body.appendChild(tmp);
+    const w = Math.max(40, tmp.offsetWidth + 6);
+    nameField.elt.style.width = w + "px";
+    document.body.removeChild(tmp);
+  };
+
+  /* Measure, then shrink. Guessing a size from a breakpoint gets a short name
+     wrong at one width and a long one wrong at another; the only thing that
+     answers it is the rendered width of this name at this size. */
+  fitTitle = () => {
+    /* A hidden tab or a detached frame reports a width of 0, and shrinking to
+       the floor on the strength of that leaves the title tiny when the page
+       comes back. Below 200 there is nothing worth fitting to, so keep the
+       size we already have. */
+    if (viewW() < 200) return;
+    const room = viewW() - 32;
+    titlePx = NAME_PX;
+    for (let i = 0; i < 14; i++) {
+      nameField.elt.style.fontSize = titlePx + "px";
+      nameSuffixEl.style.fontSize = titlePx + "px";
+      resizeNameField();
+      if (nameWrap.elt.offsetWidth <= room || titlePx <= NAME_PX_MIN) break;
+      titlePx -= 1;
+    }
+    /* the note keeps the 0.58 ratio it was given, and the two stay 5px apart */
+    const notePx = Math.max(10, Math.round(titlePx * 0.46));
+    dailyNote.style("font-size", notePx + "px");
+    dailyNote.style("top", (18 + Math.round(titlePx * 1.38) + 5) + "px");
+  };
+  nameField.elt.addEventListener("input", () => fitTitle());
+
+  nameField.elt.addEventListener("mouseenter", () => {
+    nameField.elt.style.borderBottomColor = "#4db6ac";
+    nameField.elt.style.cursor = "text";
+  });
+  nameField.elt.addEventListener("mouseleave", () => {
+    if (document.activeElement !== nameField.elt) {
+      nameField.elt.style.borderBottomColor = "transparent";
+      nameField.elt.style.cursor = "default";
+    }
+  });
+  nameField.elt.addEventListener("focus", () => {
+    nameField.elt.style.borderBottomColor = "#4db6ac";
+    nameField.elt.style.cursor = "text";
+  });
+
+  dailyNote = createDiv("").id("daily-note").parent(gardenWrap);
+  dailyNote.style("display", "none");
+  dailyNote.style("position", "absolute");
+  dailyNote.style("top", "58px");
+  dailyNote.style("left", "50%");
+  dailyNote.style("transform", "translateX(-50%)");
+  dailyNote.style("text-align", "center");
+  dailyNote.style("z-index", "30");
+  dailyNote.style("pointer-events", "none");
+  dailyNote.style("font-family", "Arial, Helvetica, sans-serif");
+  dailyNote.style("font-size", NOTE_PX + "px");
+  dailyNote.style("color", "#2c7a7b");
+  /* No text shadow. A white shadow under dark green text on a pale sky is a
+     halo rather than a lift: it fattens every letter by a pixel and reads as
+     print that has not quite registered. The sky behind this is already pale
+     enough that the text has its contrast without help. */
+
+  const nameSuffix = createSpan("'s Gratitude Garden").parent(nameWrap);
+  nameSuffixEl = nameSuffix.elt;
+  nameSuffix.style("font-family", NAME_FONT);
+  nameSuffix.style("font-size", NAME_PX + "px");
+  nameSuffix.style("font-weight", "600");
+  nameSuffix.style("font-variation-settings", "'SOFT' 50, 'WONK' 0");
+  nameSuffix.style("color", "#0f5132");
+  nameSuffix.style("pointer-events", "none");
+
+  if (gardenName) nameField.value(gardenName);
+  fitTitle();
+
+  const saveName = () => {
+    gardenName = nameField.value().trim();
+    if (window.GardenStore) window.GardenStore.saveName(gardenName);
+  };
+
+  nameField.elt.addEventListener("blur", saveName);
+  nameField.elt.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") { saveName(); nameField.elt.blur(); }
+  });
+
+  buildLogo();
+
+  // RESET ALL SCREENS FIRST
+prompt1Wrap.style("display", "none");
+/* Through showStep, not by hand. This used to set `step` and toggle the wraps
+   itself, which meant the daily note was never rendered on load: a returning
+   visitor was dropped into the garden with no prompts and nothing saying why.
+   showStep is the one driver, so it also gets the Save button, the tips card
+   and the name field right. */
+showStep(hasPlantedToday() ? "garden" : "prompt1");
+}
+
+function updateFlowerPreview() {
+  const holder = select("#preview-holder");
+  if (!holder) return;
+
+  holder.elt.innerHTML = "";
+
+  if (!previewGraphics) {
+    previewGraphics = createGraphics(160, 160);
+    previewGraphics.angleMode(DEGREES);
+    previewGraphics.colorMode(HSL, 360, 100, 100, 1);
+  }
+
+  previewGraphics.clear();
+  drawPreviewFlower(previewGraphics, chosenSpecies, chosenHue);
+
+  const canvas = previewGraphics.canvas;
+  if (canvas) {
+    canvas.style.display = "block";
+    canvas.style.width = "100%";
+    canvas.style.height = "100%";
+    canvas.style.objectFit = "contain";
+    holder.elt.appendChild(canvas);
+  }
+
+  const data = flowerMeanings[chosenSpecies];
+  if (data) {
+    const speciesLabel = chosenSpecies.charAt(0).toUpperCase() + chosenSpecies.slice(1);
+
+    const nameDiv = select("#flower-name");
+    if (nameDiv) {
+      nameDiv.html(`${speciesLabel} : ${data.meaning}`);
+    }
+
+    const quoteDiv = select("#flower-quote");
+    if (quoteDiv) {
+      quoteDiv.html(`"${data.quote}"`);
+    }
+  }
+}
+
+function showStep(s) {
+  step = s;
+
+  const showPrompt1 = s === "prompt1";
+  const showPrompt2 = s === "prompt2";
+  const showPrompt3 = s === "prompt3";
+  const showPrompt4 = s === "prompt4";
+  const showFlower  = s === "flowerPreview";
+
+  if (prompt1Wrap) {
+    const el = prompt1Wrap.elt;
+    el.style.display          = showPrompt1 ? "flex" : "none";
+    el.style.flexDirection    = "column";
+    el.style.alignItems       = "center";
+    el.style.justifyContent   = "center";
+  }
+  if (prompt2Wrap) prompt2Wrap.elt.style.display = showPrompt2 ? "flex" : "none";
+  if (prompt3Wrap) prompt3Wrap.elt.style.display = showPrompt3 ? "flex" : "none";
+  if (prompt4Wrap) prompt4Wrap.elt.style.display = showPrompt4 ? "flex" : "none";
+  if (flowerPreviewWrap) flowerPreviewWrap.elt.style.display = showFlower ? "flex" : "none";
+
+  gardenWrap.style("display", "block");
+
+  if (canvas) {
+    canvas.elt.style.pointerEvents = (s === "garden") ? "auto" : "none";
+  }
+
+  const hasFlower = flowers && flowers.length > 0;
+
+  if (saveBtn) {
+    saveBtn.style("display", s === "garden" && hasFlower ? "flex" : "none");
+  }
+  if (tipsCard) {
+    tipsCard.style("display", s === "garden" && hasFlower ? "block" : "none");
+  }
+
+  const clearBtn = select("#clear-garden-btn");
+  if (clearBtn) {
+    clearBtn.style("display", s === "garden" ? "block" : "none");
+  }
+
+  const nameWrap = select("#name-wrap");
+  if (nameWrap) {
+    nameWrap.style("display", s === "garden" ? "flex" : "none");
+  }
+
+  if (dailyNote) {
+    const planted = s === "garden" && hasPlantedToday();
+    dailyNote.html(planted ? "Planted today. See you tomorrow." : "");
+    dailyNote.style("display", planted ? "block" : "none");
+  }
+
+  const logo = select("#gg-logo");
+  if (logo) {
+    logo.style("display", s === "garden" && hasFlower ? "block" : "none");
+  }
+
+  loop();
+  
+}
+
+/* THE WINDOW IS ASKED FOR ITS SIZE, NEVER p5's CACHE. p5 fills `windowWidth`
+   and `windowHeight` once, when p5.js ITSELF is parsed in the head, and
+   refreshes them only when a resize event fires. A tab that is in the
+   background, restored from the back forward cache, or coming back on iOS
+   reports 0 at that moment, so `createCanvas(windowWidth, windowHeight)`
+   makes a DEAD 0 by 0 canvas; no resize ever follows to correct it, and the
+   garden comes up blank with its chrome around it and NO error anywhere.
+   That is far more likely here than it looks, because this sketch is
+   INJECTED after the session check rather than parsed with the page. */
+function viewW() { return window.innerWidth  || document.documentElement.clientWidth  || windowWidth  || 0; }
+function viewH() { return window.innerHeight || document.documentElement.clientHeight || windowHeight || 0; }
+
+function windowResized() {
+  resizeCanvas(viewW(), viewH());
+  groundLevel = height * 0.76;
+  buildClouds(true);
+  updateResponsiveFlowerLayout();
+  fitTitle();
+}
+
+function setup() {
+  buildUI();
+
+  canvas = createCanvas(viewW(), viewH());
+  canvas.parent("garden-wrap");
+  canvas.style("pointer-events", "none");
+  canvas.style("position", "absolute");
+  canvas.style("top", "0");
+  canvas.style("left", "0");
+  canvas.style("z-index", "1");
+
+  canvas.mousePressed(() => {
+    if (step !== "garden") return;
+    checkHover(mouseX, mouseY);
+  });
+
+  canvas.touchStarted(() => {
+    if (step !== "garden") return;
+    if (touches && touches.length > 0) {
+      checkHover(touches[0].x, touches[0].y);
+    }
+    return false;
+  });
+
+  angleMode(DEGREES);
+  noiseSeed(9999);
+  buildClouds();
+  
+  groundLevel = height * 0.76;
+  updateResponsiveFlowerLayout();
+
+  /* The daily gate, not the flower count. This asked "does this garden hold
+     any flowers" and sent everyone who had ever planted straight to the
+     garden, forever: it runs after buildUI, so it overrode the gate buildUI
+     had just applied and the prompts never came back the next day. The
+     question is whether today's flower is planted, which is the same question
+     buildUI asks, so both now ask it the same way. */
+  showStep(hasPlantedToday() ? "garden" : "prompt1");
+
+  mountJournal();
+  tintCursor();
+}
+
+function draw() {
+  background(240);
+  drawSky();
+  drawSunGradient();
+  drawClouds();
+  /* The birds go in with the clouds, so the hills paint over them at the
+     horizon exactly as they paint over a distant cloud. `drawingContext` is
+     p5's own 2D context, already scaled by the pixel density, so garden-life
+     draws in p5 units without knowing it is inside a sketch. */
+  if (window.GardenLife) GardenLife.sky(drawingContext, width, height, { horizon: height * 0.56 });
+
+  // Back row: all flowers behind the back hill
+  drawFlowersStemsOnly("back");
+  drawFlowersGrowingOnly("back");
+  drawFlowersBloomsOnly("back");
+  drawHillsBack();
+
+  // Mid row: all flowers first, then hillsFront covers their base
+  drawFlowersStemsOnly("mid");
+  drawFlowersGrowingOnly("mid");
+  drawFlowersBloomsOnly("mid");
+  drawHillsFront();
+
+  // Front row: all flowers first, then foregroundHill covers their base
+  drawGround();
+  drawFlowersStemsOnly("front");
+  drawFlowersGrowingOnly("front");
+  drawFlowersBloomsOnly("front");
+  drawGardener();
+  drawForegroundHill();
+  drawAllDates();
+  /* The butterflies and the motes go on LAST, over the flowers and over the
+     labels, because they are in the air in front of the garden. They stay
+     under drawNewestSparkles so the burst that fires when a flower is planted
+     is still the brightest thing on screen. */
+  if (window.GardenLife) GardenLife.meadow(drawingContext, width, height, { horizon: height * 0.56 });
+
+  drawNewestSparkles();
+
+  if (isSaving) {
+    return;
+  }
+
+  if (step === "garden") {
+    /* NO HOVER BOX. A flower is read from the card a click or a tap opens,
+       one look on every device; hovering only tells the cursor there is
+       something to press. */
+    if (!isTouchDevice) {
+      checkHover();
+      if (canvas && canvas.elt) canvas.elt.setAttribute("data-gg-hot", hoveredFlower ? "1" : "0");
+      hoverCardTick();
+    }
+  }
+}
+
+/* -------------------------------------------------------------------------
+   The journal
+
+   Nothing new is stored for this garden. Every flower already carries the
+   date it was planted, the mood, the shaper and the journal entry, and that
+   array already syncs to the account, so the log is a VIEW of data the garden
+   has always had rather than a second copy of it.
+
+   The icon under each day is drawn by the preview family this sketch already
+   owns, through a p5.Graphics whose canvas is then blitted into the small DOM
+   canvas the strip holds. That matters: an eighth copy of the flower maths
+   would drift from the seven that already exist.
+   ------------------------------------------------------------------------- */
+var journalBuf = null;
+
+function paintJournalBloom(el, species, hue) {
+  if (!el || !el.width) return;
+  /* SQUARE, because the strip's slot is square and squashing a tall buffer
+     into it would stretch every bloom sideways. Unlike the shared garden's,
+     drawPreviewFlower centres itself, so nothing is translated here. */
+  if (!journalBuf) {
+    journalBuf = createGraphics(150, 150);
+    journalBuf.pixelDensity(2);
+  }
+  journalBuf.clear();
+  drawPreviewFlower(journalBuf, species, hue);
+  var c = el.getContext("2d");
+  c.clearRect(0, 0, el.width, el.height);
+  c.drawImage(journalBuf.canvas, 0, 0, el.width, el.height);
+}
+
+function mountJournal() {
+  if (!window.GardenJournal) return;
+  GardenJournal.mount({
+    garden: "personal",
+    entries: function () {
+      var out = {};
+      flowers.forEach(function (f) {
+        var day = GardenJournal.fromUS(f.date);
+        if (!day) return;
+        out[day] = {
+          day: day, species: f.species, hue: f.hue, sat: f.sat, light: f.light,
+          note: f.journal || "", glad: f.gratitude || "",
+          mood: f.dayRating || "", shaper: f.dayShaper || "",
+          photo: f.photo || ""
+        };
+      });
+      return out;
+    },
+    meaning: function (sp) {
+      return (flowerMeanings[sp] && flowerMeanings[sp].meaning) || "";
+    },
+    paint: paintJournalBloom
+  });
+}
+
+
+/* The cursor's bloom takes the hue of the flower planted most recently, so
+   the thing following the pointer is the last thing that grew here rather
+   than a fixed decoration. Called on load and again after planting. */
+function tintCursor() {
+  if (!window.GardenCursor || !flowers.length) return;
+  var newest = flowers[flowers.length - 1];
+  for (var i = 0; i < flowers.length; i++) {
+    if (flowers[i].isLatest) { newest = flowers[i]; break; }
+  }
+  if (newest && typeof newest.hue === "number") GardenCursor.tint(newest.hue);
+}

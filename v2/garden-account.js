@@ -1,0 +1,1116 @@
+/* =========================================================================
+   garden-account.js  -  one account across the whole project
+
+   Loaded by the personal garden and the shared garden. There is deliberately
+   ONE copy, and it owns ONE Supabase client: two clients on a page both watch
+   the same stored session and both try to refresh it, and the pages would
+   also drift apart on what a signed in person is called.
+
+   It owns four things:
+
+     1. the client, the session, and the profile row
+     2. the username, which is claimed ONCE and is how people find each other
+     3. friends: search, request, accept, decline, remove
+     4. the friends panel and the button that opens it
+
+   What it deliberately does NOT own: the personal garden's sign in gate and
+   its GardenStore, which stay in personal-garden-auth.js, and the shared
+   garden's comment panel, which stays in shared-garden-social.js. Both of
+   those call GardenAccount.client() rather than making a client of their own.
+
+   A username is claimed on a screen of its own after the first sign in, not
+   as a third field on the sign up form. The reason is the failure case: a
+   username collision on a combined form comes back as an error after the
+   account may already have been created, and the person is left looking at a
+   form that half worked.
+   ========================================================================= */
+(function () {
+  "use strict";
+
+  /* FRIENDS ARE OFF WHILE THE PROJECT SHOWS THE TWO GARDENS ONLY, and this
+     one flag is the whole of it. The friends list exists almost entirely to
+     send somebody a bouquet, and with the bouquet builder unlinked a panel
+     full of people to send nothing to is a feature pointing at a hole.
+     WHAT AN ACCOUNT STILL DOES IS ALL GARDEN: a username, your personal
+     garden following you between devices, the once a day limit holding across
+     them, and liking or replying in the shared meadow. None of that is
+     friends, which is why the account stayed and this went.
+     Everything below is untouched and unreachable. Set this to false and the
+     panel is exactly what it was. */
+  var FRIENDS_OFF = true;
+
+  var CFG = (typeof window.readSupabaseConfig === "function")
+    ? window.readSupabaseConfig() : null;
+
+
+
+  var sb = null;
+  var live = false;
+  var me = null;          /* the signed in user */
+  var profile = null;     /* their row in profiles, or null if not claimed yet */
+  var listeners = [];
+  var claimOpen = false;
+
+  var NAME_RE = /^[a-zA-Z0-9_]{3,20}$/;
+
+  function fire() {
+    listeners.forEach(function (fn) {
+      try { fn({ user: me, profile: profile }); } catch (e) {}
+    });
+  }
+
+  /* ---------------------------------------------------------------- styles */
+  var CSS =
+    /* ---- the claim screen ---- */
+    '#ga-claim{position:fixed;inset:0;z-index:620;display:flex;align-items:center;' +
+      'justify-content:center;padding:24px;font-family:Arial,Helvetica,sans-serif;' +
+      'background:' +
+        'url("data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 100 100\' preserveAspectRatio=\'none\'><path d=\'M0,58 C15,52 32,60 50,56 C68,52 86,60 100,55 L100,100 L0,100 Z\' fill=\'%23a9d9cf\'/><path d=\'M0,66 C20,62 36,68 55,64 C74,60 88,67 100,64 L100,100 L0,100 Z\' fill=\'%238fcfbe\'/><path d=\'M0,76 C25,73 45,78 65,75 C80,73 92,77 100,75 L100,100 L0,100 Z\' fill=\'%237ec4b4\'/></svg>")' +
+        ' center / 100% 100% no-repeat,' +
+        'radial-gradient(circle 190px at 85% 18%, rgba(251,228,132,0.9) 0%, rgba(251,228,132,0.42) 34%, rgba(251,228,132,0) 100%),' +
+        'linear-gradient(180deg,#cfeef0 0%,#f9ffff 100%);}' +
+    '.ga-card{width:100%;max-width:400px;background:snow;border:1px solid #e6efed;' +
+      'border-radius:16px;padding:26px 24px 22px;box-shadow:0 8px 28px rgba(0,0,0,0.06);' +
+      'box-sizing:border-box;}' +
+    '.ga-card h1{font-family:Fraunces,Georgia,serif;font-size:26px;font-weight:600;' +
+      "font-variation-settings:'SOFT' 50,'WONK' 0;color:#0f5132;margin:0 0 6px;text-align:center;}" +
+    '.ga-sub{font-size:15px;color:#2c7a7b;line-height:1.5;margin:0 0 18px;text-align:center;}' +
+    '.ga-card input{width:100%;box-sizing:border-box;padding:13px 15px;' +
+      'border:1.5px solid #d9ece9;border-radius:12px;font-family:inherit;font-size:16px;' +
+      'color:#1d6466;background:#fdfefe;}' +
+    '.ga-card input:focus{outline:none;border-color:#7fcdcd;}' +
+    '.ga-btn{width:100%;box-sizing:border-box;margin-top:16px;padding:14px 18px;border:none;' +
+      'border-radius:12px;background:mediumturquoise;color:snow;font-size:18px;font-weight:700;' +
+      'font-family:inherit;cursor:pointer;transition:transform .15s,background .15s;}' +
+    '.ga-btn:hover:not(:disabled){transform:scale(1.03);background:turquoise;}' +
+    '.ga-btn:disabled{opacity:.55;cursor:not-allowed;transform:none;}' +
+    '.ga-msg{font-size:13px;line-height:1.5;margin:9px 0 0;min-height:1.5em;}' +
+    '.ga-msg[data-tone="bad"]{color:#b3261e;}' +
+    '.ga-msg[data-tone="good"]{color:#2c7a7b;}' +
+    '.ga-msg[data-tone="idle"]{color:#8aa9a7;}' +
+
+    /* ---- the account icon ----
+       Every page's controls now sit in ONE row of round icons in the top
+       right corner, 38px each with an 8px gap, so the slots are right 16, 62,
+       108 and 154. Music takes 16 and is built by garden-music.js; this takes
+       62; the journal takes 108 and Save takes 154, both built by the gardens
+       themselves. The journal used to be a labelled pill in the bottom left,
+       which is where the Garden Tips card lives, so it sat on top of it. */
+    '#ga-friends-btn{position:fixed;top:20px;right:62px;z-index:261;' +
+      'width:38px;height:38px;border-radius:50%;padding:0;' +
+      'display:flex;align-items:center;justify-content:center;' +
+      'border:1.5px solid #b7e4e7;background:rgba(255,249,227,0.92);color:#1d6466;' +
+      'cursor:pointer;box-shadow:0 2px 10px rgba(29,100,102,0.14);' +
+      'transition:background .2s,transform .15s;}' +
+    '#ga-friends-btn:hover{background:#e1f7f7;transform:translateY(-1px);}' +
+    '#ga-friends-btn:focus-visible{outline:2px solid #1d6466;outline-offset:2px;}' +
+    '#ga-friends-btn svg{width:18px;height:18px;display:block;}' +
+    /* The count rides on the corner of the icon rather than sitting beside a
+       label, since there is no label any more. */
+    '#ga-friends-btn .ga-pip{display:none;position:absolute;top:-4px;right:-4px;' +
+      'min-width:17px;height:17px;border-radius:9px;background:#e2557e;color:snow;' +
+      'font-family:Arial,Helvetica,sans-serif;font-size:11px;line-height:17px;' +
+      'text-align:center;padding:0 4px;}' +
+    '#ga-friends-btn[data-pending="1"] .ga-pip{display:block;}' +
+    '@media (max-width:768px){#ga-friends-btn{top:16px;right:54px;width:34px;height:34px;}' +
+      '#ga-friends-btn svg{width:16px;height:16px;}}' +
+
+    /* ---- the friends panel ---- */
+    '#ga-panel{position:fixed;top:0;right:0;bottom:0;width:360px;max-width:100%;z-index:560;' +
+      'background:snow;border-left:1px solid #d9ece9;box-shadow:-8px 0 28px rgba(29,100,102,0.12);' +
+      'font-family:Arial,Helvetica,sans-serif;color:#1d6466;display:flex;flex-direction:column;' +
+      'transform:translateX(102%);transition:transform .28s ease,visibility .28s;' +
+      /* VISIBILITY AS WELL AS THE TRANSFORM, because 102% of the panel's own
+         height is a two percent margin and on a phone that is about twelve
+         pixels. Anything that moves the sums by more than that, and a phone's
+         address bar sliding in and out moves them by far more, leaves the top
+         of the panel peeking up from the bottom of the page: the word
+         "Friends" and a line of account text under a page it has nothing to
+         do with. `visibility` cannot be got wrong by arithmetic, and it takes
+         the panel out of the tab order while it is shut. */
+      'visibility:hidden;}' +
+    '#ga-panel[data-open="1"]{transform:none;visibility:visible;}' +
+    '@media (prefers-reduced-motion:reduce){#ga-panel{transition:none;}}' +
+    '@media (max-width:560px){#ga-panel{top:auto;left:0;width:auto;height:76vh;border-left:none;' +
+      'border-top:1px solid #d9ece9;border-radius:18px 18px 0 0;' +
+      /* A fixed 40px past its own height rather than a percentage of it, so
+         the clearance does not shrink with the panel. */
+      'box-shadow:0 -8px 28px rgba(29,100,102,0.16);' +
+      'transform:translateY(calc(100% + 40px));}' +
+      '#ga-panel[data-open="1"]{transform:none;}}' +
+    '#ga-head{padding:20px 20px 14px;border-bottom:1px solid #eaf4f2;position:relative;}' +
+    '#ga-head h2{font-family:Fraunces,Georgia,serif;font-size:22px;font-weight:600;' +
+      "font-variation-settings:'SOFT' 50,'WONK' 0;color:#0f5132;margin:0 0 4px;}" +
+    '#ga-whoami{font-size:13px;color:#2c7a7b;margin:0;}' +
+    '.ga-rename-link{background:none;border:none;padding:0 0 0 6px;color:#2c7a7b;' +
+      'font-family:inherit;font-size:13px;text-decoration:underline;cursor:pointer;}' +
+    '#ga-rename{margin-top:12px;}' +
+    '#ga-rename input{width:100%;box-sizing:border-box;padding:10px 12px;' +
+      'border:1.5px solid #d9ece9;border-radius:12px;font-family:inherit;font-size:14px;' +
+      'color:#1d6466;background:#fdfefe;}' +
+    '#ga-rename input:focus{outline:none;border-color:#7fcdcd;}' +
+    '#ga-rename .ga-act{margin-top:9px;justify-content:flex-end;}' +
+    '#ga-close{position:absolute;top:12px;right:12px;width:30px;height:30px;border-radius:50%;' +
+      'border:1.5px solid #b7e4e7;background:rgba(255,249,227,0.92);color:#1d6466;' +
+      'cursor:pointer;padding:0;display:flex;align-items:center;justify-content:center;}' +
+    '#ga-close:hover{background:#e1f7f7;}' +
+    '#ga-body{flex:1 1 auto;overflow-y:auto;padding:16px 20px 20px;}' +
+    '.ga-h{font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;' +
+      'color:#8aa9a7;margin:18px 0 9px;}' +
+    '.ga-h:first-child{margin-top:0;}' +
+    '#ga-search{width:100%;box-sizing:border-box;padding:11px 13px;border:1.5px solid #d9ece9;' +
+      'border-radius:12px;font-family:inherit;font-size:14px;color:#1d6466;background:#fdfefe;}' +
+    '#ga-search:focus{outline:none;border-color:#7fcdcd;}' +
+    '.ga-row{display:flex;align-items:center;gap:10px;padding:9px 0;' +
+      'border-bottom:1px solid #f1f7f6;}' +
+    '.ga-row:last-child{border-bottom:none;}' +
+    '.ga-av{width:32px;height:32px;border-radius:50%;flex:0 0 auto;display:flex;' +
+      'align-items:center;justify-content:center;font-size:14px;font-weight:700;' +
+      'color:snow;background:#8fcfbe;}' +
+    /* A GARDENER STANDS ON THE GARDEN'S OWN SKY, not on the initial's teal
+       disc: the figure is already teal about the middle and the two merged.
+       `overflow:hidden` is what makes the circle a crop rather than a frame. */
+    '.ga-av[data-gardener]{background:#e1f7f7;overflow:hidden;}' +
+    '.ga-me{display:flex;align-items:center;gap:10px;margin-top:8px;}' +
+    '.ga-me .ga-av{width:40px;height:40px;}' +
+    '.ga-me-lines{min-width:0;}' +
+    '.ga-who{flex:1 1 auto;min-width:0;}' +
+    '.ga-who b{display:block;font-size:14px;color:#0f5132;overflow:hidden;' +
+      'text-overflow:ellipsis;white-space:nowrap;}' +
+    '.ga-who span{font-size:12px;color:#8aa9a7;}' +
+    '.ga-act{flex:0 0 auto;display:flex;gap:6px;}' +
+    '.ga-mini{padding:6px 12px;border-radius:50px;border:1.5px solid #b7e4e7;' +
+      'background:rgba(255,249,227,0.92);color:#1d6466;font-family:inherit;font-size:12.5px;' +
+      'font-weight:700;cursor:pointer;transition:background .18s;}' +
+    '.ga-mini:hover:not(:disabled){background:#e1f7f7;}' +
+    '.ga-mini:disabled{opacity:.55;cursor:not-allowed;}' +
+    '.ga-mini[data-kind="go"]{background:mediumturquoise;border-color:mediumturquoise;color:snow;}' +
+    '.ga-mini[data-kind="go"]:hover:not(:disabled){background:turquoise;border-color:turquoise;}' +
+    '.ga-mini[data-kind="quiet"]{background:none;border-color:#e6efed;color:#8aa9a7;}' +
+    '.ga-none{font-size:13.5px;color:#8aa9a7;line-height:1.6;margin:0;}' +
+    '.ga-link{display:block;width:100%;margin-top:9px;background:none;border:none;' +
+      'color:#2c7a7b;font-family:inherit;font-size:13px;text-decoration:underline;' +
+      'cursor:pointer;padding:0;}' +
+    '.ga-card input+input{margin-top:9px;}' +
+    '#ga-signin .ga-close{position:absolute;top:16px;right:16px;width:32px;height:32px;' +
+      'border-radius:50%;border:1.5px solid #b7e4e7;background:rgba(255,249,227,0.92);' +
+      'color:#1d6466;cursor:pointer;display:flex;align-items:center;justify-content:center;}' +
+    '.ga-bq{border:1.5px solid #eaf4f2;border-radius:12px;padding:11px 13px;margin-bottom:10px;}' +
+    '.ga-bq b{display:block;font-size:13.5px;color:#0f5132;}' +
+    '.ga-bq p{font-size:13px;color:#2f6260;line-height:1.5;margin:4px 0 0;' +
+      'overflow-wrap:anywhere;}' +
+    '.ga-bq .ga-act{margin-top:9px;justify-content:flex-end;}' +
+    '.ga-bq[data-new="1"]{border-color:#f3b9cd;background:#fff7fa;}';
+
+  var FRIEND_ICON =
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" ' +
+      'stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+    '<path d="M15.5 20v-1.6a3.6 3.6 0 0 0-3.6-3.6H6.1A3.6 3.6 0 0 0 2.5 18.4V20"/>' +
+    '<circle cx="9" cy="7.4" r="3.4"/><path d="M18 11.2h4M20 9.2v4"/></svg>';
+
+  var X_ICON =
+    '<svg viewBox="0 0 14 14" width="12" height="12" fill="none" stroke="currentColor" ' +
+      'stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M3 3l8 8M11 3l-8 8"/></svg>';
+
+  /* ---------------------------------------------------------------- helpers */
+  function el(tag, cls, text) {
+    var n = document.createElement(tag);
+    if (cls) n.className = cls;
+    if (text != null) n.textContent = text;
+    return n;
+  }
+
+  function onReady(fn) {
+    if (document.body) fn();
+    else document.addEventListener("DOMContentLoaded", fn);
+  }
+
+  function initial(s) {
+    var c = String(s || "?").trim().charAt(0);
+    return c ? c.toUpperCase() : "?";
+  }
+
+  function shownName(p) {
+    if (!p) return "";
+    return p.display_name || p.username || "";
+  }
+
+  /* ---------------------------------------------------------------- profile */
+  function loadProfile() {
+    if (!me) { profile = null; return Promise.resolve(null); }
+    return sb.from("profiles").select("*").eq("id", me.id).maybeSingle()
+      .then(function (res) {
+        profile = (res && res.data) || null;
+        return profile;
+      })
+      .catch(function () { profile = null; return null; });
+  }
+
+  /* Availability is checked with ilike and no wildcards, which is an exact
+     match that ignores case. The unique index in the database is on
+     lower(username) for the same reason: Keni and keni are the same person as
+     far as finding somebody is concerned, and allowing both is how people get
+     impersonated. This check is a courtesy so the answer arrives before the
+     button is pressed. The index is what actually enforces it. */
+  function nameFree(name) {
+    return sb.from("profiles").select("id").ilike("username", name).limit(1)
+      .then(function (res) {
+        if (res.error) return null;               /* cannot tell */
+        return !(res.data && res.data.length);
+      })
+      .catch(function () { return null; });
+  }
+
+  /* ---------------------------------------------------------------- sign in */
+  /* ONE sign in form, mounted wherever it is needed. The shared garden puts
+     it inside its comment panel, the button on the landing page puts it in an
+     overlay. The personal garden's gate is deliberately NOT this: it is a
+     full page flow with password recovery and a carry-over offer, and folding
+     it in here would make one form answer to two very different situations. */
+  function mountSignIn(box, opts) {
+    opts = opts || {};
+    var mode = "in";
+
+    function render() {
+      box.innerHTML = "";
+      if (opts.lead) {
+        box.appendChild(el("p", "ga-sub", mode === "in"
+          ? opts.lead
+          : "Create an account to add friends and keep your garden across devices."));
+      }
+      var email = el("input"); email.type = "email"; email.placeholder = "Email";
+      email.autocomplete = "email";
+      var pass = el("input"); pass.type = "password";
+      pass.placeholder = mode === "in" ? "Password" : "Password, at least 6 characters";
+      pass.autocomplete = mode === "in" ? "current-password" : "new-password";
+
+      var go = el("button", opts.btnClass || "ga-btn", mode === "in" ? "Sign in" : "Create account");
+      go.type = "button";
+      var swap = el("button", "ga-link",
+        mode === "in" ? "New here? Create an account" : "Already have an account? Sign in");
+      swap.type = "button";
+      swap.addEventListener("click", function () { mode = mode === "in" ? "up" : "in"; render(); });
+
+      var msg = el("p", "ga-msg");
+      msg.setAttribute("data-tone", "idle");
+
+      go.addEventListener("click", function () {
+        var e = email.value.trim(), pw = pass.value;
+        if (!e || !pw) {
+          msg.setAttribute("data-tone", "bad");
+          msg.textContent = "Both an email and a password are needed.";
+          return;
+        }
+        go.disabled = true;
+        go.textContent = mode === "in" ? "Signing in" : "Creating";
+        var call = mode === "in"
+          ? sb.auth.signInWithPassword({ email: e, password: pw })
+          : sb.auth.signUp({ email: e, password: pw });
+        call.then(function (res) {
+          go.disabled = false;
+          go.textContent = mode === "in" ? "Sign in" : "Create account";
+          if (res.error) {
+            msg.setAttribute("data-tone", "bad");
+            msg.textContent = res.error.message;
+            return;
+          }
+          /* With confirmation emails left on, signUp returns a user and NO
+             session. Saying so is the only honest answer; the page would
+             otherwise look signed in while every write was refused. */
+          if (!res.data || !res.data.session) {
+            msg.setAttribute("data-tone", "good");
+            msg.textContent = "Check your email for a confirmation link, then come back and sign in.";
+            return;
+          }
+          if (opts.done) opts.done();
+        }).catch(function () {
+          go.disabled = false;
+          go.textContent = mode === "in" ? "Sign in" : "Create account";
+          msg.setAttribute("data-tone", "bad");
+          msg.textContent = "Could not reach the garden. Check your connection.";
+        });
+      });
+
+      [email, pass].forEach(function (f) {
+        f.addEventListener("keydown", function (ev) { if (ev.key === "Enter") go.click(); });
+      });
+
+      box.appendChild(email); box.appendChild(pass);
+      box.appendChild(go); box.appendChild(swap); box.appendChild(msg);
+    }
+    render();
+  }
+
+  function openSignIn() {
+    if (document.getElementById("ga-signin")) return;
+    var wrap = el("div"); wrap.id = "ga-signin";
+    wrap.style.cssText = document.getElementById("ga-claim") ? "" : "";
+    wrap.className = "";
+    /* Same backdrop as the claim screen, which is the same backdrop as the
+       personal garden's gate: signing in looks like one thing everywhere. */
+    wrap.id = "ga-claim";
+    var card = el("div", "ga-card");
+    card.appendChild(el("h1", null, "Your Gratitude Garden"));
+    var form = el("div");
+    card.appendChild(form);
+    mountSignIn(form, {
+      lead: "Sign in to add friends, keep your garden across devices, and send a bouquet.",
+      /* A page that signed in halfway through is worse than one that reloads.
+         The personal garden in particular has already decided what to show
+         before this button is ever pressed. */
+      done: function () { location.reload(); }
+    });
+    var later = el("button", "ga-link", "Not now");
+    later.type = "button";
+    later.addEventListener("click", function () { wrap.remove(); });
+    card.appendChild(later);
+    wrap.appendChild(card);
+    document.body.appendChild(wrap);
+    var first = card.querySelector("input");
+    if (first) first.focus();
+  }
+
+  /* ------------------------------------------------------------ claim screen */
+  function openClaim() {
+    /* `claimOpen` guards against building the screen twice, but a flag that is
+       only cleared on SUCCESS can get stuck: if the element ever leaves the
+       page without a username being claimed, nothing would open it again for
+       the rest of the visit. Checking the document is what makes the flag
+       recoverable. */
+    if (!document.getElementById("ga-claim")) claimOpen = false;
+    if (claimOpen || !me || profile) return;
+    claimOpen = true;
+
+    var wrap = el("div"); wrap.id = "ga-claim";
+    var card = el("div", "ga-card");
+    var h = el("h1", null, "Choose your username");
+    var sub = el("p", "ga-sub",
+      "This is how friends find you, and it starts off your garden's name too. Letters, numbers and underscores, three to twenty characters.");
+
+    var input = el("input");
+    input.type = "text";
+    input.maxLength = 20;
+    input.autocomplete = "off";
+    input.spellcheck = false;
+    input.placeholder = "username";
+
+    var msg = el("p", "ga-msg");
+    msg.setAttribute("data-tone", "idle");
+    var go = el("button", "ga-btn", "Claim it");
+    go.type = "button";
+    go.disabled = true;
+
+    var checkTimer = null, lastChecked = "";
+
+    function setMsg(tone, text) {
+      msg.setAttribute("data-tone", tone);
+      msg.textContent = text;
+    }
+
+    function check() {
+      var v = input.value.trim();
+      if (!v) { go.disabled = true; setMsg("idle", ""); return; }
+      if (!NAME_RE.test(v)) {
+        go.disabled = true;
+        setMsg("bad", "Three to twenty characters, letters, numbers and underscores only.");
+        return;
+      }
+      setMsg("idle", "Checking");
+      go.disabled = true;
+      clearTimeout(checkTimer);
+      /* Waits for a pause in typing. Firing per keystroke would ask the
+         database about half typed names nobody is going to claim. */
+      checkTimer = setTimeout(function () {
+        lastChecked = v;
+        nameFree(v).then(function (free) {
+          if (input.value.trim() !== lastChecked) return;
+          if (free === null) { setMsg("idle", ""); go.disabled = false; return; }
+          if (free) { setMsg("good", v + " is free."); go.disabled = false; }
+          else { setMsg("bad", v + " is taken. Try another."); go.disabled = true; }
+        });
+      }, 380);
+    }
+
+    input.addEventListener("input", check);
+    input.addEventListener("keydown", function (e) {
+      if (e.key === "Enter" && !go.disabled) go.click();
+    });
+
+    go.addEventListener("click", function () {
+      var v = input.value.trim();
+      if (!NAME_RE.test(v)) return;
+      go.disabled = true;
+      go.textContent = "Claiming";
+      sb.from("profiles").insert({ id: me.id, username: v }).select().maybeSingle()
+        .then(function (res) {
+          go.textContent = "Claim it";
+          if (res.error) {
+            go.disabled = false;
+            /* The unique index is the real check, and this is the race it
+               catches: somebody claimed the name between the lookup and the
+               button. */
+            setMsg("bad", /duplicate|unique/i.test(res.error.message || "")
+              ? "Somebody just took that one. Try another."
+              : res.error.message);
+            return;
+          }
+          profile = res.data;
+          claimOpen = false;
+          wrap.remove();
+          fire();
+          refreshPanel();
+        })
+        .catch(function () {
+          go.disabled = false;
+          go.textContent = "Claim it";
+          setMsg("bad", "Could not reach the garden. Check your connection.");
+        });
+    });
+
+    card.appendChild(h); card.appendChild(sub); card.appendChild(input);
+    card.appendChild(msg); card.appendChild(go);
+    wrap.appendChild(card);
+    onReady(function () {
+      document.body.appendChild(wrap);
+      input.focus();
+    });
+  }
+
+  /* ------------------------------------------------------------------ friends */
+  /* Row level security already restricts every friendship row to the two
+     people in it, so a plain select returns mine and nobody else's. The
+     filter is not repeated here on purpose: writing it twice invites the two
+     copies to disagree, and only the database's copy is enforced. */
+  function loadFriends() {
+    if (!me) return Promise.resolve({ friends: [], incoming: [], outgoing: [] });
+    return sb.from("friendships").select("*").then(function (res) {
+      if (res.error || !res.data) return { friends: [], incoming: [], outgoing: [] };
+      var rows = res.data;
+      var ids = {};
+      rows.forEach(function (r) {
+        ids[r.requester_id === me.id ? r.addressee_id : r.requester_id] = 1;
+      });
+      var list = Object.keys(ids);
+      /* `select("*")` RATHER THAN NAMING THE COLUMNS, and that is a guard
+         rather than laziness. The friends list wants `look` so a gardener
+         arrives with the name it is drawn beside, and Supabase answers a
+         query naming a column that does not exist with a 400 and an error
+         OBJECT, not a throw: on any project where Step 9 has not been run,
+         naming it would empty `pr.data` and take every friend's NAME down
+         with it. A star selects whatever the table actually has.
+         `loadProfile` has always done this, for the same reason. */
+      var who = list.length
+        ? sb.from("profiles").select("*").in("id", list)
+        : Promise.resolve({ data: [] });
+      return Promise.resolve(who).then(function (pr) {
+        var byId = {};
+        (pr.data || []).forEach(function (p) { byId[p.id] = p; });
+        var out = { friends: [], incoming: [], outgoing: [] };
+        rows.forEach(function (r) {
+          var otherId = r.requester_id === me.id ? r.addressee_id : r.requester_id;
+          var item = { row: r.id, id: otherId, profile: byId[otherId] || null };
+          if (r.status === "accepted") out.friends.push(item);
+          else if (r.addressee_id === me.id) out.incoming.push(item);
+          else out.outgoing.push(item);
+        });
+        return out;
+      });
+    }).catch(function () { return { friends: [], incoming: [], outgoing: [] }; });
+  }
+
+  function searchPeople(q) {
+    q = String(q || "").trim();
+    if (q.length < 2) return Promise.resolve([]);
+    return sb.from("profiles").select("*")
+      .ilike("username", "%" + q + "%").limit(8)
+      .then(function (res) {
+        return (res.data || []).filter(function (p) { return !me || p.id !== me.id; });
+      })
+      .catch(function () { return []; });
+  }
+
+  /* --------------------------------------------------------------- the panel */
+  var panel, panelBody, panelWho, btn, searchInput, searchTimer;
+  var state = { friends: [], incoming: [], outgoing: [] };
+
+  function buildUI() {
+    var style = document.createElement("style");
+    style.textContent = CSS;
+    document.head.appendChild(style);
+
+    btn = el("button");
+    btn.id = "ga-friends-btn";
+    btn.type = "button";
+    btn.innerHTML = FRIEND_ICON + "<span class=\"ga-pip\"></span>";
+    /* Two states, one button. Signed out it is the way in; signed in it is
+       the way to your friends. A page that showed neither until you were
+       already signed in had no way of GETTING signed in, which is exactly the
+       gap the landing page had. */
+    btn.addEventListener("click", function () {
+      if (!me) { openSignIn(); return; }
+      if (panel.getAttribute("data-open") === "1") closePanel(); else openPanel();
+    });
+
+    panel = el("div");
+    panel.id = "ga-panel";
+    panel.setAttribute("data-open", "0");
+    panel.setAttribute("aria-hidden", "true");
+
+    var head = el("div"); head.id = "ga-head";
+    var close = el("button");
+    close.id = "ga-close";
+    close.type = "button";
+    close.setAttribute("aria-label", "Close");
+    close.innerHTML = X_ICON;
+    close.addEventListener("click", closePanel);
+    var h2 = el("h2", null, FRIENDS_OFF ? "Your account" : "Friends");
+    panelWho = el("p"); panelWho.id = "ga-whoami";
+    head.appendChild(close); head.appendChild(h2); head.appendChild(panelWho);
+
+    panelBody = el("div"); panelBody.id = "ga-body";
+    panel.appendChild(head);
+    panel.appendChild(panelBody);
+
+    document.body.appendChild(btn);
+    document.body.appendChild(panel);
+
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "Escape" && panel.getAttribute("data-open") === "1") closePanel();
+    });
+
+    /* A tap anywhere else shuts it. `pointerdown` rather than `click`, so it
+       closes as the finger lands rather than when it lifts, and the button
+       itself is excluded or opening it would immediately close it again. */
+    document.addEventListener("pointerdown", function (e) {
+      if (panel.getAttribute("data-open") !== "1") return;
+      if (panel.contains(e.target) || btn.contains(e.target)) return;
+      closePanel();
+    });
+
+  }
+
+  /* The personal garden already puts its signed in chip in the bottom right
+     corner, so on that page this sits above it rather than on top of it. The
+     shared garden has nothing there. Checked again after a moment because the
+     chip is built by another module whose session check may still be in
+     flight. */
+
+
+  function openPanel() {
+    if (!panel) return;
+    /* A SECOND WAY INTO THE CLAIM SCREEN. It is meant to appear by itself the
+       moment a new account first has a session, from either branch of `boot`,
+       and reading the code that is the only place a profile row is ever
+       created. But an account with no username can do nothing here: it cannot
+       be searched for, and a comment it leaves has no name under it. So if
+       somebody reaches the friends button without one, they are asked for it
+       here rather than shown an empty panel. */
+    if (me && !profile) { openClaim(); return; }
+    panel.setAttribute("data-open", "1");
+    panel.setAttribute("aria-hidden", "false");
+    refreshPanel();
+  }
+
+  function closePanel() {
+    if (!panel) return;
+    panel.setAttribute("data-open", "0");
+    panel.setAttribute("aria-hidden", "true");
+  }
+
+  /* THEIR GARDENER IF THEY HAVE BUILT ONE, their initial if they have not.
+     NEVER A DEFAULT FIGURE in place of a missing one, or every friend who has
+     not been near the build page appears to have made the same gardener.
+     It is guarded three ways because this module loads on pages that may not
+     carry the drawing at all: the landing page has `garden-account.js` in its
+     head and `avatar-draw.js` only further down. */
+  function avatarFor(p, name, px) {
+    var box = el("div", "ga-av");
+    var look = p && p.look;
+    if (look && window.GardenGardener && window.GardenGardener.bubble &&
+        window.AvatarDraw && typeof window.drawSpeciesBloom === "function") {
+      box.setAttribute("data-gardener", "1");
+      box.appendChild(window.GardenGardener.bubble(look, px));
+    } else {
+      box.textContent = initial(name);
+    }
+    return box;
+  }
+
+  /* YOUR OWN GARDENER SITS AT THE HEAD OF THE PANEL, which is where it
+     belongs: a gardener is who you ARE rather than a fourth place to go, so
+     this is the door to the build page on every page that carries the panel
+     and nothing new has to be added to any garden's chrome.
+     THIS IS THE DOOR FOR SOMEBODY WITH AN ACCOUNT, AND ONLY THEM. Signed
+     out, that same button opens the sign in card rather than this panel, so
+     nothing here is ever reached; the landing page's own gardener section is
+     the door for everybody else. It still reads the look through
+     `GardenGardener.get()` rather than off `profile`, which is one line
+     rather than two paths: that already resolves the account first and this
+     browser second, so the panel never has to know which it got. */
+  function showMyGardener() {
+    if (!panelWho || !panelWho.parentNode) return;
+    var old = panelWho.parentNode.querySelector(".ga-me");
+    if (old) old.remove();
+    var G = window.GardenGardener;
+    if (!G) return;
+    var mine = G.get();
+    var box = el("div", "ga-me");
+    /* NO BUBBLE AT ALL when there is neither a gardener nor a name to take an
+       initial from. `initial("")` answers "?", and a question mark in a
+       circle beside "Build your gardener" reads as something having failed
+       rather than as something not made yet. */
+    var who = profile ? (profile.username || "") : "";
+    if (mine || who) box.appendChild(avatarFor({ look: mine }, who, 40));
+    var lines = el("div", "ga-me-lines");
+    var lk = el("a", "ga-rename-link",
+      mine ? "Change your gardener" : "Build your gardener");
+    lk.href = G.href();
+    lk.style.paddingLeft = "0";
+    lines.appendChild(lk);
+    box.appendChild(lines);
+    panelWho.parentNode.appendChild(box);
+  }
+
+  function personRow(item, actions) {
+    var row = el("div", "ga-row");
+    var name = shownName(item.profile) || "Someone";
+    row.appendChild(avatarFor(item.profile, name, 32));
+    var who = el("div", "ga-who");
+    var b = el("b", null, name);
+    who.appendChild(b);
+    /* The username goes under the name only when it is a DIFFERENT string.
+       The test used to be that both fields exist, which is true the moment
+       somebody renames themselves: `openRename` copies the new name into
+       `display_name` as well whenever that was never set to anything of its
+       own, so the two match and the row printed the same word twice. */
+    if (item.profile && item.profile.username && item.profile.username !== name) {
+      who.appendChild(el("span", null, item.profile.username));
+    }
+    row.appendChild(who);
+    var act = el("div", "ga-act");
+    actions.forEach(function (a) {
+      var bt = el("button", "ga-mini", a.label);
+      bt.type = "button";
+      if (a.kind) bt.setAttribute("data-kind", a.kind);
+      bt.addEventListener("click", function () {
+        bt.disabled = true;
+        a.run().then(refreshPanel).catch(function () { bt.disabled = false; });
+      });
+      act.appendChild(bt);
+    });
+    row.appendChild(act);
+    return row;
+  }
+
+  /* Renaming has to go through the same uniqueness check as claiming, and it
+     carries the display name along with it ONLY when that was never set to
+     anything of its own. Somebody who has deliberately called themselves
+     something else keeps it. */
+  function openRename() {
+    if (!profile || document.getElementById("ga-rename")) return;
+    var box = el("div"); box.id = "ga-rename";
+    var input = el("input");
+    input.type = "text";
+    input.maxLength = 20;
+    input.autocomplete = "off";
+    input.spellcheck = false;
+    input.value = profile.username || "";
+    var msg = el("p", "ga-msg");
+    msg.setAttribute("data-tone", "idle");
+    var act = el("div", "ga-act");
+    var save = el("button", "ga-mini", "Save");
+    save.type = "button";
+    save.setAttribute("data-kind", "go");
+    save.disabled = true;
+    var cancel = el("button", "ga-mini", "Cancel");
+    cancel.type = "button";
+    cancel.setAttribute("data-kind", "quiet");
+    cancel.addEventListener("click", function () { box.remove(); });
+
+    var timer = null, asked = "";
+    input.addEventListener("input", function () {
+      var v = input.value.trim();
+      save.disabled = true;
+      if (v === (profile.username || "")) { msg.setAttribute("data-tone", "idle"); msg.textContent = ""; return; }
+      if (!NAME_RE.test(v)) {
+        msg.setAttribute("data-tone", "bad");
+        msg.textContent = "Three to twenty characters, letters, numbers and underscores only.";
+        return;
+      }
+      msg.setAttribute("data-tone", "idle");
+      msg.textContent = "Checking";
+      clearTimeout(timer);
+      timer = setTimeout(function () {
+        asked = v;
+        nameFree(v).then(function (free) {
+          if (input.value.trim() !== asked) return;
+          if (free === null) { msg.textContent = ""; save.disabled = false; return; }
+          if (free) { msg.setAttribute("data-tone", "good"); msg.textContent = v + " is free."; save.disabled = false; }
+          else { msg.setAttribute("data-tone", "bad"); msg.textContent = v + " is taken. Try another."; }
+        });
+      }, 380);
+    });
+
+    save.addEventListener("click", function () {
+      var v = input.value.trim();
+      if (!NAME_RE.test(v)) return;
+      save.disabled = true;
+      save.textContent = "Saving";
+      var patch = { username: v };
+      if (!profile.display_name || profile.display_name === profile.username) {
+        patch.display_name = v;
+      }
+      sb.from("profiles").update(patch).eq("id", me.id).select().maybeSingle()
+        .then(function (res) {
+          save.textContent = "Save";
+          if (res.error) {
+            save.disabled = false;
+            msg.setAttribute("data-tone", "bad");
+            msg.textContent = /duplicate|unique/i.test(res.error.message || "")
+              ? "Somebody just took that one. Try another."
+              : res.error.message;
+            return;
+          }
+          profile = res.data || profile;
+          box.remove();
+          fire();
+          refreshPanel();
+        })
+        .catch(function () {
+          save.disabled = false;
+          save.textContent = "Save";
+          msg.setAttribute("data-tone", "bad");
+          msg.textContent = "Could not reach the garden.";
+        });
+    });
+
+    input.addEventListener("keydown", function (e) {
+      if (e.key === "Enter" && !save.disabled) save.click();
+      if (e.key === "Escape") box.remove();
+    });
+
+    act.appendChild(cancel); act.appendChild(save);
+    box.appendChild(input); box.appendChild(msg); box.appendChild(act);
+    document.getElementById("ga-head").appendChild(box);
+    input.focus();
+    input.select();
+  }
+
+  function refreshPanel() {
+    if (!panel) return;
+    var old = document.getElementById("ga-rename");
+    if (old) old.remove();
+    panelWho.innerHTML = "";
+    if (profile) {
+      panelWho.appendChild(document.createTextNode("You are " + (profile.username || "")));
+      var ch = el("button", "ga-rename-link", "Change");
+      ch.type = "button";
+      ch.addEventListener("click", openRename);
+      panelWho.appendChild(ch);
+    }
+    showMyGardener();
+
+    if (!me) {
+      panelBody.innerHTML = "";
+      panelBody.appendChild(el("p", "ga-none",
+        FRIENDS_OFF
+          ? "Sign in to keep your garden across devices. Both gardens work without an account."
+          : "Sign in to add friends. The gardens work without an account."));
+      return;
+    }
+    if (!profile) {
+      panelBody.innerHTML = "";
+      panelBody.appendChild(el("p", "ga-none",
+        FRIENDS_OFF ? "Choose a username and your flowers carry it."
+                    : "Choose a username first and friends can find you."));
+      return;
+    }
+
+    /* WITH FRIENDS OFF THE PANEL IS WHO YOU ARE AND A WAY OUT, which is what
+       is left once there is nobody to add. The Account block is rebuilt here
+       rather than reached by letting the friends path run, because the real
+       one lives inside `loadFriends().then(...)` and that query would be a
+       round trip for a list nothing shows. */
+    if (FRIENDS_OFF) {
+      if (btn) btn.setAttribute("data-pending", "0");
+      var pip0 = btn && btn.querySelector(".ga-pip");
+      if (pip0) pip0.textContent = "";
+      panelBody.innerHTML = "";
+      panelBody.appendChild(el("div", "ga-h", "Account"));
+      panelBody.appendChild(el("p", "ga-none", (me && me.email) ? me.email : "Signed in"));
+      var bye = el("button", "ga-mini", "Sign out");
+      bye.type = "button";
+      bye.setAttribute("data-kind", "quiet");
+      bye.style.marginTop = "8px";
+      bye.addEventListener("click", function () {
+        bye.disabled = true;
+        /* Reloaded rather than repainted, for the reason the friends path
+           gives: the personal garden decided what to show long before this
+           button existed, and half a signed out page is worse than a moment
+           of white. */
+        sb.auth.signOut().then(function () { location.reload(); })
+          .catch(function () { location.reload(); });
+      });
+      panelBody.appendChild(bye);
+      panelBody.appendChild(el("p", "ga-none",
+        "Your garden is kept here, and follows you to any device you sign in on."));
+      return;
+    }
+
+    loadFriends().then(function (data) {
+      state = data;
+      if (btn) btn.setAttribute("data-pending", data.incoming.length ? "1" : "0");
+      var pip = btn && btn.querySelector(".ga-pip");
+      if (pip) pip.textContent = data.incoming.length ? String(data.incoming.length) : "";
+
+      panelBody.innerHTML = "";
+
+      panelBody.appendChild(el("div", "ga-h", "Find someone"));
+      searchInput = el("input");
+      searchInput.id = "ga-search";
+      searchInput.type = "text";
+      searchInput.placeholder = "Search by username";
+      searchInput.autocomplete = "off";
+      panelBody.appendChild(searchInput);
+      var results = el("div");
+      panelBody.appendChild(results);
+
+      searchInput.addEventListener("input", function () {
+        clearTimeout(searchTimer);
+        var q = searchInput.value;
+        searchTimer = setTimeout(function () {
+          if (q.trim().length < 2) { results.innerHTML = ""; return; }
+          searchPeople(q).then(function (people) {
+            results.innerHTML = "";
+            var known = {};
+            state.friends.concat(state.incoming, state.outgoing)
+              .forEach(function (i) { known[i.id] = true; });
+            var fresh = people.filter(function (p) { return !known[p.id]; });
+            if (!fresh.length) {
+              results.appendChild(el("p", "ga-none",
+                people.length ? "Already on your list." : "Nobody by that name."));
+              return;
+            }
+            fresh.forEach(function (p) {
+              results.appendChild(personRow({ id: p.id, profile: p }, [
+                { label: "Add", kind: "go", run: function () {
+                    return sb.from("friendships").insert({
+                      requester_id: me.id, addressee_id: p.id, status: "pending"
+                    });
+                  } }
+              ]));
+            });
+          });
+        }, 320);
+      });
+
+      if (data.incoming.length) {
+        panelBody.appendChild(el("div", "ga-h", "Asked to be your friend"));
+        data.incoming.forEach(function (i) {
+          panelBody.appendChild(personRow(i, [
+            { label: "Accept", kind: "go", run: function () {
+                return sb.from("friendships").update({ status: "accepted" }).eq("id", i.row);
+              } },
+            { label: "Decline", kind: "quiet", run: function () {
+                /* Declining deletes the row rather than marking it, so the
+                   pair is free to ask again another day. The unique index is
+                   on the pair, so a kept row would block that for good. */
+                return sb.from("friendships").delete().eq("id", i.row);
+              } }
+          ]));
+        });
+      }
+
+      panelBody.appendChild(el("div", "ga-h",
+        "Friends" + (data.friends.length ? " (" + data.friends.length + ")" : "")));
+      if (!data.friends.length) {
+        panelBody.appendChild(el("p", "ga-none",
+          "No friends yet. Search for somebody by their username."));
+      } else {
+        data.friends.forEach(function (i) {
+          panelBody.appendChild(personRow(i, [
+            { label: "Remove", kind: "quiet", run: function () {
+                return sb.from("friendships").delete().eq("id", i.row);
+              } }
+          ]));
+        });
+      }
+
+      renderBouquets();
+
+      panelBody.appendChild(el("div", "ga-h", "Account"));
+      var who = el("p", "ga-none", (me && me.email) ? me.email : "Signed in");
+      panelBody.appendChild(who);
+      var out = el("button", "ga-mini", "Sign out");
+      out.type = "button";
+      out.setAttribute("data-kind", "quiet");
+      out.style.marginTop = "8px";
+      out.addEventListener("click", function () {
+        out.disabled = true;
+        /* Reloaded rather than repainted: the personal garden decided what to
+           show long before this button existed, and half a signed out page is
+           worse than a moment of white. */
+        sb.auth.signOut().then(function () { location.reload(); })
+          .catch(function () { location.reload(); });
+      });
+      panelBody.appendChild(out);
+
+      if (data.outgoing.length) {
+        panelBody.appendChild(el("div", "ga-h", "Waiting on a reply"));
+        data.outgoing.forEach(function (i) {
+          panelBody.appendChild(personRow(i, [
+            { label: "Cancel", kind: "quiet", run: function () {
+                return sb.from("friendships").delete().eq("id", i.row);
+              } }
+          ]));
+        });
+      }
+    });
+  }
+
+  /* Bouquets sent between friends. The payload is the builder's own encoded
+     bouquet, the exact string that already travels in a share link, so a sent
+     bouquet and a linked one are the same object and open through the same
+     code. Nothing new renders a bouquet. */
+  function loadBouquets() {
+    if (!me) return Promise.resolve([]);
+    return sb.from("bouquets").select("*").order("created_at", { ascending: false })
+      .then(function (res) {
+        if (res.error || !res.data) return [];
+        var rows = res.data.filter(function (r) { return r.recipient_id === me.id; });
+        var ids = {};
+        rows.forEach(function (r) { if (r.sender_id) ids[r.sender_id] = 1; });
+        var list = Object.keys(ids);
+        var who = list.length
+          ? sb.from("profiles").select("id,username,display_name").in("id", list)
+          : Promise.resolve({ data: [] });
+        return Promise.resolve(who).then(function (pr) {
+          var byId = {};
+          (pr.data || []).forEach(function (x) { byId[x.id] = x; });
+          rows.forEach(function (r) { r._from = shownName(byId[r.sender_id]) || "Someone"; });
+          return rows;
+        });
+      })
+      .catch(function () { return []; });
+  }
+
+  function bouquetHref(payload) {
+    /* Relative, and it has to be: this panel runs from the repo root on the
+       landing page and from a subfolder in either garden. */
+    var here = location.pathname;
+    var base = /\/(personal-garden|shared-garden)\//.test(here) ? "../" : "";
+    return base + "bouquet/bouquet-index.html?b=" + encodeURIComponent(payload);
+  }
+
+  function renderBouquets() {
+    var host = el("div");
+    panelBody.appendChild(host);
+    loadBouquets().then(function (rows) {
+      if (!rows.length) return;
+      var unopened = rows.filter(function (r) { return !r.opened; }).length;
+      host.appendChild(el("div", "ga-h",
+        "Bouquets for you" + (unopened ? " (" + unopened + " new)" : "")));
+      rows.forEach(function (r) {
+        var box = el("div", "ga-bq");
+        if (!r.opened) box.setAttribute("data-new", "1");
+        box.appendChild(el("b", null, "From " + r._from));
+        if (r.message) box.appendChild(el("p", null, r.message));
+        var act = el("div", "ga-act");
+        var open = el("a", "ga-mini", r.opened ? "Open again" : "Open it");
+        open.setAttribute("data-kind", "go");
+        open.href = bouquetHref(r.payload || "");
+        open.style.textDecoration = "none";
+        open.addEventListener("click", function () {
+          if (!r.opened) sb.from("bouquets").update({ opened: true }).eq("id", r.id);
+        });
+        act.appendChild(open);
+        box.appendChild(act);
+        host.appendChild(box);
+      });
+      /* The pip counts bouquets as well as friend requests, because both are
+         somebody waiting on you. */
+      var pending = (state.incoming.length + unopened);
+      if (btn) {
+        btn.setAttribute("data-pending", pending ? "1" : "0");
+        var pip = btn.querySelector(".ga-pip");
+        if (pip) pip.textContent = pending ? String(pending) : "";
+      }
+    });
+  }
+
+  function showChrome() {
+    if (!btn) return;
+    /* No written label on the icon, so the state has to be in the aria label
+       and the hover tip or it says nothing at all to anyone who cannot guess
+       it. There is deliberately NO `title`: the browser's own tooltip would
+       arrive on top of the project's, which is what hovering the music button
+       used to do. */
+    /* THE WORD ON THE CHIP FOLLOWS WHAT THE PANEL ACTUALLY HOLDS. With
+       friends off it opens your account rather than a list of people, and a
+       button labelled Friends that opens neither is worse than no label. */
+    var noun = FRIENDS_OFF ? "Your account" : "Friends";
+    var what = me
+      ? ((profile && profile.username) ? noun + ", signed in as " + profile.username : noun)
+      : "Sign in";
+    btn.setAttribute("aria-label", what);
+    btn.setAttribute("data-tip", me ? noun : "Sign in");
+    if (me) refreshPanel();
+    else { btn.setAttribute("data-pending", "0"); closePanel(); }
+  }
+
+  /* -------------------------------------------------------------------- boot */
+  function boot() {
+    buildUI();
+
+    sb.auth.onAuthStateChange(function (_evt, session) {
+      me = (session && session.user) || null;
+      loadProfile().then(function () {
+        fire();
+        showChrome();
+        if (me && !profile) openClaim();
+      });
+    });
+
+    sb.auth.getSession().then(function (res) {
+      me = (res && res.data && res.data.session && res.data.session.user) || null;
+      return loadProfile();
+    }).then(function () {
+      fire();
+      showChrome();
+      if (me && !profile) openClaim();
+    }).catch(function () {});
+  }
+
+  if (CFG && window.supabase && window.supabase.createClient) {
+    sb = window.supabase.createClient(CFG.url, CFG.key);
+    live = true;
+    onReady(boot);
+  }
+
+  window.GardenAccount = {
+    isLive: function () { return live; },
+    client: function () { return sb; },
+    user: function () { return me; },
+    profile: function () { return profile; },
+    username: function () { return profile && profile.username ? profile.username : ""; },
+    displayName: function () { return shownName(profile); },
+    onChange: function (fn) {
+      listeners.push(fn);
+      /* Called straight away with whatever is known, so a caller does not
+         have to handle "before the first event" as a separate case. */
+      try { fn({ user: me, profile: profile }); } catch (e) {}
+    },
+    refresh: function () { return loadProfile().then(function () { fire(); showChrome(); }); },
+    openFriends: openPanel,
+    openSignIn: openSignIn,
+    mountSignIn: mountSignIn,
+    friends: loadFriends,
+    sendBouquet: function (toId, payload, message) {
+      if (!me) return Promise.reject(new Error("not signed in"));
+      return sb.from("bouquets").insert({
+        sender_id: me.id, recipient_id: toId,
+        payload: String(payload || ""), message: String(message || "")
+      });
+    }
+  };
+})();

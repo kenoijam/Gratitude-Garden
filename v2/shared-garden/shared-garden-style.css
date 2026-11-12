@@ -1,0 +1,685 @@
+/* ── Fraunces, a real variable font, finally present ──
+   These pages spent their whole life falling back to Georgia, because the two
+   Mauritius files the old @font-face rules named were never in the repo. This
+   one is here. It is ONE family with a variable weight axis from 100 to 900,
+   so a semibold genuinely exists and `font-weight: 600` is no longer just bold.
+   The italic is a second face on the same family, so `font-style: italic` picks
+   it up on its own.
+   SOFT 50 rounds the terminals, which is the friendliness the font was chosen
+   for; WONK stays 0, since its slanted alternates are charming in a wordmark
+   and distracting in a paragraph. Both are set on the heading rules, so body
+   text in Arial is untouched. */
+@font-face {
+  font-family: 'Fraunces';
+  src: url('../Fraunces.ttf') format('truetype');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Fraunces';
+  src: url('../Fraunces-Italic.ttf') format('truetype');
+  font-weight: 100 900;
+  font-style: italic;
+  font-display: swap;
+}
+/* ── Serif headings, at NORMAL weight ──
+   These pages went to Arial for a turn and came back. The serif is the landing
+   page's, `'Fraunces', 'Georgia', serif`, so all four pages match
+   again. What is different is the weight: every heading here is normal, not
+   700, because at 700 Georgia comes out thick and the wordmark's lighter
+   setting was the one that read as simple. **The landing page keeps 700**, so
+   its 61px hero does not go thin against a full sky. Buttons stay 700
+   everywhere; that is a separate rule.
+   Fraunces is in the repo, so this is what actually renders now. */
+/* ── Shared type, one system across all four pages ──
+   Headings in the site's condensed serif, body in Arial. The two font files
+   are not in the repo, so every page falls back to Georgia today; the point of
+   declaring them here is that if they are ever added, the gardens and the
+   bouquet change with the landing page instead of drifting away from it. */
+
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}
+
+body {
+  font-family: Arial, Helvetica, sans-serif;
+  background: #cfeef0;
+}
+
+/* Shared card style */
+.gg-card {
+  background: snow;
+  border: 1px solid #e6efed;
+  border-radius: 16px;
+  /* 34 at the top, not 20. A 40px title needs room above it or it reads as
+     sitting on the card's edge. The flower grid and the colour step set their
+     own padding inline and keep it. */
+  padding: 34px 28px 26px;
+  box-shadow: 0 8px 28px rgba(0,0,0,0.06);
+}
+
+/* Input fields styling */
+textarea,
+input[type="text"] {
+  font-family: Arial, Helvetica, sans-serif;
+  outline: none;
+}
+
+/* Make input text align like textarea */
+input[type="text"] {
+  text-align: left;
+}
+
+/* Focus style for textarea and input */
+textarea:focus,
+input[type="text"]:focus {
+  outline: none;
+  border-color: powderblue;
+  box-shadow: 0 0 0 2px powderblue;
+}
+
+/* Landing + Select overlay cards (centered) */
+#landing-wrap,
+#username-wrap,
+#select-wrap {
+  position: fixed;
+  inset: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  z-index: 100;          /* overlays in front of the garden */
+  pointer-events: auto;
+}
+
+#garden-wrap {
+  position: fixed;
+  inset: 0;
+  display: none;
+  padding: 0;
+  overflow: hidden;
+  z-index: 0;
+}
+
+
+/* The gap under the title and the gap under the line below it were both the
+   browser's own h2 and p margins, which put 33px between the title and the
+   line and only 18px between the line and the field under it. That reads as
+   the line belonging to nothing: it should sit close under its title and leave
+   room before the thing it introduces. Screens that set their own margins
+   inline, the select card among them, are unaffected. */
+.gg-title {
+/* Title to subtext ratio. Georgia has exactly TWO weights: measured, 300/400/500
+   all render identically and 600/700/800 all render identically, so a semibold
+   is not available and asking for 600 just gives bold again. A title gains its
+   presence from the RATIO instead. The hero runs about 3.4; these were 1.73 and
+   2.22, which is why they read flat. */
+  font-family: 'Fraunces', 'Georgia', serif;
+  font-size: 42px;
+  /* 600, a real semibold. This was the weight originally wanted and it was
+     not available while Georgia was the fallback, since Georgia renders
+     600 identically to 700. Fraunces has a variable axis, so it is now a
+     genuine weight between normal and the landing page's 700. */
+  font-weight: 600;
+  font-variation-settings: 'SOFT' 50, 'WONK' 0;
+  line-height: 1.15;
+  text-align: center;
+  color: #0f5132;
+  margin: 0 0 10px;
+}
+.gg-sub {
+  font-size: 16px;
+  line-height: 1.5;
+  text-align: center;
+  color: #2c7a7b;
+  margin: 0 0 26px;
+}
+/* Buttons */
+.gg-btn {
+  background: mediumturquoise;
+  color: snow;
+  padding: 14px 18px;
+  border-radius: 12px;
+  font-size: 18px;
+  /* 700, matching every other button on the site. The landing page's buttons
+     are bold and these were weight 400, which made the gardens' primary action
+     read as the softest button anywhere in the project. */
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  width: 100%;
+  transition: transform .15s;
+  pointer-events: auto;
+}
+.gg-btn:hover {
+  transform: scale(1.03);
+  background: turquoise;
+}
+.gg-back {
+  background: #e5e7eb;
+  color: #654321;
+  border: none;
+  padding: 12px 14px;
+  border-radius: 12px;
+  cursor: pointer;
+  width: 100%;
+  margin-top: 12px;
+  font-size: 18px;
+  pointer-events: auto;
+}
+/* Species grid */
+.gg-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+.gg-tile {
+  background: white;
+  border: 4px solid transparent;
+  border-radius: 14px;
+  padding: 8px;
+  box-shadow: 0 8px 18px rgba(0,0,0,0.08);
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center; 
+  gap: 6px;
+  transition: border .15s;
+  pointer-events: auto;
+}
+.gg-tile:hover {
+  border: 4px solid powderblue;
+}
+.preview-holder {
+  width: 160px;
+  height: 110px;
+}
+
+.gg-wrap {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 100;
+  pointer-events: auto;
+}
+
+#select-wrap .gg-card {
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 28px;
+  max-height: calc(100dvh - 40px);
+}
+
+#select-wrap {
+  padding: 20px 12px;
+  align-items: flex-start;
+  overflow-y: auto;
+}
+
+#tips-card {
+  position: absolute;
+  left: 12px;
+  bottom: 40px;              /* lower it closer to the bottom */
+  width: calc(100% - 24px);
+  max-width: 420px;
+
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  padding: 0;
+
+  z-index: 25;
+  text-align: left;
+  pointer-events: none;
+}
+
+
+#tips-card h3 {
+  margin: 0 0 6px 0;
+  font-family: 'Fraunces', 'Georgia', serif;
+  font-size: 21px;
+  font-weight: 600;
+  font-variation-settings: 'SOFT' 50, 'WONK' 0;
+  color: #0f5132;
+}
+
+#tips-card ul {
+  margin: 0;
+  padding-left: 20px;
+  list-style: disc;
+}
+
+#tips-card li {
+  margin-bottom: 4px;
+  font-size: 14px;
+  color: #2f6f57;
+}
+
+
+#save-btn {
+  /* Slot 3 of the top right row of round icons: music at right 16, the
+     account at 62, the journal at 108, this at 154. The sketch sets the same
+     numbers inline and inline wins; these are kept in step so the dead rule
+     cannot resurface with the old labelled-pill look. */
+  position: fixed;
+  top: 20px;
+  right: 154px;
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  border-radius: 50%;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255,249,227,0.92);
+  border: 1.5px solid #b7e4e7;
+  color: #1d6466;
+  box-shadow: 0 2px 10px rgba(29,100,102,0.14);
+  cursor: pointer;
+  z-index: 261;
+  pointer-events: auto;
+}
+#save-btn:hover { background: #e1f7f7; transform: translateY(-1px); }
+#save-btn svg { width: 18px; height: 18px; display: block; }
+@media (max-width: 768px) {
+  /* `!important` on every one, because the sketch sets `top` and `right`
+     INLINE and inline beats a plain rule. Without it the camera stayed at
+     its desktop 20/154 while the other three moved to 16 and their own
+     phone slots, so it sat four pixels low and sixteen to the left of a
+     row it is supposed to be part of. The slots are 12, 54, 96, 138. */
+  #save-btn { top: 16px !important; right: 138px !important;
+              width: 34px !important; height: 34px !important; }
+  #save-btn svg { width: 16px; height: 16px; }
+}
+
+
+.gg-hue-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 10px;
+  border-radius: 999px;
+  background: linear-gradient(
+    to right,
+    hsl(0,   70%, 80%) 0%,
+    hsl(60,  70%, 80%) 16.7%,
+    hsl(120, 70%, 80%) 33.3%,
+    hsl(180, 70%, 80%) 50%,
+    hsl(240, 70%, 80%) 66.7%,
+    hsl(300, 70%, 80%) 83.3%,
+    hsl(360, 70%, 80%) 100%
+  );
+  outline: none;
+  border: 0;
+  pointer-events: auto;
+}
+
+.gg-hue-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: snow;
+  border: 3px solid skyblue;
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.35);
+  cursor: pointer;
+  margin-top: -4px;
+}
+
+.gg-hue-slider::-moz-range-track {
+  height: 10px;
+  border-radius: 999px;
+  background: transparent;
+}
+
+.gg-hue-slider::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: snow;
+  border: 3px solid skyblue;
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.35);
+  cursor: pointer;
+}
+
+#garden-wrap canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 0;
+}
+
+#gg-logo {
+  position: absolute;
+  bottom: 35px;
+  right: 20px;
+  width: 90px;
+  cursor: pointer;
+  z-index: 30;
+  pointer-events: auto;
+}
+
+#gg-logo img {
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.25));
+  transition: transform .2s ease;
+}
+
+#gg-logo:hover img {
+  transform: scale(1.06);
+}
+
+/* Ensure overlays are above canvas */
+.gg-card {
+  pointer-events: auto !important;
+}
+
+.gg-card textarea,
+.gg-card input,
+.gg-card button {
+  pointer-events: auto !important;
+}
+
+/* MOBILE FIX: make tiles smaller so page stops scrolling */
+@media (max-width: 768px) {
+
+  /* reduce tile padding + height */
+.gg-tile {
+  padding: 4px 4px 6px;
+  min-height: 88px;
+  overflow: visible;
+}
+
+.preview-holder {
+  width: 95px;
+  height: 65px;
+  overflow: visible;
+}
+
+  /* tighten grid spacing */
+  .gg-grid {
+    gap: 10px;
+  }
+
+  /* tighten spacing below slider */
+  #color-section {
+    margin-bottom: 14px !important;
+  }
+
+  /* reduce text size for flower names */
+  .gg-tile p {
+    font-size: 15px;
+  }
+
+  .gg-tile {
+  background: white;
+  border: 4px solid transparent;
+  border-radius: 14px;
+  padding: 8px;
+  box-shadow: 0 8px 18px rgba(0,0,0,0.08);
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: border .15s;
+  pointer-events: auto;
+  overflow: visible;
+}
+
+#select-wrap .gg-card {
+    max-height: calc(100dvh - 40px);
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+#tips-card {
+  
+  bottom: 20px;              /* lower it closer to the bottom */
+
+}
+  #tips-card h3 {
+  font-size: 14px;
+}
+  #tips-card li {
+  font-size: 12px;
+  }
+
+.gg-title { font-size: 32px; }
+  .gg-sub { font-size: 15px; line-height: 1.5; }
+  .gg-btn { font-size: 18px; padding: 16px 20px; min-height: 52px; }
+  .gg-back { font-size: 18px; padding: 16px; min-height: 48px; }
+  .gg-card { padding: 28px 22px; }
+  textarea, input[type="text"] { font-size: 16px; min-height: 48px; }
+}
+/* Card headings match the landing page's, so a garden does not read as a
+   different website from the page that introduces it. The sketches build these
+   with p5.dom and set no font-family, so they inherit from here. */
+.gg-card h1, .gg-card h2, .gg-card h3,
+.gg-auth-card h1, .gg-auth-card h2 { font-family: 'Fraunces', 'Georgia', serif; font-weight: 600; font-variation-settings: 'SOFT' 50, 'WONK' 0; letter-spacing: 0.01em; }
+
+/* ===========================================================================
+   THE GARDEN ON A PHONE, SCALED RATHER THAN SHRUNK
+   ===========================================================================
+   Everything in here carries `!important`, and that is not a shortcut. The
+   whole interface is built by `buildUI()` with p5.dom and INLINE `.style()`
+   calls, so a plain rule in this file cannot reach any of it: inline wins.
+   `!important` is the only lever a stylesheet has over an inline value, which
+   is why the existing phone rules in this file use it too.
+
+   The problem it fixes: the interface was built at laptop sizes in pixels and
+   then handed to a 390px screen unchanged, so a card meant to occupy a third
+   of a 1440 window occupied nearly all of a phone, while its type stayed at
+   the size it is on a laptop and read as tiny against it. Type, padding and
+   controls all move together here, so a phone gets the same PROPORTIONS
+   rather than the same pixel values.
+
+   Anything added to `buildUI()` with an inline size needs a line here too. */
+@media (max-width: 768px) {
+  /* The card: less padding, since the screen is narrow, but more room between
+     the things inside it. */
+  .gg-card {
+    padding: 22px 18px 20px !important;
+    width: min(94vw, 460px) !important;
+    max-width: 94vw !important;
+    border-radius: 20px !important;
+  }
+
+  /* The headings. 23px on a laptop card against a 13px line under it is a
+     ratio of 1.8; at the sizes a phone was getting it had fallen to about
+     1.2 and the question read as a label. */
+  .gg-card h2, .gg-card h3, .gg-title {
+    font-size: 25px !important;
+    line-height: 1.16 !important;
+    margin-bottom: 10px !important;
+  }
+  .gg-sub, .gg-card p { font-size: 15px !important; line-height: 1.5 !important; }
+
+  /* Controls at a thumb's size. 44px is the smallest target anybody should
+     have to hit on a touch screen, and the buttons were coming out at 34. */
+  .gg-btn, .gg-back {
+    font-size: 16px !important;
+    padding: 13px 20px !important;
+    min-height: 46px !important;
+    border-radius: 999px !important;
+  }
+  .gg-card input[type="text"], .gg-card textarea {
+    font-size: 16px !important;   /* under 16 and iOS zooms the page on focus */
+    padding: 12px 14px !important;
+  }
+
+  /* The picker. Two columns of a real size rather than four cramped ones. */
+  .gg-grid { grid-template-columns: 1fr 1fr !important; gap: 12px !important; }
+  .gg-tile { padding: 12px 8px 14px !important; min-height: 150px !important; }
+  .gg-tile p { font-size: 14px !important; line-height: 1.35 !important; }
+  .preview-holder { width: 120px !important; height: 86px !important; }
+
+  /* The tips card, which folds on a phone: see garden-cursor.js. Its heading
+     is the tap target, so it cannot be 13px. */
+  #tips-card { max-width: min(92vw, 340px) !important; }
+  #tips-card h3 { font-size: 17px !important; padding: 4px 0 !important; }
+  #tips-card li { font-size: 13.5px !important; line-height: 1.5 !important; }
+
+  /* The line that says the day is done. */
+  #daily-note { font-size: 14px !important; }
+
+  /* THE TITLE STARTS BELOW THE ICON ROW. Both are positioned from the top of
+     the same screen: the four round controls sit at top 16 and are 34 tall,
+     so they own everything down to 50, and the garden's name was placed at 18
+     and ran straight underneath them. On a laptop there is width enough that
+     they never meet; on a phone the name is centred across the whole screen
+     and the icons are in it.
+
+     It costs about 50px of sky, which is the one thing this scene has to
+     spare. The numbers carry `!important` because `buildUI()` sets the same
+     `top` inline. */
+  #daily-note {
+    top: 62px !important;
+    /* WIDTH, not just a cap. The sketch sets a width inline off a formula
+       that reserves 200px either side for the Home pill and the icon row,
+       which on a 390 screen leaves 195 and wraps a sentence to four lines.
+       Below the icons there is nothing either side to reserve for. */
+    width: min(92vw, 420px) !important;
+    max-width: 92vw !important;
+    min-height: 0 !important;
+  }
+
+  /* THE 16px FLOOR ON ANYTHING YOU TYPE INTO, and it is not a style choice.
+     iOS zooms the whole page in when a focused field is under 16px and does
+     not zoom back out, which leaves somebody stranded at 1.3x with the rest
+     of the interface off the side of the screen. The garden pages used to
+     block that with `maximum-scale=1` in their viewport meta, which also
+     takes pinch zoom away from anyone who needs to magnify the page; the
+     floor does the same job and costs nobody anything.
+
+     It is written WIDE on purpose. The account overlay, the claim screen and
+     the friends panel are all built against `document.body` by other modules
+     with their own markup, so a selector scoped to a card would miss them
+     and the miss would only show on a real iPhone. */
+  /* EXCEPT `#gg-name`, THE GARDEN'S OWN TITLE. It is an input only by
+     accident of being editable, and the floor raised it while leaving the
+     "'s Gratitude Garden" beside it alone, so the title read in two sizes.
+     It cannot be corrected with another `!important` either, since any
+     `!important` beats the inline size `fitTitle` computes; it has to be
+     left out. `fitTitle` carries its own 16px floor on a phone, so iOS
+     still never zooms on it. */
+  input[type="text"]:not(#gg-name), input[type="email"], input[type="password"],
+  input[type="search"], input[type="number"], input[type="tel"],
+  input[type="date"], textarea, select {
+    font-size: 16px !important;
+  }
+}
+
+/* NO HOVER EFFECTS ON A TOUCH SCREEN, and `touch-action` on everything that
+   is pressed. iOS has no pointer, so the first tap on anything carrying a
+   `:hover` rule applies the hover instead of activating it, and the browser
+   also waits about 300ms on anything it might have to double tap to zoom.
+   Between them that is a button that needs pressing twice. The long note is
+   in the landing page's `styles.css`. */
+@media (hover: none) {
+  .gg-btn:hover, .gg-back:hover, .gg-tile:hover, .gg-card-btn:hover,
+  #save-btn:hover, #gj-btn:hover, #gg-music-btn:hover, #ga-friends-btn:hover,
+  #back-to-home:hover { transform: none !important; }
+}
+button, a, [role="button"], summary, input[type="range"], label[for] {
+  touch-action: manipulation;
+}
+
+/* HOME IS JUST THE HOUSE ON A PHONE, and it is a HOUSE rather than a back
+   chevron. A chevron pointing left is "the previous page", which is what the
+   browser's own button underneath already says; this link always goes to one
+   particular place, and the one glyph everybody reads as that place is a
+   house. The word stays in `aria-label`.
+
+   THE OLD NOTE, kept because the sizing argument still holds: The word costs about 70px of a 390px
+   row that the garden's own name is trying to centre itself in, and a back
+   chevron in the top left corner is the one piece of navigation nobody has
+   to be told. The word stays in `aria-label`. Every number carries
+   `!important`, since the link is styled inline in the page's markup. */
+@media (max-width: 768px) {
+  #back-to-home {
+    padding: 8px 10px !important;
+    gap: 0 !important;
+    font-size: 0 !important;
+    line-height: 0 !important;
+  }
+  #back-to-home svg { width: 16px !important; height: 16px !important; }
+}
+
+/* ===========================================================================
+   THE FLOWER PICKER, COMPACT: all eight on screen at once
+   ===========================================================================
+   The picker was two columns of tall tiles, 150px each on a phone, with a
+   120 by 86 picture, so choosing meant scrolling through four screens of
+   white boxes with a small flower in each. It is now two columns of WIDE
+   tiles, the flower beside its name and meaning, the same shape the bouquet
+   builder uses, and all eight fit with the name field above them.
+
+   At the END of the file and every rule `!important`, because the phone block
+   above sets these very properties with `!important` and `buildUI()` sets
+   several of them inline. Scoped to `#select-wrap` so no other `.gg-tile`
+   changes. */
+#select-wrap .gg-grid {
+  grid-template-columns: 1fr 1fr !important;
+  gap: 8px !important;
+  margin-top: 4px !important;
+}
+#select-wrap .gg-tile {
+  display: grid !important;
+  grid-template-columns: 56px minmax(0, 1fr) !important;
+  grid-template-rows: auto auto !important;
+  align-items: center !important;
+  align-content: center !important;
+  column-gap: 8px !important;
+  row-gap: 1px !important;
+  height: 68px !important;
+  min-height: 0 !important;
+  padding: 6px 10px 6px 6px !important;
+  border: 2px solid #e4eeeb !important;
+  border-radius: 14px !important;
+  box-shadow: none !important;
+  text-align: left !important;
+}
+#select-wrap .gg-tile:hover { border-color: #1d6466 !important; }
+#select-wrap .preview-holder {
+  grid-column: 1 !important; grid-row: 1 / 3 !important;
+  width: 56px !important; height: 56px !important;
+}
+#select-wrap .gg-tile > span {
+  grid-column: 2 !important;
+  width: auto !important;
+  margin: 0 !important;
+  text-align: left !important;
+  min-width: 0 !important;
+}
+#select-wrap .gg-tile > span:not(.gg-tile-meaning) {
+  grid-row: 1 !important; align-self: end !important;
+  font-size: 14px !important; line-height: 1.2 !important;
+  white-space: nowrap !important; overflow: hidden !important; text-overflow: ellipsis !important;
+}
+#select-wrap .gg-tile > .gg-tile-meaning {
+  grid-row: 2 !important; align-self: start !important;
+  font-size: 11.5px !important; line-height: 1.3 !important; color: #2f6260 !important;
+}
+
+#select-name { margin: 6px 0 10px; text-align: left; }
+#select-name[hidden] { display: none !important; }
+#select-name label {
+  display: block; margin: 0 0 6px;
+  font-family: Arial, Helvetica, sans-serif; font-size: 13px; font-weight: 700; color: #1d6466;
+}
+#select-name textarea { resize: none !important; overflow: hidden !important; }
+
+@media (max-width: 768px) {
+  #select-wrap .gg-card { padding: 22px 16px 18px !important; }
+  #select-wrap .gg-tile { height: 64px !important; padding: 5px 8px 5px 5px !important; column-gap: 6px !important; }
+  #select-wrap .gg-tile > span:not(.gg-tile-meaning) { font-size: 13.5px !important; }
+  #select-wrap .gg-tile > .gg-tile-meaning { font-size: 11px !important; }
+  #select-wrap .gg-sub { margin: 2px 0 12px !important; }
+}
