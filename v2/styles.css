@@ -2264,3 +2264,13 @@ html:not([data-hero]) .hero-sun {
      one line. Resetting the basis is the whole fix. */
   .today-line { flex: 0 0 auto; max-width: none; margin-top: 0; }
 }
+
+/* THE UNOPENED LINE IS A PROMPT, NOT THE LINE. Quieter and lighter than the
+   day's own sentence, so the band plainly has something in it waiting rather
+   than looking like today's fertilizer is "Pat Hortus". */
+.today-line[data-closed] {
+  font-family: Arial, Helvetica, sans-serif;
+  font-weight: 400;
+  font-size: 1rem;
+  color: rgba(255,249,227,0.62);
+}

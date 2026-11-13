@@ -156,9 +156,12 @@
       pick:          { pose: "welcome", line: "Which one feels like today?" },
       why:           { pose: "listen",  line: "No wrong answer here." },
       prompt1:       { pose: "listen",  line: "However it was, it counts." },
+      /* Reached from two places now: before the flower on the write path,
+         and after "why that one" on the flower path. The line has to make
+         sense in both, so it says nothing about where it sits. */
       prompt2:       { pose: "listen",  line: "Just the biggest thing." },
       prompt3:       { pose: "listen",  line: "As much or as little as you like." },
-      prompt4:       { pose: "listen",  line: "A cup of tea counts." },
+      prompt4:       { pose: "listen",  line: "Even a small one helps." },
       flowerPreview: { pose: "planted", line: "There it is." },
       garden:        { pose: "welcome", line: null, quiet: true }
     },

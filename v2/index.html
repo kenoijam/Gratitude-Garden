@@ -53,7 +53,32 @@
       var line = document.getElementById('todayLine');
       var art  = document.getElementById('todayHortus');
       if (!line || !window.GardenGuide || !window.GardenGuide.fertilizer) return false;
-      line.textContent = window.GardenGuide.fertilizer();
+      /* ─────────────────────── TAPPED OPEN, NOT ALREADY THERE
+         The band shows a prompt until Hortus is patted, and then the day's
+         line. A line you uncovered lands differently from one that was
+         simply sitting there, and it gives the one interactive thing on this
+         band something worth doing.
+
+         IT IS REMEMBERED FOR THE DAY, not for ever and not for the visit:
+         `gg_fert_seen` holds the date it was opened, so scrolling back up
+         does not re-hide a line you have already read, and tomorrow's is
+         closed again because tomorrow it is a different line. */
+      var KEY = 'gg_fert_seen';
+      var today = new Date().toISOString().slice(0, 10);
+      function opened() {
+        try { return localStorage.getItem(KEY) === today; } catch (e) { return false; }
+      }
+      function reveal() {
+        line.textContent = window.GardenGuide.fertilizer();
+        line.removeAttribute('data-closed');
+        try { localStorage.setItem(KEY, today); } catch (e) {}
+      }
+      if (opened()) {
+        reveal();
+      } else {
+        line.textContent = 'Pat Hortus for today\u2019s.';
+        line.setAttribute('data-closed', '1');
+      }
       if (art && window.GardenMascot) {
         art.innerHTML = window.GardenMascot.svg('welcome', 150);
         /* THE BAND'S HORTUS ANSWERS A PAT. It took no pointer events at
@@ -66,12 +91,17 @@
           art.__wired = true;
           art.setAttribute('role', 'button');
           art.setAttribute('tabindex', '0');
-          art.setAttribute('aria-label', 'Pat Hortus');
+          art.setAttribute('aria-label', 'Pat Hortus for today\u2019s line');
           art.removeAttribute('aria-hidden');
           var pat = function () {
             if (window.GardenGuide && window.GardenGuide.patHost) {
               window.GardenGuide.patHost(art, 150, 'welcome');
             }
+            /* THE LINE ARRIVES WITH THE HEART, not before it. 260ms in is
+               where the heart is clear of the head and the wink has landed,
+               so the two read as one event rather than as a line appearing
+               and a pat happening to it. */
+            if (line.hasAttribute('data-closed')) setTimeout(reveal, 260);
           };
           art.addEventListener('click', pat);
           art.addEventListener('keydown', function (e) {

@@ -3155,6 +3155,9 @@ function buildUI() {
      written out again, so a species turned on or off in the mood maps cannot
      leave a ninth tile behind in the picker. */
   const PICKABLE = Object.keys(ratingFlowerMap).map(k => ratingFlowerMap[k]);
+  /* species id -> its tile canvas, so the colour slider can repaint the one
+     flower being coloured without touching the other seven. */
+  const pickCanvases = {};
 
   /* A HUE FOR THE TILE ONLY. A planted flower takes `random(0, 360)`, so no
      species here has a colour of its own to show; these are the hero meadow's
@@ -3210,6 +3213,7 @@ function buildUI() {
     cv.style("margin", "0 auto");
     cv.elt.getContext("2d").drawImage(pg.elt, 0, 0, BUF, BUF);
     pg.remove();
+    pickCanvases[sp] = cv.elt;
 
     const nm = prettyName(sp);
     createElement("div", nm).parent(tile)
@@ -3233,15 +3237,74 @@ function buildUI() {
       pickGo.elt.disabled = false;
       pickGo.style("opacity", "1");
       pickGo.html("Continue with the " + nm);
+
+      /* THE COLOUR STARTS AT THIS SPECIES' OWN HUE rather than at wherever
+         the slider happened to be left. Picking a different flower resets
+         it, which is the rule the gardener's flower slider already follows:
+         a daisy's yellow handed to a rose chosen afterwards is a colour
+         nobody asked for. */
+      chosenHue = TILE_HUE[sp] != null ? TILE_HUE[sp] : 200;
+      hueSlider.value(chosenHue);
+      hueRow.style("display", "block");
+      repaintPickTiles();
     });
   });
+
+  /* ─────────────────────────── THE COLOUR, DIRECTLY UNDER THE FLOWERS
+     Choosing a bloom and choosing its colour are one decision, so they are
+     on one card. It is the project's own rainbow slider, the same control
+     both gardens' planters and the bouquet's sender already use, rather than
+     a third way of picking a colour.
+
+     IT IS HIDDEN UNTIL A FLOWER IS CHOSEN. A colour slider above an empty
+     grid is a control for a thing that does not exist yet, and moving it
+     would have nothing to recolour. */
+  const hueRow = createDiv().parent(cardPick);
+  hueRow.style("display", "none");
+  hueRow.style("margin", "2px 0 14px");
+  createElement("label", "And its colour").parent(hueRow)
+    .style("display", "block").style("text-align", "center")
+    .style("font-size", "12.5px").style("font-weight", "600")
+    .style("color", "#0f5132").style("margin", "0 0 7px");
+
+  const hueSlider = createSlider(0, 360, 200);
+  hueSlider.parent(hueRow);
+  hueSlider.addClass("gg-hue-slider");
+  hueSlider.style("width", "100%");
+  hueSlider.style("pointer-events", "auto");
+  hueSlider.elt.style.background =
+    "linear-gradient(90deg,#f7a9a8,#f4e98c,#9be4a5,#8dd7f5,#c9a4f9,#f79ad3,#f7a9a8)";
+  hueSlider.elt.style.borderRadius = "999px";
+  hueSlider.input(() => {
+    chosenHue = hueSlider.value();
+    repaintPickTiles();
+  });
+
+  /* THE CHOSEN TILE REPAINTS AS THE SLIDER MOVES, so the colour is shown on
+     the very flower it belongs to rather than previewed a screen later. Only
+     the chosen one: repainting all eight on every input is eight buffers a
+     frame for seven flowers nobody is colouring. */
+  function repaintPickTiles() {
+    if (!chosenSpecies) return;
+    const rec = pickCanvases[chosenSpecies];
+    if (!rec) return;
+    const pg = createGraphics(120, 120);
+    pg.pixelDensity(2);
+    drawPreviewFlower(pg, chosenSpecies, chosenHue);
+    rec.getContext("2d").clearRect(0, 0, 120, 120);
+    rec.getContext("2d").drawImage(pg.elt, 0, 0, 120, 120);
+    pg.remove();
+  }
 
   const pickGo = gbtn(cardPick, "Pick one above", true);
   pickGo.elt.disabled = true;
   pickGo.style("opacity", "0.5");
   pickGo.mousePressed(() => {
     if (!chosenSpecies) return;
-    chosenHue = random(0, 360);
+    /* NO `random` HERE ANY MORE. The hue is whatever the slider on this card
+       says, which is the point of moving it here. The write-first path still
+       rolls one in `chooseAndAsk`, because there the day chose the flower
+       and nobody was offered a colour. */
     showStep("why");
   });
   gbtn(cardPick, "Back").mousePressed(() => showStep("fork"));
@@ -3279,7 +3342,10 @@ function buildUI() {
   }
   whyBox.input(() => { whyText = whyBox.value().trim(); whyLabel(); });
   whyLabel();
-  whyGo.mousePressed(() => showStep("prompt3"));
+  /* WHO OR WHAT COMES AFTER WHY, and only on the flower-first path. On the
+     write-first path that question was already asked before the flower, so
+     asking it again here would be the same question twice in one sitting. */
+  whyGo.mousePressed(() => showStep(pickedBySelf ? "prompt2" : "prompt3"));
   gbtn(cardWhy, "Back").mousePressed(() => {
     showStep(pickedBySelf ? "pick" : "prompt2");
   });
@@ -3423,7 +3489,11 @@ function buildUI() {
       });
       btn.elt.style.background = '#e0f2f1';
       btn.elt.style.borderColor = '#26a69a';
-      setTimeout(() => chooseAndAsk(), 180);
+      /* ON THE FLOWER PATH THERE IS NOTHING TO CHOOSE: the bloom was picked
+         two screens ago, so this answer is recorded and the flow carries on
+         to the entry. On the write path this is still the moment the day
+         decides. */
+      setTimeout(() => { pickedBySelf ? showStep("prompt3") : chooseAndAsk(); }, 180);
     });
   });
 
@@ -3441,7 +3511,7 @@ function buildUI() {
   continueBtn2.style("pointer-events", "auto");
   continueBtn2.mousePressed(() => {
     if (!dayShaper) return;
-    chooseAndAsk();
+    if (pickedBySelf) showStep("prompt3"); else chooseAndAsk();
   });
 
   const backBtn2 = createButton("Back").addClass("gg-back").parent(card2);
@@ -3455,7 +3525,7 @@ function buildUI() {
   backBtn2.elt.style.width = "100%";
   backBtn2.elt.style.cursor = "pointer";
   backBtn2.elt.style.pointerEvents = "auto";
-  backBtn2.mousePressed(() => showStep("prompt1"));
+  backBtn2.mousePressed(() => showStep(pickedBySelf ? "why" : "prompt1"));
 
   prompt3Wrap = createDiv().id("prompt3-wrap").parent(root).addClass("gg-wrap");
   prompt3Wrap.style("z-index", "100");
@@ -3605,9 +3675,10 @@ function buildUI() {
   backBtn3.style("width", "100%");
   backBtn3.style("cursor", "pointer");
   backBtn3.style("pointer-events", "auto");
-  /* BACK FROM THE ENTRY IS THE WHY SCREEN NOW, on both paths, because that is
-     what comes before it in the new order. It used to be prompt2. */
-  backBtn3.mousePressed(() => showStep("why"));
+  /* BACK FROM THE ENTRY IS `prompt2` ON BOTH PATHS, because "who or what
+     affected your day" now sits directly before it either way: on the write
+     path it always did, and on the flower path it was added after "why". */
+  backBtn3.mousePressed(() => showStep("prompt2"));
 
   /* ------------------------------------------------- one thing you were glad of
      THE LAST QUESTION, AND THE WHOLE POINT OF THE THREE BEFORE IT. The flow
@@ -3635,7 +3706,20 @@ function buildUI() {
     .style("text-align", "center").style("color", "#0f5132")
     .style("font-size", "23px").style("font-weight", "600")
     .style("margin", "0 0 2px 0").parent(cardGlad);
-  createP("A cup of tea counts. Write whatever you like.")
+  /* IT STAYS OPTIONAL AND IS NOW ENCOURAGED, which is the middle of the two
+     things that were on the table. Requiring it was asked for and refused
+     on the reasoning already on file: gratitude produced on demand to get
+     past a screen is a toll rather than gratitude, and this is the LAST
+     card, three questions in and one tap from the flower, which is the
+     cruellest place in the flow to put a wall.
+
+     WHAT CHANGED IS THAT THE CARD NOW SAYS IT IS WORTH DOING. "It helps,
+     even on the days it feels silly" is an argument rather than an
+     instruction, and it names the exact case where somebody would skip. The
+     button still reads "See Your Flower anyway" while the box is empty, so
+     the skip is still named rather than hidden; the card simply no longer
+     pretends to be neutral about which it hopes you pick. */
+  createP("A cup of tea counts. It helps, even on the days it feels silly.")
     .addClass("gg-sub").style("font-size", "13px").style("margin", "0 0 12px 0")
     .style("text-align", "center").style("color", "#5a9e8e").parent(cardGlad);
 
@@ -3736,24 +3820,14 @@ function buildUI() {
   quoteDiv.style("line-height", "1.5");
   quoteDiv.style("padding", "0 8px");
 
-  createP("Choose your flower color:").style("text-align", "center").style("font-size", "13px").style("font-weight", "600").style("color", "#0f5132").style("margin", "0 0 8px 0").parent(card4);
-
-  colorPickerSelect = createSlider(0, 360, chosenHue);
-  colorPickerSelect.parent(card4);
-  colorPickerSelect.addClass("gg-hue-slider");
-  colorPickerSelect.style("width", "100%");
-  colorPickerSelect.style("pointer-events", "auto");
-  colorPickerSelect.style("margin-bottom", "14px");
-
-  const sliderEl = colorPickerSelect.elt;
-  sliderEl.style.background =
-    "linear-gradient(90deg,#f7a9a8,#f4e98c,#9be4a5,#8dd7f5,#c9a4f9,#f79ad3,#f7a9a8)";
-  sliderEl.style.borderRadius = "999px";
-
-  colorPickerSelect.input(() => {
-    chosenHue = colorPickerSelect.value();
-    updateFlowerPreview();
-  });
+  /* THE COLOUR IS NOT CHOSEN HERE ANY MORE. It sat on this last card, so the
+     flower you had already decided on arrived with one more decision
+     attached to it, and the screen that exists to SHOW you the thing you
+     made was still a form. It moved onto the picker, where the rest of
+     choosing a flower happens: `#pick-wrap` builds the same slider and this
+     card now only shows the result. The write-first path never sees a colour
+     control at all, which is correct, since on that path the day chose the
+     flower and a random hue is part of that. */
 
   plantBtn = createButton("Plant in Garden").parent(card4);
   plantBtn.style("background", "#4db6ac");

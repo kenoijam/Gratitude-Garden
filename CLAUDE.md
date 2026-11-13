@@ -924,6 +924,70 @@ One exception: `personal-garden-style.css` is not the near-empty file it looks l
 - **`bloomShadow` READS THE LIVE TRANSFORM, and that is a real bug fixed rather than a precaution.** The shape is drawn 6000 units off to the right and dragged back purely as its own shadow, and the offset and blur are DEVICE pixels the transform never touches. It used to convert them with the pixel density alone, which is right only while nothing else has scaled the canvas. The opening scales the bloom from 0.18 to 1, so an unaccounted scale of k left the shadow `6000 * (k - 1)` device pixels away: at 0.18 that is about 9800px off the left of the screen, and it slid in from there and snapped into place on the last frame. **That was the visible pop.** It takes the scale off `ctx.getTransform()` now, so a bloom drawn inside any `scale()` gets its shadow in the right place. Verified at three scales: the shadow's centre sits within half a pixel of the bloom's, and its width tracks the scale exactly.
 - The old `drawBud` and `drawGrowingStem` are GONE from both files. Do not reintroduce them alongside this.
 
+**THE v2 PERSONAL FLOW, AND THE COLOUR MOVED OFF THE LAST CARD.**
+
+```
+fork ──> pick a flower + ITS COLOUR ──> why that one? (optional)
+     └─> how was your day? ──> who or what affected it? ──> what do you make of it?
+                                   │
+         both paths ──> who/what (flower path only) ──> anything else ──> one gratitude ──> your flower
+```
+
+- **THE COLOUR IS CHOSEN WITH THE FLOWER, not after everything else.** It sat
+  on the final card, so the screen that exists to SHOW you what you made was
+  still a form, and a bloom you had decided on four screens earlier arrived
+  with one more decision attached. It is on the picker now, directly under
+  the grid.
+  - **HIDDEN UNTIL A FLOWER IS CHOSEN.** A colour slider over an empty grid
+    is a control for a thing that does not exist and has nothing to recolour.
+  - **PICKING A SPECIES RESETS THE HUE to that species' own**, which is the
+    rule the gardener's flower slider already follows: a daisy's yellow
+    handed to a rose chosen afterwards is a colour nobody asked for.
+  - **ONLY THE CHOSEN TILE REPAINTS** as the slider moves. All eight on every
+    input is eight buffers a frame for seven flowers nobody is colouring.
+  - **THE WRITE-FIRST PATH NEVER SEES A COLOUR CONTROL**, and that is correct:
+    there the day chose the flower, and `chooseAndAsk`'s random hue is part
+    of the same idea. `pickGo` no longer rolls one, since the slider owns it.
+- **"WHO OR WHAT AFFECTED YOUR DAY" IS `prompt2` REUSED, reached from two
+  places.** On the write path it comes before the flower as it always did; on
+  the flower path it was added after "why that one". Its line in Hortus's
+  table therefore says nothing about where it sits. Every exit from it forks
+  on `pickedBySelf`, and so does its Back.
+- **THE ENTRY'S BACK IS `prompt2` ON BOTH PATHS** now, because that question
+  sits directly before it either way.
+- **GRATITUDE STAYS OPTIONAL AND IS NOW ENCOURAGED.** Making it mandatory was
+  asked for and refused on the reasoning already on file: gratitude produced
+  on demand to get past a screen is a toll rather than gratitude, and this is
+  the LAST card, three questions in and one tap from the flower. What changed
+  is that the card now ARGUES for it: "It helps, even on the days it feels
+  silly" names the exact case where somebody would skip. The button still
+  reads "See Your Flower anyway" on an empty box, so the skip is still named
+  rather than hidden; the card has simply stopped pretending to be neutral.
+
+**THE FERTILIZER BAND IS TAPPED OPEN (v2).** The band shows "Pat Hortus for
+today's" until the figure is patted, then the day's line. A line you
+uncovered lands differently from one that was sitting there, and it gives the
+one interactive thing on that band something worth doing.
+
+- **REMEMBERED FOR THE DAY, not for ever and not for the visit.**
+  `gg_fert_seen` holds the DATE it was opened, so scrolling back up does not
+  re-hide a line already read, and tomorrow's is closed again because
+  tomorrow it is a different line.
+- **THE LINE ARRIVES 260ms AFTER THE PAT**, which is where the heart is clear
+  of the head and the wink has landed, so the two read as one event rather
+  than as a line appearing and a pat happening to it.
+- **The unopened state is set in the BODY face at body size**, quieter than
+  the day's own sentence, so the band plainly has something waiting rather
+  than looking like today's fertilizer is "Pat Hortus".
+
+**HORTUS IS NOT GOING ON THE CURSOR, and the reason is that the cursor is
+already taken.** `garden-cursor.js` draws a five petal flower at rest that
+becomes a sparkle over anything clickable, and that is the ONLY signal this
+site has for what can be pressed; `data-trail` adds a sparkle trail on top.
+A mascot following the pointer would cover the thing being aimed at and fight
+the one signal that cannot be lost. It already glances toward the pointer
+from wherever it stands, which is the same idea without the cost.
+
 **THE LAST QUESTION IS THE ONE THE PROJECT IS NAMED AFTER, and it is its own screen.** The flow asked how the day felt, what shaped it, and whether there was anything else, and never once asked what anybody was glad of. It is `prompt1 -> prompt2 -> prompt3 -> prompt4 -> flowerPreview -> garden` now.
 
 - **IT IS SKIPPABLE, AND THAT IS THE DESIGN RATHER THAN A CONCESSION.** Gratitude produced on demand to get past a screen is a toll, not gratitude, and this is the LAST card: three questions in and one tap from the flower is the cruellest place in the flow to put a wall. Requiring an answer was weighed again later and refused again for that reason.
