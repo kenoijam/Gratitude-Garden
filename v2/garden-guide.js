@@ -163,14 +163,15 @@
       prompt3:       { pose: "listen",  line: "As much or as little as you like." },
       prompt4:       { pose: "listen",  line: "Even a small one helps." },
       flowerPreview: { pose: "planted", line: "There it is." },
-      garden:        { pose: "welcome", line: null, quiet: true }
+      /* PRESENT, NOT GONE. See the note on `silent` in `say`. */
+      garden:        { pose: "welcome", line: null, silent: true }
     },
     shared: {
       landing:       { pose: "welcome", line: "Everybody here planted one today." },
       username:      { pose: "listen",  line: "Any name you like." },
       select:        { pose: "welcome", line: "Which one feels like today?" },
       confirm:       { pose: "listen",  line: "Your colour, and whether your name goes on it." },
-      garden:        { pose: "welcome", line: null, quiet: true }
+      garden:        { pose: "welcome", line: null, silent: true }
     }
   };
 
@@ -335,7 +336,7 @@
 
   /* ───────────────────────────────────────────────────────────────── the build */
   var root = null, bubble = null, me = null, holdT = 0, current = "";
-  var reactT = 0, introT = 0;
+  var reactT = 0, introT = 0, introUp = false;
   var look = { x: 0, y: 0, live: false, lx: 0, ly: 0 };
 
   /* HOW FAR AN EYE MAY TRAVEL, in viewBox units. The eye is a circle of
@@ -638,13 +639,91 @@
     return INGARDEN ? (GARDEN_SAYS[MODE] || {})[id] : SAYS[id];
   }
 
+  /* ─────────────────────────── IT SAYS HELLO IN A BUBBLE OF ITS OWN, ONCE
+     It used to ride on the FRONT of the first line it ever said, on the
+     argument that two bubbles in a row the moment somebody arrives is the
+     crowding the letter already waits to avoid. That was wrong about what it
+     cost: glued to the front of the day's fertilizer, or of a garden card's
+     line, the greeting read as a preamble to that line rather than as
+     somebody arriving, and whoever it was addressed to was already reading
+     the half after it. A hello is its own sentence.
+
+     IT IS STILL SAID ONCE, EVER, and still site wide: a character that
+     introduces itself every visit is one that has not remembered you.
+     `gg_met_hortus` in `localStorage`, for the same reason the letter uses
+     it. The put-away flag stays in `sessionStorage`, because that IS about
+     this visit.
+
+     MARKED ONLY ONCE IT HAS BEEN ON SCREEN LONG ENOUGH TO READ. Marking it
+     at the moment it is composed loses it to any step immediately
+     superseded, which the personal garden produces at boot every time.
+
+     `INTRO_HOLD` IS SHORTER THAN `HOLD`, because the line after it is the
+     one the screen is actually about and a greeting sitting there for seven
+     seconds delays it. */
+  var INTRO_HOLD = 4200;
+  function meetFirst(e) {
+    introUp = true;
+    moveTo(e && e.spot);
+    root.removeAttribute("data-hushed");
+    root.querySelector(".gg-g-text").textContent =
+      "Hi, I am " + NAME + "! I will be your companion through the garden.";
+    setPose("welcome");
+    bubble.removeAttribute("data-on");
+    void bubble.offsetWidth;
+    bubble.setAttribute("data-on", "1");
+    clearTimeout(introT);
+    introT = setTimeout(meet, 2000);
+    clearTimeout(holdT);
+    holdT = setTimeout(function () {
+      introUp = false;
+      /* WHATEVER SCREEN IS ON NOW, not the one that was on when it arrived.
+         `current` is kept up to date by every `say` that lands underneath
+         the greeting, so the line that follows it is never stale. */
+      meet();
+      say(current, true);
+    }, INTRO_HOLD);
+  }
+
   function say(id, again) {
     var e = entry(id);
     if (!e) return;
     current = id;
+
+    /* THE GREETING OWNS THE BUBBLE WHILE IT IS UP, and a step arriving under
+       it only changes what comes NEXT. That is what makes the introduction
+       survivable: the personal garden calls `showStep` more than once while
+       it boots, so anything that let a later line overwrite the bubble lost
+       the greeting inside half a second. */
+    if (introUp) return;
+
     /* Hushed sections hide the column outright rather than speaking. */
     if (e.quiet) { root.setAttribute("data-hushed", "1"); clearTimeout(holdT); return; }
     root.removeAttribute("data-hushed");
+
+    /* THE GREETING IS CHECKED AFTER THE HUSH, or somebody whose first
+       section is the Fertilizer band meets Hortus standing beside the band's
+       own Hortus, which is the two-characters fault that hush exists for. It
+       waits for a section that is actually its own. */
+    if (!met()) { meetFirst(e); return; }
+
+    /* ───────────────────────────────── SILENT IS NOT THE SAME AS HUSHED
+       A garden is silent: you came to look at it and a companion talking
+       over the thing you came for is the one behaviour that would make
+       anybody close the page. It is NOT hidden, which is what `quiet` does
+       and what this used to be. Hortus simply standing in the corner of the
+       garden is the whole of what makes it a companion rather than a thing
+       that helps you through a form and then vanishes at the end of it, and
+       it is still there to be patted. `quiet` is kept for the Fertilizer
+       band, where the band carries its own Hortus and two of the same
+       character on one screen is two characters. */
+    if (e.silent) {
+      moveTo(e.spot);
+      setPose(e.pose);
+      bubble.removeAttribute("data-on");
+      clearTimeout(holdT);
+      return;
+    }
 
     moveTo(e.spot);
     var words = e.line === null ? today() : e.line;
@@ -665,21 +744,6 @@
        garden has still never met it, so it introduces itself on the first
        line it ever says, wherever that is. On the landing page that line is
        the fertilizer; in a garden it is whatever the first screen says. */
-    if (!met()) {
-      words = "Hello, I am " + NAME + "! Your companion through the garden. " + words;
-      /* MARKED ONLY ONCE IT HAS BEEN ON SCREEN LONG ENOUGH TO READ, and that
-         is a bug fixed rather than caution. Marking it here, at the moment
-         the line is composed, loses the greeting to any step that is
-         immediately superseded: the personal garden calls `showStep` more
-         than once while it boots, so the introduction was said and replaced
-         inside 400ms and the only trace left was `gg_met_hortus` sitting at
-         1. Measured exactly that way.
-
-         The timer is restarted by every later line, so the greeting simply
-         rides whichever one is actually on screen when things settle. */
-      clearTimeout(introT);
-      introT = setTimeout(meet, 2000);
-    }
     root.querySelector(".gg-g-text").textContent = words;
     setPose(e.pose);
 

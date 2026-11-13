@@ -169,6 +169,9 @@
      THE WINK IS AN ARC, NOT A DASH, which is that module's own note: a flat
      line reads as a closed eye on a sleeping face, where a shallow curve
      bending up is what a wink is. */
+  /* NOTHING CALLS THIS ANY MORE: the pat closes both eyes. It is kept rather
+     than deleted because the wink is the gardener's own pat face and a pose
+     that ever needs one should use this arc rather than draw a second. */
   function eyeWink() {
     return '<circle cx="' + EYE_L + '" cy="' + EYE_Y + '" r="5.4" fill="' + C.ink + '"/>' +
            arc(EYE_R - 7, EYE_Y + 2, EYE_R + 7, EYE_Y + 2, EYE_R, EYE_Y - 8);
@@ -181,9 +184,17 @@
     planted: { face: eyesHappy() + MOUTH.beam,  wings: 1.08,
                extra: '<path d="' + starPath(38, 62, 9) + '" fill="' + C.pollen + '"/>' +
                       '<path d="' + starPath(163, 70, 7) + '" fill="' + C.wing + '"/>' },
-    /* the pat: a wink and a wider smile, with the heart released by the
-       guide as a separate element so it can be re-fired without redrawing */
-    pat:     { face: eyeWink()   + MOUTH.beam,  wings: 1.06 },
+    /* THE PAT CLOSES BOTH EYES AND BEAMS, which is where it parts company
+       with `AvatarDraw.patFx` and the gardener's one-eyed wink. A wink is a
+       thing done AT somebody, a shared joke; being patted is a thing that
+       happens TO you, and the face for it is both eyes squeezed shut and a
+       wide smile. On a round creature with two dot eyes a single wink also
+       reads at a glance as one eye having gone missing.
+       `eyesHappy` is the pair of upward arcs, not the flat line `eyesShut`
+       draws, so this is a face enjoying itself rather than one asleep. The
+       heart is released by the guide as a separate element, so it can be
+       re-fired without the figure being redrawn around it. */
+    pat:     { face: eyesHappy() + MOUTH.beam,  wings: 1.06 },
     bye:     { face: eyesShut()  + MOUTH.hush,  wings: 0.90,
                extra: '<text x="150" y="60" font-family="Fraunces,Georgia,serif" ' +
                       'font-size="20" font-style="italic" fill="' + C.wing + '">z</text>' }

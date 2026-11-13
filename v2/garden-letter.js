@@ -66,8 +66,9 @@
   var LETTER = {
     hello: "Hello there!",
     lines: [
-      "I used to compare myself with others, wanting what I didn't have. Then I realized how much there already was to appreciate in my own life. So I made this: a garden of your own, and a shared one.",
-      "Whatever you noticed today is enough!"
+      "I used to compare my situations with others all the time, wanting the things I didn't have. But one day I realized I have many things to appreciate in my own life! From the fact that I get to wake up everyday, eat good food, and meet amazing people, it's changed how I see the world.",
+      "That's why I made Gratitude Garden: a personal little garden to record your days, and a shared one to see what other people are grateful for.",
+      "Gratitude gets you a long way, and whatever you noticed today is enough!"
     ],
     sign: "Kenisha",
     go: "Come in"
