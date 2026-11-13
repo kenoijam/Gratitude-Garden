@@ -32,7 +32,10 @@ let browsing = false;
    and again by `keepFlowersOnScreen`, which holds a flower in far enough for
    its own label: the two disagreeing would push blooms off the screen edge. */
 function flowerLabel(f) {
-  return f && f.anon ? "Someone" : ((f && f.word) || "");
+  /* An anonymous flower shows its ALIAS, and falls back to "Someone" for any
+     planted before aliases existed, whose `word` is genuinely empty. */
+  if (f && f.anon) return f.word || "Someone";
+  return (f && f.word) || "";
 }
 let gratitudeText = "";
 let username = "";
@@ -3121,14 +3124,12 @@ function goToFlowers() {
   syncSelectName();
 }
 
-/* The name field on the flower screen shows only for somebody signed out. */
-function syncSelectName() {
-  const row = document.getElementById("select-name");
-  if (!row) return;
-  const acc = window.GardenAccount;
-  const signedIn = !!(acc && acc.isLive() && acc.username());
-  row.hidden = signedIn;
-}
+/* THE FLOWER SCREEN NO LONGER CARRIES A NAME FIELD, so this is a no-op kept
+   only because three call sites still reach for it and deleting it would mean
+   chasing all three for nothing. `#select-name` is now on the CONFIRM card
+   and `syncNameRow` owns it; this must NOT touch it, or it would hide the
+   field the identity choice has just revealed. */
+function syncSelectName() {}
 
 function refreshUsernameStep() {
   if (!usernameNote || !usernameContinueBtn) return;
@@ -3566,18 +3567,12 @@ backBtnSelect.mousePressed(() => showStep("landing"));
    is moved to the top of this screen, so there is still one screen fewer. The
    old step is still built, because its note and its planted-today check are
    reused, but nothing sends anybody to it. */
-const nameRow = createDiv().id("select-name").parent(selectCard);
-const nameLabel = createElement("label", "Your name on the flower").parent(nameRow);
-nameLabel.attribute("for", "select-name-field");
-usernameField.parent(nameRow);
-usernameField.id("select-name-field");
-usernameField.style("height", "46px");
-usernameField.style("padding", "11px 14px");
-usernameField.style("margin-bottom", "4px");
-usernameNote.parent(nameRow);
-usernameNote.style("margin", "0 0 4px");
-selectCard.elt.insertBefore(nameRow.elt, grid.elt);
-syncSelectName();
+/* THE NAME IS NOT ASKED FOR HERE ANY MORE. It sat above the flower grid, so
+   the first thing this garden asked was who you are, before you had chosen
+   anything and before anybody had said the flower could be anonymous. Asking
+   for a name and then offering anonymity a screen later is asking for
+   something you may not need. The field moved to the CONFIRM card, where the
+   identity question already lives, and shows only if "My name" is chosen. */
 backBtnSelect.style("margin-top", "8px");
 
 /* Confirm / Customize Color */
@@ -3692,7 +3687,53 @@ function paintIdRow() {
     b.style("border-color", on ? "#26a69a" : "#bde0d6");
   });
   idNote.html(ID_NOTE[identity] || "");
+  /* GUARDED ON A HOISTED `var`, AND THE OBVIOUS GUARD THROWS. `paintIdRow`
+     runs once from `buildIdRow()` BEFORE the name row below it exists, and
+     the first attempt tested `typeof syncNameRow === "function"`, which
+     passes: a function DECLARATION is hoisted. What is not hoisted is the
+     `const nameRow` inside it, and **`typeof` on a `const` in its temporal
+     dead zone throws a ReferenceError rather than returning "undefined"**,
+     so the usual typeof guard is no guard at all here. `nameRowEl` is a
+     `var`, which hoists as undefined and can be tested safely. */
+  syncNameRow();
 }
+/* ══════════════════════════════════════════════ AN ANONYMOUS FLOWER IS NAMED
+   Every anonymous bloom used to read "Someone", so a meadow with four of them
+   had four identical labels and no way to tell one person's flower from
+   another's. An ALLITERATIVE ALIAS gives each one a name without giving it a
+   person: "Lovely Lily", "Sunny Sunflower".
+
+   IT IS STILL ANONYMOUS, and that matters because this project's rule is that
+   anonymity here is honest or it is nothing. Nothing about the planter goes
+   into it: the adjective is picked at random and the noun is the species they
+   chose, which is already public on the flower itself. The real name is still
+   never written to the room.
+
+   IT IS STORED IN `word` RATHER THAN DERIVED AT THE DRAW, and it has to be:
+   the room is shared, so an alias computed per viewer would give the same
+   bloom a different name on every screen. `anon` stays true alongside it, so
+   nothing downstream has to guess.
+
+   THE COST IS UNCHANGED. `sharedPlantedToday` reads names out of the room and
+   an alias matches no real username, so an anonymous flower is still invisible
+   to it and only the browser marker holds that person to one a day. */
+const ANON_WORDS = {
+  daisy:     ["Dear", "Dainty", "Dreamy", "Darling"],
+  tulip:     ["Tender", "Thoughtful", "Tranquil", "True"],
+  rose:      ["Restful", "Radiant", "Ready", "Rosy"],
+  sunflower: ["Sunny", "Steady", "Soft", "Sincere"],
+  lily:      ["Lovely", "Lively", "Light", "Little"],
+  hibiscus:  ["Happy", "Hopeful", "Humble", "Hearty"],
+  orchid:    ["Open", "Optimistic", "Openhearted"],
+  lavender:  ["Lucky", "Loyal", "Lilting", "Low-key"]
+};
+function anonAlias(sp) {
+  const list = ANON_WORDS[sp];
+  const noun = sp ? sp.charAt(0).toUpperCase() + sp.slice(1) : "Someone";
+  if (!list || !list.length) return noun;          /* a species with no list still gets a name */
+  return list[Math.floor(Math.random() * list.length)] + " " + noun;
+}
+
 function buildIdRow() {
   idRow.elt.innerHTML = "";
   idButtons = [];
@@ -3726,6 +3767,48 @@ function buildIdRow() {
 buildIdRow();
 if (window.GardenGardener && GardenGardener.onChange) GardenGardener.onChange(buildIdRow);
 
+/* ───────────────────────────────────── THE NAME, ASKED ONLY IF IT IS WANTED
+   It lives here rather than above the flower grid, and it appears only when
+   "My name" is the choice. Signed in it never appears at all: the account's
+   username is used and cannot be edited, which is what makes a flower in the
+   meadow traceable to a real account.
+
+   `usernameField` and `usernameNote` are the SAME ELEMENTS the old username
+   step built, simply re-parented. The old step is still constructed because
+   its planted-today check is reused, and building a second field here would
+   be two inputs writing to one variable. */
+var nameRowEl = null;      /* `var`, so `syncNameRow` can test it before this runs */
+const nameRow = createDiv().id("select-name").parent(confirmCard);
+nameRowEl = nameRow;
+nameRow.style("text-align", "left");
+nameRow.style("margin", "4px 0 14px");
+const nameLabel = createElement("label", "Write your name").parent(nameRow);
+nameLabel.attribute("for", "select-name-field");
+nameLabel.style("display", "block");
+nameLabel.style("font-size", "12.5px");
+nameLabel.style("font-weight", "600");
+nameLabel.style("color", "#0f5132");
+nameLabel.style("margin", "0 0 6px");
+usernameField.parent(nameRow);
+usernameField.id("select-name-field");
+usernameField.style("height", "46px");
+usernameField.style("padding", "11px 14px");
+usernameField.style("margin-bottom", "4px");
+usernameField.style("width", "100%");
+usernameField.style("box-sizing", "border-box");
+usernameNote.parent(nameRow);
+usernameNote.style("margin", "0");
+
+/* ONE PLACE DECIDES WHETHER IT IS ON SCREEN, called from `paintIdRow` so it
+   can never disagree with which identity button is lit. */
+function syncNameRow() {
+  if (!nameRowEl) return;                /* not built yet, see paintIdRow */
+  const acc = window.GardenAccount;
+  const signedIn = !!(acc && acc.isLive() && acc.username());
+  nameRowEl.style("display", (identity === "name" && !signedIn) ? "block" : "none");
+}
+syncNameRow();
+
 const plantBtn = createButton("Plant in Garden").addClass("gg-btn").parent(confirmCard);
 plantBtn.mousePressed(() => {
   /* Checked again here, not only at the username step. Somebody can sit on
@@ -3735,7 +3818,7 @@ plantBtn.mousePressed(() => {
   /* AN ANONYMOUS FLOWER CARRIES NO NAME AND NO FIGURE, and both have to be
      stripped at the call rather than hidden at the draw: the room object is
      public and a hidden name is a name anybody can read. */
-  addFlower(gratitudeText, anon ? "" : username, chosenSpecies, chosenHue,
+  addFlower(gratitudeText, anon ? anonAlias(chosenSpecies) : username, chosenSpecies, chosenHue,
     (identity === "gardener" && haveGardener()) ? GardenGardener.get() : null, anon);
   markSharedPlanted();
   saveGarden();

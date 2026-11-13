@@ -864,6 +864,46 @@ Same rendering engine, different state layer. `preload()` calls `partyConnect("w
 - (Resolved) The colour step washed the whole viewport with `rgba(207, 238, 240, 0.85)` on `#confirm-wrap`, so the garden appeared to vanish the moment you reached it. Every other step leaves its `.gg-wrap` transparent and lets the card stand on the scene. If a step ever loses the garden again, look for a background on its wrap.
 - (Resolved) `showStep` never made `#garden-wrap` visible, so the CSS `display: none` on it stood at every step and the sky, hills and ground never appeared behind anything. The personal garden shows its wrap unconditionally for exactly this reason, and the shared one now does too. If a garden ever renders on a blank background again, this is the line to check.
 
+#### THE NAME IS ASKED LAST, AND AN ANONYMOUS FLOWER HAS A NAME (v2 only)
+
+- **THE FIELD CAME OFF THE FLOWER SCREEN.** It sat above the grid, so the
+  first thing this garden asked was who you are: before you had chosen
+  anything, and before anybody had said the flower could be anonymous.
+  Asking for a name and then offering anonymity a screen later is asking for
+  something you may not need. It is on the CONFIRM card now, where the
+  identity question already lives, and it appears only when "My name" is the
+  choice. Signed in it never appears at all.
+- **`syncNameRow` IS CALLED FROM `paintIdRow`**, so which field is on screen
+  can never disagree with which identity button is lit.
+- **`syncSelectName` IS NOW A NO-OP AND MUST STAY ONE.** Three call sites
+  still reach for it. It used to set `row.hidden` on `#select-name`, which is
+  the very row the identity choice now reveals, so leaving its body in place
+  would hide the field the moment anything called it.
+- **`typeof` ON A `const` IN ITS TEMPORAL DEAD ZONE THROWS, and that cost a
+  round.** `paintIdRow` runs once from `buildIdRow()` before the name row
+  below it exists, and the first guard was `typeof syncNameRow === "function"`,
+  which passes, because a function DECLARATION is hoisted. What is not
+  hoisted is the `const nameRow` inside it, and `typeof` on that raises a
+  ReferenceError rather than returning "undefined". The guard is a hoisted
+  `var nameRowEl`, which is undefined until assigned and can be tested.
+- **AN ANONYMOUS FLOWER IS NAMED NOW: an alliterative alias**, "Lovely Lily",
+  "Sunny Sunflower". Every one used to read "Someone", so a meadow with four
+  of them had four identical labels and no way to tell one person's flower
+  from another's.
+  - **IT IS STILL ANONYMOUS.** Nothing about the planter goes into it: the
+    adjective is random and the noun is the species they chose, which is
+    already public on the flower itself. The real name is still never written
+    to the room, which is this garden's standing rule.
+  - **IT IS STORED IN `word`, NOT DERIVED AT THE DRAW, and it has to be.** The
+    room is shared, so an alias computed per viewer would give the same bloom
+    a different name on every screen. `anon` stays true alongside it.
+  - **`flowerLabel` FALLS BACK TO "Someone"** for any anonymous flower planted
+    before aliases existed, whose `word` is genuinely empty.
+  - **THE COST IS UNCHANGED.** `sharedPlantedToday` reads names out of the
+    room and an alias matches no real username, so an anonymous flower is
+    still invisible to it and only the browser marker holds that person to one
+    a day.
+
 #### Who a flower is from, and looking before planting
 
 **THREE WAYS TO BE ON A FLOWER, CHOSEN ON THE CONFIRM STEP.** `identity` holds `"gardener"`, `"name"` or `"anon"`.
