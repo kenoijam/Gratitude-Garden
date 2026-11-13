@@ -59,6 +59,43 @@ const NAME_PX_MIN = (typeof window !== "undefined" && window.innerWidth <= 768) 
 let titlePx = NAME_PX;
 
 let prompt1Wrap, prompt2Wrap, prompt3Wrap, prompt4Wrap, flowerPreviewWrap, gardenWrap;
+/* ═══════════════════════════════════════════════════════════════════════════
+   THE FLOW FORKS AT THE DOOR (v2 only)
+
+   It was: how was your day, what shaped it, anything else, one gratitude, and
+   only THEN a flower, inferred from all of it. It is now a choice between
+   picking your own flower and letting the day choose, and both paths rejoin
+   at the same three writing screens.
+
+        fork  "Which way today?"
+          |                     |
+       pick a flower       prompt1 how was your day
+          |                prompt2 what shaped it
+          |                     | (chooseFlowerForMood)
+          +-------> why "why that one?" <-------+
+                    prompt3 anything else
+                    prompt4 one small gratitude
+                    flowerPreview
+                    garden
+
+   WHY A FORK RATHER THAN SIMPLY PICKING. Picking first was the brief, and
+   taken literally it DELETES `chooseFlowerForMood` from the personal garden,
+   which is that garden's one real difference from the shared one: there you
+   pick, here your words choose. The fork keeps both and costs one short
+   screen.
+
+   WHAT THE INFERENCE LOST, STATED PLAINLY. On the mood path it now runs on
+   the rating and the shaper only, because the journal and the gratitude are
+   written AFTER the flower now rather than before it. The keyword votes, two
+   per hit, therefore contribute nothing on that path. The 4 and 3 weights are
+   untouched and every one of the eight is still reachable; there is simply
+   less to separate two days that answered the first two questions the same
+   way. ═══════════════════════════════════════════════════════════════════ */
+let forkWrap, pickWrap, whyWrap;
+let whyText = "";
+/* Which path got here, because the "why" screen asks a different question of
+   each: you can say why you picked one, but not why a machine did. */
+let pickedBySelf = false;
 let continueBtn1, continueBtn2, continueBtn3;
 let journalField, gratitudeField, gladBtn;
 let colorPickerSelect, plantBtn;
@@ -330,7 +367,7 @@ function markPlantedToday() {
   if (window.GardenStore) window.GardenStore.markPlanted(getTodayDate());
 }
 
-function addFlower(dayRating, dayShaper, journal, species, hue, gratitude) {
+function addFlower(dayRating, dayShaper, journal, species, hue, gratitude, why) {
   if (hasPlantedToday()) return;
   const flowerCount = flowers.length;
   let size;
@@ -430,6 +467,11 @@ maxStem = height * lerp(0.15, 0.21, t) * stemScale;
        a journal and no gratitude, which has to stay tellable from a day that
        simply left it empty. */
     gratitude: gratitude || "",
+    /* WHY THAT FLOWER, in the planter's own words. Its own field rather than
+       folded into `journal` for the same reason `gratitude` is: a day planted
+       before this screen existed carries neither, and that has to stay
+       tellable from a day that left them empty. */
+    why: why || "",
     species,
     x,
     baseY,
@@ -3004,6 +3046,229 @@ function updateScreen() {
 function buildUI() {
   const root = select("#ui-root");
 
+
+  /* ═════════════════════════════════════════════ THE FORK, THE PICKER, THE WHY
+     Built to the same pattern as the four prompt cards above: a `.gg-wrap`
+     holding a `.gg-card`, every size set INLINE because that is how this
+     sketch builds its interface, which also means the phone block at the end
+     of `personal-garden-style.css` has to carry `!important` to reach any of
+     it. */
+
+  function gwrap(id) {
+    const w = createDiv().id(id).parent(root).addClass("gg-wrap");
+    w.style("display", "none");
+    w.style("flex-direction", "column");
+    w.style("align-items", "center");
+    w.style("justify-content", "center");
+    w.style("z-index", "100");
+    w.style("pointer-events", "auto");
+    return w;
+  }
+  function gcard(wrap, wide) {
+    const c = createDiv().addClass("gg-card").parent(wrap);
+    c.style("max-width", wide ? "520px" : "460px");
+    c.style("width", wide ? "min(520px, 94vw)" : "min(460px, 92vw)");
+    c.style("box-sizing", "border-box");
+    c.style("padding", "24px 28px 20px 28px");
+    return c;
+  }
+  function ghead(card, text) {
+    return createElement("h3", text).style("text-align", "center")
+      .style("color", "#0f5132").style("font-size", "23px")
+      .style("font-weight", "600").style("margin", "0 0 10px 0").parent(card);
+  }
+  function gsub(card, text) {
+    return createElement("p", text).style("text-align", "center")
+      .style("color", "#5c8d84").style("font-size", "14px")
+      .style("margin", "0 0 18px 0").parent(card);
+  }
+  function gbtn(card, label, primary) {
+    const b = createButton(label).parent(card);
+    b.style("background", primary ? "#26a69a" : "#e0e0e0");
+    b.style("color", primary ? "#fff" : "#666");
+    b.style("border", "none");
+    b.style("border-radius", "12px");
+    b.style("padding", "12px");
+    b.style("font-size", primary ? "16px" : "14px");
+    b.style("font-weight", primary ? "700" : "500");
+    b.style("width", "100%");
+    b.style("cursor", "pointer");
+    b.style("margin-bottom", "8px");
+    b.style("pointer-events", "auto");
+    return b;
+  }
+
+  /* ---------------------------------------------------------------- the fork */
+  forkWrap = gwrap("fork-wrap");
+  const forkTitle = createDiv().parent(forkWrap);
+  forkTitle.style("text-align", "center");
+  forkTitle.style("pointer-events", "none");
+  forkTitle.style("margin-bottom", "10px");
+  forkTitle.style("margin-top", "-110px");
+  createElement("h1", "Daily Reflection").addClass("gg-title").parent(forkTitle);
+
+  const cardFork = gcard(forkWrap);
+  ghead(cardFork, "Which way today?");
+  /* THE TWO ARE NAMED BY WHAT THEY DO, not by which is the default. Neither is
+     recommended: picking is faster and choosing is the thing this garden has
+     always done, and which suits a given day is the planter's business. */
+  gsub(cardFork, "Choose a flower yourself, or answer two questions and let the day choose one for you.");
+
+  gbtn(cardFork, "I'll pick one", true).mousePressed(() => {
+    pickedBySelf = true;
+    showStep("pick");
+  });
+  gbtn(cardFork, "Let today choose", true).mousePressed(() => {
+    pickedBySelf = false;
+    showStep("prompt1");
+  });
+
+  /* -------------------------------------------------------------- the picker */
+  pickWrap = gwrap("pick-wrap");
+  const cardPick = gcard(pickWrap, true);
+  ghead(cardPick, "Choose your flower");
+  gsub(cardPick, "Every one stands for something.");
+
+  const pickGrid = createDiv().parent(cardPick);
+  pickGrid.style("display", "grid");
+  pickGrid.style("grid-template-columns", "repeat(4, 1fr)");
+  pickGrid.style("gap", "10px");
+  pickGrid.style("margin-bottom", "16px");
+
+  /* THE EIGHT PICKABLE, read off `ratingFlowerMap`'s own values rather than
+     written out again, so a species turned on or off in the mood maps cannot
+     leave a ninth tile behind in the picker. */
+  const PICKABLE = Object.keys(ratingFlowerMap).map(k => ratingFlowerMap[k]);
+
+  /* A HUE FOR THE TILE ONLY. A planted flower takes `random(0, 360)`, so no
+     species here has a colour of its own to show; these are the hero meadow's
+     own figures for the same eight, so a tile looks like the flower the
+     landing page draws rather than like a colour invented here. The planted
+     one is still random, which is deliberate and unchanged. */
+  const TILE_HUE = { daisy: 25, sunflower: 48, tulip: 290, rose: 350,
+                     lily: 185, hibiscus: 352, orchid: 305, lavender: 268 };
+
+  /* `flowerMeanings` CARRIES NO `name`, only a meaning, keywords and a quote,
+     so the label is built from the id. Checked rather than assumed. */
+  function prettyName(sp) {
+    return sp.charAt(0).toUpperCase() + sp.slice(1);
+  }
+
+  PICKABLE.forEach(sp => {
+    const tile = createDiv().parent(pickGrid);
+    tile.addClass("gg-tile");
+    tile.style("border", "2px solid #bde0d6");
+    tile.style("border-radius", "12px");
+    tile.style("padding", "8px 4px 6px");
+    tile.style("cursor", "pointer");
+    tile.style("text-align", "center");
+    tile.style("background", "#fff");
+    tile.style("pointer-events", "auto");
+
+    /* The flower is the garden's OWN preview family, blitted out of a
+       `p5.Graphics` into a small canvas, which is what the history strip and
+       the shared garden's picker both do. An eighth copy of the flower maths
+       would drift from the seven that already exist. */
+    const holder = createDiv().parent(tile);
+    holder.style("line-height", "0");
+    const pg = createGraphics(76, 76);
+    pg.pixelDensity(2);
+    drawPreviewFlower(pg, sp, TILE_HUE[sp] != null ? TILE_HUE[sp] : 200);
+    const cv = createElement("canvas").parent(holder);
+    cv.elt.width = 76; cv.elt.height = 76;
+    cv.style("width", "56px"); cv.style("height", "56px");
+    cv.elt.getContext("2d").drawImage(pg.elt, 0, 0, 76, 76);
+    pg.remove();
+
+    const nm = prettyName(sp);
+    createElement("div", nm).parent(tile)
+      .style("font-size", "12.5px").style("font-weight", "600")
+      .style("color", "#0f5132").style("margin-top", "2px");
+    /* THE MEANING IS ON THE TILE, which is what the shared garden's picker
+       does and what makes this a choice rather than eight pictures. The
+       wording is `flowerMeanings`' own, so the two gardens cannot disagree
+       about what a flower stands for. */
+    createElement("div", flowerMeanings[sp] ? flowerMeanings[sp].meaning : "")
+      .parent(tile).style("font-size", "10.5px").style("color", "#5c8d84")
+      .style("line-height", "1.25").style("margin-top", "1px");
+
+    tile.mousePressed(() => {
+      chosenSpecies = sp;
+      /* The chosen tile is the only one ringed, so re-picking is obvious. */
+      pickGrid.elt.querySelectorAll(".gg-tile").forEach(t => {
+        t.style.border = "2px solid #bde0d6";
+      });
+      tile.style("border", "2px solid #26a69a");
+      pickGo.elt.disabled = false;
+      pickGo.style("opacity", "1");
+      pickGo.html("Continue with the " + nm);
+    });
+  });
+
+  const pickGo = gbtn(cardPick, "Pick one above", true);
+  pickGo.elt.disabled = true;
+  pickGo.style("opacity", "0.5");
+  pickGo.mousePressed(() => {
+    if (!chosenSpecies) return;
+    chosenHue = random(0, 360);
+    showStep("why");
+  });
+  gbtn(cardPick, "Back").mousePressed(() => showStep("fork"));
+
+  /* ----------------------------------------------------------------- the why */
+  whyWrap = gwrap("why-wrap");
+  const cardWhy = gcard(whyWrap);
+  const whyHead = ghead(cardWhy, "Why that one?");
+  const whySub = gsub(cardWhy, "A word or two is plenty.");
+
+  const whyBox = createElement("textarea").parent(cardWhy);
+  whyBox.attribute("placeholder", "Because...");
+  whyBox.attribute("rows", "3");
+  whyBox.style("width", "100%");
+  whyBox.style("box-sizing", "border-box");
+  whyBox.style("border", "2px solid #bde0d6");
+  whyBox.style("border-radius", "12px");
+  whyBox.style("padding", "12px");
+  /* 16px IS A HARD FLOOR ON ANYTHING TYPED INTO. iOS zooms the whole page in
+     on a focused field under it and does not zoom back out. */
+  whyBox.style("font-size", "16px");
+  whyBox.style("font-family", "Arial, Helvetica, sans-serif");
+  whyBox.style("resize", "vertical");
+  whyBox.style("margin-bottom", "14px");
+  whyBox.style("pointer-events", "auto");
+  whyBox.input(() => { whyText = whyBox.value().trim(); });
+
+  /* SKIPPABLE, like the gratitude screen, and NAMED rather than hidden for the
+     same reason: an answer produced on demand to get past a screen is not an
+     answer. The button says so while the box is empty, so leaving it empty is
+     a thing somebody notices doing rather than a default they fall through. */
+  const whyGo = gbtn(cardWhy, "Continue", true);
+  function whyLabel() {
+    whyGo.html(whyBox.value().trim() ? "Continue" : "Continue anyway");
+  }
+  whyBox.input(() => { whyText = whyBox.value().trim(); whyLabel(); });
+  whyLabel();
+  whyGo.mousePressed(() => showStep("prompt3"));
+  gbtn(cardWhy, "Back").mousePressed(() => {
+    showStep(pickedBySelf ? "pick" : "prompt2");
+  });
+
+  /* The question differs by path, and `showStep` cannot set it because the
+     wording belongs with the card. You can say why you picked one; you cannot
+     say why a machine did, only what you make of it. */
+  window.__tuneWhy = function () {
+    if (pickedBySelf) {
+      whyHead.html("Why that one?");
+      whySub.html("A word or two is plenty.");
+      whyBox.attribute("placeholder", "Because...");
+    } else {
+      whyHead.html("What do you make of it?");
+      whySub.html("Your day chose this flower. A word or two is plenty.");
+      whyBox.attribute("placeholder", "It feels...");
+    }
+    whyLabel();
+  };
+
   prompt1Wrap = createDiv().id("prompt1-wrap").parent(root).addClass("gg-wrap");
   prompt1Wrap.style("display", "flex");
   prompt1Wrap.style("flex-direction", "column");
@@ -3127,7 +3392,7 @@ function buildUI() {
       });
       btn.elt.style.background = '#e0f2f1';
       btn.elt.style.borderColor = '#26a69a';
-      setTimeout(() => showStep("prompt3"), 180);
+      setTimeout(() => chooseAndAsk(), 180);
     });
   });
 
@@ -3145,7 +3410,7 @@ function buildUI() {
   continueBtn2.style("pointer-events", "auto");
   continueBtn2.mousePressed(() => {
     if (!dayShaper) return;
-    showStep("prompt3");
+    chooseAndAsk();
   });
 
   const backBtn2 = createButton("Back").addClass("gg-back").parent(card2);
@@ -3309,7 +3574,9 @@ function buildUI() {
   backBtn3.style("width", "100%");
   backBtn3.style("cursor", "pointer");
   backBtn3.style("pointer-events", "auto");
-  backBtn3.mousePressed(() => showStep("prompt2"));
+  /* BACK FROM THE ENTRY IS THE WHY SCREEN NOW, on both paths, because that is
+     what comes before it in the new order. It used to be prompt2. */
+  backBtn3.mousePressed(() => showStep("why"));
 
   /* ------------------------------------------------- one thing you were glad of
      THE LAST QUESTION, AND THE WHOLE POINT OF THE THREE BEFORE IT. The flow
@@ -3372,15 +3639,20 @@ function buildUI() {
   continueBtn4.style("margin-bottom", "8px");
   continueBtn4.style("pointer-events", "auto");
   continueBtn4.mousePressed(() => {
-    /* BOTH TEXTS FEED THE CHOICE. The keyword lists in `flowerMeanings` are
-       full of gratitude words, and this is the field most likely to hit them,
-       so leaving it out would make the one question about gratitude the one
-       question with no bearing on which flower grows. The weighting is
-       untouched: it is still two per keyword found anywhere in what was
-       written. */
-    chosenSpecies = chooseFlowerForMood(dayRating, dayShaper,
-      (journalEntry + " " + gratitudeText).trim());
-    chosenHue = random(0, 360);
+    /* THE SPECIES IS ALREADY DECIDED BY THE TIME ANYBODY REACHES THIS SCREEN,
+       on both paths: picked at the picker, or inferred the moment the second
+       mood question was answered. This used to be where the choice was made,
+       on the rating, the shaper, the journal AND the gratitude together, and
+       the note that stood here said both texts feed it.
+
+       THAT IS THE COST OF THE REORDER AND IT IS REAL. The journal and the
+       gratitude are now written after the flower rather than before it, so
+       the keyword votes cannot reach the choice on either path. The rating's
+       4 and the shaper's 3 still decide it on the mood path. If the keyword
+       votes are ever wanted back, the flower has to be chosen late again and
+       the "why" screen has to move with it.
+
+       The hue is still random, and still set where the species is. */
     showStep("flowerPreview");
     updateFlowerPreview();
   });
@@ -3465,7 +3737,7 @@ function buildUI() {
   plantBtn.style("margin-bottom", "8px");
   plantBtn.style("pointer-events", "auto");
   plantBtn.mousePressed(() => {
-  addFlower(dayRating, dayShaper, journalEntry, chosenSpecies, chosenHue, gratitudeText);
+  addFlower(dayRating, dayShaper, journalEntry, chosenSpecies, chosenHue, gratitudeText, whyText);
   flowerPreviewWrap.style("display", "none");
   showStep("garden");
   dayRating = "";
@@ -3712,7 +3984,7 @@ prompt1Wrap.style("display", "none");
    visitor was dropped into the garden with no prompts and nothing saying why.
    showStep is the one driver, so it also gets the Save button, the tips card
    and the name field right. */
-showStep(hasPlantedToday() ? "garden" : "prompt1");
+showStep(hasPlantedToday() ? "garden" : "fork");
 }
 
 function updateFlowerPreview() {
@@ -3755,8 +4027,24 @@ function updateFlowerPreview() {
   }
 }
 
+/* THE MOOD PATH'S ONE DECISION POINT. Called from both of prompt2's exits,
+   the tap on a shaper and its Continue, so the two cannot drift. */
+function chooseAndAsk() {
+  chosenSpecies = chooseFlowerForMood(dayRating, dayShaper, "");
+  chosenHue = random(0, 360);
+  showStep("why");
+}
+
 function showStep(s) {
   step = s;
+
+  const showFork = s === "fork";
+  const showPick = s === "pick";
+  const showWhy  = s === "why";
+  if (forkWrap) forkWrap.elt.style.display = showFork ? "flex" : "none";
+  if (pickWrap) pickWrap.elt.style.display = showPick ? "flex" : "none";
+  if (whyWrap)  whyWrap.elt.style.display  = showWhy  ? "flex" : "none";
+  if (showWhy && window.__tuneWhy) window.__tuneWhy();
 
   const showPrompt1 = s === "prompt1";
   const showPrompt2 = s === "prompt2";
@@ -3873,7 +4161,7 @@ function setup() {
      had just applied and the prompts never came back the next day. The
      question is whether today's flower is planted, which is the same question
      buildUI asks, so both now ask it the same way. */
-  showStep(hasPlantedToday() ? "garden" : "prompt1");
+  showStep(hasPlantedToday() ? "garden" : "fork");
 
   mountJournal();
   tintCursor();

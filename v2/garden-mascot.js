@@ -35,6 +35,8 @@
   var C = {
     body:    "#fbe484",   /* butter, the palette's --yellow */
     bodyLow:  "#f3d45f",  /* the same butter darker: the project's only depth trick */
+    nose:     "#eda08f",  /* a soft coral, warmer than the cheek and darker than
+                             both, so it is the one warm mark on the face */
     foot:     "#e7bf43",  /* a THIRD step down. At bodyLow the feet were the same
                              colour as the body's own bottom shading and vanished
                              into it, which is the whole risk of depth by lightness:
@@ -110,6 +112,17 @@
     return '<path d="M' + x1 + ' ' + y1 + 'Q' + qx + ' ' + qy + ' ' + x2 + ' ' + y2 +
            '" fill="none" stroke="' + C.ink + '" stroke-width="2.8" stroke-linecap="round"/>';
   }
+
+  /* A LITTLE ROUNDED TRIANGLE, POINT DOWN. It is drawn as a three point path
+     STROKED IN ITS OWN FILL with a round join, which is what rounds the
+     corners: a path with three quadratic curves would do the same and takes
+     three times the numbers to say. 7 wide and 5.5 tall before the stroke,
+     which lands it between two eyes 36 apart without touching either.
+
+     IT SITS AT y 117 TO 123 AND THE MOUTH STARTS AT 125, so there is a 2px
+     gap. Any mouth added below has to respect that or the face gains a blob. */
+  var NOSE = '<path d="M100 123L96.5 117.5L103.5 117.5Z" fill="' + C.nose +
+             '" stroke="' + C.nose + '" stroke-width="2.2" stroke-linejoin="round"/>';
 
   var MOUTH = {
     smile:  '<path d="M93 125Q100 132 107 125" fill="none" stroke="' + C.ink +
@@ -266,9 +279,22 @@
     s += '<g clip-path="url(#mclip-' + pose + ')">' +
          '<ellipse cx="100" cy="186" rx="60" ry="42" fill="' + C.bodyLow + '"/></g>';
 
+    /* TWO SMALL OVALS FOR HANDS, half in and half out of the silhouette. The
+       body's half width at y 140 is about 44, so its edge is at 56 and 144
+       and a hand centred at 54 and 146 sits across that line: wholly outside
+       it reads as two beads floating beside the figure, wholly inside and it
+       is a mark on the belly. Drawn AFTER the body so they are in front of
+       it and BEFORE the face, and in `bodyLow` so they separate from the body
+       by the one lightness step this project builds depth with. */
+    s += '<ellipse cx="54" cy="140" rx="9.5" ry="7.5" fill="' + C.bodyLow +
+         '" transform="rotate(-16 54 140)"/>';
+    s += '<ellipse cx="146" cy="140" rx="9.5" ry="7.5" fill="' + C.bodyLow +
+         '" transform="rotate(16 146 140)"/>';
+
     s += '<ellipse cx="71" cy="127" rx="11" ry="7" fill="' + C.cheek + '"/>';
     s += '<ellipse cx="129" cy="127" rx="11" ry="7" fill="' + C.cheek + '"/>';
     s += '<g class="gm-eyes">' + p.face + '</g>';
+    s += NOSE;
     if (p.extra) s += p.extra;
     return s;
   }

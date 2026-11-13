@@ -277,6 +277,27 @@ sketches and is deliberately NOT a line for line transcription of them.
   - **It leaves the TOP OF THE HEAD**, never the face, because the antennae
     and their flowers are up there and anything rising from the face would be
     rising out of the flower. `AvatarDraw` records the same reasoning.
+- **A NOSE AND TWO HANDS.** The nose is a rounded triangle, point down, drawn
+  as a three point path STROKED IN ITS OWN FILL with a round join, which is
+  what rounds the corners; three quadratic curves would do the same and take
+  three times the numbers. It is coral, warmer than the cheek and darker than
+  both, so it is the one warm mark on the face, and it sits y 117 to 123
+  against a mouth starting at 125. **Any new mouth has to respect that 2px
+  gap** or the face gains a blob.
+- **THE HANDS SIT ACROSS THE SILHOUETTE'S EDGE, half in and half out.** The
+  body's half width at y 140 is about 44, so its edge is at 56 and 144 and a
+  hand centred at 54 and 146 straddles it. Wholly outside they read as two
+  beads floating beside the figure; wholly inside they are a mark on the
+  belly. Drawn after the body and before the face, in `bodyLow`.
+- **RUBBING ITS HEAD PATS IT, and the test is DIRECTION CHANGES.** A distance
+  or a dwell test cannot tell a rub from crossing the figure on the way
+  somewhere else: 300px straight across it is a lot of travel and not a rub,
+  where three reversals in under a second is nothing else. **Three, not two**:
+  two fire on an ordinary wobble of the hand while reading the bubble, which
+  pats it at random. The count resets after 700ms with no reversal so a slow
+  browse never accumulates one, and it cools down for the pat's own 1100ms or
+  a rub that carries on re-fires `react` every few frames and the wink never
+  finishes.
 - **ONE BODY, FIVE FACES.** `POSES` holds welcome, listen, hard, planted and
   bye, and only the face and the wing scale change between them. Five whole
   drawings is how five expressions drift into five characters.

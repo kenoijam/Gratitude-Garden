@@ -379,6 +379,38 @@
       react();
     });
 
+    /* ─────────────────────────────────────── RUBBING ITS HEAD PATS IT
+       A TAP ALREADY PATS, and this is the gesture people actually make at a
+       small round creature on a screen: the pointer goes back and forth over
+       it. Counting DIRECTION CHANGES is what distinguishes a rub from simply
+       crossing the figure on the way somewhere else, which a distance or a
+       dwell test cannot: moving 300px straight across it is a lot of travel
+       and not a rub, where three reversals in under a second is nothing else.
+
+       THREE REVERSALS, NOT TWO. Two fire on an ordinary wobble of the hand
+       while reading the bubble, which pats it at random; three needs intent.
+       The count resets after 700ms of no reversal, so a slow browse never
+       accumulates one over a minute.
+
+       AND IT COOLS DOWN FOR THE LENGTH OF THE PAT, or a rub that carries on
+       re-fires `react` every few frames and the wink never finishes. */
+    var rub = { dir: 0, flips: 0, at: 0, until: 0 };
+    me.addEventListener("pointermove", function (e) {
+      if (e.pointerType === "touch") return;
+      var now = Date.now();
+      if (now < rub.until) return;
+      if (now - rub.at > 700) rub.flips = 0;
+      var d = e.movementX > 1 ? 1 : (e.movementX < -1 ? -1 : 0);
+      if (!d) return;
+      if (rub.dir && d !== rub.dir) { rub.flips++; rub.at = now; }
+      rub.dir = d;
+      if (rub.flips >= 3) {
+        rub.flips = 0;
+        rub.until = now + 1100;      /* the pat's own length */
+        react();
+      }
+    }, { passive: true });
+
     /* IT WATCHES THE POINTER. One document level listener rather than one per
        element, passive so it can never hold up a scroll, and it only writes a
        transform when the eyes have actually moved by a tenth of a unit, so a
@@ -460,6 +492,13 @@
   window.addEventListener("resize", function () {
     if (window.innerWidth === lastW) return;
     lastW = window.innerWidth;
+    /* `root` IS NULL WHENEVER THE GUIDE WAS NEVER BUILT, which is every visit
+       where it has been put away for the session: `boot()` returns before
+       `build()` and this listener is registered at module level, so it runs
+       regardless. Without this guard a resize after dismissing it threw on
+       `root.removeAttribute`. Found in the console on another page, because
+       this pane's buffer survives navigation. */
+    if (!root) return;
     if (me) setPose(pose);
     /* COMING BACK OVER 768 HAS TO PUT IT WHERE THE SECTION SAYS, and going
        under it has to CLEAR the inline anchors, or a left spot written on a
@@ -490,7 +529,10 @@
        uses it: meeting somebody is not a thing that happens again next week.
        The guide's own put-away flag stays in `sessionStorage`, because that
        IS about this visit. */
-    if (e.line === null && !met()) { words = "Hello, I am " + NAME + ". " + words; meet(); }
+    if (e.line === null && !met()) {
+      words = "Hello, I am " + NAME + "! Your companion through the garden. " + words;
+      meet();
+    }
     root.querySelector(".gg-g-text").textContent = words;
     setPose(e.pose);
 
