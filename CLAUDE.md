@@ -404,6 +404,54 @@ gardens, driven by the STEP the sketch is on.
   restarted by every later line, so the greeting rides whichever line is
   actually on screen once things settle.
 
+## THE SECTION ORDER MOVED (v2): THE FERTILIZER BAND IS SECOND
+
+`home, wisdom, about, gardens, flowers, start`. The band is something to read
+BEFORE reflecting, so it sits straight after the hero rather than fifth, and
+somebody who only reads the top of the page still gets it. It is also what a
+dark teal band is best at: one short stop between two long cream ones.
+
+**MOVING A SECTION IS FIVE EDITS THAT MUST ALL AGREE**, and the old note said
+four. The fifth is the sparkle list.
+
+1. the markup
+2. the `.side-nav-item` order and its `data-section`
+3. the `sectionIds` array that drives the scroll spy
+4. **the three CURVE COLOURS**, since every curve is painted in the colour of
+   the section ABOVE it, so moving one section changes its own curve and its
+   new neighbour's: `.wisdom::before` cream to **grass**, `.about::before`
+   grass to **dark teal**, `.cta::before` dark teal to **cream**. The other
+   two are untouched because their neighbours did not move. Get one wrong and
+   a section wears a roll in a colour that appears nowhere near it.
+5. **the `SECTIONS` array in `index.html`** that builds the per section
+   sparkle canvases, which is in document order and carries a dark/light flag
+   per section.
+
+- **THE BAND NEEDED A REAL `section-title`.** The wiggle is a SELECTOR,
+  `[data-wiggle], .section-title em`, so a section with no title is the one
+  section whose heading never springs. Measured across all five: this was the
+  only one with no `.section-title` and so the only one with no wiggling word.
+  A heading also gives it the shape every other section has, an eyebrow over
+  a title, rather than a label floating over a sentence.
+- **"Swipe to see more" IS GONE FROM THE BAND, AND IT WAS A LIE.** That hint
+  is a phone only `::after` written for `.tips-grid`, which was a horizontal
+  scroller of three cards; the band replaced that grid, so the hint sat under
+  one centred sentence promising something to swipe to that was not there.
+  **`.about::after` keeps its copy and that one is honest**: `.about-right`
+  really is `overflow-x: auto` with scroll snapping on a phone, measured at
+  899 of scroll width against 274 of client width. **Check that the thing
+  actually scrolls before writing a hint saying it does.**
+- **`flex-basis` IS ALONG THE MAIN AXIS, and the phone block changes the
+  axis.** `.today-line` carries `flex: 1 1 320px` so it shares the desktop
+  row with the figure; the moment the mobile block turns `.today-inner` into
+  a COLUMN that 320px becomes a HEIGHT. Measured: a 48 character sentence
+  rendering 320px tall and the band at 957px on a 780 screen, a screen and a
+  quarter for one line. `flex: 0 0 auto` in the phone block is the whole fix,
+  and it brought the band to 737 with the line at 99.
+- **EVERYTHING FULL WIDTH IN `.today-inner` HAS TO SAY `width: 100%`**, since
+  it is a wrapping flex ROW: the new title did not, and sat to the LEFT of
+  the day's line on the same row rather than above it.
+
 ## THE FERTILIZER OF THE DAY IS A BAND, AND IT REPLACED THE TIPS (v2 ONLY)
 
 `#wisdom` keeps its id, its dark teal ground, its curve and its side nav

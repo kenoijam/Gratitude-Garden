@@ -458,9 +458,13 @@ section { padding: 5rem 5rem; }
    a curved top edge from the hills, so this is a second curve a short way below
    the first; it is here on purpose, to see whether it reads as layered ground
    or as a mistake. If it is the second, this block is what to delete. */
+/* DARK TEAL now: the Fertilizer band sits above this, not the meadow.
+   NOTE the old comment here about this being a "second curve" below the
+   hills no longer applies and has gone with it: the hills are two sections
+   up, and it is `.wisdom::before` that now carries the grass down. */
 .about::before {
   content: ''; position: absolute; top: -60px; left: 50%; transform: translateX(-50%);
-  width: 110%; height: 100px; background: var(--grass); border-radius: 0 0 50% 50%;
+  width: 110%; height: 100px; background: var(--darkteal); border-radius: 0 0 50% 50%;
 }
 .about-title, .about-body, .about-right { position: relative; z-index: 1; }
 /* CENTRED, LIKE EVERY OTHER SECTION'S. It was left aligned because it used
@@ -897,7 +901,18 @@ canvas.flower-canvas { position: absolute; top: 0; left: 0; width: 100%; height:
 /* THE CURVE IS ALWAYS THE COLOUR OF THE SECTION ABOVE, and above Wisdom is
    the flower guide's cream. It was pale blue for as long as the gardener had
    a section of its own between them. */
-.wisdom::before { content: ''; position: absolute; top: -60px; left: 50%; transform: translateX(-50%); width: 110%; height: 100px; background: var(--cream); border-radius: 0 0 50% 50%; }
+/* ─────────────────────── THE CURVES MOVED WITH THE SECTION (v2)
+   Every curve is painted in the colour of the section ABOVE it, so moving
+   the Fertilizer band to second changed three of them and only three:
+
+     hero -> wisdom     this one, now the meadow's GRASS (was cream)
+     wisdom -> about    `.about::before`, now DARK TEAL (was grass)
+     flowers -> start   `.cta::before`, now CREAM (was dark teal)
+
+   The other two are untouched because their neighbours did not move. Get one
+   of these wrong and a section wears a roll in a colour that appears nowhere
+   near it, which is the single most visible thing on the page. */
+.wisdom::before { content: ''; position: absolute; top: -60px; left: 50%; transform: translateX(-50%); width: 110%; height: 100px; background: var(--grass); border-radius: 0 0 50% 50%; }
 
 /* ---------------------------------------------------- the gardener band
    IT SHARES #gardens' GROUND rather than being a section of its own. Every
@@ -996,9 +1011,10 @@ canvas.flower-canvas { position: absolute; top: 0; left: 0; width: 100%; height:
   padding: 116px 5rem 124px;   /* 100px below the copy, matching the 100 above */
   position: relative; overflow: hidden;
 }
+/* CREAM now: the flower guide sits above this, not the dark band. */
 .cta::before {
   content: ''; position: absolute; top: -60px; left: 50%; transform: translateX(-50%);
-  width: 110%; height: 100px; background: var(--darkteal); border-radius: 0 0 50% 50%;
+  width: 110%; height: 100px; background: var(--cream); border-radius: 0 0 50% 50%;
 }
 .cta-inner { position: relative; z-index: 1; }
 /* The border does more work now than it did on cream. White on pale blue is
@@ -1425,15 +1441,16 @@ footer { padding: 140px 2.5rem 2rem; }   /* 100px clear, matching the sections, 
     padding-top: 0.4rem;
   }
   .tips-grid::after { content: ''; }
-  .wisdom-inner::after {
-    content: 'Swipe to see more →';
-    display: block;
-    font-family: Arial, Helvetica, sans-serif;
-    font-size: 0.72rem;
-    color: rgba(255,249,227,0.5);
-    text-align: right;
-    padding-top: 0.4rem;
-  }
+  /* THE BAND'S "Swipe to see more" IS GONE, AND IT WAS A LIE RATHER THAN
+     CLUTTER. It was written for `.tips-grid`, which on a phone was a
+     horizontal scroller of three tip cards; the Fertilizer band replaced
+     that grid, so the hint sat under a single centred sentence promising
+     something to swipe to and there was nothing there.
+
+     `.about::after` KEEPS ITS COPY OF THE SAME HINT, and that one is honest:
+     `.about-right` really is `overflow-x: auto` with scroll snapping on a
+     phone, so there genuinely is more to swipe to. **Check that the thing
+     actually scrolls before writing a hint that says it does.** */
 }
 
 /* ── Small mobile (≤480px) ── */
@@ -2187,7 +2204,12 @@ html:not([data-hero]) .hero-sun {
   display: flex; align-items: center; justify-content: center;
   gap: 2.5rem; flex-wrap: wrap; text-align: left;
 }
+/* THE FULL WIDTH ROWS HAVE TO SAY SO. `.today-inner` is a wrapping flex ROW,
+   so anything without `width:100%` becomes a column beside the line: the
+   title did exactly that and sat to its left on the same row. Every element
+   that belongs above or below the line is listed here. */
 .today-inner .section-label { width: 100%; text-align: center; }
+.today-inner .section-title { width: 100%; text-align: center; margin-bottom: 0.4rem; }
 .today-inner .today-note    { width: 100%; text-align: center; }
 
 /* ONE LINE, AND IT IS THE LOUDEST THING IN THE BAND. It is sized like a
@@ -2230,5 +2252,10 @@ html:not([data-hero]) .hero-sun {
      of text with something stranded beside it. */
   .today-inner { flex-direction: column; gap: 1.2rem; text-align: center; }
   .today-hortus { order: -1; }
-  .today-line { max-width: none; margin-top: 0; }
+  /* `flex-basis` IS ALONG THE MAIN AXIS, so the desktop's `flex: 1 1 320px`
+     becomes a 320px HEIGHT the moment this block turns the container into a
+     column. Measured: a 48 character sentence was rendering 320px tall and
+     the whole band came to 957px on a 780 screen, a screen and a quarter for
+     one line. Resetting the basis is the whole fix. */
+  .today-line { flex: 0 0 auto; max-width: none; margin-top: 0; }
 }
