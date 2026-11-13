@@ -399,6 +399,31 @@
      the same heart, the same 1100ms, so a pat is one gesture wherever it
      lands. The host supplies the figure and gets it back when the beat is
      over. */
+  /* ONE RUB TEST, TWO FIGURES. The companion uses it and so does the
+     Fertilizer band's own Hortus, exported rather than written twice, so
+     rubbing a head means the same gesture wherever the head is. `fire` is
+     whatever that figure does about it. */
+  function rubToPat(el, fire) {
+    if (!el || el.__ggRub) return;
+    el.__ggRub = true;
+    var rub = { dir: 0, flips: 0, at: 0, until: 0 };
+    el.addEventListener("pointermove", function (e) {
+      if (e.pointerType === "touch") return;
+      var now = Date.now();
+      if (now < rub.until) return;
+      if (now - rub.at > 700) rub.flips = 0;
+      var d = e.movementX > 1 ? 1 : (e.movementX < -1 ? -1 : 0);
+      if (!d) return;
+      if (rub.dir && d !== rub.dir) { rub.flips++; rub.at = now; }
+      rub.dir = d;
+      if (rub.flips >= 3) {
+        rub.flips = 0;
+        rub.until = now + 1100;      /* the pat's own length */
+        fire();
+      }
+    }, { passive: true });
+  }
+
   function patHost(host, px, backTo) {
     if (!host || !window.GardenMascot) return;
     var cs = getComputedStyle(host);
@@ -498,22 +523,7 @@
 
        AND IT COOLS DOWN FOR THE LENGTH OF THE PAT, or a rub that carries on
        re-fires `react` every few frames and the wink never finishes. */
-    var rub = { dir: 0, flips: 0, at: 0, until: 0 };
-    me.addEventListener("pointermove", function (e) {
-      if (e.pointerType === "touch") return;
-      var now = Date.now();
-      if (now < rub.until) return;
-      if (now - rub.at > 700) rub.flips = 0;
-      var d = e.movementX > 1 ? 1 : (e.movementX < -1 ? -1 : 0);
-      if (!d) return;
-      if (rub.dir && d !== rub.dir) { rub.flips++; rub.at = now; }
-      rub.dir = d;
-      if (rub.flips >= 3) {
-        rub.flips = 0;
-        rub.until = now + 1100;      /* the pat's own length */
-        react();
-      }
-    }, { passive: true });
+    rubToPat(me, react);
 
     /* IT WATCHES THE POINTER. One document level listener rather than one per
        element, passive so it can never hold up a scroll, and it only writes a
@@ -786,6 +796,7 @@
     mode: MODE,
     /* For anything that draws its own Hortus and wants it to answer. */
     patHost: patHost,
+    rubToPat: rubToPat,
     putAway: putAway,
     fertilizer: today,
     name: NAME,

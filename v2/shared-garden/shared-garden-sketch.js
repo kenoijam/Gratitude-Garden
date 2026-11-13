@@ -21,7 +21,13 @@ let step = "landing";
    then holds somebody to one a day. That is the same guarantee this garden
    has always given anyone willing to clear their storage, which is written
    down already: planting here takes no account on purpose. */
-let identity = "name";
+/* NOTHING IS CHOSEN UNTIL SOMEBODY CHOOSES. It defaulted to "name", which
+   lit that button and opened the name field on arrival, so the card asked for
+   your name without your ever having said you wanted it on the flower. Asked
+   for, and the right call: a privacy question that answers itself is not a
+   question. The cost is one extra tap on the main action, and `null` is what
+   `paintIdRow` reads as "none lit" and `syncPlantBtn` as "not ready yet". */
+let identity = null;
 /* LOOKING ROUND BEFORE PLANTING. The garden was reachable only by planting
    in it, which asks somebody to write the one sentence they get for the day
    before they have seen what anybody else wrote or what the place even looks
@@ -3685,6 +3691,18 @@ let idButtons = [];
 function haveGardener() {
   return !!(window.GardenGardener && GardenGardener.has() && window.AvatarDraw);
 }
+/* A HOISTED `var`, FOR THE REASON WRITTEN ON `nameRowEl` BELOW: `paintIdRow`
+   runs once from `buildIdRow()` long before the plant button exists, and
+   `typeof` on a `const` in its temporal dead zone THROWS rather than
+   answering "undefined". */
+var plantBtnEl = null;
+function syncPlantBtn() {
+  if (!plantBtnEl) return;
+  const ready = !!identity;
+  plantBtnEl.elt.disabled = !ready;
+  plantBtnEl.style("opacity", ready ? "1" : "0.45");
+  plantBtnEl.html(ready ? "Plant in Garden" : "Choose how to sign it");
+}
 function paintIdRow() {
   idButtons.forEach(b => {
     const on = b.__id === identity;
@@ -3692,7 +3710,8 @@ function paintIdRow() {
     b.style("color", on ? "#ffffff" : "#1d6466");
     b.style("border-color", on ? "#26a69a" : "#bde0d6");
   });
-  idNote.html(ID_NOTE[identity] || "");
+  idNote.html(ID_NOTE[identity] || "Pick one. Nothing is planted until you do.");
+  syncPlantBtn();
   /* GUARDED ON A HOISTED `var`, AND THE OBVIOUS GUARD THROWS. `paintIdRow`
      runs once from `buildIdRow()` BEFORE the name row below it exists, and
      the first attempt tested `typeof syncNameRow === "function"`, which
@@ -3816,7 +3835,21 @@ function syncNameRow() {
 syncNameRow();
 
 const plantBtn = createButton("Plant in Garden").addClass("gg-btn").parent(confirmCard);
+plantBtnEl = plantBtn;
+syncPlantBtn();
 plantBtn.mousePressed(() => {
+  /* No identity, no flower. The button is disabled in that state, so this is
+     the belt to that brace rather than the check itself. */
+  if (!identity) return;
+  /* A NAMED FLOWER NEEDS A NAME. Signed out, "My name" is the one choice that
+     asks for something, and the field it asks in is directly above this
+     button, so the warning lands where it can be read. The old username STEP
+     carried this check and that step is no longer on the way here. */
+  if (identity === "name" && !username.trim()) {
+    usernameNote.html("Write a name, or plant it anonymously.");
+    usernameField.elt.focus();
+    return;
+  }
   /* Checked again here, not only at the username step. Somebody can sit on
      the picker while another tab plants, and the room is the authority. */
   if (sharedPlantedToday(username)) { showStep("garden"); return; }
@@ -4040,7 +4073,11 @@ canvas.elt.style.pointerEvents = (s === "garden") ? "auto" : "none";
 const hasFlower = flowers && flowers.length > 0;
 
 if (saveBtn) {
-saveBtn.style("display", step === "garden" && hasFlower ? "flex" : "none");
+/* THE CAMERA DOES NOT WAIT FOR A FLOWER. Gated on `hasFlower` it left slot
+   154 of the corner row empty on a quiet morning in a daily meadow, which is
+   three icons and a gap where the fourth belongs. The personal garden's
+   camera was gated the same way and was changed with it. */
+saveBtn.style("display", step === "garden" ? "flex" : "none");
 }
 if (tipsCard) {
 tipsCard.style("display", step === "garden" && hasFlower ? "block" : "none");

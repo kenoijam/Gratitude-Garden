@@ -104,6 +104,12 @@
             if (line.hasAttribute('data-closed')) setTimeout(reveal, 260);
           };
           art.addEventListener('click', pat);
+          /* RUBBING ITS HEAD PATS IT HERE TOO, by the companion's own three
+             reversal test rather than a second copy of it, so the gesture
+             means the same thing on both Hortuses. */
+          if (window.GardenGuide && window.GardenGuide.rubToPat) {
+            window.GardenGuide.rubToPat(art, pat);
+          }
           art.addEventListener('keydown', function (e) {
             if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); pat(); }
           });
@@ -1290,11 +1296,17 @@
          a label floating over a sentence. -->
     <span class="section-label reveal">Today</span>
     <h2 class="section-title reveal">Fertilizer of the <em>day</em></h2>
-    <!-- ONE LINE AND NOTHING ELSE. A band holding a single sentence is what
-         makes that sentence worth stopping for; anything beside it and the
-         eye starts comparing rather than reading. -->
-    <p class="today-line reveal" id="todayLine"></p>
+    <!-- HORTUS STANDS IN THE MIDDLE AND THE LINE ARRIVES UNDER THEM. They
+         were side by side, which made the band a sentence with a butterfly
+         parked beside it and gave the pat nothing to uncover: the words were
+         already level with the thing you were patting. Centred, the figure is
+         plainly the subject of the band, and the line coming out from under
+         it is the answer to having touched them.
+
+         ONE LINE AND NOTHING ELSE under it. A band holding a single sentence
+         is what makes that sentence worth stopping for. -->
     <div class="today-hortus reveal" id="todayHortus" aria-hidden="true"></div>
+    <p class="today-line reveal" id="todayLine"></p>
     <p class="today-note reveal">A new one every day.</p>
   </div>
 </section>

@@ -3143,7 +3143,15 @@ function buildUI() {
   pickWrap = gwrap("pick-wrap");
   const cardPick = gcard(pickWrap, true);
   ghead(cardPick, "Choose your flower");
-  gsub(cardPick, "Every one stands for something.");
+  /* NO MEANINGS ON THIS SCREEN, AND THE SUB LINE SAYS WHY. Picking the
+     flower first is picking by SHAPE: you are choosing the bloom you want,
+     not reading eight definitions and matching one to your day. The meanings
+     led the choice, which is the write-first path's job and is exactly what
+     this fork exists to be an alternative to. The flower still says what it
+     stands for on the card at the end, where it is an answer rather than a
+     menu, and the shared garden's picker keeps its meanings because there
+     the meaning IS the choice. */
+  gsub(cardPick, "Pick the one you like the look of.");
 
   const pickGrid = createDiv().parent(cardPick);
   pickGrid.style("display", "grid");
@@ -3219,14 +3227,6 @@ function buildUI() {
     createElement("div", nm).parent(tile)
       .style("font-size", "12.5px").style("font-weight", "600")
       .style("color", "#0f5132").style("margin-top", "2px");
-    /* THE MEANING IS ON THE TILE, which is what the shared garden's picker
-       does and what makes this a choice rather than eight pictures. The
-       wording is `flowerMeanings`' own, so the two gardens cannot disagree
-       about what a flower stands for. */
-    createElement("div", flowerMeanings[sp] ? flowerMeanings[sp].meaning : "")
-      .parent(tile).style("font-size", "10.5px").style("color", "#5c8d84")
-      .style("line-height", "1.25").style("margin-top", "1px");
-
     tile.mousePressed(() => {
       chosenSpecies = sp;
       /* The chosen tile is the only one ringed, so re-picking is obvious. */
@@ -4184,7 +4184,12 @@ function showStep(s) {
   const hasFlower = flowers && flowers.length > 0;
 
   if (saveBtn) {
-    saveBtn.style("display", s === "garden" && hasFlower ? "flex" : "none");
+    /* THE CAMERA DOES NOT WAIT FOR A FLOWER. It was gated on `hasFlower`
+       like the tips card and the logo, which left slot 154 of the corner row
+       empty on every garden nobody had planted in yet: three icons and a gap
+       where the fourth belongs. An empty meadow is still a picture of your
+       garden, and the row has to be the same row on every page. */
+    saveBtn.style("display", s === "garden" ? "flex" : "none");
   }
   if (tipsCard) {
     tipsCard.style("display", s === "garden" && hasFlower ? "block" : "none");

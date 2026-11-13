@@ -305,10 +305,18 @@
     s += '<ellipse cx="146" cy="140" rx="9.5" ry="7.5" fill="' + C.bodyLow +
          '" transform="rotate(16 146 140)"/>';
 
-    s += '<ellipse cx="71" cy="127" rx="11" ry="7" fill="' + C.cheek + '"/>';
-    s += '<ellipse cx="129" cy="127" rx="11" ry="7" fill="' + C.cheek + '"/>';
-    s += '<g class="gm-eyes">' + p.face + '</g>';
-    s += NOSE;
+    /* THE WHOLE FACE RIDES IN `gm-eyes`, CHEEKS AND NOSE INCLUDED, and that
+       is a fix rather than tidiness. The gaze is a transform on this group,
+       so with only the eyes inside it the eyes slid toward the pointer while
+       the nose and the cheeks stayed where they were: at full deflection the
+       nose sat off-centre under a pair of eyes that had moved, which reads
+       as the face coming apart rather than as a glance. A face turns as one
+       thing. The group's name is kept because the stylesheet and the guide
+       both select it, and renaming it would be three edits for a word. */
+    s += '<g class="gm-eyes">' +
+         '<ellipse cx="71" cy="127" rx="11" ry="7" fill="' + C.cheek + '"/>' +
+         '<ellipse cx="129" cy="127" rx="11" ry="7" fill="' + C.cheek + '"/>' +
+         p.face + NOSE + '</g>';
     if (p.extra) s += p.extra;
     return s;
   }

@@ -404,6 +404,46 @@ gardens, driven by the STEP the sketch is on.
   restarted by every later line, so the greeting rides whichever line is
   actually on screen once things settle.
 
+## SIX SMALL v2 FIXES, AND WHAT EACH ONE WAS
+
+- **THE WHOLE FACE RIDES IN `gm-eyes` NOW, CHEEKS AND NOSE INCLUDED.** The
+  gaze is a transform on that group and only the eyes were in it, so at full
+  deflection the eyes had moved and the nose had not: the face came apart
+  rather than glancing. The group keeps its name because the guide's
+  stylesheet and `aimEyes` both select it. `p.extra`, the sparkles and the
+  heart, stays outside.
+- **`GardenGuide.rubToPat(el, fire)` IS EXPORTED**, so the band's Hortus takes
+  the same three reversal rub as the companion rather than a second copy of
+  the test. The companion now calls it on itself too; there is one
+  implementation.
+- **THE BAND IS A COLUMN AT EVERY WIDTH: title, Hortus, then the day's line.**
+  Side by side the words were already level with the thing you were patting,
+  so the pat uncovered nothing. The figure is the middle of the band and the
+  line comes out from under it. The wrapping row is gone, and with it every
+  `width: 100%` that row needed and the phone block's `order: -1`.
+- **THE PERSONAL PICKER SHOWS NO MEANINGS.** Picking the flower first is
+  picking by SHAPE; eight definitions on that grid led the choice, which is
+  the write-first path's job and the thing this fork is an alternative to. The
+  sub line says so. **The shared garden's picker keeps its meanings**, because
+  there the meaning IS the choice.
+- **THE CAMERA NO LONGER WAITS FOR A FLOWER, in both gardens.** It was gated
+  on `hasFlower` with the tips card and the logo, which left slot 154 of the
+  corner row empty on an unplanted garden: three icons and a gap. An empty
+  meadow is still a picture of your garden.
+- **NOTHING IS CHOSEN IN "Who is this from?" UNTIL SOMEBODY CHOOSES.**
+  `identity` starts `null`, so no button is lit and the name field is shut.
+  It defaulted to `"name"`, which opened that field on arrival and asked for a
+  name before anybody had said they wanted one on the flower. **This reverses
+  the note under "Who a flower is from" above**, which argued name-by-default
+  so that touching nothing gave the garden you always had; the author asked
+  for the field to appear only on an explicit choice, and a privacy question
+  that answers itself is not a question. The cost is one tap: Plant is
+  disabled and reads "Choose how to sign it" until then, and `syncPlantBtn`
+  is guarded on a hoisted `var` for the same temporal dead zone reason
+  `nameRowEl` is. The plant handler also checks for a NAME when the choice is
+  "My name" and nobody is signed in, since the old username step carried that
+  check and is no longer on the way here.
+
 ## THE SECTION ORDER MOVED (v2): THE FERTILIZER BAND IS SECOND
 
 `home, wisdom, about, gardens, flowers, start`. The band is something to read
