@@ -54,7 +54,31 @@
       var art  = document.getElementById('todayHortus');
       if (!line || !window.GardenGuide || !window.GardenGuide.fertilizer) return false;
       line.textContent = window.GardenGuide.fertilizer();
-      if (art && window.GardenMascot) art.innerHTML = window.GardenMascot.svg('welcome', 150);
+      if (art && window.GardenMascot) {
+        art.innerHTML = window.GardenMascot.svg('welcome', 150);
+        /* THE BAND'S HORTUS ANSWERS A PAT. It took no pointer events at
+           first, on the argument that two tappable Hortuses is two
+           characters; the companion hushes itself on this band now, so there
+           is only one of them here and the one you can see should be the one
+           you can touch. `GardenGuide.patHost` is the SAME pat the companion
+           gives, exported rather than written twice. */
+        if (!art.__wired) {
+          art.__wired = true;
+          art.setAttribute('role', 'button');
+          art.setAttribute('tabindex', '0');
+          art.setAttribute('aria-label', 'Pat Hortus');
+          art.removeAttribute('aria-hidden');
+          var pat = function () {
+            if (window.GardenGuide && window.GardenGuide.patHost) {
+              window.GardenGuide.patHost(art, 150, 'welcome');
+            }
+          };
+          art.addEventListener('click', pat);
+          art.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); pat(); }
+          });
+        }
+      }
       return true;
     }
     /* `garden-guide.js` is parsed before this, but it exports at the END of

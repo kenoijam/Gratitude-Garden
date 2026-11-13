@@ -119,10 +119,20 @@
      three times the numbers to say. 7 wide and 5.5 tall before the stroke,
      which lands it between two eyes 36 apart without touching either.
 
-     IT SITS AT y 117 TO 123 AND THE MOUTH STARTS AT 125, so there is a 2px
-     gap. Any mouth added below has to respect that or the face gains a blob. */
-  var NOSE = '<path d="M100 123L96.5 117.5L103.5 117.5Z" fill="' + C.nose +
-             '" stroke="' + C.nose + '" stroke-width="2.2" stroke-linejoin="round"/>';
+     IT POINTS UP. It pointed down first and read as a beak: a downward
+     triangle on a round face is the one shape the eye finds a bird in. Point
+     up it is a nose.
+
+     THE ROUNDING IS THE STROKE WIDTH, so the path has to SHRINK as the stroke
+     grows or the nose gets bigger rather than softer. At 3.4 the drawn
+     triangle is 6.2 by 4.8 and the finished mark is about 9 by 8, which is
+     the same overall size the 7 by 5.5 shape at 2.2 came to.
+
+     IT STILL SITS AT y 118 TO 123 AND THE MOUTH STILL STARTS AT 125, so the
+     2px gap holds. Any mouth added below has to respect it or the face gains
+     a blob. */
+  var NOSE = '<path d="M100 118.1L96.9 122.9L103.1 122.9Z" fill="' + C.nose +
+             '" stroke="' + C.nose + '" stroke-width="3.4" stroke-linejoin="round"/>';
 
   var MOUTH = {
     smile:  '<path d="M93 125Q100 132 107 125" fill="none" stroke="' + C.ink +

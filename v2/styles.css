@@ -426,16 +426,30 @@ section { padding: 5rem 5rem; }
   position: relative;
   overflow: hidden;
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  grid-template-rows: auto auto;
-  /* THE TITLE SPANS BOTH COLUMNS. It used to be `"title ."`, which left the
-     whole right half of the title row EMPTY: a 571px void beside the heading
-     on a 1440 screen, with the four cards starting below it. Spanned, the
-     heading sits over the whole section the way every other section's does
-     and the void is gone. */
+  grid-template-columns: 1fr;
+  grid-template-rows: auto auto auto;
+  /* ─────────────────────────── IT IS ONE COLUMN NOW, AND THAT IS THE FIX
+     Spanning the title closed the void beside it, and left the real fault:
+     THE TWO COLUMNS WERE NEVER GOING TO MATCH. Measured at 1440, the copy
+     came to 244px against 333px of cards, and the two are not even the same
+     KIND of thing, so the eye reads a short lede stranded above a gap beside
+     a block of four bordered boxes. Tuning the copy to 333px would be
+     writing to fill a column.
+
+     One column cannot be uneven. The title and the copy sit centred across
+     the section and the four cards run as ONE ROW underneath, which also
+     keeps each card at about 280px, the width it already had two across in
+     half the section, so nothing inside them had to move. */
+  /* EVERY ROW MUST NAME THE SAME NUMBER OF COLUMNS or the whole property is
+     INVALID and silently drops to `none`, which is what happened on the
+     first attempt: one row said "title" and the next said "body cards" on a
+     two column grid, the declaration was thrown away, and the four cards
+     landed on top of the heading and the copy. The computed value read
+     `none`, which is the tell. */
   grid-template-areas:
-    "title title"
-    "body  cards";
+    "title"
+    "body"
+    "cards";
   column-gap: 4rem;
   row-gap: 1rem;
   align-items: start;
@@ -449,10 +463,21 @@ section { padding: 5rem 5rem; }
   width: 110%; height: 100px; background: var(--grass); border-radius: 0 0 50% 50%;
 }
 .about-title, .about-body, .about-right { position: relative; z-index: 1; }
-.about-title { grid-area: title; }
-.about-body  { grid-area: body;  display: flex; flex-direction: column; gap: 1rem; }
+/* CENTRED, LIKE EVERY OTHER SECTION'S. It was left aligned because it used
+   to head a left hand column; with the copy centred under it in one column a
+   left aligned title was the only heading on the page not over its own
+   content. */
+.about-title { grid-area: title; text-align: center; }
+/* CENTRED AND CAPPED. Run the full 1190px the copy is a ruler: about 150
+   characters a line, well past the 75 a line can be read down comfortably.
+   680 puts it at roughly 85 and keeps the block visibly narrower than the
+   row of cards under it, which is what stops the two reading as one slab. */
+.about-body  { grid-area: body;  display: flex; flex-direction: column; gap: 1rem;
+               max-width: 680px; margin: 0 auto; text-align: center; }
 .about-body .section-desc { max-width: 100%; }
-.about-right { grid-area: cards; display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; align-content: start; padding-top: 0; }
+/* FOUR ACROSS, which is the same ~280px per card they already had two across
+   in half the section, so nothing inside a card had to change. */
+.about-right { grid-area: cards; display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; align-content: start; padding-top: 0; margin-top: 2.2rem; }
 .feature-card { background: var(--white); border-radius: 16px; padding: 1.2rem 1.3rem; border: 1.5px solid var(--sky); display: flex; align-items: flex-start; gap: 0.85rem; }
 .feature-icon { width: 40px; height: 40px; flex-shrink: 0; display: block; margin-top: 2px; }
 .feature-title { font-family: 'Fraunces','Georgia',serif; font-size: 1rem; color: var(--darkteal); margin-bottom: 0.2rem; }
@@ -1201,6 +1226,9 @@ footer { padding-left: calc((100vw - 1400px)/2); padding-right: calc((100vw - 14
 @media (max-width: 1100px) {
 section { padding: 3.5rem 2.5rem; }
 .about { grid-template-columns: 1fr; grid-template-areas: "title" "body" "cards"; gap: 1.5rem; }
+  /* TWO ACROSS once the section narrows: four cards of 280 need about 1180 of
+     content and this block starts at 1100. */
+  .about-right { grid-template-columns: 1fr 1fr; }
 .about-right { margin-top: 0; padding-top: 0; }
 .gardens-grid { grid-template-columns: 1fr; }
 .flowers-grid { grid-template-columns: repeat(2,1fr); }
@@ -2178,7 +2206,17 @@ html:not([data-hero]) .hero-sun {
 /* NO POINTER EVENTS. The Hortus you talk to is the one that follows you down
    the page; a second tappable one here would be two characters rather than
    one in two places. */
-.today-hortus { flex: 0 0 auto; line-height: 0; pointer-events: none; }
+/* IT TAKES POINTER EVENTS NOW. See the note in index.html: the companion
+   hushes itself on this band, so the one Hortus on screen here should be the
+   one you can touch. The lift is what says so before you find out. */
+.today-hortus {
+  flex: 0 0 auto; line-height: 0; position: relative;
+  background: none; border: none; padding: 0;
+  transition: transform 0.3s cubic-bezier(.22,.9,.3,1);
+}
+.today-hortus:hover  { transform: translateY(-6px) scale(1.04); }
+.today-hortus:active { transform: translateY(-2px) scale(0.98); }
+@media (hover: none) { .today-hortus:hover { transform: none; } }
 .today-hortus svg { display: block; }
 
 .today-note {

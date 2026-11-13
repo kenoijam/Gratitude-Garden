@@ -3112,13 +3112,29 @@ function buildUI() {
   /* THE TWO ARE NAMED BY WHAT THEY DO, not by which is the default. Neither is
      recommended: picking is faster and choosing is the thing this garden has
      always done, and which suits a given day is the planter's business. */
-  gsub(cardFork, "Choose a flower yourself, or answer two questions and let the day choose one for you.");
+  gsub(cardFork, "Both end in the same place. Only the order changes.");
 
-  gbtn(cardFork, "I'll pick one", true).mousePressed(() => {
+  /* THE LABELS NAME THE ORDER, not the mechanism. "I'll pick one" and "Let
+     today choose" described HOW the flower is decided, which is a thing
+     nobody can judge before they have used either path; "Flower first" and
+     "Write first" describe what the very next screen will be, which is the
+     only question actually being asked here. The second line on each says
+     what follows, so the pair can be told apart without reading the sub. */
+  function forkBtn(label, under, fn) {
+    const b = gbtn(cardFork, label, true);
+    b.html(label + "<span style=\"display:block;font-weight:400;font-size:12.5px;" +
+           "opacity:0.85;margin-top:3px\">" + under + "</span>");
+    b.style("padding", "11px 12px");
+    b.style("line-height", "1.25");
+    b.mousePressed(fn);
+    return b;
+  }
+
+  forkBtn("Flower first", "Pick a bloom, then say why", () => {
     pickedBySelf = true;
     showStep("pick");
   });
-  gbtn(cardFork, "Let today choose", true).mousePressed(() => {
+  forkBtn("Write first", "Two questions, and your day picks one", () => {
     pickedBySelf = false;
     showStep("prompt1");
   });

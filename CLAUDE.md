@@ -298,6 +298,24 @@ sketches and is deliberately NOT a line for line transcription of them.
   browse never accumulates one, and it cools down for the pat's own 1100ms or
   a rub that carries on re-fires `react` every few frames and the wink never
   finishes.
+- **THE NOSE POINTS UP.** It pointed down first and read as a BEAK: a
+  downward triangle on a round face is the one shape the eye finds a bird in.
+- **THE ROUNDING IS THE STROKE WIDTH, so the path has to SHRINK as the stroke
+  grows** or the nose gets bigger rather than softer. At `stroke-width` 3.4
+  the drawn triangle is 6.2 by 4.8 and the finished mark is about 9 by 8,
+  which is what the 7 by 5.5 shape at 2.2 came to.
+- **A PAT IS EXPORTED, NOT WRITTEN TWICE.** `GardenGuide.patHost(host, px,
+  backTo)` gives any element that draws a Hortus the same wink, the same
+  heart and the same 1100ms. The Fertilizer band uses it.
+  - **The band's figure took no pointer events at first**, on the argument
+    that two tappable Hortuses is two characters. **That objection died when
+    the companion learned to hush itself on that band**: there is only one of
+    them on screen there, so the one you can see is the one you can touch.
+    Verified with `document.elementFromPoint`, which returns the figure's own
+    path.
+  - **The heart has an `is-here` variant** that centres it on its host and
+    leaves from the host's upper third, since the column's own position is
+    tuned to the column.
 - **ONE BODY, FIVE FACES.** `POSES` holds welcome, listen, hard, planted and
   bye, and only the face and the wing scale change between them. Five whole
   drawings is how five expressions drift into five characters.
@@ -1447,6 +1465,32 @@ The meadows were once full-bleed backdrops behind the copy under a gradient, and
 **Every card and the About copy name the ACCOUNT, and that was a gap rather than a polish.** All of it was written before there were accounts, usernames, friends, likes or a history, so the page described three separate places with nothing joining them. The personal card said only that you see it; it now says it follows you between devices and keeps what you have planted. The shared card now says signing in lets you like a flower or write back, and its small print carries the one a day limit. The bouquet card says it can go straight to a friend as well as by link. About gained a fourth paragraph naming what one account actually does, and saying you can skip it entirely.
 
 **The three cards' paragraphs are cut to FOUR LINES and their small print to a chip, and the reason is a bug rather than taste.** `.garden-card-desc` carried `margin-bottom: -0.5rem`, which pulled the small print 9px UP into the paragraph's last line on all three cards at once: a paragraph leaves no 9px of slack under its final line, so the pull came straight out of the text. It is **+0.55rem** now, which measures as a 9px gap; at 0 the chip sat directly on the text with only the line's own leading between them. It was also hiding a second fault, since a paragraph running to five lines grows past the four reserved by `min-height`, and the personal card's body came out 330px against the other two at 302 with the row of pictures no longer level. **Keep every one of the three to four lines, and if the gap under a paragraph ever needs closing, take it off the note's own padding rather than off the paragraph.** The notes are chips now, "Private", "Open to all", "By link or to a friend", because a sentence in a 12px rounded box is not a chip.
+
+**THE ABOUT SECTION IS ONE COLUMN NOW (v2), and that is the fix the title
+span only half made.** Spanning the title closed the void beside it and left
+the real fault: **the two columns were never going to match.** Measured at
+1440, the copy came to 244px against 333px of cards, and the two are not even
+the same KIND of thing, so the eye reads a short lede stranded above a gap
+beside a block of four bordered boxes. Tuning the copy to 333px would be
+writing to fill a column.
+
+- **One column cannot be uneven.** Title and copy centred across the section,
+  the four cards as ONE ROW underneath at about 290px each, which is the width
+  they already had two across in half the section, so nothing inside a card
+  moved. Two across under 1100, where four would need about 1180 of content.
+- **The copy is capped at 680 and centred.** Run the full 1190 it is a ruler,
+  about 150 characters a line against the 75 a line can comfortably be read
+  down; 680 is roughly 85 and keeps the block visibly narrower than the row of
+  cards, which is what stops the two reading as one slab.
+- **The title is centred**, like every other section's. Left aligned it was
+  the only heading on the page not sitting over its own content.
+- **EVERY ROW OF `grid-template-areas` MUST NAME THE SAME NUMBER OF COLUMNS or
+  the whole property is INVALID and silently drops to `none`.** The first
+  attempt left `grid-template-columns: 1fr 1fr` in place while the areas said
+  `"title"` then `"body cards"`; the declaration was thrown away and the four
+  cards landed on top of the heading and the copy. **The computed value
+  reading `none` is the tell**, and it is worth checking before blaming
+  anything else when a grid collapses.
 
 **THE ABOUT TITLE SPANS BOTH COLUMNS, AND ITS LEDE NO LONGER REPEATS IT
 (v2).** Two separate faults sat on top of each other. The grid areas were

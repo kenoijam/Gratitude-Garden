@@ -292,7 +292,11 @@
     "18%{opacity:1;transform:translateY(-10px) scale(1.05);}",
     "60%{opacity:1;transform:translateY(-34px) scale(1);}",
     "100%{opacity:0;transform:translateY(-58px) scale(0.9);}}",
-    "@media (max-width:768px){.gg-g-heart{right:26px;bottom:62px;width:20px;height:20px;}}",
+    /* Over a host rather than over the column: centred on it and leaving
+       from its upper third, which is where the head is in a 200 unit box. */
+    ".gg-g-heart.is-here{right:auto;left:50%;margin-left:-13px;bottom:62%;}",
+    "@media (max-width:768px){.gg-g-heart{right:26px;bottom:62px;width:20px;height:20px;}",
+    ".gg-g-heart.is-here{margin-left:-10px;}}",
 
     "@media (prefers-reduced-motion:reduce){",
     ".gm-wings,.gg-g-me svg{animation:none !important;}",
@@ -380,12 +384,35 @@
      IT LEAVES THE TOP OF THE HEAD, never the middle of the face, because the
      antennae and their flowers are up there and anything rising from the face
      would be rising out of the flower. Same reasoning `AvatarDraw` records. */
-  function heart() {
+  /* ─────────────────────────────── A PAT ANYWHERE HORTUS IS DRAWN
+     The band on the landing page draws its own figure, and the objection to
+     making it pattable was that two tappable Hortuses is two characters.
+     That objection DIED when the companion learned to hush itself on that
+     band: there is only one of them on screen there now, so the one you can
+     see is the one you can touch, which is the rule rather than the
+     exception.
+
+     IT IS THE SAME PAT, exported rather than written twice: the same wink,
+     the same heart, the same 1100ms, so a pat is one gesture wherever it
+     lands. The host supplies the figure and gets it back when the beat is
+     over. */
+  function patHost(host, px, backTo) {
+    if (!host || !window.GardenMascot) return;
+    var cs = getComputedStyle(host);
+    if (cs.position === "static") host.style.position = "relative";
+    host.innerHTML = window.GardenMascot.svg("pat", px);
+    heart(host, true);
+    setTimeout(function () {
+      host.innerHTML = window.GardenMascot.svg(backTo || "welcome", px);
+    }, 1100);
+  }
+
+  function heart(host, here) {
     var h = document.createElement("div");
-    h.className = "gg-g-heart";
+    h.className = "gg-g-heart" + (here ? " is-here" : "");
     h.innerHTML =
       "<svg viewBox='0 0 24 24' aria-hidden='true'><path d='M12 21s-8-5.1-8-10.2A4.8 4.8 0 0 1 12 7a4.8 4.8 0 0 1 8 3.8C20 15.9 12 21 12 21z' fill='#f4a0ad'/></svg>";
-    root.appendChild(h);
+    (host || root).appendChild(h);
     /* A forced reflow before the class, or the browser coalesces the two and
        it simply appears at the end of its own path. */
     void h.offsetWidth;
@@ -754,6 +781,8 @@
       say(id);
     },
     mode: MODE,
+    /* For anything that draws its own Hortus and wants it to answer. */
+    patHost: patHost,
     putAway: putAway,
     fertilizer: today,
     name: NAME,
