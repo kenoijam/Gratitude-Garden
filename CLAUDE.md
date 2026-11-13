@@ -980,6 +980,41 @@ Same rendering engine, different state layer. `preload()` calls `partyConnect("w
 - (Resolved) The colour step washed the whole viewport with `rgba(207, 238, 240, 0.85)` on `#confirm-wrap`, so the garden appeared to vanish the moment you reached it. Every other step leaves its `.gg-wrap` transparent and lets the card stand on the scene. If a step ever loses the garden again, look for a background on its wrap.
 - (Resolved) `showStep` never made `#garden-wrap` visible, so the CSS `display: none` on it stood at every step and the sky, hills and ground never appeared behind anything. The personal garden shows its wrap unconditionally for exactly this reason, and the shared one now does too. If a garden ever renders on a blank background again, this is the line to check.
 
+#### A STALE GUARD KILLED THE SHARED PICKER (v2), and it was my own change
+
+Moving the name field to the confirm card left this in the tile's handler:
+
+```js
+if (!username.trim()) { usernameNote.html("Add a name..."); return; }
+```
+
+Right while the field sat at the top of that card; fatal once it moved.
+`username` is empty there for anybody signed out, so **every tile press was
+refused and the warning it wrote went onto a card that is not on screen.**
+The picker simply did nothing, with no error anywhere.
+
+- **The once a day check stays, but only when there is a name to check.**
+  Signed in there is one and it catches it early; signed out there is nothing
+  to look up yet, and the plant button checks again, which has always been
+  the authority.
+- **HIT TESTING WAS NEVER THE PROBLEM, and checking it first is what found
+  that.** `document.elementFromPoint` returned the tile at its centre and
+  `pointer-events` computed to `auto`, which ruled out the whole class of
+  overlay bug this project usually has and pointed straight at the handler.
+  **When a control does nothing, ask whether the press ARRIVES before asking
+  why it had no effect.**
+
+#### A PREVIEW BUFFER IS ONLY CORRECT AGAINST THE `R` IT IS DRAWN AT (v2)
+
+The personal garden's new flower picker drew each tile into a 76px
+`p5.Graphics`, copied from the history strip's own note that 76 is the last
+size where the widest species still has air around it. **That note is about a
+preview drawn at `baseR` 30. `drawPreviewFlower` draws at R 40.** As a
+multiple of R the set runs lavender 0.39 wide up to SUNFLOWER at 1.33, so a
+sunflower spans about 106px and was clipped on all four sides: it rendered as
+a beige RECTANGLE with a disc in it, not a flower. The buffer is 120 and the
+canvas is still shown at 56, so nothing about the tile changed.
+
 #### THE NAME IS ASKED LAST, AND AN ANONYMOUS FLOWER HAS A NAME (v2 only)
 
 - **THE FIELD CAME OFF THE FLOWER SCREEN.** It sat above the grid, so the

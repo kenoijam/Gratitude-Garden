@@ -3543,12 +3543,18 @@ meaningSpan.style("color", "#2c7a7b");
 meaningSpan.style("line-height", "1.2");
 meaningSpan.style("font-size", isNarrow ? "9px" : "11px");
 tile.mousePressed(() => {
-  if (!username.trim()) {
-    usernameNote.html("Add a name for your flower first.");
-    usernameField.elt.focus();
-    return;
-  }
-  if (sharedPlantedToday(username)) { refreshUsernameStep(); return; }
+  /* NO NAME GUARD HERE ANY MORE, and leaving it in was a real bug. It read
+     `if (!username.trim()) { ...ask for a name...; return; }`, which was
+     right while the field sat at the top of THIS card. The field moved to
+     the confirm step, so `username` is empty here for anybody signed out:
+     every tile press was refused, and the warning it wrote went onto a card
+     that is not on screen. The picker simply did nothing.
+
+     THE ONCE A DAY CHECK STAYS BUT ONLY WHEN THERE IS A NAME TO CHECK.
+     Signed in there is one and this catches it early; signed out there is
+     nothing to look up yet, and the plant button checks again anyway, which
+     is the check that has always been the authority. */
+  if (username.trim() && sharedPlantedToday(username)) { refreshUsernameStep(); return; }
   chosenSpecies = sp.id;
   showStep("confirm");
 });

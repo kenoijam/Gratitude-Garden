@@ -128,10 +128,14 @@
      triangle is 6.2 by 4.8 and the finished mark is about 9 by 8, which is
      the same overall size the 7 by 5.5 shape at 2.2 came to.
 
-     IT STILL SITS AT y 118 TO 123 AND THE MOUTH STILL STARTS AT 125, so the
-     2px gap holds. Any mouth added below has to respect it or the face gains
-     a blob. */
-  var NOSE = '<path d="M100 118.1L96.9 122.9L103.1 122.9Z" fill="' + C.nose +
+     IT SITS AT y 114 TO 119, lifted 3.7 from where it started. The eyes are
+     at y 112, so the nose now begins just under the eye line rather than
+     halfway to the chin: low down it read as floating above the mouth with
+     the whole middle of the face empty above it. The mouth still starts at
+     125, so the gap under the nose went from 2 to about 6, which is what
+     reads as a face with a nose on it rather than a face with three marks
+     stacked at the bottom. */
+  var NOSE = '<path d="M100 114.4L96.9 119.2L103.1 119.2Z" fill="' + C.nose +
              '" stroke="' + C.nose + '" stroke-width="3.4" stroke-linejoin="round"/>';
 
   var MOUTH = {

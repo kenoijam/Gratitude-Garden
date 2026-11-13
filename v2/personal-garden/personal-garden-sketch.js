@@ -3187,13 +3187,28 @@ function buildUI() {
        would drift from the seven that already exist. */
     const holder = createDiv().parent(tile);
     holder.style("line-height", "0");
-    const pg = createGraphics(76, 76);
+    /* THE BUFFER HAS TO FIT THE WIDEST SPECIES OR IT CUTS IT INTO A SQUARE.
+       `drawPreviewFlower` draws at a fixed `R` of 40, and as a multiple of R
+       the set runs lavender 0.39 wide up to SUNFLOWER at 1.33, so a sunflower
+       spans about 106px. In a 76 buffer it was clipped on all four sides and
+       rendered as a beige rectangle with a disc in it, which is exactly what
+       it looked like: not a flower at all.
+
+       120 clears 106 with air to spare, and the canvas is still SHOWN at 56,
+       so nothing about the tile's size changed. The history strip's own note
+       says 76 for ITS buffer, and that is not a contradiction: its preview
+       draws at `baseR` 30, not 40. **A buffer size is only correct against
+       the R it is drawn at.** */
+    const BUF = 120;
+    const pg = createGraphics(BUF, BUF);
     pg.pixelDensity(2);
     drawPreviewFlower(pg, sp, TILE_HUE[sp] != null ? TILE_HUE[sp] : 200);
     const cv = createElement("canvas").parent(holder);
-    cv.elt.width = 76; cv.elt.height = 76;
+    cv.elt.width = BUF; cv.elt.height = BUF;
     cv.style("width", "56px"); cv.style("height", "56px");
-    cv.elt.getContext("2d").drawImage(pg.elt, 0, 0, 76, 76);
+    cv.style("display", "block");
+    cv.style("margin", "0 auto");
+    cv.elt.getContext("2d").drawImage(pg.elt, 0, 0, BUF, BUF);
     pg.remove();
 
     const nm = prettyName(sp);
