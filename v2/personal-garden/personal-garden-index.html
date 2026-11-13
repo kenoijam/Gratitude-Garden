@@ -69,6 +69,15 @@
        borrows for the parts that follow somebody between devices. -->
   <script src="../garden-journal.js"></script>
 
+  <!-- HORTUS IN THE GARDEN. `data-guide` names the mode, the way
+       `garden-music.js` is handed a mood, and `garden-guide.js` then carries
+       this garden's own table of lines instead of the landing page's
+       sections. The drawing has to be parsed first: the guide builds no
+       figure without it. The sketch drives it by calling
+       `GardenGuide.step(s)` from its own `showStep`. -->
+  <script src="../garden-mascot.js"></script>
+  <script src="../garden-guide.js" data-guide="personal"></script>
+
   <!-- THE GARDENER'S THREE TAGS STOOD HERE: `bouquet/bouquet-sketch.js` for the
      real 2D bloom they wear, the avatar's own drawing for the figure, and
      `garden-gardener.js` for whose it is. The project is showing the two

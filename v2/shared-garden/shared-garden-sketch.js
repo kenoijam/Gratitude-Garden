@@ -3993,6 +3993,12 @@ window.open("https://linktr.ee/kenoijam", "_blank");
 }
 
 function showStep(s) {
+
+  /* HORTUS FOLLOWS THE STEP. One line, called from the one place that knows
+     which screen is up, so the companion can never say something about a
+     card nobody is looking at. An unknown step hushes it rather than
+     throwing, so a step added here later simply gets no line. */
+  if (window.GardenGuide && GardenGuide.step) GardenGuide.step(s);
   step = s;
 
   /* The garden is the backdrop for every step, not just the last one. This

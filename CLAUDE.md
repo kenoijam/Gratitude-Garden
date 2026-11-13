@@ -336,6 +336,56 @@ sketches and is deliberately NOT a line for line transcription of them.
   teal band and the meadow's grass) and at 200, 120, 84, 56 and 40px. It holds
   to 56 comfortably and still reads at 40.
 
+## HORTUS IS IN THE GARDENS TOO (v2 ONLY)
+
+**One file, two modes.** `data-guide` on `garden-guide.js`'s own script tag,
+the way `garden-music.js` is handed a mood: `page` is the landing page,
+driven by scrolling past sections, and `personal` and `shared` are the
+gardens, driven by the STEP the sketch is on.
+
+- **IT IS THE SAME FILE RATHER THAN A SECOND ONE** because Hortus has to be
+  ONE character. The name, the introduction, the pat, the gaze, the
+  breathing, the flap and the bubble are identical, and a second copy of them
+  would drift within a session, which is the fault this project already pays
+  for in seven places. What differs is a table of lines and what drives it,
+  which is about thirty lines.
+- **THE SKETCH DRIVES IT: `GardenGuide.step(s)` from its own `showStep`**, one
+  line in each garden. Polling a global was the alternative and it is worse:
+  `step` is a `let` in a classic script, so it is reachable but only by a bare
+  reference, and a poll can always be a frame behind what is on screen.
+- **AN UNKNOWN STEP HUSHES RATHER THAN THROWING**, so a step added to either
+  sketch later simply gets no line until somebody writes one.
+- **IT ARRIVES SILENT IN A GARDEN and waits for the first `step()`.** Speaking
+  on boot would put a line up before the sketch has decided which screen the
+  visitor is on: somebody who has already planted today goes straight to the
+  garden, which is a hushed screen, and a greeting there is a companion
+  talking over the thing it just hushed itself for.
+- **THE GARDEN ITSELF IS HUSHED, in both.** You came to look at it, and a
+  character talking over the thing you came for is the one behaviour that
+  would make anybody close it.
+- **THE LINES ARE NOT INSTRUCTIONS.** Every card already says what to do in
+  its own heading, and a companion repeating it is a second voice saying the
+  same thing. What these say is that whatever you put is allowed, which is
+  the thing a card cannot say about itself without sounding anxious.
+- **THERE IS NOWHERE TO FLY TO IN A GARDEN, so `moveTo` returns early.** All
+  four corners are spoken for: Home top left, the four round icons top right,
+  the Garden Tips card bottom left and the account or friends button bottom
+  right. It holds one place, bottom right at **84**, which clears that button
+  (38px tall at bottom 20, so it owns up to 58) with 26 to spare. 72 on a
+  phone. Swept with `document.elementFromPoint`: nothing clickable under it.
+- **THE INTRODUCTION IS SITE WIDE, NOT PAGE WIDE.** `gg_met_hortus` is one key
+  for the whole project, so somebody who arrives straight at a garden still
+  meets it, and somebody who met it on the landing page is not introduced
+  twice.
+- **IT IS MARKED AS MET ONLY ONCE IT HAS BEEN ON SCREEN FOR TWO SECONDS, and
+  that is a bug fixed rather than caution.** Marking it at the moment the line
+  is composed loses the greeting to any step that is immediately superseded:
+  **the personal garden calls `showStep` more than once while it boots**, so
+  the introduction was said and replaced inside 400ms and the only trace left
+  was `gg_met_hortus` sitting at 1. Measured exactly that way. The timer is
+  restarted by every later line, so the greeting rides whichever line is
+  actually on screen once things settle.
+
 ## THE FERTILIZER OF THE DAY IS A BAND, AND IT REPLACED THE TIPS (v2 ONLY)
 
 `#wisdom` keeps its id, its dark teal ground, its curve and its side nav

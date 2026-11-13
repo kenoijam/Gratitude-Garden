@@ -43,6 +43,22 @@
      ONE CONSTANT, read everywhere, so renaming is this line. */
   var NAME = "Hortus";
 
+  /* ═══════════════════════════════════════════════ TWO MODES, ONE COMPANION
+     `data-guide` on this file's own script tag, the way `garden-music.js` is
+     handed a mood on its. "page" is the landing page, driven by scrolling
+     past sections; "personal" and "shared" are the gardens, driven by the
+     STEP the sketch is on.
+
+     IT IS THE SAME FILE RATHER THAN A SECOND ONE because Hortus has to be one
+     character: the name, the introduction, the pat, the gaze, the breathing
+     and the bubble are all identical and a second copy of them would drift
+     within a session, which is the fault this project pays for in seven
+     places already. What differs between the modes is a TABLE OF LINES and
+     what drives it, which is about thirty lines. */
+  var TAG  = document.currentScript;
+  var MODE = (TAG && TAG.getAttribute("data-guide")) || "page";
+  var INGARDEN = MODE === "personal" || MODE === "shared";
+
   /* ═══════════════════════════════════════════════════ THE FERTILIZER OF THE DAY
      ╔═══════════════════════════════════════════════════════════════════════╗
      ║  KENISHA: THIS LIST IS YOURS TO FILL. Everything below works already; ║
@@ -122,6 +138,37 @@
     wisdom:  { pose: "listen",  line: null, quiet: true, spot: ["right", 60] },
     start:   { pose: "planted", line: "Whatever you noticed today is enough. Go and plant it.",
                spot: ["left", 30] }
+  };
+
+  /* ─────────────────────────────────────── WHAT IT SAYS IN A GARDEN
+     One line per screen, and the lines are DELIBERATELY NOT INSTRUCTIONS.
+     Every one of these cards already says what to do in its own heading; a
+     companion repeating it is a second voice saying the same thing. What
+     these say is that whatever you put is allowed, which is the thing the
+     cards cannot say about themselves without sounding anxious.
+
+     THE GARDEN ITSELF IS HUSHED, in both. You came to look at it, and a
+     character talking over the thing you came for is the one behaviour that
+     would make anybody close it. */
+  var GARDEN_SAYS = {
+    personal: {
+      fork:          { pose: "welcome", line: "Two ways in. Either is fine." },
+      pick:          { pose: "welcome", line: "Which one feels like today?" },
+      why:           { pose: "listen",  line: "No wrong answer here." },
+      prompt1:       { pose: "listen",  line: "However it was, it counts." },
+      prompt2:       { pose: "listen",  line: "Just the biggest thing." },
+      prompt3:       { pose: "listen",  line: "As much or as little as you like." },
+      prompt4:       { pose: "listen",  line: "A cup of tea counts." },
+      flowerPreview: { pose: "planted", line: "There it is." },
+      garden:        { pose: "welcome", line: null, quiet: true }
+    },
+    shared: {
+      landing:       { pose: "welcome", line: "Everybody here planted one today." },
+      username:      { pose: "listen",  line: "Any name you like." },
+      select:        { pose: "welcome", line: "Which one feels like today?" },
+      confirm:       { pose: "listen",  line: "Your colour, and whether your name goes on it." },
+      garden:        { pose: "welcome", line: null, quiet: true }
+    }
   };
 
   var HOLD = 7000;        /* how long a line stays up before it goes quiet */
@@ -281,7 +328,7 @@
 
   /* ───────────────────────────────────────────────────────────────── the build */
   var root = null, bubble = null, me = null, holdT = 0, current = "";
-  var reactT = 0;
+  var reactT = 0, introT = 0;
   var look = { x: 0, y: 0, live: false, lx: 0, ly: 0 };
 
   /* HOW FAR AN EYE MAY TRAVEL, in viewBox units. The eye is a circle of
@@ -356,7 +403,7 @@
     heart();
     clearTimeout(reactT);
     reactT = setTimeout(function () {
-      var e = SAYS[current];
+      var e = entry(current);
       setPose(e ? e.pose : "welcome");
     }, 1100);
   }
@@ -459,6 +506,13 @@
      stylesheet pins it there with `!important` and a flight written on top
      would be dead inline style fighting a rule it cannot beat. */
   function moveTo(spot) {
+    /* A GARDEN IS ONE SCREEN AND ITS CORNERS ARE ALL SPOKEN FOR: Home top
+       left, four round icons top right, the Garden Tips card bottom left and
+       the account or friends button bottom right. So there is nowhere to fly
+       TO, and the figure simply holds one place. It sits bottom right and is
+       LIFTED clear of the friends button, which is 38px tall at bottom 20 and
+       so owns everything up to 58. */
+    if (INGARDEN) return;
     if (!root || !spot || window.innerWidth <= 768) return;
     var side = spot[0], up = spot[1];
     root.setAttribute("data-side", side);
@@ -533,13 +587,19 @@
     if (window.innerWidth <= 768) {
       root.removeAttribute("data-side");
       root.style.left = root.style.right = root.style.bottom = "";
-    } else if (SAYS[current]) {
+    } else if (!INGARDEN && SAYS[current]) {
       moveTo(SAYS[current].spot);
     }
   });
 
+  /* ONE TABLE LOOKUP for both modes, so everything below it (the hush, the
+     pose, the introduction, the hold) is written once. */
+  function entry(id) {
+    return INGARDEN ? (GARDEN_SAYS[MODE] || {})[id] : SAYS[id];
+  }
+
   function say(id, again) {
-    var e = SAYS[id];
+    var e = entry(id);
     if (!e) return;
     current = id;
     /* Hushed sections hide the column outright rather than speaking. */
@@ -560,9 +620,25 @@
        uses it: meeting somebody is not a thing that happens again next week.
        The guide's own put-away flag stays in `sessionStorage`, because that
        IS about this visit. */
-    if (e.line === null && !met()) {
+    /* THE INTRODUCTION IS SITE WIDE, not page wide, and `gg_met_hortus` is
+       one key for the whole project. Somebody who arrives straight at a
+       garden has still never met it, so it introduces itself on the first
+       line it ever says, wherever that is. On the landing page that line is
+       the fertilizer; in a garden it is whatever the first screen says. */
+    if (!met()) {
       words = "Hello, I am " + NAME + "! Your companion through the garden. " + words;
-      meet();
+      /* MARKED ONLY ONCE IT HAS BEEN ON SCREEN LONG ENOUGH TO READ, and that
+         is a bug fixed rather than caution. Marking it here, at the moment
+         the line is composed, loses the greeting to any step that is
+         immediately superseded: the personal garden calls `showStep` more
+         than once while it boots, so the introduction was said and replaced
+         inside 400ms and the only trace left was `gg_met_hortus` sitting at
+         1. Measured exactly that way.
+
+         The timer is restarted by every later line, so the greeting simply
+         rides whichever one is actually on screen when things settle. */
+      clearTimeout(introT);
+      introT = setTimeout(meet, 2000);
     }
     root.querySelector(".gg-g-text").textContent = words;
     setPose(e.pose);
@@ -597,6 +673,11 @@
   }
 
   function watch() {
+    /* A garden has no sections to observe. The SKETCH drives it, by calling
+       `GardenGuide.step(s)` from its own `showStep`, which is one line in
+       each and cannot fall out of step with what is on screen the way
+       polling a global would. */
+    if (INGARDEN) return;
     if (!("IntersectionObserver" in window)) { say("home"); return; }
     var io = new IntersectionObserver(function (es) {
       /* Several sections can be intersecting at once on a fast scroll. The one
@@ -633,8 +714,13 @@
          anything it waits on never resolves, it comes anyway. */
       if ((loading || letterBusy()) && tries++ < 200) { setTimeout(wait, 150); return; }
       root.setAttribute("data-in", "1");
-      say("home");
-      watch();
+      /* IN A GARDEN IT ARRIVES SILENT and waits for the sketch's first
+         `step()`. Saying something on boot would put a line up before the
+         sketch has decided which screen the visitor is even on: somebody who
+         has already planted today goes straight to the garden, which is a
+         hushed screen, and a greeting there is a companion talking over the
+         thing it just hushed itself for. */
+      if (!INGARDEN) { say("home"); watch(); }
     })();
   }
 
@@ -642,8 +728,32 @@
     document.addEventListener("DOMContentLoaded", boot);
   } else { boot(); }
 
+  /* `data-guide` on the tag puts it in the garden's own corner. 84 clears the
+     friends button (38px tall at bottom 20, so it owns up to 58) with 26 to
+     spare; 72 and a smaller figure on a phone, where that button shrinks. */
+  if (INGARDEN) {
+    var gs = document.createElement("style");
+    gs.textContent =
+      "#gg-guide{right:18px !important;left:auto !important;bottom:84px !important;}" +
+      "@media (max-width:768px){#gg-guide{right:12px !important;bottom:72px !important;}}";
+    document.head.appendChild(gs);
+  }
+
   window.GardenGuide = {
     say: say,
+    /* WHAT A GARDEN SKETCH CALLS, from its own `showStep`. An unknown step
+       name hushes rather than throwing, so a step added to a sketch later
+       simply gets no line until somebody writes one. */
+    step: function (id) {
+      if (!INGARDEN || !root) return;
+      if (!entry(id)) {
+        root.setAttribute("data-hushed", "1");
+        current = id;
+        return;
+      }
+      say(id);
+    },
+    mode: MODE,
     putAway: putAway,
     fertilizer: today,
     name: NAME,

@@ -4038,6 +4038,12 @@ function chooseAndAsk() {
 function showStep(s) {
   step = s;
 
+  /* HORTUS FOLLOWS THE STEP. One line, called from the one place that knows
+     which screen is up, so the companion can never say something about a
+     card nobody is looking at. An unknown step hushes it rather than
+     throwing, so a step added here later simply gets no line. */
+  if (window.GardenGuide && GardenGuide.step) GardenGuide.step(s);
+
   const showFork = s === "fork";
   const showPick = s === "pick";
   const showWhy  = s === "why";
