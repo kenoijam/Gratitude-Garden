@@ -23,7 +23,12 @@
 (function () {
   "use strict";
 
-  if (!window.GardenMascot) return;        /* no drawing, no guide */
+  /* THE GUARD MOVED DOWN TO `boot()`, and that is a real dependency rather
+     than tidiness. The "Fertilizer of the day" band on the landing page reads
+     `GardenGuide.fertilizer()` so the band and the bubble can never show
+     different days, and returning here left that export unmade whenever the
+     drawing was missing. The LIST does not need a mascot; only the figure
+     does. */
 
   var SEEN_KEY = "gg_guide_off";           /* sessionStorage: put away for this visit */
   var MET_KEY  = "gg_met_hortus";          /* localStorage: has it introduced itself */
@@ -104,8 +109,17 @@
                spot: ["right", 120] },
     flowers: { pose: "planted", line: "Every flower here stands for something. Yours is chosen for you.",
                spot: ["left", 90] },
-    wisdom:  { pose: "listen",  line: "No streaks, no catching up. Miss a day and the garden waits.",
-               spot: ["right", 60] },
+    /* THE COMPANION STANDS DOWN ON THIS ONE, and that is a fault caught by
+       looking rather than a nicety. The Fertilizer of the day band carries
+       its OWN Hortus and its own line, so with the floating one up there were
+       two of the same character on screen at once, a few hundred pixels
+       apart, saying different things. Two Hortuses is two characters.
+
+       `quiet` hides the column for the length of that section and shows it
+       again on the next. It does NOT put it away: `putAway` is the visitor's
+       decision and survives the visit, where this is the guide getting out of
+       its own way. */
+    wisdom:  { pose: "listen",  line: null, quiet: true, spot: ["right", 60] },
     start:   { pose: "planted", line: "Whatever you noticed today is enough. Go and plant it.",
                spot: ["left", 30] }
   };
@@ -141,6 +155,19 @@
     "#gg-guide[data-side='left'] .gg-g-x{right:auto;left:6px;}",
     "#gg-guide[data-side='left'] .gg-g-heart{right:auto;left:38px;}",
     "#gg-guide[hidden]{display:none !important;}",
+    /* Hushed is a FADE, not a display change: the column has to keep its box
+       so the flight back in animates from where it stood rather than from
+       nowhere. `pointer-events:none` is what stops an invisible Hortus
+       swallowing a tap on the band behind it. */
+    /* `!important` ON THE OPACITY, AND IT IS ORDER RATHER THAN SPECIFICITY.
+       `#gg-guide[data-in='1']{opacity:1}` is declared further down this same
+       string and carries the identical weight, one id and one attribute, so
+       at equal specificity the LATER rule wins and this one did nothing: the
+       flag was set, the measurement said hushed, and the figure was plainly
+       still there at 100%. Sixth time this project has been caught by a rule
+       written above the one it was meant to beat. */
+    "#gg-guide[data-hushed='1']{opacity:0 !important;pointer-events:none;}",
+    "#gg-guide[data-hushed='1'] *{pointer-events:none !important;}",
 
     /* THE BUBBLE TAKES POINTER EVENTS BACK FOR ITSELF. The column is
        transparent to the pointer so it can never swallow a tap meant for the
@@ -515,6 +542,10 @@
     var e = SAYS[id];
     if (!e) return;
     current = id;
+    /* Hushed sections hide the column outright rather than speaking. */
+    if (e.quiet) { root.setAttribute("data-hushed", "1"); clearTimeout(holdT); return; }
+    root.removeAttribute("data-hushed");
+
     moveTo(e.spot);
     var words = e.line === null ? today() : e.line;
 
@@ -588,6 +619,7 @@
 
   function boot() {
     if (off()) return;
+    if (!window.GardenMascot) return;      /* no drawing, no figure to build */
     build();
     /* The loader holds a flower over the sky for up to nine seconds and the
        letter may follow it, so this waits for a clear stage rather than

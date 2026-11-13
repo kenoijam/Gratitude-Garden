@@ -336,6 +336,51 @@ sketches and is deliberately NOT a line for line transcription of them.
   teal band and the meadow's grass) and at 200, 120, 84, 56 and 40px. It holds
   to 56 comfortably and still reads at 40.
 
+## THE FERTILIZER OF THE DAY IS A BAND, AND IT REPLACED THE TIPS (v2 ONLY)
+
+`#wisdom` keeps its id, its dark teal ground, its curve and its side nav
+entry; only what stands on it changed, and its nav LABEL went from Tips to
+Today. **Renaming the section would have meant four edits that all have to
+agree** (the markup, the nav item, `sectionIds` and the styles), and there
+was nothing to gain from it.
+
+- **THE TIPS WERE NOT REDUNDANT, THEY WERE GENERIC.** "One practice, two
+  places" says what the site IS; this band said something about the PRACTICE,
+  which nothing else on the page does. What was wrong is that all three tips
+  could have sat on any gratitude app ever made.
+- **AND THE FERTILIZER HAD NOWHERE TO LIVE.** It was a line in Hortus's
+  bubble, which can be dismissed, is skipped on a second visit and is off on
+  a touch screen, so the one feature the after version is being tested for
+  could be missed entirely. A band is somewhere nobody can close.
+- **THE BAND READS `GardenGuide.fertilizer()`**, never a second copy of the
+  lines, so the band and the bubble can never show different days. **That is
+  why the `GardenMascot` guard moved out of the top of `garden-guide.js` and
+  into `boot()`**: returning early left the export unmade whenever the drawing
+  was missing, and the LIST does not need a mascot, only the figure does.
+- **ONE LINE AND NOTHING ELSE on the band.** A band holding a single sentence
+  is what makes that sentence worth stopping for; anything beside it and the
+  eye starts comparing rather than reading. It is sized like a section title,
+  not like body copy.
+- **THE COMPANION STANDS DOWN ON ITS OWN BAND, and that was a fault caught by
+  looking.** The band carries its own Hortus and its own line, so with the
+  floating one up there were TWO of the same character on screen at once a
+  few hundred pixels apart, saying different things. `quiet: true` on the
+  `SAYS` entry hides the column for that section and shows it again on the
+  next. It is NOT `putAway`, which is the visitor's decision and survives the
+  visit; this is the guide getting out of its own way.
+- **HUSHED IS A FADE, NOT A DISPLAY CHANGE**, so the column keeps its box and
+  the flight back in animates from where it stood. `pointer-events:none` is
+  what stops an invisible Hortus swallowing a tap on the band behind it.
+- **`!important` ON THE HUSHED OPACITY, AND IT IS ORDER RATHER THAN
+  SPECIFICITY.** `#gg-guide[data-in='1']{opacity:1}` is declared further down
+  the same CSS string at identical weight, one id and one attribute, so the
+  later rule won and the first attempt did nothing: the flag was set, the
+  measurement said hushed, and the figure was plainly still at 100%. **Sixth
+  time this project has been caught by a rule written above the one it was
+  meant to beat.**
+- **The band's own figure takes no pointer events.** The Hortus you talk to is
+  the one that follows you; a second tappable one is two characters.
+
 ## THE MASCOT WALKS DOWN THE PAGE (`v2/garden-guide.js`), v2 ONLY
 
 **It says one line per section as you scroll, and the first one is the

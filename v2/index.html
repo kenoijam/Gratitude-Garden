@@ -41,6 +41,34 @@
   <script src="garden-mascot.js"></script>
   <script src="garden-guide.js"></script>
 
+  <!-- THE BAND READS THE GUIDE'S OWN LIST, never a second copy of the lines.
+       `GardenGuide.fertilizer()` is the same date driven pick Hortus speaks,
+       so the band and the bubble can never show different days. The figure
+       beside it is drawn large and takes no pointer events: the one you talk
+       to is the one that follows you, and two tappable Hortuses on one page
+       is two characters. -->
+  <script>
+  (function () {
+    function fill() {
+      var line = document.getElementById('todayLine');
+      var art  = document.getElementById('todayHortus');
+      if (!line || !window.GardenGuide || !window.GardenGuide.fertilizer) return false;
+      line.textContent = window.GardenGuide.fertilizer();
+      if (art && window.GardenMascot) art.innerHTML = window.GardenMascot.svg('welcome', 150);
+      return true;
+    }
+    /* `garden-guide.js` is parsed before this, but it exports at the END of
+       its own IIFE and a later edit could move that, so this retries briefly
+       rather than assuming. It gives up after about three seconds, leaving an
+       empty band rather than a wrong line. */
+    if (!fill()) {
+      var n = 0, t = setInterval(function () {
+        if (fill() || ++n > 30) clearInterval(t);
+      }, 100);
+    }
+  })();
+  </script>
+
   <!-- The account chip and the friends panel. Top right here, beside the
        music button, since the landing page keeps its controls in the top
        corners and has nothing in the bottom one. -->
@@ -103,7 +131,7 @@
       <circle cx="12" cy="12" r="3.2" fill="#fbe484"/>
     </svg>
   </a>
-  <a href="#wisdom" class="side-nav-item" data-section="wisdom" data-label="Tips">
+  <a href="#wisdom" class="side-nav-item" data-section="wisdom" data-label="Today">
     <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M9 21h6M12 3a6 6 0 0 1 6 6c0 2.2-1.2 4.1-3 5.2V17a1 1 0 0 1-1 1h-4a1 1 0 0 1-1-1v-2.8C7.2 13.1 6 11.2 6 9a6 6 0 0 1 6-6z" stroke="#429288" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
   </a>
   <a href="#start" class="side-nav-item" data-section="start" data-label="Begin">
@@ -1479,76 +1507,33 @@
      the styles, AND the SECTIONS array further down that builds the
      per-section sparkle canvases. -->
 <!-- FIX 5: Garden Wisdom, "garden" em now yellow on dark bg -->
+<!-- ═══════════════════════════════════════════════════════════════════════
+     TODAY. This REPLACED the three gratitude tips, and the swap answers two
+     questions at once.
+
+     THE TIPS WERE NOT REDUNDANT, THEY WERE GENERIC. "One practice, two
+     places" says what the site IS; this band said something about the
+     PRACTICE, which nothing else on the page does. What was wrong is that
+     all three could have sat on any gratitude app ever made.
+
+     AND THE FERTILIZER HAD NOWHERE TO LIVE. It was a line in Hortus's
+     bubble, which can be dismissed, is skipped on a second visit, and is off
+     on a touch screen, so the one feature the after version is being tested
+     for could be missed entirely. A band gives it somewhere nobody can close.
+
+     THE ID STAYS `wisdom`. The side nav, the scroll spy's `sectionIds` and
+     the stylesheet all name it, and renaming a section in this project means
+     four edits that have to agree. The LABEL changed; the id did not.
+     ═══════════════════════════════════════════════════════════════════ -->
 <section class="wisdom" id="wisdom">
-  <div class="wisdom-inner">
-    <span class="section-label reveal">Making the most of it</span>
-    <h2 class="section-title reveal">Gratitude <em>tips</em></h2>
-    <div class="tips-grid">
-
-      <!-- Tip 1: Do it anywhere -->
-      <div class="tip-card reveal">
-        <div class="tip-header">
-          <div class="tip-icon-wrap">
-            <svg class="tip-icon-svg" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M18 5 C12 5 8 9.5 8 14.5 C8 22 18 32 18 32 C18 32 28 22 28 14.5 C28 9.5 24 5 18 5Z" fill="#fbe484" opacity="0.95" stroke="#fbe484" stroke-width="1.5"/>
-              <circle cx="18" cy="14.5" r="4.5" fill="rgba(29,100,102,0.7)"/>
-            </svg>
-          </div>
-          <div class="tip-title">Do it anytime, anywhere</div>
-        </div>
-        <p class="tip-text">No desk or routine required. Plant during lunch, add to the meadow on the bus, look back over the month before bed.</p>
-      </div>
-
-      <!-- Tip 2: Be specific -->
-      <div class="tip-card reveal">
-        <div class="tip-header">
-          <div class="tip-icon-wrap">
-            <svg class="tip-icon-svg" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <rect x="7" y="6" width="18" height="24" rx="2.5" fill="rgba(183,228,231,0.35)" stroke="#b7e4e7" stroke-width="1.8"/>
-              <line x1="11" y1="13" x2="21" y2="13" stroke="#e1f7f7" stroke-width="1.8" stroke-linecap="round"/>
-              <line x1="11" y1="18" x2="21" y2="18" stroke="#e1f7f7" stroke-width="1.8" stroke-linecap="round"/>
-              <line x1="11" y1="23" x2="17" y2="23" stroke="#e1f7f7" stroke-width="1.8" stroke-linecap="round"/>
-              <path d="M22 24 L28 18 L30 20 L24 26 Z" fill="#fbe484" stroke="#b7e4e7" stroke-width="1.2" stroke-linejoin="round"/>
-              <path d="M22 24 L23 27 L25 26 Z" fill="#b7e4e7"/>
-            </svg>
-          </div>
-          <div class="tip-title">Be specific, not general</div>
-        </div>
-        <p class="tip-text">"The coffee tasted perfect today" grows a truer bloom than "I am grateful." Specific beats vague, everywhere you write.</p>
-      </div>
-
-      <!-- Tip 3: Save milestones -->
-      <div class="tip-card reveal">
-        <div class="tip-header">
-          <div class="tip-icon-wrap">
-            <svg class="tip-icon-svg" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <rect x="4" y="12" width="28" height="19" rx="3.5" fill="rgba(244,198,198,0.3)" stroke="#f9d8d8" stroke-width="1.8"/>
-              <path d="M13 12 L15 8 L21 8 L23 12" stroke="#f9d8d8" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-              <circle cx="18" cy="21.5" r="5.5" stroke="#f9d8d8" stroke-width="2"/>
-              <circle cx="18" cy="21.5" r="2.5" fill="#f9d8d8"/>
-              <circle cx="27" cy="16" r="1.8" fill="#f9d8d8"/>
-            </svg>
-          </div>
-          <div class="tip-title">Keep some, give some</div>
-        </div>
-        <p class="tip-text">Save your garden as a keepsake, plant in the meadow for company, and read a day back whenever you want to.</p>
-      </div>
-
-      <!-- Tip 4: Trust what you feel -->
-      <div class="tip-card reveal">
-        <div class="tip-header">
-          <div class="tip-icon-wrap">
-            <svg class="tip-icon-svg" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M18 30 C18 30 5 21 5 13 A7 7 0 0 1 18 11 A7 7 0 0 1 31 13 C31 21 18 30 18 30Z" fill="#d8d0f0" opacity="0.95" stroke="#d8d0f0" stroke-width="1.5"/>
-              <path d="M18 27 C18 27 9 20.5 9 14.5 A5 5 0 0 1 18 13 A5 5 0 0 1 27 14.5 C27 20.5 18 27 18 27Z" fill="#c8c0e0" opacity="0.35"/>
-            </svg>
-          </div>
-          <div class="tip-title">Trust what you feel</div>
-        </div>
-        <p class="tip-text">Your words choose the flower in your own garden. In the meadow you choose it yourself. Either way, the meaning is yours.</p>
-      </div>
-
-    </div>
+  <div class="wisdom-inner today-inner">
+    <span class="section-label reveal">Fertilizer of the day</span>
+    <!-- ONE LINE AND NOTHING ELSE. A band holding a single sentence is what
+         makes that sentence worth stopping for; anything beside it and the
+         eye starts comparing rather than reading. -->
+    <p class="today-line reveal" id="todayLine"></p>
+    <div class="today-hortus reveal" id="todayHortus" aria-hidden="true"></div>
+    <p class="today-note reveal">A new one every day.</p>
   </div>
 </section>
 
