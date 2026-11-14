@@ -421,6 +421,21 @@ gardens, driven by the STEP the sketch is on.
   so the pat uncovered nothing. The figure is the middle of the band and the
   line comes out from under it. The wrapping row is gone, and with it every
   `width: 100%` that row needed and the phone block's `order: -1`.
+- **THE PERSONAL PICKER'S TILES HAD NO HOVER AT ALL, AND `.gg-tile:hover` IS
+  WHY.** That rule exists in `personal-garden-style.css` and sets exactly one
+  property, `border`, which is the one property `buildUI()` writes INLINE on
+  every tile. Inline beats a stylesheet rule without `!important`, so the
+  hover has never once fired on the flower picker. **Fourth control in this
+  project caught by that.**
+  - **THE FIX IS NOT `!important` ON THE BORDER.** The JS also uses the border
+    to mark the CHOSEN tile, teal `#26a69a` against the others' `#bde0d6`, so
+    a hover forced over it would paint out the selection.
+  - **A LIFT AND A DEEPER SHADOW NEED NOTHING**, because neither `transform`
+    nor `box-shadow` is set inline. Same device as `.gg-hov`: pick a property
+    the JS does not write and it cannot be beaten. Scoped `#pick-wrap` so the
+    other `.gg-tile` screens keep what they had, and added to the
+    `(hover: none)` list with the rest. Measured: the tile's top goes 309.5 to
+    306.5 on hover and the inline border is untouched.
 - **THE PERSONAL PICKER SHOWS NO MEANINGS.** Picking the flower first is
   picking by SHAPE; eight definitions on that grid led the choice, which is
   the write-first path's job and the thing this fork is an alternative to. The
@@ -469,6 +484,49 @@ gardens, driven by the STEP the sketch is on.
     past would put it. The band's `quiet` is deliberately IGNORED on the tour:
     there is a line to say about that band, and its own figure is the thing
     being pointed at.
+  - **STEP ONE IS CENTRE STAGE, big and in the middle, and then it flies off.**
+    An introduction delivered from the bottom right corner is a notification.
+    Every other step points at a SECTION, so it belongs beside that section;
+    this one points at Hortus, so it belongs where you are looking. The figure
+    goes to **210px from 140** (140 from 90 on a phone) and the column goes to
+    the middle, and the flight out to the corner on Next is what makes it read
+    as a character leaving rather than as a panel moving.
+  - **IT IS `left:0;right:0` WITH `align-items:center`, NEVER A TRANSFORM.**
+    The column is what the heart is positioned from and a transformed ancestor
+    would drag the heart with it and become the containing block for anything
+    fixed inside, which is a trap this project has recorded twice. Stretching
+    the column across the viewport costs nothing and keeps the `left`/`right`
+    transition, so the flight still animates.
+  - **THE COLUMN TURNS OVER ON THE STAGE: figure on top, bubble underneath**,
+    which is the reverse of the corner, and the hero forced it. Measured at
+    1440 by 900 the hero's copy runs y 173 to 417 and the meadow starts at
+    590, so the clear band is 173px against a column of 328 and SOMETHING is
+    going to be covered. Figure first puts the big cheerful thing across the
+    headline and the pale bubble over the subtitle, rather than the other way
+    round. The notch moves to the top with it, centred, so it points at the
+    head.
+  - **IT SITS AT 0.42 OF THE FREE SPACE, AND NOTE WHICH WAY THAT GOES.** The
+    value is a `bottom`, so a LARGER fraction LIFTS the column. Written as
+    0.46 first, aiming to sit slightly high, which measured the column's
+    middle at 473 against a window middle of 450: 23px the wrong way.
+  - **NO VEIL.** The letter already dims the page on a first visit and the
+    tour starts the moment it closes, so a second dimmed card in a row would
+    read as a stack of modals rather than as somebody saying hello.
+  - **THE PHONE STAGE BEATS THE PHONE PIN ON SPECIFICITY, NOT ON ORDER.** The
+    `(max-width:768px)` block pins the column bottom right with `!important`,
+    so the stage rule carries `!important` too and wins only because
+    `#gg-guide[data-stage='1']` is one id and one attribute against a bare id.
+    Its vertical is a flat `18vh` rather than the measured centring, since the
+    column is most of a phone screen tall and there is nothing to centre it
+    in. Measured at 390 by 844: centred to the pixel, nothing covered at all,
+    no sideways scroll. It reads BETTER than the laptop one.
+  - **`endTour` HAS TO CALL `stage(false)`.** `moveTo` writes left, right and
+    bottom but nothing else clears the attribute, so somebody who skips on
+    step one would leave a 210px Hortus standing in the middle of the page and
+    `setPose` would go on reading the big size off it.
+  - **THE RESIZE HANDLER NEEDS A `tourAt === 0` BRANCH**, or a window dragged
+    while the stage is up falls through to `moveTo(SAYS[current].spot)` and
+    the figure is sent to the corner mid-introduction.
 - **IN A GARDEN IT STANDS BESIDE THE CARD, NOT IN THE CORNER.** Every garden
   screen is one card in the middle of the scene, and a companion answering it
   from the bottom right was a long way from the thing it was answering.
@@ -602,6 +660,18 @@ copy edits nobody can.
 
 - **IT SPEAKS ON ARRIVAL AND THEN STOPS**, `HOLD` 7000ms. A companion that
   talks while you read is the one everybody closes.
+- **THE HERO NO LONGER SAYS THE FERTILIZER, AND THAT WAS REDUNDANCY I PUT
+  THERE.** `SAYS.home` carried `line: null`, which means "say the day's
+  fertilizer", and it was written while the Fertilizer band sat FIFTH. The
+  band is SECOND now, so Hortus said the day's line in the hero and the band
+  printed the identical sentence one section later. **The band owns the
+  fertilizer**, because a band cannot be dismissed, is not skipped on a second
+  visit and is not off on a touch screen, which is the whole argument for
+  moving it there. The bubble says the thing a band cannot, which is hello:
+  "So glad you came! Wander wherever you like, and I will keep you company."
+  **`line: null` still means the fertilizer** and the branch in `say` is kept,
+  so a section can be handed it again without rewiring anything; nothing on
+  the page uses it now.
 - **THE FERTILIZER LIST IS THE AUTHOR'S TO FILL** and is marked as such in a
   box at the top of the file. Three placeholders are in it so the rotation can
   be demonstrated. It is picked **by the date**, not at random, so it is the
@@ -629,6 +699,42 @@ copy edits nobody can.
   somebody is actually having a day: a hard day in the personal garden's
   writing step, and a goodbye once a flower is planted. Spending them on a
   marketing section leaves nothing for the moments that need them.
+- **THE HEIGHTS VARY, AND THEY ALL VARY ON THE RIGHT.** The brief was that
+  Hortus should not always sit at the bottom. On the RIGHT that is free:
+  nothing is over there but the music and account buttons at the very top.
+  **ON THE LEFT IT IS NOT, AND NO VALUE WRITTEN IN `SAYS` CAN CHANGE IT.** The
+  side nav is a column of 48px circles CENTRED vertically at `left: 14`, so on
+  a 900 tall window it runs roughly 300 to 600, and `moveTo` clamps any left
+  spot to whatever leaves the figure clear of its last button. Measured at
+  1440 by 900: `about` asked for 40, `flowers` for 90 and `start` for 30, and
+  **every one of the three came back at 12**, so the last three steps of the
+  tour landed on the identical pixel and the walk stopped reading as a walk.
+  `start` therefore moved to the RIGHT. The tour now reads centre, high right,
+  low left, mid right, low left, mid right: tops of 346, 329, 617, 369, 617
+  and 409.
+- **`start` IS AT 220 AND NOT 40, AND THE FOOTER IS WHY.** The closing section
+  is only 575 tall, so at the bottom of the page the FOOTER is already on
+  screen beneath it: measured, the footer begins at y 575 and the Explore
+  column's `<summary>` runs 715 to 745 across x 746 to 1325, squarely in the
+  right lane. At 40 the bubble sat on it. The column has to keep its lower
+  edge above 715, which is a `bottom` of at least 185.
+- **ALL SIX SWEPT AGAIN AFTER THE MOVE**, with `document.elementFromPoint`
+  over the bubble and the figure at each section's REAL scroll offset and the
+  real clamped placement: nothing clickable under any of them at 1440 by 900.
+  **Re-run it if any spot moves.** Two warnings about doing that sweep, both
+  of which produced false results first: hiding the other sections to bring
+  one into view makes the page short enough that the FOOTER rises into the
+  viewport and every spot reports footer links underneath; and replicating
+  the nav clamp by hand gets a different answer from the real one, because
+  `moveTo` runs BEFORE the new pose and text are set and so measures the
+  previous step's column height.
+- **`scrollIntoView({behavior:"smooth"})` DOES NOT MOVE THE BROWSER PANE AT
+  ALL**, which is what the tour uses, so the tour's own scrolling cannot be
+  verified here and has to be walked in a real browser. `window.scrollTo`
+  DOES work once `document.documentElement.style.scrollBehavior = "auto"` is
+  set, which is the existing note on this page read properly: an earlier round
+  concluded "the pane cannot scroll this page" and that was wrong, the reads
+  were simply taken mid-animation.
 - **z-index 240, measured.** Section content tops out at 5 and the page dust is
   6, so it clears the page; the music button is 260, the flower modal 300, the
   side nav 9000 and the letter 9500, so it goes under all of those.
@@ -1039,6 +1145,22 @@ fork ──> pick a flower + ITS COLOUR ──> why that one? (optional)
     handed to a rose chosen afterwards is a colour nobody asked for.
   - **ONLY THE CHOSEN TILE REPAINTS** as the slider moves. All eight on every
     input is eight buffers a frame for seven flowers nobody is colouring.
+  - **AND A 150px PREVIEW OF THE CHOSEN FLOWER SITS ABOVE THE SLIDER.** The
+    slider used to repaint the 56px tile and nothing else, so a hue was being
+    judged on a bloom the size of a thumbnail: the colour is plainly changing
+    and what it has changed TO is a guess until the card at the end.
+    **A SEPARATE STEP WAS WEIGHED AND REFUSED**: it would give the biggest
+    possible bloom and would also add a tap, add a sixth card to a flow this
+    fork exists to shorten, and split one decision across two screens, which
+    is the opposite of the reason the colour came off the final card. The grid
+    stays underneath, so swapping flower is still one tap rather than a Back.
+  - **THE BUFFER STAYS 120 AND THE DENSITY GOES TO 4.** `drawPreviewFlower`
+    draws at a FIXED `R` of 40 whatever size the buffer is, so a bigger buffer
+    only adds margin; what makes it crisp at 150 CSS pixels is the density.
+    120 at 4 is 480 real pixels against the 300 a 2x screen needs. It is the
+    SAME call as the tile's, never a second drawing, so the two cannot
+    disagree: verified by reading both canvases back, rose at (190,71,91) and
+    both landing on (71,190,71) together when the slider moves to 120.
   - **THE WRITE-FIRST PATH NEVER SEES A COLOUR CONTROL**, and that is correct:
     there the day chose the flower, and `chooseAndAsk`'s random hue is part
     of the same idea. `pickGo` no longer rolls one, since the slider owns it.

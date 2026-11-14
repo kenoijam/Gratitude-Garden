@@ -155,12 +155,25 @@
      about 200px from the foot is clear of it. Every left spot here is inside
      that, and every spot was swept with `document.elementFromPoint`. */
   var SAYS = {
-    home:    { pose: "welcome", line: null,          /* null: the fertilizer goes here */
-               spot: ["right", 18] },
+    /* THIS USED TO BE `line: null`, WHICH MEANS "SAY THE DAY'S FERTILIZER",
+       AND IT WAS REDUNDANT THE MOMENT THE BAND MOVED. It was written while
+       the Fertilizer band sat fifth; the band is SECOND now, so Hortus said
+       the day's line in the hero and the band printed the identical sentence
+       one section later. The band owns the fertilizer, because a band cannot
+       be dismissed, is not skipped on a second visit and is not off on a
+       touch screen, which is the whole argument for putting it there. So the
+       bubble says the thing a band cannot: hello.
+
+       `line: null` STILL MEANS THE FERTILIZER and the branch in `say` is
+       kept, so a section can be handed it again later without rewiring
+       anything. Nothing on this page uses it now. */
+    home:    { pose: "welcome",
+               line: "So glad you came! Wander wherever you like, and I will keep you company.",
+               spot: ["right", 150] },
     about:   { pose: "listen",  line: "One small thing a day. That is the whole of it.",
                spot: ["left", 40] },
     gardens: { pose: "welcome", line: "Two places to do it. Pick whichever suits today.",
-               spot: ["right", 120] },
+               spot: ["right", 260] },
     flowers: { pose: "planted", line: "Every flower here stands for something. Yours is chosen for you.",
                spot: ["left", 90] },
     /* THE COMPANION STANDS DOWN ON THIS ONE, and that is a fault caught by
@@ -173,10 +186,43 @@
        again on the next. It does NOT put it away: `putAway` is the visitor's
        decision and survives the visit, where this is the guide getting out of
        its own way. */
-    wisdom:  { pose: "listen",  line: null, quiet: true, spot: ["right", 60] },
+    wisdom:  { pose: "listen",  line: null, quiet: true, spot: ["right", 300] },
+    /* ON THE RIGHT, WHERE IT USED TO BE ON THE LEFT, AND THAT IS THE CLAMP
+       FORCING IT. See the note below on why every left spot is the same
+       spot: `about`, `flowers` and `start` all asked for 40, 90 and 30 and
+       all three were clamped to 12, so the last three steps of the tour
+       landed on the identical pixel and the walk stopped reading as a walk.
+       The closing card is 820 wide and centred, so the right lane beside it
+       is empty; swept clean. */
+    /* 220 AND NOT 40, AND THE FOOTER IS WHY. The closing section is only 575
+       tall, so at the bottom of the page the FOOTER is already on screen
+       under it: measured at 1440 by 900, the footer begins at y 575 and the
+       Explore column's `<summary>` runs 715 to 745 across x 746 to 1325,
+       which is squarely in the right lane. At 40 the bubble sat on it. The
+       column has to keep its lower edge above 715, which is a `bottom` of at
+       least 185; 220 leaves the tour's taller column, nav row and all, with
+       35px to spare. */
     start:   { pose: "planted", line: "Whatever you noticed today is enough. Go and plant it.",
-               spot: ["left", 30] }
+               spot: ["right", 220] }
   };
+
+  /* ═════════════════ WHY THE HEIGHTS ARE ALL ON THE RIGHT, AND IT IS MEASURED
+     The brief was that Hortus should not always sit at the bottom. On the
+     RIGHT that is free: nothing is over there but the music and account
+     buttons at the very top, so a spot can be anywhere down the window.
+
+     ON THE LEFT IT IS NOT, AND NO VALUE WRITTEN HERE CAN CHANGE IT. The side
+     nav is a column of 48px circles CENTRED vertically at `left: 14`, so on a
+     900 tall window it runs roughly 300 to 600, and `moveTo` clamps any left
+     spot to whatever leaves the figure clear of its last button. Measured at
+     1440 by 900: `about` asked for 40, `flowers` for 90 and `start` for 30,
+     and every one of the three came back at 12. That is why the three left
+     steps of the tour were pixel identical.
+
+     SO VARIETY LIVES ON THE RIGHT. The tour now reads centre, high right, low
+     left, mid right, low left, low right, which travels; the left spots keep
+     their written values because the clamp is what decides them anyway and a
+     shorter window would let them through. */
 
   /* ─────────────────────────────────────── WHAT IT SAYS IN A GARDEN
      One line per screen, and the lines are DELIBERATELY NOT INSTRUCTIONS.
@@ -244,6 +290,52 @@
     "#gg-guide[data-side='left'] .gg-g-x{right:auto;left:6px;}",
     "#gg-guide[data-side='left'] .gg-g-heart{right:auto;left:38px;}",
     "#gg-guide[hidden]{display:none !important;}",
+
+    /* ══════════════════════════════════ STEP ONE OF THE TOUR IS CENTRE STAGE
+       An introduction delivered from the bottom right corner is a notification.
+       For the one step where Hortus is introducing ITSELF rather than pointing
+       at something, the column goes to the middle of the screen and the figure
+       grows by half, and then it flies off to the corner on Next, which is what
+       makes the flight read as a character leaving rather than as a panel
+       moving.
+
+       IT IS `left:0;right:0` PLUS `align-items:center`, NEVER A TRANSFORM.
+       The column is what the heart is positioned from, and a transformed
+       ancestor would drag the heart along with it and become the containing
+       block for anything fixed inside; this project has recorded that trap
+       twice already. Stretching the column across the viewport and centring
+       its children costs nothing and keeps the `left`/`right` transition, so
+       the flight out still animates.
+
+       NO VEIL. The letter already dims the page on a first visit and the tour
+       starts the moment it closes, so a second dimmed card in a row would read
+       as a stack of modals rather than as somebody saying hello. */
+    /* THE COLUMN TURNS OVER ON THE STAGE: the figure on top and the bubble
+       under it, which is the reverse of the corner. Two reasons, and the
+       second is measured. The eye should land on Hortus first, since this is
+       the one step that is about Hortus rather than about a section. And the
+       hero has NO ROOM: its copy runs 173 to 417 and the meadow starts at
+       590, so the clear band is 173px against a column of 328 and something
+       is going to be covered whatever is done. Figure first puts the big
+       cheerful thing across the headline and the bubble below it over the
+       subtitle, where a pale panel of small text is the thing being covered
+       rather than the thing doing the covering. */
+    "#gg-guide[data-stage='1']{align-items:center;flex-direction:column-reverse;}",
+    "#gg-guide[data-stage='1'] .gg-g-say{max-width:330px;text-align:center;",
+    "padding:14px 30px 14px 30px;font-size:14.5px;}",
+    /* THE NOTCH MOVES TO THE TOP WITH THE BUBBLE. It points UP at the figure
+       now, and it is centred, so it meets the head rather than the air beside
+       it, which is the fault the landing band's own gardener bubble records. */
+    "#gg-guide[data-stage='1'] .gg-g-say::after{right:auto;bottom:auto;",
+    "left:50%;margin-left:-6px;top:-5px;}",
+    "#gg-guide[data-stage='1'] .gg-g-x{right:6px;left:auto;}",
+    "#gg-guide[data-stage='1'] .gg-g-nav{justify-content:center;}",
+    /* THE HEART STILL LEAVES THE CROWN, and with the column turned over the
+       crown is at the TOP of it rather than 92px off the foot. Measured from
+       the top instead, or a pat on the stage throws a heart out of the
+       bubble's text. */
+    "#gg-guide[data-stage='1'] .gg-g-heart{right:auto;left:50%;margin-left:-13px;",
+    "bottom:auto;top:8px;}",
     /* Hushed is a FADE, not a display change: the column has to keep its box
        so the flight back in animates from where it stood rather than from
        nowhere. `pointer-events:none` is what stops an invisible Hortus
@@ -380,7 +472,24 @@
     "#gg-guide .gg-g-say{padding:10px 30px 10px 12px !important;}",
     "#gg-guide .gg-g-say::after{right:26px !important;left:auto !important;}",
     "#gg-guide .gg-g-x{right:6px !important;left:auto !important;}",
-    ".gg-g-say{max-width:min(72vw,240px);font-size:12.5px;}}",
+    ".gg-g-say{max-width:min(72vw,240px);font-size:12.5px;}",
+    /* THE STAGE HAS TO BEAT THE PIN ABOVE, AND IT WINS ON SPECIFICITY RATHER
+       THAN ON ORDER. Both carry `!important`, so the later rule does NOT
+       automatically win; `#gg-guide[data-stage='1']` is one id and one
+       attribute against a bare id, which is what settles it. The vertical
+       placement is a flat 18vh here rather than the measured centring the
+       laptop gets, because the column is most of a phone screen tall and
+       there is nothing to centre it in. */
+    "#gg-guide[data-stage='1']{left:12px !important;right:12px !important;",
+    "bottom:16vh !important;align-items:center !important;",
+    "flex-direction:column-reverse !important;}",
+    "#gg-guide[data-stage='1'] .gg-g-say::after{bottom:auto !important;top:-5px;}",
+    "#gg-guide[data-stage='1'] .gg-g-heart{bottom:auto;top:6px;}",
+    "#gg-guide[data-stage='1'] .gg-g-say{max-width:min(86vw,300px) !important;",
+    "padding:12px 26px !important;font-size:13.5px;}",
+    "#gg-guide[data-stage='1'] .gg-g-say::after{right:auto !important;left:50% !important;",
+    "margin-left:-6px;}",
+    "#gg-guide[data-stage='1'] .gg-g-heart{right:auto;left:50%;margin-left:-10px;bottom:92px;}}",
 
     /* No cursor rule: `button` is already in garden-cursor.js's clickable
        list, and a rule here would lose to it anyway since every rule that
@@ -741,15 +850,63 @@
     root.style.bottom = up + "px";
   }
 
+  /* ONE PLACE DECIDES HOW BIG THE FIGURE IS, because three things ask:
+     `setPose`, the resize handler and the stage. 140 AND 90, UP FROM 92 AND
+     62: at the old size it weighed the same as the ambient butterflies
+     `garden-life.js` flies across the hero, so it read as a third piece of
+     scenery rather than as somebody talking to you. Half as large again is
+     what separates a character from the life around it.
+
+     ON THE STAGE IT IS HALF AS LARGE AGAIN ONCE MORE, 210 and 140. That step
+     has to be big enough to read as a different moment rather than as the
+     same figure having drifted into the middle. */
+  function figPx() {
+    var big = root && root.getAttribute("data-stage") === "1";
+    if (window.innerWidth <= 768) return big ? 140 : 90;
+    return big ? 210 : 140;
+  }
+
   function setPose(p) {
     pose = p || pose;
-    /* 140 AND 90, UP FROM 92 AND 62. At the old size it weighed the same as
-       the ambient butterflies `garden-life.js` flies across the hero, so it
-       read as a third piece of scenery rather than as somebody talking to
-       you. Half as large again is what separates a character from the life
-       around it. */
-    me.innerHTML = window.GardenMascot.svg(pose, window.innerWidth <= 768 ? 90 : 140);
+    me.innerHTML = window.GardenMascot.svg(pose, figPx());
     aimEyes();
+  }
+
+  /* ───────────────────────────────────────────── CENTRE STAGE, AND BACK OFF IT
+     `stage(true)` stretches the column across the viewport so `align-items:
+     center` can centre its children, then measures the column and puts its
+     middle on the window's. It is measured rather than given a percentage
+     because the column's height is the bubble's height plus the figure's and
+     the bubble is however many lines the line wraps to.
+
+     SLIGHTLY BELOW THE MIDDLE, at 0.42 of the free space rather than 0.5, and
+     that is the hero deciding rather than taste. With the column turned over,
+     the figure is its top half; at a true centre the figure sat across the
+     headline's middle and the bubble across the subtitle. At 0.42 the
+     headline is clear above the figure and the bubble lands in the band of
+     sky between the copy and the meadow's hills. NOTE WHICH WAY THE FIGURE
+     GOES: it is a `bottom`, so a LARGER fraction LIFTS the column. Written as
+     0.46 first, which measured the column's middle at 473 against a window
+     middle of 450, 23px the wrong way.
+
+     THE PHONE OWNS ITS OWN VERTICAL, in the stylesheet, since its pin carries
+     `!important` and there is nothing to centre a nearly screen tall column
+     in anyway. */
+  function stage(on) {
+    if (!root) return;
+    if (!on) {
+      root.removeAttribute("data-stage");
+      return;
+    }
+    root.setAttribute("data-stage", "1");
+    /* The default side, so none of the `data-side='left'` overrides can fire
+       underneath the centred ones. */
+    root.setAttribute("data-side", "right");
+    if (window.innerWidth <= 768) return;
+    root.style.left = "0";
+    root.style.right = "0";
+    var h = root.offsetHeight || 420;
+    root.style.bottom = Math.max(16, Math.round((window.innerHeight - h) * 0.42)) + "px";
   }
 
   /* A WIDTH CHANGE ONLY, never any resize. The size is chosen when the figure
@@ -777,6 +934,11 @@
       root.removeAttribute("data-side");
       root.removeAttribute("data-perched");
       root.style.left = root.style.right = root.style.bottom = "";
+    } else if (tourAt === 0) {
+      /* STILL ON THE STAGE, so re-centre against the new window rather than
+         sending it to the section's corner, which is what the branch below
+         would do and what left it stranded off centre after a resize. */
+      stage(true);
     } else if (INGARDEN) {
       /* A window dragged narrow has to give the perch up, or the figure
          stays at an x measured against a card that has since moved. */
@@ -870,7 +1032,12 @@
        IGNORED here: on the tour there is a line to say about that band, and
        the band's own figure is simply the thing being pointed at. */
     var e = SAYS[stp.to];
-    moveTo(e && e.spot);
+    /* STEP ONE IS THE INTRODUCTION AND IT STANDS IN THE MIDDLE. Every step
+       after it points at a section, so it belongs beside that section; this
+       one points at Hortus, so it belongs where you are looking. */
+    var onStage = i === 0;
+    stage(onStage);
+    if (!onStage) moveTo(e && e.spot);
     setPose(i === TOUR.length - 1 ? "planted" : (e && e.pose) || "welcome");
 
     current = stp.to;
@@ -878,6 +1045,11 @@
     root.querySelector(".gg-g-step").textContent = (i + 1) + " of " + TOUR.length;
     root.querySelector(".gg-g-next").textContent =
       i === TOUR.length - 1 ? "Let me in" : "Next";
+
+    /* THE HEIGHT IS MEASURED AFTER THE WORDS AND THE POSE ARE IN, or the
+       column is measured at whatever it was a moment ago and the centring is
+       out by however much this line's wrapping differs from the last one's. */
+    if (onStage) stage(true);
 
     bubble.removeAttribute("data-on");
     void bubble.offsetWidth;
@@ -898,6 +1070,11 @@
   function endTour(skipped) {
     tourAt = -1;
     markTour();
+    /* OFF THE STAGE BEFORE THE AMBIENT COMPANION TAKES OVER, or somebody who
+       skips on step one leaves a 210px Hortus standing in the middle of the
+       page: `moveTo` writes `left`/`right`/`bottom` but nothing else clears
+       the attribute, and `setPose` would go on reading the big size off it. */
+    stage(false);
     root.removeAttribute("data-tour");
     bubble.removeAttribute("data-on");
     /* The ambient companion takes over from here, starting with whichever
@@ -972,8 +1149,8 @@
     /* THE INTRODUCTION IS SITE WIDE, not page wide, and `gg_met_hortus` is
        one key for the whole project. Somebody who arrives straight at a
        garden has still never met it, so it introduces itself on the first
-       line it ever says, wherever that is. On the landing page that line is
-       the fertilizer; in a garden it is whatever the first screen says. */
+       line it ever says, wherever that is: the hero's greeting on the
+       landing page, or whatever the first card says in a garden. */
     root.querySelector(".gg-g-text").textContent = words;
     setPose(e.pose);
 

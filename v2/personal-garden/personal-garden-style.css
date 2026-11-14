@@ -199,6 +199,34 @@ input[type="text"]:focus {
 .gg-tile:hover {
   border: 4px solid powderblue;
 }
+
+/* ══════════════════ THE PICKER'S TILES HAD NO HOVER AT ALL, AND THE RULE
+   ABOVE IS WHY. `buildUI()` builds each tile with p5.dom and sets `border`
+   INLINE, and inline beats a stylesheet rule without `!important`, so
+   `.gg-tile:hover` has never once fired on the flower picker: the only
+   property it changes is the one property the JS writes inline. That is the
+   trap this project has now been caught by on four separate controls.
+
+   THE FIX IS NOT `!important` ON THE BORDER. The JS also uses the border to
+   mark the CHOSEN tile, a teal `#26a69a` ring against the others' pale
+   `#bde0d6`, so a hover forced on top of it would paint over the selection
+   and the picker would stop showing what you had picked.
+
+   A LIFT AND A DEEPER SHADOW NEED NOTHING, because neither `transform` nor
+   `box-shadow` is set inline on a tile. Same device as `.gg-hov`, which gives
+   the fork's two buttons their hover for the same reason: pick a property the
+   JS does not write and it cannot be beaten. Scoped to the picker so the
+   other `.gg-tile` screens keep exactly what they had. */
+#pick-wrap .gg-tile {
+  transition: transform .15s ease, box-shadow .15s ease, border .15s;
+}
+#pick-wrap .gg-tile:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 14px 24px rgba(29,100,102,0.18);
+}
+#pick-wrap .gg-tile:active {
+  transform: translateY(-1px);
+}
 .preview-holder {
   width: 160px;
   height: 110px;
@@ -749,6 +777,7 @@ button {
    in the landing page's `styles.css`. */
 @media (hover: none) {
   .gg-hov:hover,
+  #pick-wrap .gg-tile:hover,
   .gg-btn:hover, .gg-back:hover, .gg-tile:hover, .gg-card-btn:hover,
   #save-btn:hover, #gj-btn:hover, #gg-music-btn:hover, #ga-friends-btn:hover,
   #back-to-home:hover { transform: none !important; }

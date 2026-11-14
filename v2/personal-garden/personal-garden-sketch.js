@@ -3271,6 +3271,36 @@ function buildUI() {
   const hueRow = createDiv().parent(cardPick);
   hueRow.style("display", "none");
   hueRow.style("margin", "2px 0 14px");
+
+  /* ─────────────────────── THE FLOWER YOU ARE COLOURING, AT A SIZE YOU CAN SEE
+     The slider used to repaint the 56px tile and nothing else, so a hue was
+     being judged on a bloom the size of a thumbnail: the colour is plainly
+     changing, but what it has changed TO is a guess until the card at the
+     end. This is the same chosen flower at 150, directly above the slider
+     that moves it.
+
+     IT IS NOT A SEPARATE STEP, and that was weighed. A screen of its own
+     would give the biggest possible bloom and would also add a tap and a
+     sixth card to a flow this fork exists to shorten, and it would split one
+     decision across two screens: the whole argument for moving the colour
+     off the final card was that the bloom and its colour are chosen
+     together. The grid stays underneath, so swapping flower is still one tap
+     rather than a Back.
+
+     THE BUFFER IS STILL 120 AND THE DENSITY IS 4, which is the same drawing
+     shown larger rather than a second one. `drawPreviewFlower` draws at a
+     FIXED `R` of 40 whatever size the buffer is, so a bigger buffer would
+     only add margin; what makes it crisp at 150 CSS pixels is the density.
+     120 at 4 is 480 real pixels against the 300 a 2x screen needs. */
+  const BIG_BUF = 120, BIG_DPR = 4, BIG_CSS = 150;
+  const bigHolder = createDiv().parent(hueRow);
+  bigHolder.style("line-height", "0");
+  bigHolder.style("margin", "0 0 6px");
+  const bigCv = createElement("canvas").parent(bigHolder);
+  bigCv.elt.width = BIG_BUF * BIG_DPR; bigCv.elt.height = BIG_BUF * BIG_DPR;
+  bigCv.style("width", BIG_CSS + "px"); bigCv.style("height", BIG_CSS + "px");
+  bigCv.style("display", "block"); bigCv.style("margin", "0 auto");
+
   createElement("label", "And its colour").parent(hueRow)
     .style("display", "block").style("text-align", "center")
     .style("font-size", "12.5px").style("font-weight", "600")
@@ -3296,13 +3326,24 @@ function buildUI() {
   function repaintPickTiles() {
     if (!chosenSpecies) return;
     const rec = pickCanvases[chosenSpecies];
-    if (!rec) return;
-    const pg = createGraphics(120, 120);
-    pg.pixelDensity(2);
-    drawPreviewFlower(pg, chosenSpecies, chosenHue);
-    rec.getContext("2d").clearRect(0, 0, 120, 120);
-    rec.getContext("2d").drawImage(pg.elt, 0, 0, 120, 120);
-    pg.remove();
+    if (rec) {
+      const pg = createGraphics(120, 120);
+      pg.pixelDensity(2);
+      drawPreviewFlower(pg, chosenSpecies, chosenHue);
+      rec.getContext("2d").clearRect(0, 0, 120, 120);
+      rec.getContext("2d").drawImage(pg.elt, 0, 0, 120, 120);
+      pg.remove();
+    }
+    /* THE BIG ONE IS THE SAME CALL AT A HIGHER DENSITY, never a second
+       drawing, so the tile and the preview above it cannot disagree about
+       what a hue looks like. */
+    const pb = createGraphics(BIG_BUF, BIG_BUF);
+    pb.pixelDensity(BIG_DPR);
+    drawPreviewFlower(pb, chosenSpecies, chosenHue);
+    const bx = bigCv.elt.getContext("2d");
+    bx.clearRect(0, 0, bigCv.elt.width, bigCv.elt.height);
+    bx.drawImage(pb.elt, 0, 0, bigCv.elt.width, bigCv.elt.height);
+    pb.remove();
   }
 
   const pickGo = gbtn(cardPick, "Pick one above", true);
