@@ -1298,6 +1298,10 @@ footer { padding: 140px 2.5rem 2rem; }   /* 100px clear, matching the sections, 
   .about-right {
     display: flex;
     flex-direction: row;
+    /* The base rule centres the two cards; on a scroller that puts the
+       overflowing FIRST card off the left edge where nothing can scroll
+       back to it. A scroller starts at its start. */
+    justify-content: flex-start;
     gap: 0.8rem;
     overflow-x: auto;
     scroll-snap-type: x mandatory;
