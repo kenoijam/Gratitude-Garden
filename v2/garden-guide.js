@@ -320,6 +320,44 @@
        cheerful thing across the headline and the bubble below it over the
        subtitle, where a pale panel of small text is the thing being covered
        rather than the thing doing the covering. */
+    /* ═══════════════════════ THE INTRODUCTION HOLDS THE PAGE STILL
+       A VEIL BEHIND IT, AND NO SCROLLING UNTIL NEXT OR SKIP. The first
+       version had no veil, on the argument that the letter already dims the
+       page on a first visit and a second dimmed card in a row reads as a
+       stack of modals. That was weighed again and overruled by the author,
+       and the fault it fixes is real: the introduction sat over a page that
+       could be scrolled, so somebody could be half a screen away before
+       Hortus had finished saying hello, with the figure following them down
+       as a fixed element and the words in it no longer about anything.
+
+       IT IS STEP ONE ONLY. Every step after it points AT a section and has
+       to scroll to get there, so the lock is released the moment the tour
+       moves on.
+
+       `backdrop-filter` WITH A DARKER FALLBACK UNDERNEATH. Where the blur is
+       unsupported the background colour alone still separates the figure
+       from the page, so the veil never fails open; where it IS supported the
+       page stays legible as a place rather than becoming a black sheet,
+       which is the difference between an introduction and an error dialog. */
+    ".gg-g-veil{position:fixed;inset:0;z-index:9400;",
+    "background:rgba(16,42,48,0.44);",
+    "-webkit-backdrop-filter:blur(7px);backdrop-filter:blur(7px);",
+    "opacity:0;pointer-events:none;transition:opacity .45s ease;",
+    "touch-action:none;}",
+    ".gg-g-veil[data-on='1']{opacity:1;pointer-events:auto;}",
+    "@supports not ((backdrop-filter:blur(2px)) or (-webkit-backdrop-filter:blur(2px))){",
+    ".gg-g-veil{background:rgba(16,42,48,0.62);}}",
+    /* OVER THE SIDE NAV AND THE MUSIC BUTTON, UNDER THE LETTER. The column
+       normally sits at 240, which is under the music button at 260 and a
+       long way under the side nav at 9000, so at its usual height the two
+       controls would stand ON TOP of the veil and still be pressed: a rail
+       of section links is exactly the escape this is meant to close. 9450
+       clears both and stays under the letter's 9500, which must always win. */
+    "#gg-guide[data-stage='1']{z-index:9450;}",
+    "html.gg-locked, html.gg-locked body{overflow:hidden !important;",
+    "overscroll-behavior:none;}",
+    "@media (prefers-reduced-motion:reduce){.gg-g-veil{transition:none;}}",
+
     "#gg-guide[data-stage='1']{align-items:center;flex-direction:column-reverse;}",
     "#gg-guide[data-stage='1'] .gg-g-say{max-width:330px;text-align:center;",
     "padding:14px 30px 14px 30px;font-size:14.5px;}",
@@ -499,7 +537,7 @@
   ].join("");
 
   /* ───────────────────────────────────────────────────────────────── the build */
-  var root = null, bubble = null, me = null, holdT = 0, current = "";
+  var root = null, bubble = null, me = null, veil = null, holdT = 0, current = "";
   var reactT = 0, introT = 0, introUp = false;
   var look = { x: 0, y: 0, live: false, lx: 0, ly: 0 };
 
@@ -648,6 +686,14 @@
       markTour();
       if (root) root.removeAttribute("data-tour");
     }
+    /* THE CROSS MUST COME OFF THE STAGE TOO, AND FORGETTING IT BRICKED THE
+       PAGE. This path does not go through `endTour`, so with the veil and
+       the scroll lock added, pressing the corner cross during step one hid
+       Hortus and left a blurred, unscrollable sheet over the site with
+       nothing on it to dismiss it: the visitor's own "not now" locked them
+       out of the page entirely. `stage(false)` is safe to call at any time
+       and is hoisted, so it can sit above its own definition. */
+    stage(false);
     if (root) root.hidden = true;
   }
 
@@ -670,6 +716,18 @@
       "</div>" +
       "<button class='gg-g-me' type='button' aria-label='" + NAME + ", say that again'></button>";
     document.body.appendChild(root);
+
+    /* A SEPARATE ELEMENT ON THE BODY, not a child of the column. The column
+       is a small box that moves around the screen and is what the heart is
+       positioned from; a full screen backdrop inside it would be sized and
+       placed by the same rules. It is also inert: a tap on it does NOT
+       dismiss the tour, because the whole point is that the visitor makes a
+       choice, and Skip is sitting right there to be made. */
+    veil = document.createElement("div");
+    veil.className = "gg-g-veil";
+    veil.setAttribute("aria-hidden", "true");
+    veil.addEventListener("touchmove", function (e) { e.preventDefault(); }, { passive: false });
+    document.body.appendChild(veil);
 
     bubble = root.querySelector(".gg-g-say");
     me = root.querySelector(".gg-g-me");
@@ -866,6 +924,35 @@
     return big ? 210 : 140;
   }
 
+  /* THE VEIL AND THE SCROLL LOCK MOVE TOGETHER, in one place, because a veil
+     without the lock is a dimmed page you can still scroll behind and a lock
+     without the veil is a page that has silently stopped working.
+
+     `overflow:hidden` ON BOTH `html` AND `body`. On its own, html is enough
+     in most browsers and is NOT enough in some mobile ones, where the body
+     keeps its own scroller; `overscroll-behavior:none` is what stops the
+     rubber band handing the gesture to the page behind. The veil also eats
+     `touchmove` itself, since it covers the viewport and that is the gesture
+     a finger actually makes.
+
+     NOTHING IS SAVED AND RESTORED, and that is deliberate rather than
+     missing: `tourGo(0)` scrolls to the top before the lock goes on, so
+     there is no offset to preserve, and `position:fixed` on the body (the
+     usual way to hold a scroll position) would make the column's own fixed
+     positioning resolve against the body instead of the viewport. */
+  function hold(on) {
+    if (!veil) return;
+    try {
+      if (on) {
+        veil.setAttribute("data-on", "1");
+        document.documentElement.classList.add("gg-locked");
+      } else {
+        veil.removeAttribute("data-on");
+        document.documentElement.classList.remove("gg-locked");
+      }
+    } catch (e) {}
+  }
+
   function setPose(p) {
     pose = p || pose;
     me.innerHTML = window.GardenMascot.svg(pose, figPx());
@@ -896,9 +983,11 @@
     if (!root) return;
     if (!on) {
       root.removeAttribute("data-stage");
+      hold(false);
       return;
     }
     root.setAttribute("data-stage", "1");
+    hold(true);
     /* The default side, so none of the `data-side='left'` overrides can fire
        underneath the centred ones. */
     root.setAttribute("data-side", "right");
@@ -1025,6 +1114,13 @@
        is the page's own smooth behaviour doing it. */
     var sec = document.getElementById(stp.to);
     if (sec && i > 0) sec.scrollIntoView({ behavior: "smooth", block: "start" });
+    /* STEP ONE GOES TO THE TOP FIRST. It never scrolled, on the argument that
+       its own section is already the top of the page; that is true on arrival
+       and not true after the letter, which can be read for as long as
+       somebody likes while they scroll. Locking the page wherever they
+       happened to stop would freeze them halfway down a section with a
+       greeting over it. */
+    if (i === 0) window.scrollTo(0, 0);
 
     /* THE SPOT IS THE SECTION'S OWN, so the figure lands where it would have
        landed on an ordinary scroll past, and the tour does not invent a
