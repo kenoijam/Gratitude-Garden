@@ -248,6 +248,58 @@ not have to list the phases and get forgotten when one is added.
   naming `#name-suffix` matched nothing and left the title half cream and half
   green. It is selected by its parent.
 
+## PLANTING IS HELD, NOT TAPPED (`v2/garden-hold.js`), v2 ONLY
+
+**ONE MODULE AT THE v2 ROOT, used by both gardens' Plant buttons**, so the
+gesture that puts a flower in the ground is the same gesture in both places.
+
+- **WHY: Norton, Mochon & Ariely's IKEA effect**, *when labor leads to love*.
+  The effort somebody puts into making a thing is itself what makes them value
+  it, and planting was ONE TAP at the end of a flow that had just asked three
+  questions: the least laboured moment in the whole thing, on the screen where
+  the flower becomes theirs. It is also Hallnas & Redstrom's *slowness of
+  appearance*: the one gesture that commits something should not be the
+  quickest thing on screen.
+- **900ms, AND IT IS NOT A TIME GATE.** About as long as a deliberate press
+  and nowhere near long enough to be a chore. 1600 was tried and reads as the
+  button being broken.
+- **`arm` REPLACES THE CLICK HANDLER, IT DOES NOT ADD TO ONE.** p5's
+  `mousePressed` is a `mousedown` listener, so leaving it bound would plant
+  the flower at the START of the hold, which is the whole thing this replaces.
+  Both call sites are guarded on the module, so a page that fails to load it
+  still plants on a press rather than not at all.
+- **THE KEYBOARD DOES NOT HOLD.** `click` with `detail === 0` is a keyboard
+  activation and fires immediately. Holding Enter is not what any keyboard
+  user expects and a gesture that cannot be performed without a pointer is an
+  accessibility regression rather than a design. The pointer path ignores
+  `click` entirely (`detail !== 0`), or every press would plant twice.
+- **THE FILL IS A `::after`, AND IT HAS TO BE.** Both gardens build these
+  buttons with p5.dom and set every colour inline, so a background written in
+  a stylesheet would lose; an overlay child wins by being a different element.
+  The label is wrapped in its own span at `z-index: 1` so the sweep passes
+  BEHIND the words.
+- **THE SHARED GARDEN'S `syncPlantBtn` GOES THROUGH `setLabel`, NEVER
+  `html()`.** `html()` would replace the label span with a bare text node and
+  the sweep would then paint over the text.
+- **A SHORT PRESS NAMES THE GESTURE RATHER THAN FAILING SILENTLY.** It springs
+  back and the label says "Hold it a moment" for 1100ms. A button that does
+  nothing on a tap is a broken button; one that says what it wants is a button
+  with a gesture. The button's resting label is "Hold to plant" for the same
+  reason, so the first press is not the one that teaches it.
+- **RELEASING SPRINGS BACK FASTER THAN IT FILLED**, 220ms against the fill's
+  120ms per step. A fill that drains at the rate it filled reads as an
+  animation playing backwards; a snap reads as letting go.
+- **A TOUCH POINTER CALLS `preventDefault` ON `pointerdown`** and the button
+  carries `touch-action: none`, or the hold is cancelled by the scroll the
+  same finger starts.
+- **Verified by dispatching real pointer events**: a 280ms press leaves
+  `flowers.length` at 0 and the label at "Hold it a moment", then settles back
+  to "Hold to plant"; a 1140ms press plants and moves to the garden. The
+  `::after` resolves to `matrix(0.62, 0, 0, 1, 0, 0)` at `--hold: 0.62`.
+  **Read that transform AFTER its 120ms transition**, or it reports the
+  fallback 0 and looks like the variable is not reaching the pseudo element,
+  which cost a round here.
+
 ## THE MASCOT (`v2/garden-mascot.js`), v2 ONLY
 
 **A round butter BUTTERFLY with pale blue wings and a flower on each antenna,

@@ -3771,7 +3771,12 @@ function syncPlantBtn() {
   const ready = !!identity;
   plantBtnEl.elt.disabled = !ready;
   plantBtnEl.style("opacity", ready ? "1" : "0.45");
-  plantBtnEl.html(ready ? "Plant in Garden" : "Choose how to sign it");
+  /* THROUGH `setLabel`, NEVER `html()`. `GardenHold.arm` wraps the label in
+     its own span so the fill can sweep BEHIND the words; `html()` would
+     replace that span with a bare text node and the sweep would then paint
+     over the text. Falls back to `html()` only when the module is absent. */
+  const words = ready ? "Hold to plant" : "Choose how to sign it";
+  if (plantHold) plantHold.setLabel(words); else plantBtnEl.html(words);
 }
 function paintIdRow() {
   idButtons.forEach(b => {
@@ -3907,7 +3912,15 @@ syncNameRow();
 const plantBtn = createButton("Plant in Garden").addClass("gg-btn").parent(confirmCard);
 plantBtnEl = plantBtn;
 syncPlantBtn();
-plantBtn.mousePressed(() => {
+/* HELD, NOT TAPPED. See the personal garden's own note: the IKEA effect, and
+   one shared module so the gesture is the same in both gardens. `arm`
+   REPLACES the click handler rather than adding to it, because p5's
+   `mousePressed` fires on mousedown and would plant at the start of the
+   hold. `plantHold` is kept so `syncPlantBtn` can rewrite the label through
+   it; writing `plantBtn.html(...)` directly would throw the label span away
+   and the sweep would then paint over the words. */
+var plantHold = null;
+const doPlant = () => {
   /* No identity, no flower. The button is disabled in that state, so this is
      the belt to that brace rather than the check itself. */
   if (!identity) return;
@@ -3943,7 +3956,12 @@ plantBtn.mousePressed(() => {
     });
   }
   showStep("garden");
-});
+};
+if (window.GardenHold) {
+  plantHold = GardenHold.arm(plantBtn.elt, doPlant, { label: "Hold to plant" });
+} else {
+  plantBtn.mousePressed(doPlant);
+}
 
 const confirmBack = createButton("Back").addClass("gg-back").parent(confirmCard);
 confirmBack.mousePressed(() => showStep("select"));

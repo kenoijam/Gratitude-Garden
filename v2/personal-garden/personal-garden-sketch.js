@@ -3982,18 +3982,37 @@ function buildUI() {
   plantBtn.style("cursor", "pointer");
   plantBtn.style("margin-bottom", "8px");
   plantBtn.style("pointer-events", "auto");
-  plantBtn.mousePressed(() => {
-  addFlower(dayRating, dayShaper, journalEntry, chosenSpecies, chosenHue, gratitudeText, whyText);
-  flowerPreviewWrap.style("display", "none");
-  showStep("garden");
-  dayRating = "";
-  dayShaper = "";
-  journalEntry = "";
-  gratitudeText = "";
-  if (journalField) journalField.value("");
-  if (gratitudeField) gratitudeField.value("");
-  gladBtnLabel();
-});
+
+  /* ════════════════════════════════ PLANTING IS HELD, NOT TAPPED
+     Norton, Mochon & Ariely's IKEA effect: the labour somebody puts into a
+     thing is what makes them value it, and planting was the least laboured
+     moment in a flow that had just asked three questions. 900ms of held
+     press is small, real effort at the exact moment the flower becomes
+     theirs. `garden-hold.js` owns the gesture so both gardens plant the
+     same way.
+
+     IT IS `GardenHold.arm`, NOT `mousePressed`, AND BOTH WOULD BE A BUG.
+     p5's `mousePressed` is a `mousedown` listener, so leaving it bound would
+     plant the flower at the START of the hold, which is the whole thing this
+     replaces. Guarded on the module, so a page that fails to load it still
+     plants on a press rather than not at all. */
+  const plantIt = () => {
+    addFlower(dayRating, dayShaper, journalEntry, chosenSpecies, chosenHue, gratitudeText, whyText);
+    flowerPreviewWrap.style("display", "none");
+    showStep("garden");
+    dayRating = "";
+    dayShaper = "";
+    journalEntry = "";
+    gratitudeText = "";
+    if (journalField) journalField.value("");
+    if (gratitudeField) gratitudeField.value("");
+    gladBtnLabel();
+  };
+  if (window.GardenHold) {
+    GardenHold.arm(plantBtn.elt, plantIt, { label: "Hold to plant" });
+  } else {
+    plantBtn.mousePressed(plantIt);
+  }
 
   gardenWrap = createDiv().id("garden-wrap").parent(root);
   gardenWrap.style("pointer-events", "none");
