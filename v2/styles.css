@@ -76,7 +76,7 @@ body { padding-left: 0 !important; }
 @media (max-width: 1100px) { .side-nav { display: none; } }
 
 /* ── HERO ── */
-.hero { height: 100vh; min-height: 100vh; background: linear-gradient(180deg, var(--sky) 0%, var(--lightsky) 58%, var(--cream) 100%); display: flex; flex-direction: column; align-items: center; justify-content: flex-start; position: relative; overflow: hidden; padding-top: 0; padding-bottom: 0; padding-left: 0; padding-right: 0; }
+.hero { height: 100vh; min-height: 100vh; background: linear-gradient(180deg, var(--dl-hero0, var(--sky)) 0%, var(--dl-hero1, var(--lightsky)) 58%, var(--dl-hero2, var(--cream)) 100%); transition: background 1.2s linear; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; position: relative; overflow: hidden; padding-top: 0; padding-bottom: 0; padding-left: 0; padding-right: 0; }
 /* 132px, not 88, and positioned off its CORE rather than its box. The svg is
    180 units wide but its disc is only 120 of that, the rest being the rays, so
    at 132px the disc is still the 88px the old circle was. top and right are
@@ -2042,8 +2042,21 @@ button, a, [role="button"], summary, input[type="range"], label[for] {
 .footer-fold > summary::-webkit-details-marker { display: none; }
 .footer-fold > summary > h4,
 .footer-fold > summary > .footer-brand-logo { display: inline-block; margin: 0; }
+/* THE GAP UNDER EACH FOOTER HEADING LIVES ON THE SUMMARY, NOT ON THE
+   HEADING, and the line above is why it had to move. `.footer-col h4` sets
+   `margin-bottom: 0.9rem` and `.footer-brand-logo` sets `0.2rem`, and the
+   `margin: 0` directly above wipes both: it is there so the summary's own
+   box stays tight around the word, which is right, but it left "Gratitude
+   Garden" and "Explore" sitting flush on top of the things under them with
+   no air at all. Putting the space on the summary gives it back without
+   growing the hit area of the fold. */
+.footer-fold > summary { margin-bottom: 1rem; }
 
 @media (max-width: 768px) {
+  /* A CLOSED FOLD HAS NOTHING UNDER ITS HEADING, so the desktop gap would be
+     dead space between the word and the rule below it. */
+  .footer-fold:not([open]) > summary { margin-bottom: 0; }
+  .footer-fold[open] > summary { margin-bottom: 0.7rem; }
   .footer-fold {
     width: 100%;
     border-bottom: 1px solid rgba(255,249,227,0.16);
@@ -2289,4 +2302,42 @@ html:not([data-hero]) .hero-sun {
   font-weight: 400;
   font-size: 1rem;
   color: rgba(255,249,227,0.62);
+}
+
+
+/* ═══════════════════════════ THE HERO FOLLOWS THE CLOCK TOO, AND ITS TEXT WITH IT
+   `garden-daylight.js` writes `--dl-hero0/1/2` on `<html>` and `.hero` uses
+   them with its own colours as the fallback, so a page that fails to load
+   the module gets exactly the sky it always had.
+
+   THE COPY HAD TO TURN OVER, for the same measured reason the gardens' did:
+   the hero is the ONE section whose ground is the sky rather than cream, so
+   its eyebrow, title and subtitle are the only body text on this page that a
+   night sky sits behind. Everything below the hero is cream at every hour and
+   needs nothing. */
+html[data-dark="1"] .hero-title { color: #fff9e3; }
+html[data-dark="1"] .hero-title em { color: #ffe9a8; }
+html[data-dark="1"] .hero-subtitle { color: #d6ece6; }
+html[data-dark="1"] .hero-eyebrow,
+html[data-dark="1"] .hero-mark { color: #bfe0da; }
+/* The wordmark and the wiggling letters inherit, so they need no rule. */
+
+/* THE SUN KEEPS ITS SHAPE AND LOSES ITS COLOUR. Swapping the inline SVG for
+   a moon would mean a second drawing in the markup; desaturated, brightened
+   and brought down to 44 percent it reads as a small pale disc in a dark
+   sky, which is what a moon is at this size. The rays survive as a faint
+   halo, which is also what a moon has. */
+html[data-dark="1"] .hero-sun {
+  filter: grayscale(0.85) brightness(1.5);
+  transform: scale(0.44);
+  transform-origin: 70% 30%;
+  opacity: 0.95;
+}
+html[data-daylight] .hero-sun { transition: filter 1.2s linear, transform 1.2s linear; }
+
+/* The CSS clouds take the same derived tone the canvas ones do, so the hero
+   and the gardens cannot disagree about what a cloud looks like at 9pm. */
+.cloud .body, .cloud .bump1, .cloud .bump2 {
+  background: var(--dl-cloud, rgba(255,255,255,0.9));
+  transition: background 1.2s linear;
 }

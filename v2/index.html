@@ -12,6 +12,10 @@
        One shared module for the hero and both gardens, drawn on a raw 2D
        context, which is why it can serve a p5 sketch and a plain canvas at
        once. It must load BEFORE any sketch draws. -->
+  <!-- THE PAGE KNOWS WHAT TIME IT IS. Loaded FIRST of the garden modules,
+       because it writes the hero's sky variables on <html> and anything
+       that paints before it would paint a midday scene for a frame. -->
+  <script src="garden-daylight.js"></script>
   <script src="garden-life.js"></script>
 
   <!-- One cursor for the whole project: a leaf at rest, a bloom over
@@ -477,11 +481,18 @@
     ctx.clearRect(0, 0, W, H);
     ctx.save(); ctx.scale(scale, scale);
     var GY = 245;
+    /* THE MEADOW'S GROUND FOLLOWS THE CLOCK, like both gardens'. Guarded,
+       so a page without the module paints the colours it always did. */
+    var DL = (window.GardenDaylight && window.GardenDaylight.now()) || null;
+    var G_BACK = DL ? DL.back : '#a9d9cf';
+    var G_FRONT = DL ? DL.front : '#8fcfbe';
+    var G_FORE = DL ? DL.fore : '#7ec4b4';
+    var G_FOLD = DL ? DL.fold : 0;
     // Fill ground all the way to canvas bottom (LOGICAL_H_actual may exceed 310)
     var logH = LOGICAL_H_actual || 310;
 
     // Solid fill from GY to bottom so no gap at viewport edge
-    ctx.fillStyle='#7ec4b4'; ctx.fillRect(-20, GY+30, 1480, logH - GY + 20);
+    ctx.fillStyle=G_FORE; ctx.fillRect(-20, GY+30, 1480, logH - GY + 20);
 
     // Exact port of sketch.js drawLeafOnStem: quadraticVertex shape, fill(120,210,90), midrib line
     function leaf(x0,y0,c1x,c1y,c2x,c2y,x3,y3,t,side){
@@ -913,7 +924,7 @@
        1600 against a 1440 scene, so a dozen units either way cannot open a
        gap at either edge. */
     var hillDX = (!reduced && ptr.on) ? HILL_MAX * ptr.hx : 0;
-    ctx.fillStyle='#a9d9cf';
+    ctx.fillStyle=G_BACK;
     [[-80,258,500,92],[360,265,540,88],[870,268,580,86],[1400,262,540,88],[1600,258,500,92]].forEach(function(e){
       ctx.beginPath(); ctx.ellipse(e[0]+hillDX,e[1],e[2],e[3],0,0,Math.PI*2); ctx.fill();
     });
@@ -984,16 +995,20 @@
       var pos=stem(lx,row[1] + lift[i],row[2],
                    SWAY * Math.sin(phase + row[0] * 0.011) + lean[i]);
       ctx.save(); ctx.translate(pos[0],pos[1]);
+      /* THE HERO'S FLOWERS CLOSE AT NIGHT TOO, by the same uniform shrink
+         and nod both gardens use, so the meadow on the landing page and the
+         meadow you plant in are shut at the same hour. */
+      if (G_FOLD > 0.01) { ctx.scale(1 - 0.30 * G_FOLD, 1 - 0.30 * G_FOLD); ctx.rotate(6 * G_FOLD * Math.PI / 180); }
       row[3](row[4],row[5],row[6],row[7]);
       ctx.restore();
       hits.push({ i: i, lx: pos[0], ly: pos[1], R: row[4], hue: row[5], sp: row[8] });
     });
     // 3. Front ground strip over stem bases, so flowers appear to grow from ground
-    ctx.fillStyle='#8fcfbe'; ctx.fillRect(-20,GY,1480,60);
+    ctx.fillStyle=G_FRONT; ctx.fillRect(-20,GY,1480,60);
     /* The meadow ends on this, a clean straight horizon. It used to fade out,
        and later carried a curve into the section below; both put a second soft
        edge a few pixels under the curved top the hills already give the ground. */
-    ctx.fillStyle='#7ec4b4'; ctx.fillRect(-20,GY+42,1480, logH - GY + 20);
+    ctx.fillStyle=G_FORE; ctx.fillRect(-20,GY+42,1480, logH - GY + 20);
 
     /* Butterflies among the blooms and motes over the near ground, last of
        all, because they are in the air in FRONT of the meadow. Their band

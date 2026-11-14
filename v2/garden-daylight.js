@@ -55,7 +55,7 @@
        drawn faint at night reads as an overcast afternoon. */
     sunCore: [236, 243, 236], sunRay: [236, 243, 236],
     sunR: 24, sunX: 0.85, sunY: 0.19, sunAlpha: 0.95, rays: 0,
-    stars: 1, fold: 1, dark: 1
+    stars: 1, fold: 1, dark: 1, tint: 1
   };
   var KEYS = [
     { h: 0,    p: NIGHT },
@@ -68,26 +68,26 @@
                     ground: "#cfe2da",
                     sunCore: [255, 186, 130], sunRay: [255, 170, 120],
                     sunR: 44, sunX: 0.70, sunY: 0.35, sunAlpha: 0.85, rays: 1,
-                    stars: 0.18, fold: 0.45, dark: 0.45 } },
+                    stars: 0.18, fold: 0.45, dark: 0.45, tint: 0.85 } },
     { h: 8.3,  p: { skyTop: "#c6e9ef", skyBot: "#fdfbf0",
                     back: "#a4d6cc", front: "#8bcbba", fore: "#7ac0b0",
                     ground: "#dcefe6",
                     sunCore: [255, 228, 150], sunRay: [255, 220, 150],
                     sunR: 54, sunX: 0.79, sunY: 0.25, sunAlpha: 1, rays: 1,
-                    stars: 0, fold: 0.06, dark: 0.08 } },
+                    stars: 0, fold: 0.06, dark: 0.08, tint: 0.16 } },
     /* DAY. The garden's own palette, unchanged. */
     { h: 12,   p: { skyTop: "#cfeef0", skyBot: "#f9ffff",
                     back: "#a9d9cf", front: "#8fcfbe", fore: "#7ec4b4",
                     ground: "#dff0e8",
                     sunCore: [255, 220, 120], sunRay: [255, 210, 120],
                     sunR: 60, sunX: 0.85, sunY: 0.18, sunAlpha: 1, rays: 1,
-                    stars: 0, fold: 0, dark: 0 } },
+                    stars: 0, fold: 0, dark: 0, tint: 0 } },
     { h: 16.4, p: { skyTop: "#cfeef0", skyBot: "#f9ffff",
                     back: "#a9d9cf", front: "#8fcfbe", fore: "#7ec4b4",
                     ground: "#dff0e8",
                     sunCore: [255, 215, 118], sunRay: [255, 205, 118],
                     sunR: 62, sunX: 0.89, sunY: 0.20, sunAlpha: 1, rays: 1,
-                    stars: 0, fold: 0, dark: 0 } },
+                    stars: 0, fold: 0, dark: 0, tint: 0 } },
     /* GOLDEN. The biggest, warmest sun of the day and the one hour where the
        grass goes visibly yellow-green rather than teal. */
     { h: 18.2, p: { skyTop: "#a9cfe0", skyBot: "#ffd6a4",
@@ -95,13 +95,13 @@
                     ground: "#e4ecd7",
                     sunCore: [255, 196, 96], sunRay: [255, 170, 80],
                     sunR: 74, sunX: 0.93, sunY: 0.29, sunAlpha: 1, rays: 1,
-                    stars: 0, fold: 0.10, dark: 0.10 } },
+                    stars: 0, fold: 0.10, dark: 0.10, tint: 0.80 } },
     { h: 19.6, p: { skyTop: "#5f7196", skyBot: "#e2a08b",
                     back: "#6f8c97", front: "#5f8286", fore: "#527879",
                     ground: "#8faca2",
                     sunCore: [255, 150, 110], sunRay: [240, 120, 100],
                     sunR: 54, sunX: 0.96, sunY: 0.40, sunAlpha: 0.70, rays: 1,
-                    stars: 0.35, fold: 0.62, dark: 0.62 } },
+                    stars: 0.35, fold: 0.62, dark: 0.62, tint: 0.95 } },
     { h: 21,   p: NIGHT },
     { h: 24,   p: NIGHT }
   ];
@@ -132,7 +132,7 @@
 
   var HEXES  = ["skyTop", "skyBot", "back", "front", "fore", "ground"];
   var RGBS   = ["sunCore", "sunRay"];
-  var NUMS   = ["sunR", "sunX", "sunY", "sunAlpha", "rays", "stars", "fold", "dark"];
+  var NUMS   = ["sunR", "sunX", "sunY", "sunAlpha", "rays", "stars", "fold", "dark", "tint"];
 
   function at(hour) {
     hour = ((hour % 24) + 24) % 24;
@@ -152,6 +152,25 @@
        to the sky's own top colour at full dark they stay lighter than the sky
        behind them, so they are still legibly clouds, and they stop shouting. */
     out.cloud = mixHex("#ffffff", out.skyTop, 0.74 * out.dark);
+
+    /* ════════════════ THE HERO'S OWN SKY, WHICH IS NOT THE GARDENS' SKY
+       The landing page opens on `#b7e4e7 -> #e1f7f7 -> #fff9e3` and the
+       gardens on `#cfeef0 -> #f9ffff`. Handing the hero the garden palette
+       would change what it looks like AT NOON, and the rule this whole
+       module is built on is that midday must be exactly what it has always
+       been. So the hero's day colours are kept and PULLED toward the
+       garden's palette by `tint`.
+
+       `tint` IS NOT `dark`, AND THAT IS THE POINT. `dark` is how dark the
+       hour is, and golden hour is barely dark at all (0.10) while being one
+       of the most differently COLOURED hours there is. A hero blended by
+       `dark` would have sat at 10 percent of a sunset. `tint` is how far
+       the sky has moved from midday rather than how far the light has
+       dropped: 0 at noon, 0.16 morning, 0.80 golden, 0.85 dawn, 0.95 dusk,
+       1 night. */
+    out.hero0 = mixHex("#b7e4e7", out.skyTop, out.tint);
+    out.hero1 = mixHex("#e1f7f7", out.skyBot, out.tint);
+    out.hero2 = mixHex("#fff9e3", out.ground, out.tint);
     out.hour = hour;
     out.phase = hour < 5.4 || hour >= 20.4 ? "night"
               : hour < 7.4  ? "dawn"
@@ -191,6 +210,7 @@
     cache = at(hourNow());
     cacheAt = t;
     flagPhase(cache.phase);
+    paintVars(cache);
     return cache;
   }
 
@@ -201,6 +221,21 @@
      failure rather than a mood. `data-daylight` lets each stylesheet say what
      those four should do after dark, which is the only honest way to have a
      night that is actually dark. */
+  /* THE HERO'S THREE STOPS GO OUT AS CSS VARIABLES, since the hero's sky is
+     a CSS gradient rather than a canvas. Written on every recompute, not
+     only on a phase change, or the gradient would step between phases while
+     the gardens' canvas slid smoothly. */
+  function paintVars(o) {
+    try {
+      var st = document.documentElement.style;
+      st.setProperty("--dl-hero0", o.hero0);
+      st.setProperty("--dl-hero1", o.hero1);
+      st.setProperty("--dl-hero2", o.hero2);
+      st.setProperty("--dl-cloud", o.cloud);
+      st.setProperty("--dl-dark", String(Math.round(o.dark * 1000) / 1000));
+    } catch (e) {}
+  }
+
   var lastPhase = "";
   function flagPhase(p) {
     if (p === lastPhase) return;
@@ -227,5 +262,5 @@
 
   /* Flag the phase as early as possible, so a stylesheet is not repainting
      the whole interface a beat after the page has already been seen. */
-  flagPhase(at(hourNow()).phase);
+  (function () { var o = at(hourNow()); flagPhase(o.phase); paintVars(o); })();
 })();

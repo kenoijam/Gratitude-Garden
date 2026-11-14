@@ -248,6 +248,114 @@ not have to list the phases and get forgotten when one is added.
   naming `#name-suffix` matched nothing and left the title half cream and half
   green. It is selected by its parent.
 
+## THE HERO FOLLOWS THE CLOCK TOO, AND `tint` IS NOT `dark`
+
+The landing page opens on `#b7e4e7 -> #e1f7f7 -> #fff9e3` and the gardens on
+`#cfeef0 -> #f9ffff`, so handing the hero the garden palette would change what
+it looks like AT NOON, which is the one rule the daylight module is built on.
+The hero keeps its own day colours and is PULLED toward the garden's by a
+second number.
+
+- **`tint` IS HOW FAR THE SKY HAS MOVED FROM MIDDAY; `dark` IS HOW FAR THE
+  LIGHT HAS DROPPED.** They are not the same and golden hour proves it:
+  `dark` is 0.10 there while it is one of the most differently COLOURED hours
+  of the day, so a hero blended by `dark` would have shown 10 percent of a
+  sunset. `tint` runs 0 at noon, 0.16 morning, 0.80 golden, 0.85 dawn, 0.95
+  dusk, 1 night.
+- **THE THREE STOPS GO OUT AS CSS VARIABLES** (`--dl-hero0/1/2`, plus
+  `--dl-cloud`), because the hero's sky is a CSS gradient rather than a
+  canvas, and `.hero` uses them with its own colours as the FALLBACK so a
+  page that fails to load the module gets the sky it always had. They are
+  written on every recompute rather than on a phase change, or the gradient
+  would step between phases while the gardens' canvas slid.
+- **THE HERO'S COPY TURNS OVER WITH IT**, and it is the only copy on the page
+  that has to: the hero is the one section whose ground is the sky rather
+  than cream, so its eyebrow, title and subtitle are the only body text a
+  night sky ever sits behind.
+- **THE SUN KEEPS ITS SHAPE AND LOSES ITS COLOUR** rather than being swapped
+  for a moon, which would mean a second drawing in the markup. Desaturated,
+  brightened and brought to 44 percent it reads as a small pale disc with a
+  faint halo, which is what a moon is at that size.
+- **The hero's own meadow canvas and its eleven flowers follow too**, same
+  uniform shrink and nod, so the meadow on the landing page and the meadow
+  you plant in are shut at the same hour.
+
+### THE NIGHT FOLD IS UNIFORM, because uneven scaling reads as SQUASHED
+
+It was `scale(0.58, 0.86)` at full fold, on the reasoning that a closing
+flower draws its petals in around the stem. Rendered, that is not what it
+reads as, and the author's word for it was "squished": the eye knows the shape
+of a daisy and sees it DISTORTED rather than shut. It is a uniform
+`scale(0.70)` plus a 6 degree nod now, which cannot look squashed at all, and
+the closing is carried by the bloom getting smaller on its stem and tipping
+like a head. The rotate is about the bloom's own origin, which sits at the tip
+of the stem. **All three copies, both gardens and the hero.**
+
+## FIVE DEMO FLOWERS IN THE SHARED GARDEN, LOCAL ONLY (v2)
+
+An empty meadow is a bad first impression and a worse interview: on a quiet
+day the shared garden is a field of grass and somebody being shown the project
+cannot see what it is for. `DEMO_COUNT` at the top of the draw loop is 5; set
+it to 0 and they go away.
+
+- **NOTHING WRITES THEM TO THE ROOM, AND THAT IS NOT NEGOTIABLE.**
+  `shared.flowers` is a PUBLIC p5.party object that this copy and the frozen
+  root both share, so five invented flowers pushed into it would appear in
+  everybody's garden on that date, strangers' included, and could not be
+  taken back out. They live in the local `flowers` array, are rebuilt per page
+  load, and are invisible to `sharedPlantedToday`, which reads the room.
+  Verified: `shared.flowers` holds 0 with five on screen.
+- **SEEDED BY `todayStr()`**, so they are the same five all day and a
+  different five tomorrow, which is the rule the room key already follows.
+- **THE DIFF HAD TO LEARN ABOUT THEM, TWICE OVER.** `flowers.length !==
+  shared.flowers.length` fired on EVERY frame once five extras were appended,
+  re-copying the whole room sixty times a second; counting only the real ones
+  fixed that and broke the empty case, where `0 !== 0` is false so the block
+  never ran and the demos never appeared at all. Measured as `total: 0` on a
+  garden that should have had five. It tests the real count AND whether the
+  demos are missing.
+- **THEY DRAW NAMES AND GRATITUDES WITHOUT REPLACEMENT.** Picking
+  independently gave two flowers called "noor" and two people grateful for
+  "warm laundry" in one meadow, which reads as a bug: five strangers do not
+  share a name, and the band's whole argument is that everybody noticed
+  something different.
+- **THE ALIAS IS BUILT IN PLACE, NOT BY `anonAlias`.** That function and its
+  `ANON_WORDS` are declared INSIDE `buildUI()`, so nothing in `draw()` can see
+  them and calling it threw `anonAlias is not defined` on the first frame and
+  took the sketch down. It also picks with `Math.random`, which would rename
+  the five on every reload.
+- **A DEMO IS FILED UNDER `roomKey + "-demo"` for the social panel**, since
+  that keys a Supabase row on day plus created index and a like on an invented
+  flower would otherwise write into the real day's bucket. `createdIndex`
+  starts at 900000 so nothing matching on it can confuse a demo for a planted
+  flower.
+- **THE GRATITUDES ARE DELIBERATELY SMALL.** The project's whole argument is
+  that what you noticed can be tiny, and five grand gratitudes in the meadow
+  would quietly say the opposite to everybody who reads them.
+- **SAY SO IN A USER TEST, or turn them off.** A participant who reads them
+  will believe five strangers planted today.
+
+## "PLANT YOURS" IS A PILL, NOT AN UNDERLINED WORD
+
+In the browsing nudge it was `#1d6466` text with an underline inside a 13px
+line, so the one thing to press on that screen was the quietest mark on it and
+read as part of the sentence. It is a filled dark teal pill with cream text
+now, which also solves the second problem: a dark teal word on the sky fails
+outright after dark, where the rest of the note is handled by the `data-dark`
+block, and a pill carries its own background at every hour.
+`pointer-events:auto` is still load bearing, since `#daily-note` is
+`pointer-events:none` so it cannot swallow a tap meant for a flower.
+
+## THE FOOTER HEADINGS HAD NO AIR, AND `margin: 0` WAS WHY
+
+`.footer-col h4` sets `margin-bottom: 0.9rem` and `.footer-brand-logo` sets
+`0.2rem`, and `.footer-fold > summary > h4, .footer-fold > summary >
+.footer-brand-logo { margin: 0 }` wipes both. That rule is right, since it
+keeps the summary's box tight around the word, so the space moved onto the
+SUMMARY instead: `1rem` on desktop, `0.7rem` on a phone when open and `0` when
+closed, where a closed fold has nothing under its heading and the gap would
+only push the rule below it away.
+
 ## PLANTING IS HELD, NOT TAPPED (`v2/garden-hold.js`), v2 ONLY
 
 **ONE MODULE AT THE v2 ROOT, used by both gardens' Plant buttons**, so the
@@ -665,9 +773,45 @@ gardens, driven by the STEP the sketch is on.
     value is a `bottom`, so a LARGER fraction LIFTS the column. Written as
     0.46 first, aiming to sit slightly high, which measured the column's
     middle at 473 against a window middle of 450: 23px the wrong way.
-  - **NO VEIL.** The letter already dims the page on a first visit and the
-    tour starts the moment it closes, so a second dimmed card in a row would
-    read as a stack of modals rather than as somebody saying hello.
+  - **THERE IS A VEIL AND A SCROLL LOCK ON STEP ONE, AND THIS REVERSES WHAT
+    WAS WRITTEN HERE.** The note read: NO VEIL, because the letter already
+    dims the page on a first visit and a second dimmed card in a row reads as
+    a stack of modals rather than as somebody saying hello. The author
+    overruled it, and the fault it fixes is real: the introduction sat over a
+    page that could still be scrolled, so somebody could be half a screen
+    away before Hortus had finished saying hello, with a fixed figure
+    following them down and the words in it no longer about anything.
+    **Step one only**, since every later step has to scroll to its section.
+  - **`backdrop-filter: blur(7px)` OVER A TINT, WITH A DARKER TINT AS THE
+    FALLBACK.** Where the blur is unsupported the colour alone still
+    separates the figure, so the veil never fails open; where it is supported
+    the page stays legible as a place rather than going to a black sheet,
+    which is the difference between an introduction and an error dialog.
+  - **z-index 9400 FOR THE VEIL AND 9450 FOR THE COLUMN, measured against
+    what is actually on the page.** At its usual 240 the column is under the
+    music button at 260 and far under the SIDE NAV at 9000, so both would
+    have stood on top of the veil and stayed pressable, and a rail of section
+    links is exactly the escape this is meant to close. 9500 is the letter's
+    and must always win.
+  - **THE VEIL IS INERT: a tap on it does NOT dismiss.** The point is that
+    the visitor makes a choice, and Skip is in the bubble to be made.
+  - **`overflow:hidden` ON BOTH `html` AND `body`**, plus `overscroll-behavior`
+    and a cancelled `touchmove` on the veil itself. html alone is enough in
+    most browsers and not in some mobile ones. **`overflow:hidden` only stops
+    the USER**: `window.scrollTo` still moves the page, which is why the lock
+    has to be tested with a real wheel event rather than from the console.
+    Tested that way, six wheel ticks leave `scrollY` at 0.
+  - **STEP ONE SCROLLS TO THE TOP BEFORE LOCKING.** It never scrolled, on the
+    argument that its own section is the top of the page. True on arrival and
+    false after the letter, which can be read for as long as somebody likes
+    while they scroll; locking them wherever they stopped would freeze them
+    halfway down a section with a greeting over it.
+  - **`putAway` HAS TO CALL `stage(false)`, AND FORGETTING IT BRICKED THE
+    PAGE.** The corner cross does not go through `endTour`, so with the veil
+    added it hid Hortus and left a blurred, unscrollable sheet over the site
+    with nothing on it to dismiss: the visitor's own "not now" locked them
+    out of the page entirely. **Any new path that ends the tour has to come
+    off the stage.**
   - **THE PHONE STAGE BEATS THE PHONE PIN ON SPECIFICITY, NOT ON ORDER.** The
     `(max-width:768px)` block pins the column bottom right with `!important`,
     so the stage rule carries `!important` too and wins only because

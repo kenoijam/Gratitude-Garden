@@ -427,8 +427,14 @@ const anchor = {
   top: rect.top + (headY - f.size * 1.3) * sy,
   bottom: rect.top + (headY + f.size * 1.1) * sy
 };
-if (GardenSocial.peek) GardenSocial.peek(f, { day: roomKey, meaning: sp ? sp.meaning : "", anchor });
-else GardenSocial.open(f, { day: roomKey, meaning: sp ? sp.meaning : "" });
+/* A DEMO FLOWER IS FILED UNDER A DAY THAT DOES NOT EXIST. The panel keys a
+   Supabase row on `day` plus `created_index`, and a like on an invented
+   flower would otherwise write a row into the real day's bucket. The suffix
+   costs nothing, keeps the card working so the gratitude can be read, and
+   puts anything it ever does write somewhere obviously set apart. */
+const sday = f.demo ? roomKey + "-demo" : roomKey;
+if (GardenSocial.peek) GardenSocial.peek(f, { day: sday, meaning: sp ? sp.meaning : "", anchor });
+else GardenSocial.open(f, { day: sday, meaning: sp ? sp.meaning : "" });
 }
 
 /* HOVERING A BLOOM OPENS THE SAME CARD A TAP DOES, and the closing rule is the
@@ -1718,7 +1724,11 @@ const fold = sky().fold;
 const folded = fold > 0.01;
 if (folded) {
   push();
-  scale(1 - 0.42 * fold, 1 - 0.14 * fold);
+  /* UNIFORM, PLUS A NOD. Uneven scaling read as a squashed drawing rather
+     than a shut flower; the personal garden's note has the reasoning.
+     **Identical in both. Edit one and edit the other.** */
+  scale(1 - 0.30 * fold);
+  rotate(6 * fold);
 }
 
 bloomShadow(f, R, shadowK);
@@ -3062,7 +3072,139 @@ function draw() {
 if (window.GardenLoader && GardenLoader.showing() && shared && frameCount > 1) {
 GardenLoader.done();
 }
-if (shared && shared.flowers && flowers.length !== shared.flowers.length) {
+/* ═══════════════════════════ FIVE FLOWERS ARE ALWAYS ALREADY HERE (DEMO)
+   An empty meadow is a bad first impression and a worse interview: on a quiet
+   day the shared garden is a field of grass, and somebody being shown the
+   project cannot see what it is FOR. These five make it look like a day that
+   somebody else has already been in.
+
+   ╔═══════════════════════════════════════════════════════════════════════╗
+   ║  KENISHA: THESE ARE NOT REAL PEOPLE. Set DEMO_COUNT to 0 and they go  ║
+   ║  away completely. Worth knowing before a user test: a participant who ║
+   ║  reads them will believe five strangers planted today, so either say  ║
+   ║  so in the briefing or turn them off for the sessions where it would  ║
+   ║  change what somebody tells you.                                      ║
+   ╚═══════════════════════════════════════════════════════════════════════╝
+
+   THEY ARE LOCAL AND NOTHING WRITES THEM TO THE ROOM. That is the whole
+   design and it is not negotiable: `shared.flowers` is a PUBLIC p5.party
+   object that both this copy and the frozen root share, so five invented
+   flowers pushed into it would appear in everybody's garden on that date,
+   including strangers', and could not be taken back out. They live in the
+   local `flowers` array only, are rebuilt per page load, and are invisible
+   to `sharedPlantedToday`, which reads the room rather than this array.
+
+   SEEDED BY THE DATE, so they are the same five all day and a different five
+   tomorrow, which is the rule the room key itself follows: a reload is not a
+   reroll. */
+const DEMO_COUNT = 5;
+const DEMO_NAMES = ["mira", "jo", "alif", "renata", "sam", "pim", "dee", "tari",
+                    "noor", "beni", "clove", "yuki"];
+/* Small on purpose. The whole argument of the project is that the thing you
+   noticed can be tiny, and five grand gratitudes in the meadow would quietly
+   say the opposite to everybody who reads them. */
+const DEMO_WORDS = [
+  "the bus came straight away",
+  "my mum called for no reason",
+  "cold water after a hot walk",
+  "someone held the lift",
+  "finished a thing I kept putting off",
+  "the cat sat on me",
+  "a good orange",
+  "rain on the window while I worked",
+  "my friend texted first",
+  "warm laundry",
+  "found a song I forgot about",
+  "nobody needed anything from me today"
+];
+let demoCache = null;
+function demoFlowers() {
+  if (DEMO_COUNT <= 0) return [];
+  if (demoCache) return demoCache;
+  /* One seeded generator, so the five are stable within a day and the SAME
+     five for everybody looking at that date. `todayStr()` is the room key's
+     own date, so they turn over at midnight with the garden. */
+  const key = todayStr();
+  let h = 2166136261;
+  for (let i = 0; i < key.length; i++) { h ^= key.charCodeAt(i); h = Math.imul(h, 16777619); }
+  const rnd = () => { h = Math.imul(h ^ (h >>> 15), 2246822507); h ^= h >>> 13; return ((h >>> 0) % 100000) / 100000; };
+
+  const layers = ["back", "mid", "front", "mid", "front"];
+  /* DRAWN WITHOUT REPLACEMENT. Picking independently from each list gave two
+     flowers called "noor" and two people grateful for "warm laundry" in the
+     same meadow, which reads as a bug rather than as five people: five
+     strangers do not share a name, and the whole argument of the band is
+     that everybody noticed something DIFFERENT. `take` removes what it
+     returns, so the five cannot collide. */
+  const take = (arr) => arr.splice(Math.floor(rnd() * arr.length), 1)[0];
+  const names = DEMO_NAMES.slice();
+  const words = DEMO_WORDS.slice();
+  const out = [];
+  for (let i = 0; i < DEMO_COUNT; i++) {
+    const sp = speciesList[Math.floor(rnd() * speciesList.length)].id;
+    /* ROUGHLY A THIRD ANONYMOUS, which is about what the identity row's own
+       choices would produce.
+
+       THE ALIAS IS BUILT HERE RATHER THAN BY `anonAlias`, FOR TWO REASONS
+       AND THE FIRST IS FATAL. `anonAlias` and its `ANON_WORDS` are declared
+       INSIDE `buildUI()`, so nothing in `draw()` can see them: calling it
+       threw `anonAlias is not defined` on the first frame and took the whole
+       sketch down. And it picks with `Math.random`, which would give these
+       five a different name on every reload and break the one thing they are
+       supposed to have, which is being the same five all day. The FORM is
+       the same, an adjective and the species, so a demo anonymous flower
+       still reads exactly like a real one. */
+    const isAnon = rnd() < 0.34;
+    const DEMO_ADJ = ["Quiet", "Sunny", "Kind", "Gentle", "Bright", "Easy"];
+    const noun = sp.charAt(0).toUpperCase() + sp.slice(1);
+    const name = isAnon
+      ? DEMO_ADJ[Math.floor(rnd() * DEMO_ADJ.length)] + " " + noun
+      : take(names);
+    out.push({
+      word: name,
+      gratitude: take(words),
+      look: null,
+      anon: isAnon,
+      demo: true,
+      species: sp,
+      layer: layers[i],
+      /* Spread across the width in five bands with a little jitter, so they
+         never stack and never line up either. */
+      xNorm: (i + 0.5) / DEMO_COUNT + (rnd() - 0.5) * 0.09,
+      baseY: 0, x: 0, stemLen: 0, size: 0,
+      stemNorm: 0.14 + rnd() * 0.05,
+      sizeNorm: 0.034 + rnd() * 0.006,
+      phase: rnd() * 360,
+      petals: speciesPetalCount(sp),
+      hue: Math.round(rnd() * 360),
+      sat: defaultSat(sp),
+      light: defaultLight(sp),
+      /* WELL ABOVE ANY REAL INDEX, so a demo can never be mistaken for a
+         planted flower by anything matching on `createdIndex`. */
+      createdIndex: 900000 + i,
+      growthStage: GROWTH_STAGES.BLOOM,
+      growthStartTime: 0,
+      isOld: true
+    });
+  }
+  demoCache = out;
+  return out;
+}
+
+/* THE DIFF COUNTS REAL FLOWERS ONLY, AND IT HAS TO ASK ABOUT THE DEMOS TOO.
+   Two separate traps here, both found by measuring rather than reading.
+   With five demos appended, `flowers` is permanently longer than
+   `shared.flowers`, so the old test fired on EVERY frame and re-copied the
+   whole room sixty times a second. And counting only the real ones is not
+   enough either: on an EMPTY room, which is the exact case these exist for,
+   `0 !== 0` is false, the block never runs, and the demos are never
+   appended. Measured that way, with `total: 0` on a garden that should have
+   had five. It has to fire while the demos are MISSING as well. */
+const realCount = flowers.reduce((n, f) => n + (f.demo ? 0 : 1), 0);
+const demoWant  = demoFlowers().length;
+const demoHave  = flowers.length - realCount;
+if (shared && shared.flowers &&
+    (realCount !== shared.flowers.length || demoHave !== demoWant)) {
 const oldMyFlower = (myLocalFlowerIndex >= 0 && myLocalFlowerIndex < flowers.length)
 ? flowers[myLocalFlowerIndex] : null;
 
@@ -3088,6 +3230,8 @@ break;
 }
 }
 }
+
+flowers = flowers.concat(demoFlowers());
 
 updateResponsiveFlowerLayout();
 }
@@ -4184,7 +4328,7 @@ const inGarden = step === "garden";
 dailyNote.html(inGarden && mine
 ? "Your flower is planted. Enjoy today's garden, and come back tomorrow for another."
 : (inGarden && browsing
-? "Have a look around. When something comes to mind, <button id=\"peek-back\">plant yours</button>."
+? "Have a look around. When something comes to mind, <button id=\"peek-back\">Plant yours</button>"
 : ""));
 const shown = inGarden && (mine || browsing);
 /* `flex`, not `block`: the box is a fixed 38px tall so that its line sits
@@ -4196,9 +4340,23 @@ dailyNote.style("display", shown ? "flex" : "none");
 dailyNote.style("pointer-events", "none");
 const back = document.getElementById("peek-back");
 if (back) {
-  back.style.cssText = "background:none;border:none;padding:0;font:inherit;" +
-    "color:#1d6466;font-weight:700;text-decoration:underline;cursor:pointer;" +
-    "pointer-events:auto;";
+  /* A FILLED PILL, NOT AN UNDERLINED WORD, and it is two problems at once.
+     It was `#1d6466` text with an underline inside a 13px line, so the one
+     thing to press on this screen was the quietest mark on it and read as
+     part of the sentence rather than as a control. And a dark teal word on
+     the sky fails outright after dark, where the rest of the note is handled
+     by the `data-dark` block but an inline link would have needed its own
+     rule; a pill carries its own background and is legible at every hour.
+     `pointer-events:auto` is still load bearing: `#daily-note` is
+     `pointer-events:none` so it cannot swallow a tap meant for a flower, so
+     the one control inside it has to take them back for itself. */
+  back.style.cssText = "margin-left:8px;border:none;cursor:pointer;" +
+    "background:#1d6466;color:#fff9e3;font-family:Arial,Helvetica,sans-serif;" +
+    "font-size:12.5px;font-weight:700;padding:6px 14px;border-radius:999px;" +
+    "line-height:1.1;white-space:nowrap;pointer-events:auto;" +
+    "box-shadow:0 2px 8px rgba(29,100,102,0.28);transition:filter .15s,transform .15s;";
+  back.onpointerenter = () => { back.style.filter = "brightness(1.12)"; back.style.transform = "scale(1.04)"; };
+  back.onpointerleave = () => { back.style.filter = ""; back.style.transform = ""; };
   back.onclick = () => { browsing = false; showStep("landing"); };
 }
 }

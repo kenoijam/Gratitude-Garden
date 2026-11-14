@@ -1735,7 +1735,19 @@ function drawBloom(f, shadowK) {
   const folded = fold > 0.01;
   if (folded) {
     push();
-    scale(1 - 0.42 * fold, 1 - 0.14 * fold);
+    /* UNIFORM, PLUS A NOD. The first version narrowed the bloom far more
+       than it shortened it, 0.58 against 0.86, on the reasoning that a
+       closing flower draws its petals in around the stem. Rendered, that is
+       not what it reads as: an unevenly scaled drawing reads as a SQUASHED
+       drawing, which is what it was called, because the eye knows the shape
+       of a daisy and sees it distorted rather than shut.
+       A uniform shrink cannot look squashed at all, and the closing is
+       carried by the bloom getting smaller on its stem plus a small
+       downward nod, which is what a furled flower does. The rotate is about
+       the bloom's own origin, which sits at the tip of the stem, so it tips
+       like a head rather than sliding. */
+    scale(1 - 0.30 * fold);
+    rotate(6 * fold);
   }
 
   bloomShadow(f, R, shadowK);
