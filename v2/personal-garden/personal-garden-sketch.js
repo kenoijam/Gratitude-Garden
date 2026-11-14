@@ -559,33 +559,93 @@ function buildClouds(reset = false) {
   }
 }
 
+/* ════════════════════════════════════ THE SCENE FOLLOWS THE VISITOR'S CLOCK
+   Every colour below used to be a hard coded hex. They come from
+   `GardenDaylight.now()` now, whose `day` keyframe holds those exact hexes,
+   so at midday this garden paints what it has always painted and every other
+   hour is the same garden at a different time.
+
+   `sky()` IS A GUARDED LOOKUP, not a direct call, because the module is a
+   separate script tag and a page that has not loaded it must still draw a
+   garden rather than throw inside `draw()` sixty times a second. Same
+   contract every other optional module on this page already follows. */
+let SKY_FALLBACK = {
+  skyTop: "#cfeef0", skyBot: "#f9ffff",
+  back: "#a9d9cf", front: "#8fcfbe", fore: "#7ec4b4", ground: "#dff0e8",
+  sunCore: [255, 220, 120], sunRay: [255, 210, 120],
+  sunR: 60, sunX: 0.85, sunY: 0.18, sunAlpha: 1, rays: 1,
+  cloud: "#ffffff",
+  stars: 0, fold: 0, dark: 0, phase: "day"
+};
+function sky() {
+  return (window.GardenDaylight && window.GardenDaylight.now()) || SKY_FALLBACK;
+}
+
 function drawSky() {
+  const p = sky();
+  const top = color(p.skyTop), bot = color(p.skyBot);
   for (let y = 0; y < height; y++) {
     const t = y / height;
-    const c = lerpColor(color("#cfeef0"), color("#f9ffff"), t);
+    const c = lerpColor(top, bot, t);
     stroke(c);
     line(0, y, width, y);
+  }
+  drawStars(p);
+}
+
+/* THE STARS ARE SEEDED AND FIXED, never random per frame, or the sky boils.
+   They sit in the TOP 58 PERCENT only, which is where the back hill's own
+   edge begins, so no star is ever painted inside a hill; and they are a
+   fraction of the width rather than a count, so a phone does not get the
+   same forty stars crammed into a third of the sky. `twinkle` is driven by
+   the clock rather than by `frameCount` so it is frame rate independent, the
+   same rule the page dust already follows. */
+function drawStars(p) {
+  if (p.stars <= 0.01) return;
+  const n = Math.round(width / 26);
+  const t = millis() / 1000;
+  noStroke();
+  for (let i = 0; i < n; i++) {
+    const rx = (Math.sin(i * 12.9898) * 43758.5453) % 1;
+    const ry = (Math.sin(i * 78.233) * 12345.6789) % 1;
+    const x = Math.abs(rx) * width;
+    const y = Math.abs(ry) * height * 0.58;
+    const tw = 0.55 + 0.45 * Math.sin(t * 0.7 + i * 1.7);
+    const r = 0.8 + Math.abs(rx) * 1.1;
+    fill(255, 255, 245, 255 * p.stars * tw * 0.9);
+    circle(x, y, r * 2);
   }
 }
 
 function drawSunGradient() {
-  const sx = width * 0.85;
-  const sy = height * 0.18;
+  const p = sky();
+  const sx = width * p.sunX;
+  const sy = height * p.sunY;
+  const R  = p.sunR;
+  const co = p.sunCore, ry = p.sunRay;
 
   noStroke();
-  for (let r = 60; r > 0; r -= 8) {
-    const a = map(r, 60, 0, 0.15, 1);
-    fill(255, 220, 120, 255 * a);
+  /* The step is a fraction of R rather than a flat 8, or a small moon is
+     drawn in three bands and comes out as a target rather than a disc. */
+  const step = Math.max(2, R / 7.5);
+  for (let r = R; r > 0; r -= step) {
+    const a = map(r, R, 0, 0.15, 1) * p.sunAlpha;
+    fill(co[0], co[1], co[2], 255 * a);
     circle(sx, sy, r * 2);
   }
 
-  stroke(255, 210, 120, 120);
+  /* THE RAYS FADE OUT RATHER THAN SWITCHING OFF. `rays` runs to 0 through
+     the night keyframe, so the moon simply has none; drawn at alpha 0 they
+     would still cost twelve strokes a frame for nothing, hence the early
+     return. */
+  if (p.rays <= 0.02) return;
+  stroke(ry[0], ry[1], ry[2], 120 * p.rays);
   for (let i = 0; i < 12; i++) {
     const a = i * 30;
-    const x1 = sx + cos(a) * 55;
-    const y1 = sy + sin(a) * 55;
-    const x2 = sx + cos(a) * 90;
-    const y2 = sy + sin(a) * 90;
+    const x1 = sx + cos(a) * (R * 0.92);
+    const y1 = sy + sin(a) * (R * 0.92);
+    const x2 = sx + cos(a) * (R * 1.5);
+    const y2 = sy + sin(a) * (R * 1.5);
     line(x1, y1, x2, y2);
   }
 }
@@ -605,11 +665,13 @@ function drawSunGradient() {
    spanned. The alpha is the hero's 0.9, not the old 205. */
 function drawClouds() {
   noStroke();
+  const cc = color(sky().cloud || "#ffffff");
+  cc.setAlpha(230);
   for (const c of clouds) {
     c.x += c.speed;
     if (c.x > width + 170) c.x = -170;
 
-    fill(255, 255, 255, 230);
+    fill(cc);
     const W = c.size * 1.6;
     const x = c.x - W / 2, y = c.y - W * 0.22;
     const bodyH = W * 0.269, b1 = W * 0.433, b2 = W * 0.314;
@@ -621,7 +683,7 @@ function drawClouds() {
 
 function drawHillsBack() {
   noStroke();
-  fill("#a9d9cf");
+  fill(sky().back);
   beginShape();
   for (let x = 0; x <= width + 20; x += 10) {
     vertex(x, height * 0.56 + noise(x * 0.002, 0.1) * 52);
@@ -633,7 +695,7 @@ function drawHillsBack() {
 
 function drawHillsFront() {
   noStroke();
-  fill("#8fcfbe");
+  fill(sky().front);
   beginShape();
   for (let x = 0; x <= width + 20; x += 12) {
     vertex(x, height * 0.64 + noise(x * 0.0025, 20.2) * 16);
@@ -694,7 +756,7 @@ function gardenerPatted(mx, my) {
 
 function drawForegroundHill() {
   noStroke();
-  fill("#7ec4b4");
+  fill(sky().fore);
   beginShape();
   for (let x = 0; x <= width + 20; x += 10) {
     const bump = noise(x * 0.002, 321.45) * height * 0.02;
@@ -709,7 +771,7 @@ function drawForegroundHill() {
 function drawGround() {
   noStroke();
   const groundTop = height * 0.805;
-  fill('#dff0e8');
+  fill(sky().ground);
   rect(0, groundTop, width + 20, height - groundTop);
 }
 
@@ -1640,6 +1702,26 @@ function bloomShadow(f, R, alphaK) {
 /* `shadowK` scales the drop shadow, 0 for none. A growing bloom passes a
    ramp so the shadow arrives with the flower rather than appearing whole on
    one frame. Everything else leaves it out and gets the full shadow. */
+/* ══════════════════════════════════════ A FLOWER CLOSES AT NIGHT (NYCTINASTY)
+   Real blooms fold their petals after dark and open again in the morning,
+   and it is the single most alive thing a drawn garden can do for almost no
+   code. `fold` comes off the same daylight curve as the sky, so the garden
+   shuts as the light goes rather than at some threshold minute.
+
+   IT IS A TRANSFORM AROUND THE DISPATCH, NOT A DRAWING CHANGE, and that is
+   the whole reason it is affordable. Folding each species properly would
+   mean editing twelve blooms in SEVEN places, which is the sync table this
+   project's biggest standing cost. One `scale` here is one place per garden.
+
+   NARROWER THAN IT IS SHORTER, 0.58 against 0.86, because that is what
+   closing looks like: the petals draw in around the stem and the bloom gets
+   taller relative to its width, not smaller all over. Scaled evenly it reads
+   as the flower moving further away.
+
+   THE SHADOW IS INSIDE THE SCALE ON PURPOSE. `bloomShadow` reads the live
+   transform off `ctx.getTransform()` precisely so it can be drawn inside one,
+   so a closed bloom gets a closed bloom's halo; left outside it, every shut
+   flower would sit on a full width shadow. */
 function drawBloom(f, shadowK) {
   colorMode(HSL, 360, 100, 100, 1);
   noStroke();
@@ -1648,6 +1730,14 @@ function drawBloom(f, shadowK) {
   const hue   = f.hue;
   const sat   = f.sat;
   const light = f.light;
+
+  const fold = sky().fold;
+  const folded = fold > 0.01;
+  if (folded) {
+    push();
+    scale(1 - 0.42 * fold, 1 - 0.14 * fold);
+  }
+
   bloomShadow(f, R, shadowK);
 
   if (f.species === "tulip") {
@@ -1678,6 +1768,7 @@ function drawBloom(f, shadowK) {
     drawDaisyBloom(R, hue, sat, light);
   }
 
+  if (folded) pop();
   colorMode(RGB);
 }
 

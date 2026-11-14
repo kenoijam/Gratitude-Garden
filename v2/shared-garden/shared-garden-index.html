@@ -12,7 +12,11 @@
        One shared module for the hero and both gardens, drawn on a raw 2D
        context, which is why it can serve a p5 sketch and a plain canvas at
        once. It must load BEFORE any sketch draws. -->
-  <script src="../garden-life.js"></script>
+  <!-- THE GARDEN KNOWS WHAT TIME IT IS. One copy at the v2 root, read by
+     both gardens, so the sky can never be two colours on one project.
+     It must load BEFORE the sketch, which asks it on the first frame. -->
+<script src="../garden-daylight.js"></script>
+<script src="../garden-life.js"></script>
 
   <!-- One cursor for the whole project: a leaf at rest, a bloom over
        anything clickable. -->

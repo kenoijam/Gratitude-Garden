@@ -144,6 +144,110 @@ END of `v2/styles.css`. The root copy has none of them.
 - **Verified at 390**: no sideways scroll, a touch pointermove sets no
   parallax variable and opens no tip, and no console errors.
 
+## THE GARDEN KNOWS WHAT TIME IT IS (`v2/garden-daylight.js`), v2 ONLY
+
+**ONE MODULE AT THE v2 ROOT, read by BOTH gardens**, like `garden-music.js`,
+`garden-life.js` and the rest. A sky that differed between the two pages
+would read as two different days, and this project already pays for the same
+flower maths living in seven places.
+
+- **WHY IT EXISTS, out of the thesis's own sources.** Browning's *14 Patterns
+  of Biophilic Design* lists **Connection with Natural Systems**, an awareness
+  of natural process and temporal change, and it is the one pattern this
+  project had NONE of: the garden was lit at the same hour for ever, so you
+  could plant at six in the morning or at midnight and the sun sat in the same
+  place at the same brightness. It also buys a little of Kaplan's **extent**,
+  the sense that a place carries on being a place when you are not looking at
+  it, which is the component of Attention Restoration Theory the gardens were
+  weakest on.
+- **IT IS THE VISITOR'S OWN CLOCK**, local, never a server and never UTC,
+  because the point is that the garden agrees with the window they are sitting
+  next to. **`?clock=21` pins an hour for a demo**, which matters for an
+  interview held at two in the afternoon, and `GardenDaylight.override(h)`
+  does the same from the console. It is a query string rather than a stored
+  setting for the same reason the `?hero=` drafts are.
+- **KEYFRAMES ON A 24 HOUR CURVE, INTERPOLATED, never stepped.** Six phases
+  (night, dawn, morning, day, golden, dusk) and every value lerped between the
+  two surrounding keys through a **smoothstep**, not a straight line: linear,
+  the palette arrives at each key at full rate and visibly corners there.
+- **THE `day` KEYFRAME IS THE GARDEN'S EXISTING PALETTE, to the byte.**
+  `#cfeef0`, `#f9ffff`, `#a9d9cf`, `#8fcfbe`, `#7ec4b4`, `#dff0e8`. Verified by
+  reading the canvas back at noon in both gardens: the hills come out exactly
+  `#a9d9cf` and `#7ec4b4`. So midday is the garden it has always been and every
+  other hour reads as that same garden at a different time rather than as a
+  recoloured one. **Change a garden colour and change the keyframe with it.**
+- **THE CLOUDS ARE DERIVED, NOT A KEYFRAME.** A cloud is only ever "white,
+  pulled toward whatever the sky is doing", so it is `mix(white, skyTop,
+  0.74 * dark)`. Left at a flat white they were the one daytime object on a
+  night sky and read as pasted on, which is exactly how the first render
+  looked.
+- **A MOON, NOT A DIM SUN.** No rays, a quarter the radius, very nearly white.
+  A sun drawn faint at night reads as an overcast afternoon. The ray loop
+  returns early rather than stroking twelve lines at alpha 0, and the gradient
+  step is `R / 7.5` rather than a flat 8, or a small moon is drawn in three
+  bands and comes out as a target.
+- **THE STARS ARE SEEDED AND FIXED**, in the top 58 percent only, which is
+  where the back hill's own edge begins, so no star is ever painted inside a
+  hill. One per 26px of width rather than a flat count, so a phone does not get
+  forty crammed into a third of the sky, and the twinkle runs off the clock
+  rather than `frameCount` so it is frame rate independent.
+
+### A FLOWER CLOSES AT NIGHT, and it is a transform rather than a drawing
+
+**Real blooms fold after dark and open in the morning (nyctinasty), and it is
+the most alive thing a drawn garden can do for almost no code.** `fold` comes
+off the same curve as the sky, so the garden shuts as the light goes rather
+than at a threshold minute.
+
+- **ONE `scale` AROUND THE DISPATCH IN `drawBloom`, in each garden.** Folding
+  each species properly would mean editing twelve blooms in SEVEN places,
+  which is this project's largest standing cost. This is one place per garden.
+- **NARROWER THAN IT IS SHORTER, 0.58 against 0.86.** That is what closing
+  looks like: the petals draw in around the stem and the bloom gets taller
+  relative to its width. Scaled evenly it reads as the flower moving away.
+- **THE SHADOW IS INSIDE THE SCALE ON PURPOSE.** `bloomShadow` reads the live
+  transform off `ctx.getTransform()` precisely so it can be drawn inside one,
+  so a closed bloom gets a closed bloom's halo; outside it, every shut flower
+  would sit on a full width shadow.
+- **IN THE SHARED GARDEN THE `pop()` GOES BEFORE THE LABEL, NOT AT THE END.**
+  That sketch draws the planter's NAME inside `drawBloom`, unlike the personal
+  one, so a `pop()` at the end of the function squashed somebody's username to
+  58 percent of its width every night. Caught by reading the function rather
+  than by looking at it.
+
+### AFTER DARK THE WRITING TURNS OVER, and it is contrast rather than mood
+
+`garden-daylight.js` puts the phase on `<html>` as `data-daylight`, plus a
+coarser **`data-dark`** for the two phases that need light text, so a rule does
+not have to list the phases and get forgotten when one is added.
+
+- **IT WAS MEASURED, AND ALL FIVE FAILED.** The garden's name, the daily note,
+  the Garden Tips card and its heading are DOM text standing directly on the
+  sky with no panel behind them. Against the night sky they came back at
+  **1.56, 2.84, 1.55 and 1.44 to one**, every one failing WCAG AA and most by
+  more than half. After the block: 13.9, 11.6, 10.9 and 12.8. A night that is
+  actually dark is only honest with this; the alternative was a washed out
+  "night" pale enough for dark text, which reads as an overcast afternoon.
+- **DUSK IS IN IT TOO.** The dark teal measures 1.6 against the dusk sky, so it
+  fails there as well.
+- **THE SPECIFICITY IS WHY IT CAN SIT AFTER THE PHONE BLOCK.**
+  `html[data-dark='1'] #x` is one id plus one attribute, which beats both a
+  bare id and the phone block's own `html body a#back-to-home`, so it wins on
+  weight rather than on order. `!important` is against the inline styles
+  `buildUI()` writes, as everywhere else in these two files.
+- **HOME IS DELIBERATELY NOT IN THE LIST, AND LEAVING IT IN WAS A MEASUREMENT
+  MISTAKE WORTH KEEPING.** The probe sampled the CANVAS pixel behind each
+  element, which is right for text on the sky and wrong for `#back-to-home`:
+  it is a cream pill at `rgba(255,249,227,0.92)` carrying its own background,
+  so it reported 2.14 against a night sky it never sits on, and turning it
+  pale produced a cream pill with cream text in it, plainly visible in the
+  screenshot. **Sample an element's own computed background before its
+  surroundings.**
+- **THE SUFFIX IS AN UNNAMED `<span>`.** `buildUI()` writes "'s Gratitude
+  Garden" into a bare span inside `#name-wrap` with no id, so a first attempt
+  naming `#name-suffix` matched nothing and left the title half cream and half
+  green. It is selected by its parent.
+
 ## THE MASCOT (`v2/garden-mascot.js`), v2 ONLY
 
 **A round butter BUTTERFLY with pale blue wings and a flower on each antenna,

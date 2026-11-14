@@ -683,3 +683,64 @@ button, a, [role="button"], summary, input[type="range"], label[for] {
   #select-wrap .gg-tile > .gg-tile-meaning { font-size: 11px !important; }
   #select-wrap .gg-sub { margin: 2px 0 12px !important; }
 }
+
+/* ═════════════════════════════════════ AFTER DARK, THE WRITING TURNS OVER
+   `garden-daylight.js` puts the phase on `<html>` as `data-daylight` and a
+   coarser `data-dark` for the two phases that need light text. This is the
+   half of a night sky that is not canvas.
+
+   IT IS A CONTRAST FAILURE, NOT A MOOD, AND IT WAS MEASURED. The garden's
+   name, the daily note, the Garden Tips card and the Home pill are all DOM
+   text standing directly on the sky with no panel behind them, and against
+   the night sky they came back at 1.56, 2.84, 1.55, 1.44 and 2.14 to one.
+   Every one of those fails WCAG AA, four of them by more than half. A night
+   that is actually dark is only honest if this block comes with it; the
+   alternative was a washed out "night" pale enough for dark text, which
+   reads as an overcast afternoon.
+
+   `!important` IS AGAINST THE INLINE STYLES, as everywhere else in these two
+   files: `buildUI()` sets these colours with p5.dom `.style()` calls and
+   inline beats a stylesheet on everything else.
+
+   THE SPECIFICITY IS DELIBERATE AND IS WHY THIS CAN SIT AFTER THE PHONE
+   BLOCK. `html[data-dark='1'] #x` is one id plus one attribute, which beats
+   both a bare id and the phone block's own `html body a#back-to-home`, so
+   this wins on weight rather than on order and nothing below it can quietly
+   undo it.
+
+   DUSK IS IN IT TOO, not only night. Checked at the dusk keyframe: the dark
+   teal came back at 1.6 against that sky, so it fails there as well. */
+/* THE SUFFIX IS AN UNNAMED SPAN. `buildUI()` writes "'s Gratitude Garden"
+   into a bare `<span>` inside `#name-wrap` with no id of its own, so the
+   first attempt at this block named `#name-suffix`, matched nothing, and
+   left the garden's name half cream and half green. Selected by its parent
+   instead. */
+html[data-dark="1"] #gg-name,
+html[data-dark="1"] #name-wrap span,
+html[data-dark="1"] #tips-card h3 {
+  color: #fff9e3 !important;
+}
+/* HOME IS NOT IN THIS LIST, AND THAT WAS A MEASUREMENT MISTAKE WORTH
+   RECORDING. The contrast probe sampled the CANVAS pixel behind each
+   element, which is right for text standing on the sky and wrong for
+   `#back-to-home`: it is a cream pill at `rgba(255,249,227,0.92)` carrying
+   its own background, so it reported 2.14 against the night sky it never
+   actually sits on, and turning it pale made a cream pill with cream text
+   in it. **Sample the element's own computed background before its
+   surroundings.** */
+html[data-dark="1"] #daily-note,
+html[data-dark="1"] #tips-card,
+html[data-dark="1"] #tips-card p,
+html[data-dark="1"] #tips-card li {
+  color: #d6ece6 !important;
+}
+/* The field keeps its own caret and selection readable: an input whose text
+   has gone cream still has the page's default white background on focus in
+   some browsers, so the background is pinned transparent with it. */
+html[data-dark="1"] #gg-name {
+  background: transparent !important;
+  -webkit-text-fill-color: #fff9e3;
+}
+/* The Home pill draws a house through `swapHomeIcon`, which strokes in
+   `currentColor`, so the glyph follows the text above and needs no rule of
+   its own. Stated because it looks like an omission. */

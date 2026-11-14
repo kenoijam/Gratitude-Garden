@@ -538,35 +538,80 @@ clouds[i].size = random(70, 120);
 }
 }
 
-function drawSky() {
-for (let y = 0; y < height; y++) {
-const t = y / height;
-const c = lerpColor(color("#cfeef0"), color("#f9ffff"), t);
-stroke(c);
-line(0, y, width, y);
+/* ════════════════════════════════════ THE SCENE FOLLOWS THE VISITOR'S CLOCK
+   Character for character the personal garden's, because the two sketches
+   carry hand ported copies of the same painters and a sky that differed
+   between them would read as two different days. `GardenDaylight` is one
+   module at the v2 root for exactly that reason. **Edit one and edit the
+   other**, which is the rule the growth sequence already carries. */
+let SKY_FALLBACK = {
+  skyTop: "#cfeef0", skyBot: "#f9ffff",
+  back: "#a9d9cf", front: "#8fcfbe", fore: "#7ec4b4", ground: "#dff0e8",
+  sunCore: [255, 220, 120], sunRay: [255, 210, 120],
+  sunR: 60, sunX: 0.85, sunY: 0.18, sunAlpha: 1, rays: 1,
+  cloud: "#ffffff",
+  stars: 0, fold: 0, dark: 0, phase: "day"
+};
+function sky() {
+  return (window.GardenDaylight && window.GardenDaylight.now()) || SKY_FALLBACK;
 }
+
+function drawSky() {
+  const p = sky();
+  const top = color(p.skyTop), bot = color(p.skyBot);
+  for (let y = 0; y < height; y++) {
+    const t = y / height;
+    const c = lerpColor(top, bot, t);
+    stroke(c);
+    line(0, y, width, y);
+  }
+  drawStars(p);
+}
+
+/* Seeded and fixed, in the top 58 percent only, driven by the clock rather
+   than by `frameCount`. The personal garden's own note has the reasoning. */
+function drawStars(p) {
+  if (p.stars <= 0.01) return;
+  const n = Math.round(width / 26);
+  const t = millis() / 1000;
+  noStroke();
+  for (let i = 0; i < n; i++) {
+    const rx = (Math.sin(i * 12.9898) * 43758.5453) % 1;
+    const ry = (Math.sin(i * 78.233) * 12345.6789) % 1;
+    const x = Math.abs(rx) * width;
+    const y = Math.abs(ry) * height * 0.58;
+    const tw = 0.55 + 0.45 * Math.sin(t * 0.7 + i * 1.7);
+    const r = 0.8 + Math.abs(rx) * 1.1;
+    fill(255, 255, 245, 255 * p.stars * tw * 0.9);
+    circle(x, y, r * 2);
+  }
 }
 
 function drawSunGradient() {
-const sx = width * 0.85;
-const sy = height * 0.18;
+  const p = sky();
+  const sx = width * p.sunX;
+  const sy = height * p.sunY;
+  const R  = p.sunR;
+  const co = p.sunCore, ry = p.sunRay;
 
-noStroke();
-for (let r = 60; r > 0; r -= 8) {
-const a = map(r, 60, 0, 0.15, 1);
-fill(255, 220, 120, 255 * a);
-circle(sx, sy, r * 2);
-}
+  noStroke();
+  const step = Math.max(2, R / 7.5);
+  for (let r = R; r > 0; r -= step) {
+    const a = map(r, R, 0, 0.15, 1) * p.sunAlpha;
+    fill(co[0], co[1], co[2], 255 * a);
+    circle(sx, sy, r * 2);
+  }
 
-stroke(255, 210, 120, 120);
-for (let i = 0; i < 12; i++) {
-const a = i * 30;
-const x1 = sx + cos(a) * 55;
-const y1 = sy + sin(a) * 55;
-const x2 = sx + cos(a) * 90;
-const y2 = sy + sin(a) * 90;
-line(x1, y1, x2, y2);
-}
+  if (p.rays <= 0.02) return;
+  stroke(ry[0], ry[1], ry[2], 120 * p.rays);
+  for (let i = 0; i < 12; i++) {
+    const a = i * 30;
+    const x1 = sx + cos(a) * (R * 0.92);
+    const y1 = sy + sin(a) * (R * 0.92);
+    const x2 = sx + cos(a) * (R * 1.5);
+    const y2 = sy + sin(a) * (R * 1.5);
+    line(x1, y1, x2, y2);
+  }
 }
 
 /* The hero's cloud, not three circles.
@@ -584,11 +629,13 @@ line(x1, y1, x2, y2);
    spanned. The alpha is the hero's 0.9, not the old 205. */
 function drawClouds() {
 noStroke();
+const cc = color(sky().cloud || "#ffffff");
+cc.setAlpha(230);
 for (const c of clouds) {
 c.x += c.speed;
 if (c.x > width + 170) c.x = -170;
 
-fill(255, 255, 255, 230);
+fill(cc);
 const W = c.size * 1.6;
 const x = c.x - W / 2, y = c.y - W * 0.22;
 const bodyH = W * 0.269, b1 = W * 0.433, b2 = W * 0.314;
@@ -683,7 +730,7 @@ const baseY = height * 0.76;
 
 const lift = 20;
 
-fill("#7ec4b4");
+fill(sky().fore);
 
 beginShape();
 for (let x = 0; x <= width + 20; x += 10) {
@@ -699,7 +746,7 @@ endShape(CLOSE);
 
 function drawHillsBack() {
 noStroke();
-fill("#a9d9cf");
+fill(sky().back);
 beginShape();
 for (let x = 0; x <= width + 20; x += 10) {
 vertex(x, height * 0.56 + noise(x * 0.002, 0.1) * 52);
@@ -712,7 +759,7 @@ endShape(CLOSE);
 
 function drawHillsFront() {
 noStroke();
-fill("#8fcfbe");
+fill(sky().front);
 beginShape();
 for (let x = 0; x <= width + 20; x += 12) {
 vertex(x, height * 0.66 + noise(x * 0.0025, 20.2) * 46);
@@ -725,7 +772,7 @@ endShape(CLOSE);
 function drawGround() {
 noStroke();
 const groundTop = height * 0.805;
-fill('#dff0e8');
+fill(sky().ground);
 rect(0, groundTop, width + 20, height - groundTop);
 }
 
@@ -1650,6 +1697,14 @@ function bloomShadow(f, R, alphaK) {
 /* `shadowK` scales the drop shadow, 0 for none. A growing bloom passes a
    ramp so the shadow arrives with the flower rather than appearing whole on
    one frame. Everything else leaves it out and gets the full shadow. */
+/* A FLOWER CLOSES AT NIGHT (NYCTINASTY). The personal garden's own note has
+   the full reasoning; the short of it is that this is a TRANSFORM around the
+   dispatch rather than a drawing change, because folding each species
+   properly would mean editing twelve blooms in seven places. Narrower than it
+   is shorter, 0.58 against 0.86, because that is what closing looks like, and
+   the shadow is INSIDE the scale because `bloomShadow` reads the live
+   transform and a shut flower must not sit on an open flower's halo.
+   **Identical in both gardens. Edit one and edit the other.** */
 function drawBloom(f, shadowK) {
 colorMode(HSL, 360, 100, 100, 1);
 noStroke();
@@ -1658,6 +1713,14 @@ const R     = f.size;
 const hue   = f.hue;
 const sat   = f.sat;
 const light = f.light;
+
+const fold = sky().fold;
+const folded = fold > 0.01;
+if (folded) {
+  push();
+  scale(1 - 0.42 * fold, 1 - 0.14 * fold);
+}
+
 bloomShadow(f, R, shadowK);
 
 if (f.species === "tulip") {
@@ -1687,6 +1750,13 @@ drawLavenderBloom(R * 1.5, hue, sat, light);
 } else {
 drawDaisyBloom(R, hue, sat, light);
 }
+
+/* THE FOLD ENDS HERE, BEFORE THE LABEL, and that is not a detail. This
+   garden draws the planter's NAME inside `drawBloom`, unlike the personal
+   one, so a `pop()` left at the end of the function would squash somebody's
+   username to 58 percent of its width every night. The scale belongs to the
+   petals and to nothing else. */
+if (folded) pop();
 
 const scaleFactor = (width < 720 ? gardenScale : 1);
 const labelSize = max(11, 16 * scaleFactor);
