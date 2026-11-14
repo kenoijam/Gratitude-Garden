@@ -3082,8 +3082,17 @@ function buildUI() {
       .style("color", "#5c8d84").style("font-size", "14px")
       .style("margin", "0 0 18px 0").parent(card);
   }
+  /* `.gg-hov` IS WHY THESE LIFT, and without it they were the only buttons in
+     the project that answered nothing. Every colour, size and corner here is
+     set INLINE by p5.dom, so the stylesheet's own `.gg-btn:hover` could never
+     reach them: adding that class instead would have dragged its
+     `background: mediumturquoise !important` along and repainted every card
+     button in the garden. `.gg-hov` carries the lift and a brightness step,
+     which is colour agnostic, so the one class serves the dark primary and
+     the grey secondary without either naming a colour. */
   function gbtn(card, label, primary) {
     const b = createButton(label).parent(card);
+    b.addClass("gg-hov");
     b.style("background", primary ? "#26a69a" : "#e0e0e0");
     b.style("color", primary ? "#fff" : "#666");
     b.style("border", "none");

@@ -32,6 +32,44 @@
 
   var SEEN_KEY = "gg_guide_off";           /* sessionStorage: put away for this visit */
   var MET_KEY  = "gg_met_hortus";          /* localStorage: has it introduced itself */
+  var TOUR_KEY = "gg_tour_done";           /* localStorage: the first visit tour is over */
+
+  /* ═══════════════════════════════ THE FIRST VISIT IS A TOUR, ONCE AND ONCE ONLY
+     The ambient one line per section says something ABOUT each section as you
+     happen to arrive at it, which is a companion keeping you company. It does
+     not tell a first visitor how any of this works, and the letter cannot:
+     the letter says why the project exists, which is the one thing that is
+     not on the page, and loading it up with instructions would turn somebody
+     talking into a manual.
+
+     SO THE FIRST VISIT IS WALKED, and Hortus does the walking. It scrolls to
+     each section in turn and says what that part is for, with one button to
+     go on and one to leave. Six steps, which is every section the page has.
+
+     IT WAITS FOR YOU RATHER THAN RUNNING ON A TIMER. A tour that advances
+     itself is a slideshow you are chasing; this holds each line until the
+     button is pressed, so reading it is the visitor's own pace.
+
+     ONCE, EVER. `localStorage`, like the letter and the introduction, for the
+     same reason: being shown round is not a thing that happens again next
+     week. `GardenGuide.reset()` clears it along with the rest.
+
+     IT IS SKIPPABLE AT EVERY STEP and the skip is a real button rather than
+     the corner cross, because a tour nobody can get out of is the one thing
+     worse than no tour.
+
+     THE LINES SAY WHAT A PART IS FOR, never what the section already says in
+     its own heading. "This is where you plant" is the tour's job; repeating
+     "One practice, two places" at somebody who is looking at those words is
+     not. */
+  var TOUR = [
+    { to: "home",    line: "Hi, I am Hortus! Give me a moment and I will show you round." },
+    { to: "wisdom",  line: "I bring one line of encouragement a day. Pat me on this band to read today's." },
+    { to: "about",   line: "The whole idea: notice one small thing, and plant it. That is all there is to do here." },
+    { to: "gardens", line: "Here are the two places to plant it. One is yours alone, one is shared with everybody." },
+    { to: "flowers", line: "Every flower stands for something, and the same eight grow in both gardens." },
+    { to: "start",   line: "That is everything! Whatever you noticed today is enough. I will be here as you go." }
+  ];
 
   /* ────────────────────────────────────────────────────────────── THE NAME
      HORTUS, Latin for garden. It names the PLACE rather than the creature,
@@ -238,6 +276,23 @@
     ".gg-g-say::after{content:'';position:absolute;right:26px;bottom:-5px;",
     "width:12px;height:12px;background:#fffdf7;transform:rotate(45deg);",
     "border-radius:2px;}",
+
+    /* THE TOUR'S TWO BUTTONS, and they exist only while one is running.
+       `Next` is the project's own dark teal and `Skip` is a plain word, so
+       there is one obvious thing to press and a way out that does not
+       compete with it. */
+    ".gg-g-nav{display:none;gap:10px;align-items:center;margin-top:10px;}",
+    "#gg-guide[data-tour] .gg-g-nav{display:flex;}",
+    ".gg-g-next{border:none;background:#1d6466;color:#fff9e3;border-radius:999px;",
+    "padding:7px 16px;font-family:Arial,Helvetica,sans-serif;font-size:12.5px;",
+    "font-weight:700;cursor:pointer;transition:transform .15s,filter .15s;}",
+    ".gg-g-next:hover{transform:scale(1.04);filter:brightness(1.12);}",
+    ".gg-g-skip{border:none;background:none;color:#5c8d84;padding:4px 2px;",
+    "font-family:Arial,Helvetica,sans-serif;font-size:12px;cursor:pointer;",
+    "text-decoration:underline;}",
+    ".gg-g-skip:hover{color:#1d6466;}",
+    ".gg-g-step{margin-left:auto;font-size:11.5px;color:#9ab8b2;}",
+    "@media (hover:none){.gg-g-next:hover{transform:none;}}",
 
     ".gg-g-x{position:absolute;top:6px;right:6px;width:22px;height:22px;",
     "border:none;background:none;padding:0;color:#8fb6b0;font-size:15px;",
@@ -475,6 +530,15 @@
   }
   function putAway() {
     try { sessionStorage.setItem(SEEN_KEY, "1"); } catch (e) {}
+    /* CLOSING THE BUBBLE MID TOUR ENDS THE TOUR, and ends it for good. The
+       cross means "not now", and a tour that came back on the next visit to
+       somebody who had already dismissed it is the nagging this project
+       avoids everywhere else. */
+    if (typeof tourAt === "number" && tourAt >= 0) {
+      tourAt = -1;
+      markTour();
+      if (root) root.removeAttribute("data-tour");
+    }
     if (root) root.hidden = true;
   }
 
@@ -489,6 +553,11 @@
       "<div class='gg-g-say' role='status' aria-live='polite'>" +
         "<button class='gg-g-x' type='button' aria-label='Hide " + NAME + "'>&#215;</button>" +
         "<span class='gg-g-text'></span>" +
+        "<div class='gg-g-nav'>" +
+          "<button class='gg-g-next' type='button'>Next</button>" +
+          "<button class='gg-g-skip' type='button'>Skip</button>" +
+          "<span class='gg-g-step'></span>" +
+        "</div>" +
       "</div>" +
       "<button class='gg-g-me' type='button' aria-label='" + NAME + ", say that again'></button>";
     document.body.appendChild(root);
@@ -498,6 +567,8 @@
     me.innerHTML = window.GardenMascot.svg("welcome", 92);
 
     root.querySelector(".gg-g-x").addEventListener("click", putAway);
+    root.querySelector(".gg-g-next").addEventListener("click", function () { tourGo(tourAt + 1); });
+    root.querySelector(".gg-g-skip").addEventListener("click", function () { endTour(true); });
 
     /* TAPPING IT DOES SOMETHING VISIBLE, which it did not before. It repeated
        the line, and if the bubble was already up that is a press with no
@@ -546,6 +617,83 @@
      figure about which edge it is on. Under 768 it does nothing at all: the
      stylesheet pins it there with `!important` and a flight written on top
      would be dead inline style fighting a rule it cannot beat. */
+  /* ═══════════════════════════ IT STANDS BESIDE THE CARD, NOT IN THE CORNER
+     In a garden every screen is one card in the middle of the scene, and a
+     companion answering it from the bottom right corner is a long way from
+     the thing it is answering: the words and the question they are about
+     were at opposite ends of the window. Beside the card they read as one
+     thing, which is what a companion is for.
+
+     IT GOES TO THE RIGHT OF THE CARD AND THE COLUMN FLIPS LEFT, so the
+     bubble opens AWAY from the card rather than over it. Right aligned, the
+     bubble grows leftward from the figure and lands on the very card it is
+     talking about.
+
+     IT FALLS BACK TO THE CORNER whenever there is no room, which is a
+     narrow window or a phone, and whenever no card is on screen, which is
+     the garden itself. `data-perched` is what switches the stylesheet's own
+     corner rule off; without it that rule carries `!important` and an inline
+     position cannot win. */
+  function unperch() {
+    if (!root) return;
+    root.removeAttribute("data-perched");
+    root.style.left = ""; root.style.right = ""; root.style.bottom = "";
+    root.setAttribute("data-side", "right");
+  }
+
+  function visibleCard() {
+    var cards = document.querySelectorAll(".gg-card");
+    for (var i = 0; i < cards.length; i++) {
+      var r = cards[i].getBoundingClientRect();
+      /* A card inside a hidden `.gg-wrap` measures zero, which is the whole
+         test: no flag has to be kept in step with what the sketch displayed. */
+      if (r.width > 80 && r.height > 80 && r.top < window.innerHeight && r.bottom > 0) return r;
+    }
+    return null;
+  }
+
+  /* MEASURED NOW AND AGAIN ON THE NEXT FRAME, which is a bug fixed rather
+     than caution. `GardenGuide.step` is called from the sketch's own
+     `showStep`, and whether the OLD card has been hidden and the new one
+     laid out by then depends on the order of two lines in another file: the
+     garden step kept the perch it had on the fork card, because at the
+     moment it was asked that card was still on screen. */
+  var placeT = [];
+  function placeInGarden() {
+    placeT.forEach(clearTimeout);
+    placeT = [];
+    var go = function () { if (!cardPerch()) unperch(); };
+    go();
+    requestAnimationFrame(go);
+    /* AND TWICE MORE, LATE, because a card's WIDTH is not settled when it is
+       shown: the picker builds eight preview canvases into its grid and the
+       card grows under the figure that was just placed beside it. Measured
+       before this: the picker's card ended 4px past the figure and the
+       "why that one" card left a 56px gap, both because the perch was
+       computed against the card as it was a frame earlier. */
+    placeT.push(setTimeout(go, 140), setTimeout(go, 460));
+  }
+
+  function cardPerch() {
+    if (!root) return false;
+    if (window.innerWidth < 900) return false;        /* no lane beside the card */
+    var c = visibleCard();
+    if (!c) return false;
+    var x = c.right + 26;
+    /* 280 is the bubble's own cap plus its padding. If that does not fit, the
+       bubble would be squeezed into a column of words, so the corner is the
+       better answer. */
+    if (x + 280 > window.innerWidth - 14) return false;
+    root.setAttribute("data-perched", "1");
+    root.setAttribute("data-side", "left");
+    root.style.left = Math.round(x) + "px";
+    root.style.right = "auto";
+    /* STOOD ON THE CARD'S OWN FOOT, so the two line up along the bottom
+       rather than the figure floating at some height of its own. */
+    root.style.bottom = Math.max(16, Math.round(window.innerHeight - c.bottom)) + "px";
+    return true;
+  }
+
   function moveTo(spot) {
     /* A GARDEN IS ONE SCREEN AND ITS CORNERS ARE ALL SPOKEN FOR: Home top
        left, four round icons top right, the Garden Tips card bottom left and
@@ -627,8 +775,13 @@
        laptop would sit in the phone rule's way as dead inline style. */
     if (window.innerWidth <= 768) {
       root.removeAttribute("data-side");
+      root.removeAttribute("data-perched");
       root.style.left = root.style.right = root.style.bottom = "";
-    } else if (!INGARDEN && SAYS[current]) {
+    } else if (INGARDEN) {
+      /* A window dragged narrow has to give the perch up, or the figure
+         stays at an x measured against a card that has since moved. */
+      if (!cardPerch()) unperch();
+    } else if (SAYS[current]) {
       moveTo(SAYS[current].spot);
     }
   });
@@ -664,7 +817,8 @@
   var INTRO_HOLD = 4200;
   function meetFirst(e) {
     introUp = true;
-    moveTo(e && e.spot);
+    if (INGARDEN) placeInGarden();
+    else moveTo(e && e.spot);
     root.removeAttribute("data-hushed");
     root.querySelector(".gg-g-text").textContent =
       "Hi, I am " + NAME + "! I will be your companion through the garden.";
@@ -685,9 +839,84 @@
     }, INTRO_HOLD);
   }
 
+  /* ─────────────────────────────────────────────────── THE TOUR ITSELF
+     `tourAt` is -1 when no tour is running, which is what every other part
+     of this file tests: the observer, the hold timer and the greeting all
+     stand down while it is a number. */
+  var tourAt = -1;
+  function tourDone() {
+    try { return localStorage.getItem(TOUR_KEY) === "1"; } catch (e) { return true; }
+  }
+  function markTour() {
+    try { localStorage.setItem(TOUR_KEY, "1"); } catch (e) {}
+  }
+
+  function tourGo(i) {
+    if (i >= TOUR.length) { endTour(false); return; }
+    var stp = TOUR[i];
+    tourAt = i;
+    root.setAttribute("data-tour", "1");
+    root.removeAttribute("data-hushed");
+
+    /* THE PAGE COMES TO THE LINE. Scrolling the section into view is most of
+       what makes this a tour rather than six sentences in a corner, and it
+       is the page's own smooth behaviour doing it. */
+    var sec = document.getElementById(stp.to);
+    if (sec && i > 0) sec.scrollIntoView({ behavior: "smooth", block: "start" });
+
+    /* THE SPOT IS THE SECTION'S OWN, so the figure lands where it would have
+       landed on an ordinary scroll past, and the tour does not invent a
+       second idea of where Hortus lives. The Fertilizer band's `quiet` is
+       IGNORED here: on the tour there is a line to say about that band, and
+       the band's own figure is simply the thing being pointed at. */
+    var e = SAYS[stp.to];
+    moveTo(e && e.spot);
+    setPose(i === TOUR.length - 1 ? "planted" : (e && e.pose) || "welcome");
+
+    current = stp.to;
+    root.querySelector(".gg-g-text").textContent = stp.line;
+    root.querySelector(".gg-g-step").textContent = (i + 1) + " of " + TOUR.length;
+    root.querySelector(".gg-g-next").textContent =
+      i === TOUR.length - 1 ? "Let me in" : "Next";
+
+    bubble.removeAttribute("data-on");
+    void bubble.offsetWidth;
+    bubble.setAttribute("data-on", "1");
+    /* NO HOLD TIMER. The line stays until the button is pressed, which is the
+       whole difference between being shown round and being talked at. */
+    clearTimeout(holdT);
+  }
+
+  function startTour() {
+    meet();                    /* the first line introduces it, so it has met you */
+    tourGo(0);
+  }
+
+  /* ENDING IS THE SAME WHETHER IT WAS WALKED OR SKIPPED, which is deliberate:
+     somebody who skips has still been offered it, and offering it twice is
+     the nagging this project avoids everywhere else. */
+  function endTour(skipped) {
+    tourAt = -1;
+    markTour();
+    root.removeAttribute("data-tour");
+    bubble.removeAttribute("data-on");
+    /* The ambient companion takes over from here, starting with whichever
+       section is actually on screen rather than with the one the tour
+       happened to stop on. */
+    /* `watch()` fires its observer with whatever is already intersecting, so
+       the first ambient line arrives on its own and re-saying one here would
+       print the same sentence twice. */
+    watch();
+  }
+
   function say(id, again) {
     var e = entry(id);
     if (!e) return;
+    /* THE TOUR OWNS THE BUBBLE WHILE IT IS RUNNING. The observer is not
+       started until the tour ends, but a tap on the figure reaches `say`
+       too, and that would drop somebody out of step three into an ambient
+       line with no Next under it. */
+    if (tourAt >= 0) return;
     current = id;
 
     /* THE GREETING OWNS THE BUBBLE WHILE IT IS UP, and a step arriving under
@@ -718,14 +947,15 @@
        band, where the band carries its own Hortus and two of the same
        character on one screen is two characters. */
     if (e.silent) {
-      moveTo(e.spot);
+      /* The garden itself has no card, so this always falls to the corner. */
+      if (INGARDEN) placeInGarden(); else moveTo(e.spot);
       setPose(e.pose);
       bubble.removeAttribute("data-on");
       clearTimeout(holdT);
       return;
     }
 
-    moveTo(e.spot);
+    if (INGARDEN) placeInGarden(); else moveTo(e.spot);
     var words = e.line === null ? today() : e.line;
 
     /* IT SAYS ITS NAME ONCE, EVER, AND THEN NEVER AGAIN. A character that
@@ -824,7 +1054,14 @@
          has already planted today goes straight to the garden, which is a
          hushed screen, and a greeting there is a companion talking over the
          thing it just hushed itself for. */
-      if (!INGARDEN) { say("home"); watch(); }
+      if (INGARDEN) return;
+      /* THE TOUR REPLACES THE FIRST AMBIENT LINE, it does not follow it.
+         Both would be Hortus speaking twice in four seconds, and the tour's
+         own first step is the greeting. A visitor who has been round before
+         gets exactly what they got before. */
+      if (!tourDone() && document.getElementById("home")) { startTour(); return; }
+      say("home");
+      watch();
     })();
   }
 
@@ -838,8 +1075,13 @@
   if (INGARDEN) {
     var gs = document.createElement("style");
     gs.textContent =
-      "#gg-guide{right:18px !important;left:auto !important;bottom:84px !important;}" +
-      "@media (max-width:768px){#gg-guide{right:12px !important;bottom:72px !important;}}";
+      /* THE CORNER IS THE FALLBACK NOW, NOT THE RULE. `:not([data-perched])`
+         is what lets `cardPerch` place the figure beside a card with inline
+         styles: an `!important` declaration beats an inline one, so an
+         unscoped rule here would have quietly won every time and the figure
+         would never have moved. */
+      "#gg-guide:not([data-perched]){right:18px !important;left:auto !important;bottom:84px !important;}" +
+      "@media (max-width:768px){#gg-guide:not([data-perched]){right:12px !important;bottom:72px !important;}}";
     document.head.appendChild(gs);
   }
 
@@ -865,7 +1107,11 @@
     fertilizer: today,
     name: NAME,
     reset: function () {
-      try { sessionStorage.removeItem(SEEN_KEY); localStorage.removeItem(MET_KEY); } catch (e) {}
+      try {
+        sessionStorage.removeItem(SEEN_KEY);
+        localStorage.removeItem(MET_KEY);
+        localStorage.removeItem(TOUR_KEY);
+      } catch (e) {}
     }
   };
 })();

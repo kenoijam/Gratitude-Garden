@@ -147,6 +147,18 @@ input[type="text"]:focus {
   background: turquoise !important;
 }
 
+/* ───────────────────────────── THE HOVER FOR EVERY BUTTON `buildUI` BUILDS
+   The fork's two choices, the picker's Continue, every Back: all of them are
+   made by `gbtn`, which sets its colours INLINE, so `.gg-btn:hover` above
+   could not reach them and they were the one group of buttons on the site
+   that did nothing under the pointer. The lift is `.gg-btn`'s own 1.03, so a
+   press feels the same wherever it is; the colour step is a FILTER rather
+   than a named background, which is what lets one class serve both the teal
+   primary and the grey secondary without either being written down here. */
+.gg-hov { transition: transform .15s, filter .15s; }
+.gg-hov:hover { transform: scale(1.03); filter: brightness(1.07); }
+.gg-hov:active { transform: scale(0.99); }
+
 .gg-back {
   background: #e0e0e0 !important;
   color: #555 !important;
@@ -736,6 +748,7 @@ button {
    Between them that is a button that needs pressing twice. The long note is
    in the landing page's `styles.css`. */
 @media (hover: none) {
+  .gg-hov:hover,
   .gg-btn:hover, .gg-back:hover, .gg-tile:hover, .gg-card-btn:hover,
   #save-btn:hover, #gj-btn:hover, #gg-music-btn:hover, #ga-friends-btn:hover,
   #back-to-home:hover { transform: none !important; }

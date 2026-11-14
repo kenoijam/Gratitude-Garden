@@ -444,6 +444,60 @@ gardens, driven by the STEP the sketch is on.
   "My name" and nobody is signed in, since the old username step carried that
   check and is no longer on the way here.
 
+## THE FIRST VISIT IS A TOUR, AND HORTUS STANDS BESIDE THE CARD
+
+- **A SIX STEP TOUR ON THE FIRST VISIT, `gg_tour_done` in `localStorage`.**
+  The ambient one line per section is a companion keeping you company; it
+  never says how any of this works, and the letter cannot, since the letter's
+  whole job is the one thing that is NOT on the page. The tour scrolls to each
+  section in turn and says what that part is for.
+  - **IT WAITS FOR THE BUTTON rather than running on a timer**, so there is no
+    hold timer on a tour line at all. A tour that advances itself is a
+    slideshow you are chasing.
+  - **IT REPLACES THE FIRST AMBIENT LINE, and the greeting with it.** Its own
+    step one is the hello, so `meet()` is marked when it starts; otherwise
+    Hortus would say hello and then say hello again.
+  - **THE OBSERVER IS NOT STARTED UNTIL IT ENDS**, and `say()` returns early
+    while `tourAt >= 0`, because a tap on the figure also reaches `say` and
+    would drop somebody out of step three into an ambient line with no Next
+    under it. `endTour` calls `watch()`, whose observer fires immediately with
+    whatever is intersecting, so the first ambient line arrives on its own and
+    must NOT be re-said or the same sentence prints twice.
+  - **SKIPPING AND THE CORNER CROSS BOTH END IT FOR GOOD.** Offering it again
+    to somebody who dismissed it is the nagging this project avoids.
+  - **THE SPOTS ARE `SAYS`' OWN**, so the figure lands where an ordinary scroll
+    past would put it. The band's `quiet` is deliberately IGNORED on the tour:
+    there is a line to say about that band, and its own figure is the thing
+    being pointed at.
+- **IN A GARDEN IT STANDS BESIDE THE CARD, NOT IN THE CORNER.** Every garden
+  screen is one card in the middle of the scene, and a companion answering it
+  from the bottom right was a long way from the thing it was answering.
+  - **IT GOES TO THE RIGHT OF THE CARD AND THE COLUMN FLIPS LEFT**, so the
+    bubble opens away from the card rather than over the words it is about.
+  - **`data-perched` EXISTS BECAUSE THE CORNER RULE CARRIES `!important`.**
+    That rule is scoped `#gg-guide:not([data-perched])` now; unscoped, an
+    `!important` declaration beats the inline position and the figure could
+    never move. It is the FALLBACK: no card on screen, a window under 900, or
+    no room for the bubble, and it goes back to the corner.
+  - **MEASURED FOUR TIMES: now, next frame, 140ms and 460ms.** A card's WIDTH
+    is not settled when it is shown, and `step()` is called from the sketch's
+    own `showStep` so the old card may still be up. Measured before this: the
+    garden step kept the fork card's perch, the picker's card ended 4px PAST
+    the figure, and "why that one" left a 56px gap. After: every step in both
+    gardens sits 26px clear with the bottoms level, and the garden itself
+    falls back to the corner.
+  - Swept with `document.elementFromPoint` over the whole perched column at
+    1280: nothing clickable underneath.
+- **`.gg-hov` GIVES EVERY `gbtn` BUTTON A HOVER**, which the fork's two
+  choices and every Back in the personal garden did not have. They are built
+  by p5.dom with inline colours, so `.gg-btn:hover` could not reach them;
+  adding that class instead would have dragged its
+  `background: mediumturquoise !important` along and repainted every card
+  button. The lift is `.gg-btn`'s own 1.03 and the colour step is a
+  `filter: brightness`, which is colour agnostic, so one class serves the
+  teal primary and the grey secondary. It is in the `(hover:none)` block with
+  the rest.
+
 ## THE SECTION ORDER MOVED (v2): THE FERTILIZER BAND IS SECOND
 
 `home, wisdom, about, gardens, flowers, start`. The band is something to read
