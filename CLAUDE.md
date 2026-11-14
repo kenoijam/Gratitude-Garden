@@ -1764,23 +1764,38 @@ version a fourth.
   twenty words costs more than it saves. **`data-fold-phone` and
   `.about-more` are both still live**: the footer's two blocks use the hook,
   and the class is left in the stylesheet unused.
-- **THE ROW IS TWO CARDS, CENTRED, CAPPED AT 340 EACH.** Left at `1fr 1fr`
-  across the full 1190 it would have drawn a pair of 590px cards carrying one
-  line of text each. At 340 the row measures 697 against the copy's own 680,
-  so the two blocks share an edge: measured at 1440, the cards run 372 to
-  1069 and the copy 380 to 1060, centred on the window to within half a
-  pixel.
+- **THE ROW IS FOUR CARDS ACROSS THE SECTION, and it was briefly two.** The
+  two card version ran `repeat(2, minmax(0, 340px))` centred, because at
+  `1fr 1fr` across the full 1190 a pair comes out as 590px cards carrying one
+  line of text each; 340 put the row at 697 against the copy's own 680 so the
+  two blocks shared an edge. With four it is `repeat(4, minmax(0, 1fr))`
+  again, measured at 1440 as four cards of 290 on one row, which is the width
+  they had when this grid also held the two gardens, so nothing inside a card
+  moved either time.
+- **THERE IS NO `justify-content` ON THE BASE RULE ANY MORE, and that is a bug
+  removed rather than tidying.** Four `1fr` columns fill the row, so centring
+  does nothing on a laptop; on a phone the 768 block turns this grid into a
+  horizontal SCROLLER, and a centred overflow puts the FIRST card off the left
+  edge where no scroll position can reach it. Measured when it did: the first
+  card's left edge at -27 with `scrollLeft` already 0. The phone block resets
+  it to `flex-start` as well, so this is belt and braces.
 - **IT STILL SCROLLS ON A PHONE, SO THE HINT IS STILL HONEST.** `.about::after`
   says "Swipe to see more" and this project's rule is to check that the thing
   actually scrolls before writing a hint saying it does: measured at 390,
-  `.about-right` is 359 of scroll width against 274 of client width.
-- **THE SECTION IS 0.72 OF A SCREEN NOW, down from 0.81**, and that is left
-  alone rather than padded back. The page already runs 0.70 at the closing
-  section and 0.76 at the band, so this sits inside the range; and the top
-  padding cannot be the place to buy it back, because that padding is what
-  holds every curved section's 100px of clearance from its own curve.
+  `.about-right` is 899 of scroll width against 274 of client width, up from
+  359 with two cards.
+- **THE SECTION IS 0.75 OF A SCREEN**, 672px at 1440. It was 0.81 before the
+  cut and 0.72 with only two cards. The page already runs 0.70 at the closing
+  section and 0.76 at the band, so every one of those sits inside the range;
+  and the top padding is not the place to tune it either way, because that
+  padding is what holds every curved section's 100px of clearance from its
+  own curve.
 
-**THE ABOUT GRID'S BOTTOM ROW IS THE PRACTICE, NOT A THIRD AND FOURTH PLACE.** The heading over it says ONE PRACTICE, TWO PLACES, so the top row is the two places and the bottom row has to be what they have in common. It held **"Your history"** and **"Your account"** and both leant at the personal garden: the history is that garden alone, and the account's real sell is your own garden following you between devices. They are **"A flower that grows"** and **"The same eight"** now, and since the two garden cards came off the grid they are the whole of it: **the count is TWO**, and the row is capped and centred rather than filling the section.
+**THE ABOUT GRID'S BOTTOM ROW IS THE PRACTICE, NOT A THIRD AND FOURTH PLACE.** The heading over it says ONE PRACTICE, TWO PLACES, so the top row is the two places and the bottom row has to be what they have in common. It held **"Your history"** and **"Your account"** and both leant at the personal garden: the history is that garden alone, and the account's real sell is your own garden following you between devices. They are **"A flower that grows"**, **"The same eight"**, **"One a day"** and **"No streaks, no scores"** now, and since the two garden cards came off the grid those four are the whole of it: **the count is FOUR**, in one row across the section.
+
+- **THE TEST FOR THIS GRID IS THAT A CARD MUST BE TRUE OF BOTH GARDENS.** That is what the heading above it claims and it is what rules out everything else: the history is the personal garden alone, the account needs a sentence rather than a chip and is named in the paragraph beside the grid instead, and the two places are the section directly below with pictures and a button each.
+- **"One a day" and "No streaks, no scores" are the second pair, and both were said nowhere.** The once a day rule was only ever in the shared card's own small print although it holds in both, and nothing on the page had ever said there is no streak to keep, which is the project's actual position.
+- **GOING TO FOUR CARDS WITH NO PARAGRAPH WAS ASKED FOR AND REFUSED.** A section of four equal boxes has no voice: every other section on this page makes a claim in a heading and then says something in its own words, and here the paragraph is the only thing that argues the heading. It is also the one place outside the footer that says what an account buys AND that you can skip it, and "Skip it and both still work here" is what stops the account reading as a wall. Four cards would additionally need two more, and the only obvious two are the two places, which is the redundancy the cut above removed.
 
 - **THE ACCOUNT IS OFF THIS GRID, NOT OFF THE PAGE**, which is what makes dropping it affordable. It is named in the paragraph directly beside the grid, in the garden cards below, and in the footer's sign up. When it was ADDED here, replacing "8 Symbolic Species", nothing on the page mentioned it at all; that is no longer true.
 - **"The same eight" IS NOT THE FLOWER GUIDE SAID TWICE, and that distinction is the whole reason it is allowed.** "8 Symbolic Species" was taken off this tile once before for exactly that fault. The guide further down says what each bloom MEANS; this card says the SET is the same in both gardens and a meaning does not change between them, which is the heading's own argument rather than a list repeated. Its icon is the page's own colour ring, eight dots round a dashed circle.

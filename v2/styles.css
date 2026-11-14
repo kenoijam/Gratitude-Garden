@@ -484,15 +484,21 @@ section { padding: 5rem 5rem; }
 .about-body  { grid-area: body;  display: flex; flex-direction: column; gap: 1rem;
                max-width: 680px; margin: -0.6rem auto 0; text-align: center; }
 .about-body .section-desc { max-width: 100%; }
-/* TWO CARDS, CENTRED, AND CAPPED AT THE WIDTH OF THE COPY ABOVE THEM. It was
-   four across the full 1190, which was right while this grid held the two
-   gardens as well; with two left, `1fr 1fr` would have drawn a pair of 590px
-   cards carrying one line of text each. At 340 the row comes to about 696,
-   which is the copy's own 680, so the block reads as one column of three
-   things rather than as a narrow paragraph over a wide band. */
+/* FOUR CARDS ACROSS THE SECTION, which is what this row was before the two
+   garden cards came off it and what it is again now the practice has four
+   things to say. The history is worth keeping: with only two cards it ran
+   `repeat(2, minmax(0, 340px))` centred, capped at the copy's own 680 so a
+   pair would not sit as a wide band under a narrow paragraph. Four at about
+   285 is the width they had when this grid also held the gardens, so nothing
+   inside a card had to move either time.
+   NOTE there is no `justify-content` here any more. Four `1fr` columns fill
+   the row, so centring did nothing on a laptop, and on a phone the base
+   rule's `center` is inherited by a block that turns this into a horizontal
+   SCROLLER, where centred overflow puts the FIRST card off the left edge
+   with no scroll position that can reach it. The phone block resets it
+   anyway; this is one less thing to reset. */
 .about-right { grid-area: cards; display: grid;
-               grid-template-columns: repeat(2, minmax(0, 340px));
-               justify-content: center;
+               grid-template-columns: repeat(4, minmax(0, 1fr));
                gap: 1rem; align-content: start; padding-top: 0; margin-top: 2.2rem; }
 .feature-card { background: var(--white); border-radius: 16px; padding: 1.2rem 1.3rem; border: 1.5px solid var(--sky); display: flex; align-items: flex-start; gap: 0.85rem; }
 .feature-icon { width: 40px; height: 40px; flex-shrink: 0; display: block; margin-top: 2px; }
