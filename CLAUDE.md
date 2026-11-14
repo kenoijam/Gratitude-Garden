@@ -1716,9 +1716,10 @@ beside a block of four bordered boxes. Tuning the copy to 333px would be
 writing to fill a column.
 
 - **One column cannot be uneven.** Title and copy centred across the section,
-  the four cards as ONE ROW underneath at about 290px each, which is the width
-  they already had two across in half the section, so nothing inside a card
-  moved. Two across under 1100, where four would need about 1180 of content.
+  the cards as ONE ROW underneath. It was four at about 290px each, which is
+  the width they already had two across in half the section, so nothing
+  inside a card moved; it is **two at 340** since the garden pair came off,
+  centred under the copy. Two across under 1100 either way.
 - **The copy is capped at 680 and centred.** Run the full 1190 it is a ruler,
   about 150 characters a line against the 75 a line can comfortably be read
   down; 680 is roughly 85 and keeps the block visibly narrower than the row of
@@ -1744,7 +1745,42 @@ keep, one you share", which is the shortest true summary and is also what the
 phone shows before Read more, so it has to stand alone. "Reflect, and share"
 went with it, being the next section's heading said early.
 
-**THE ABOUT GRID'S BOTTOM ROW IS THE PRACTICE, NOT A THIRD AND FOURTH PLACE.** The heading over it says ONE PRACTICE, TWO PLACES, so the top row is the two places and the bottom row has to be what they have in common. It held **"Your history"** and **"Your account"** and both leant at the personal garden: the history is that garden alone, and the account's real sell is your own garden following you between devices. They are **"A flower that grows"** and **"The same eight"** now. The grid is two by two, so the count must stay at four.
+**THE ABOUT SECTION IS CUT TO FOUR BLOCKS (v2), AND THE TWO GARDEN CARDS ARE
+GONE.** It held a heading, a one line lede, a paragraph describing the two
+gardens, a paragraph about the account, and a four card grid whose top row
+was those same two gardens. **`#gardens`, the very next section, carries both
+of them as full cards with pictures, small print and a button each**, so one
+idea was stated three times inside one scroll, and Hortus now says the short
+version a fourth.
+
+- **WHAT WENT: the two garden feature cards, and the paragraph that described
+  the same two.** The lede already says "one you keep, one you share".
+- **WHAT STAYED: the account paragraph**, since nothing else on the page says
+  what an account buys except the footer's own sign up, and the two cards
+  that are about the PRACTICE rather than about a place.
+- **THE "Read more" FOLD WENT WITH IT.** It existed because this was the
+  longest unbroken run of prose on the page, sitting second, before anybody
+  had seen anything. One short paragraph is not that, and a control hiding
+  twenty words costs more than it saves. **`data-fold-phone` and
+  `.about-more` are both still live**: the footer's two blocks use the hook,
+  and the class is left in the stylesheet unused.
+- **THE ROW IS TWO CARDS, CENTRED, CAPPED AT 340 EACH.** Left at `1fr 1fr`
+  across the full 1190 it would have drawn a pair of 590px cards carrying one
+  line of text each. At 340 the row measures 697 against the copy's own 680,
+  so the two blocks share an edge: measured at 1440, the cards run 372 to
+  1069 and the copy 380 to 1060, centred on the window to within half a
+  pixel.
+- **IT STILL SCROLLS ON A PHONE, SO THE HINT IS STILL HONEST.** `.about::after`
+  says "Swipe to see more" and this project's rule is to check that the thing
+  actually scrolls before writing a hint saying it does: measured at 390,
+  `.about-right` is 359 of scroll width against 274 of client width.
+- **THE SECTION IS 0.72 OF A SCREEN NOW, down from 0.81**, and that is left
+  alone rather than padded back. The page already runs 0.70 at the closing
+  section and 0.76 at the band, so this sits inside the range; and the top
+  padding cannot be the place to buy it back, because that padding is what
+  holds every curved section's 100px of clearance from its own curve.
+
+**THE ABOUT GRID'S BOTTOM ROW IS THE PRACTICE, NOT A THIRD AND FOURTH PLACE.** The heading over it says ONE PRACTICE, TWO PLACES, so the top row is the two places and the bottom row has to be what they have in common. It held **"Your history"** and **"Your account"** and both leant at the personal garden: the history is that garden alone, and the account's real sell is your own garden following you between devices. They are **"A flower that grows"** and **"The same eight"** now, and since the two garden cards came off the grid they are the whole of it: **the count is TWO**, and the row is capped and centred rather than filling the section.
 
 - **THE ACCOUNT IS OFF THIS GRID, NOT OFF THE PAGE**, which is what makes dropping it affordable. It is named in the paragraph directly beside the grid, in the garden cards below, and in the footer's sign up. When it was ADDED here, replacing "8 Symbolic Species", nothing on the page mentioned it at all; that is no longer true.
 - **"The same eight" IS NOT THE FLOWER GUIDE SAID TWICE, and that distinction is the whole reason it is allowed.** "8 Symbolic Species" was taken off this tile once before for exactly that fault. The guide further down says what each bloom MEANS; this card says the SET is the same in both gardens and a meaning does not change between them, which is the heading's own argument rather than a list repeated. Its icon is the page's own colour ring, eight dots round a dashed circle.

@@ -1329,37 +1329,36 @@
     <p class="section-desc">
       One you keep, one you share.
     </p>
-    <!-- The remaining three paragraphs FOLD ON A PHONE. This is the longest
-         unbroken run of text on the page and it sits second, before anybody
-         has seen anything, so on a small screen it opens on one line and the
-         rest waits behind Read more. `data-fold-phone` is the shared hook,
-         the same one the footer's two blocks use. -->
-    <details class="about-more" data-fold-phone open>
-      <summary>Read more</summary>
-      <p class="section-desc">
-        The Personal Garden is private, and your words choose the flower. The Shared Garden is a public meadow, refreshed daily, where everybody who plants that day stands in the same field.
-      </p>
-      <p class="section-desc">
-        One account joins them up: a username, and your garden on any device. Skip it and both still work here.
-      </p>
-    </details>
+    <!-- THE PARAGRAPH DESCRIBING THE TWO GARDENS IS GONE, since the lede
+         above already says "one you keep, one you share" and the next
+         section shows both with pictures and a button each. The account one
+         stays: nothing else on this page explains what an account buys
+         except the footer's own sign up.
+
+         AND THE "Read more" FOLD WENT WITH IT. It existed because this was
+         the longest unbroken run of prose on the page, sitting second,
+         before anybody had seen anything. One short paragraph is not that,
+         and a Read more hiding twenty words is a control that costs more
+         than it saves. `data-fold-phone` and `.about-more` are both still
+         live; the footer's two blocks use them. -->
+    <p class="section-desc">
+      One account joins them up: a username, and your garden on any device. Skip it and both still work here.
+    </p>
   </div>
 
   <div class="about-right reveal">
-      <div class="feature-card">
-        <svg class="feature-icon" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="8" y="16" width="20" height="14" rx="3" fill="#b7e4e7" stroke="#429288" stroke-width="2"/><path d="M12 16V12a6 6 0 1 1 12 0v4" stroke="#429288" stroke-width="2" stroke-linecap="round"/><circle cx="18" cy="23" r="2.5" fill="#1d6466"/></svg>
-        <div class="feature-card-text">
-          <div class="feature-title">The Personal Garden</div>
-          <p class="feature-desc">Daily prompts earn you a symbolic flower, yours alone.</p>
-        </div>
-      </div>
-      <div class="feature-card">
-        <svg class="feature-icon" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="18" cy="18" r="12" stroke="#429288" stroke-width="2" fill="#b7e4e7"/><ellipse cx="18" cy="18" rx="5" ry="12" stroke="#429288" stroke-width="1.5" fill="none"/><line x1="6" y1="18" x2="30" y2="18" stroke="#429288" stroke-width="1.5"/></svg>
-        <div class="feature-card-text">
-          <div class="feature-title">The Shared Garden</div>
-          <p class="feature-desc">Share a note in the community meadow, and like and comment on others.</p>
-        </div>
-      </div>
+      <!-- ═══════════ THE TWO GARDEN CARDS CAME OFF THIS GRID, and they were
+           the same thing said three times inside one scroll. `#gardens`, the
+           very next section, carries both of them as full cards with
+           pictures, small print and a button; the paragraph that used to sit
+           above this grid described the same two; and Hortus now says the
+           short version a fourth time. What is left is the only part of this
+           grid that nothing else on the page says: the two places are the
+           section BELOW, and this row is what they have in common.
+
+           WHAT THIS SECTION IS FOR, after the cut: the heading, the one line
+           summary, what an account buys, and the two things that are true of
+           both gardens. Seven blocks down to four. -->
       <!-- THE BOTTOM ROW IS THE PRACTICE, NOT A THIRD AND FOURTH PLACE.
            It held "Your history" and "Your account", and under a heading
            that says ONE PRACTICE, TWO PLACES both leant at the personal
