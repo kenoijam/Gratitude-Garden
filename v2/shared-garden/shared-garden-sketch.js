@@ -105,6 +105,15 @@ let flowerCounter = 0;
 let gardenScale = 1;
 
 let landingWrap, usernameWrap, selectWrap, gardenWrap;
+let whereWrap, circlesWrap;
+/* A HOISTED HANDLE ON `paintCircleList`, WHICH IS DECLARED INSIDE `buildUI`.
+   `showStep` is at module scope and cannot see anything in there, so the
+   first attempt guarded on `typeof paintCircleList === "function"`, which on
+   an identifier that is not in scope at all returns "undefined", fails the
+   guard, and does nothing SILENTLY: the list was built once when storage was
+   empty and never repainted. Same family as `nameRowEl` and `plantBtnEl`,
+   which exist for exactly this reason. */
+var repaintCircles = null;
 let gratitudeField, charCount, continueBtn;
 let usernameField, usernameContinueBtn, usernameNote;
 let colorPickerSelect, speciesButtons = {};
@@ -3298,7 +3307,9 @@ initDailyGarden();
    have already answered is the wrong order to find that out in. The check
    here is the BROWSER marker, since `username` is still empty at boot and the
    name check has nothing to match against yet. */
-showStep(sharedPlantedToday("") ? "garden" : "landing");
+/* ARRIVING BY A CIRCLE LINK SKIPS THE FORK: the question it asks has
+   already been answered by whoever sent the link. */
+showStep(sharedPlantedToday("") ? "garden" : (circleCode ? "landing" : "where"));
 
 mountJournal();
 
@@ -3310,7 +3321,7 @@ if (window.GardenAccount) {
 GardenAccount.onChange(function () {
 const u = GardenAccount.username && GardenAccount.username();
 if (!u) return;
-if (step === "landing" && !gratitudeText.trim() && sharedPlantedToday(u)) {
+if ((step === "landing" || step === "where") && !gratitudeText.trim() && sharedPlantedToday(u)) {
 showStep("garden");
 }
 });
@@ -3965,6 +3976,281 @@ const root = select("#ui-root");
 const isNarrow = viewW() <= 768;
 
 /* Landing */
+/* ONE CHIP BUILDER FOR BOTH CIRCLE SCREENS, because the fork's screen and
+   the in-circle row draw the same control and a second copy would drift the
+   way everything else in this project does. */
+function chip(row, label, onGo, muted) {
+  const b = createButton(label).parent(row);
+  b.style("padding", "7px 13px");
+  b.style("border", "1.5px solid " + (muted ? "#dce9e5" : "#bde0d6"));
+  b.style("border-radius", "999px");
+  b.style("background", muted ? "#f6faf8" : "#ffffff");
+  b.style("color", muted ? "#6d8f8a" : "#1d6466");
+  b.style("font-family", "Arial, Helvetica, sans-serif");
+  b.style("font-size", "13px");
+  b.style("font-weight", muted ? "400" : "600");
+  b.style("cursor", "pointer");
+  b.style("pointer-events", "auto");
+  b.mousePressed(onGo);
+  return b;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   WHERE SHOULD IT GO? THE SHARED GARDEN FORKS LIKE THE PERSONAL ONE
+
+   The personal garden opens on "Which way today?" and two choices, and this
+   page now opens the same way with the question this page actually has:
+   the open garden, or a circle.
+
+   WHY A FORK RATHER THAN A ROW UNDER THE BUTTON. The circle was offered as a
+   small second thing beneath the writing box, which made it a decision to
+   notice while you were already answering a different one, and most people
+   never saw it. Where a flower goes is not a footnote to writing it: it is
+   the first thing to settle, it is settled once, and after that the page is
+   about the sentence.
+
+   IT IS THE SAME SHAPE AS THE PERSONAL GARDEN'S, deliberately, down to the
+   two line buttons: a bold label saying where, and a quiet line under it
+   saying who can read it. Somebody who has used one garden already knows how
+   this screen works.
+
+   NEITHER IS RECOMMENDED AND NEITHER IS THE DEFAULT. The open garden is
+   first because it is the page's own name and the thing most people came
+   for, not because a circle is lesser.
+
+   ARRIVING BY A CIRCLE LINK SKIPS THIS ENTIRELY. The question has been
+   answered by whoever sent the link, and asking it again would invite
+   somebody to plant somewhere other than the garden they were invited to. */
+whereWrap = createDiv().id("where-wrap").parent(root).addClass("gg-wrap");
+whereWrap.style("display", "none");
+whereWrap.style("z-index", "100");
+whereWrap.style("pointer-events", "auto");
+
+const whereCard = createDiv().addClass("gg-card").parent(whereWrap);
+createElement("h1", "The Shared Garden").addClass("gg-title").parent(whereCard);
+const whereSub = createP("One flower either way. Only who can read it changes.")
+  .addClass("gg-sub").parent(whereCard);
+whereSub.style("margin-bottom", "18px");
+
+/* The same two line button the personal garden's fork uses. The under line
+   is what a visitor is actually choosing between, since "circle" on its own
+   is a word from another app and could mean almost anything. */
+function whereBtn(label, under, fn) {
+  const b = createButton("").parent(whereCard);
+  b.addClass("gg-hov");
+  b.html(label + '<span style="display:block;font-weight:400;font-size:12.5px;' +
+         'opacity:0.88;margin-top:3px">' + under + '</span>');
+  b.style("background", "#26a69a");
+  b.style("color", "#fff");
+  b.style("border", "none");
+  b.style("border-radius", "12px");
+  b.style("padding", "11px 12px");
+  b.style("font-size", "16px");
+  b.style("font-weight", "700");
+  b.style("line-height", "1.25");
+  b.style("width", "100%");
+  b.style("cursor", "pointer");
+  b.style("margin-bottom", "8px");
+  b.style("pointer-events", "auto");
+  b.mousePressed(fn);
+  return b;
+}
+whereBtn("Today's open garden", "Anyone who opens it today can read it",
+         () => showStep("landing"));
+whereBtn("A circle", "Only the people you give the code to",
+         () => showStep("circles"));
+
+const wherePeek = createButton("Or look at today's garden first").parent(whereCard);
+wherePeek.style("display", "block");
+wherePeek.style("width", "100%");
+wherePeek.style("margin", "4px 0 0");
+wherePeek.style("padding", "8px 4px");
+wherePeek.style("background", "none");
+wherePeek.style("border", "none");
+wherePeek.style("color", "#2c7a7b");
+wherePeek.style("font-size", "14px");
+wherePeek.style("text-decoration", "underline");
+wherePeek.style("cursor", "pointer");
+wherePeek.style("pointer-events", "auto");
+wherePeek.mousePressed(() => { browsing = true; showStep("garden"); });
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   THE CIRCLE SCREEN: make one, join one, or go back to one you are in
+
+   This is the second half of the fork, and everything about how a circle
+   WORKS is written at the top of this file beside `CIRCLES_KEY`. What is
+   here is only the three things somebody can do about one.
+
+   IT SAYS WHAT A CIRCLE CANNOT PROMISE, in the line under the heading.
+   Anybody handed the code is in, so the copy says "only the people you give
+   the code to" and never "private": the page must not imply a guarantee the
+   mechanism cannot enforce. */
+circlesWrap = createDiv().id("circles-wrap").parent(root).addClass("gg-wrap");
+circlesWrap.style("display", "none");
+circlesWrap.style("z-index", "100");
+circlesWrap.style("pointer-events", "auto");
+
+const circlesCard = createDiv().addClass("gg-card").parent(circlesWrap);
+createElement("h1", "A circle").addClass("gg-title").parent(circlesCard);
+createP("A garden only the people you give the code to can see. It empties at midnight, like the open one.")
+  .addClass("gg-sub").parent(circlesCard);
+
+const circleRow = createDiv().parent(circlesCard);
+circleRow.style("display", "flex");
+circleRow.style("flex-wrap", "wrap");
+circleRow.style("justify-content", "center");
+circleRow.style("gap", "7px");
+circleRow.style("margin", "4px 0 0");
+
+chip(circleRow, "Make a circle", () => {
+  const code = makeCode();
+  /* NAMED BY THE PERSON MAKING IT, because "quiet-fern-moth" is a good thing
+     to read down a phone and a poor thing to find in a list next week. The
+     prompt is the browser's, which is plain, and that is the right weight
+     for a thing that takes two seconds: a card of its own would make making
+     a circle feel like setting up an account, which is what this avoids. */
+  const name = window.prompt(
+    "Name this circle, so you can find it again.\n\nIts code is " + code +
+    ". Anybody you give that to can plant in it.", "Our circle");
+  if (name === null) return;
+  rememberCircle(code, String(name).trim().slice(0, 28) || code);
+  location.href = circleLink(code);
+});
+
+chip(circleRow, "Join with a code", () => {
+  const v = window.prompt("Paste the circle's code or its link.", "");
+  if (!v) return;
+  let code = cleanCode(v);
+  /* A WHOLE LINK PASTED IN IS THE NORMAL CASE, since that is what somebody
+     is sent. Pulling the code out of it beats telling them off. */
+  const m = String(v).match(/[?&]circle=([^&#\s]+)/);
+  if (m) code = cleanCode(decodeURIComponent(m[1]));
+  if (!code) return;
+  const label = window.prompt(
+    "Joined. What do you call this circle?\n\nThis is only for your own list, so pick anything.",
+    code);
+  rememberCircle(code, (label === null ? code : String(label).trim().slice(0, 28)) || code);
+  location.href = circleLink(code);
+});
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   YOUR CIRCLES: THE WAY BACK, WITHOUT THE LINK
+
+   A circle is a code in a room key, so returning to one is a navigation and
+   nothing more. What was missing was anywhere to navigate FROM: the browser
+   had remembered every circle it had been in since the feature was built,
+   and nothing ever showed that list, so the only way back was the original
+   message.
+
+   THERE WAS A LIST ONCE AND IT WAS TAKEN OUT, because the first thing it
+   produced was "what is quiet-fern-moth": a code somebody had joined once
+   with no context, which reads as a bug rather than as a shortcut. What was
+   wrong was the NAMING, not the list, so a circle is shown by the name its
+   owner gave it, joining asks for one, and anything still carrying a bare
+   code can be named from the card it is standing in.
+
+   IT IS LOCAL AND IT IS NOT A MEMBERSHIP LIST. Planting here still takes no
+   account, so this is a note this browser keeps, like the once a day marker.
+   Clearing storage loses the list and loses nothing else: the circle is
+   still there and the code still opens it, which is exactly what "anybody
+   you give the code to is in" means.
+
+   LEAVING IS `forgetCircle` AND IT ONLY FORGETS. It cannot remove anybody
+   from a circle, because there is nobody to remove; it takes the row off
+   this browser. The confirm says so rather than saying "Leave", which would
+   promise what the mechanism cannot do. */
+const circleList = createDiv().parent(circlesCard);
+circleList.style("margin", "14px 0 0");
+
+function paintCircleList() {
+  circleList.html("");
+  const list = myCircles().filter(c => c.code !== circleCode);
+  if (!list.length) { circleList.style("display", "none"); return; }
+  circleList.style("display", "block");
+
+  const lab = createP(list.length === 1 ? "A circle you are in:" : "Circles you are in:")
+    .parent(circleList);
+  lab.style("font-family", "Arial, Helvetica, sans-serif");
+  lab.style("font-size", "11.5px");
+  lab.style("letter-spacing", "0.08em");
+  lab.style("text-transform", "uppercase");
+  lab.style("color", "#6d8f8a");
+  lab.style("margin", "0 0 7px");
+
+  const row = createDiv().parent(circleList);
+  row.style("display", "flex");
+  row.style("flex-wrap", "wrap");
+  row.style("justify-content", "center");
+  row.style("gap", "7px");
+
+  list.forEach(c => {
+    /* A CHIP AND ITS CROSS ARE TWO BUTTONS IN ONE PILL, not one button that
+       does two things depending on where it was hit. The pill is the border,
+       so the pair reads as one object. */
+    const pill = createDiv().parent(row);
+    pill.style("display", "inline-flex");
+    pill.style("align-items", "stretch");
+    pill.style("border", "1.5px solid #bde0d6");
+    pill.style("border-radius", "999px");
+    pill.style("overflow", "hidden");
+    pill.style("background", "#ffffff");
+
+    const go = createButton(c.name || c.code).parent(pill);
+    go.style("padding", "7px 6px 7px 13px");
+    go.style("border", "none");
+    go.style("background", "none");
+    go.style("color", "#1d6466");
+    go.style("font-family", "Arial, Helvetica, sans-serif");
+    go.style("font-size", "13px");
+    go.style("font-weight", "600");
+    go.style("max-width", "190px");
+    go.style("overflow", "hidden");
+    go.style("text-overflow", "ellipsis");
+    go.style("white-space", "nowrap");
+    go.style("cursor", "pointer");
+    go.style("pointer-events", "auto");
+    go.attribute("title", "Open " + (c.name || c.code) + " (" + c.code + ")");
+    go.mousePressed(() => { location.href = circleLink(c.code); });
+
+    const x = createButton("&times;").parent(pill);
+    x.style("padding", "7px 11px 7px 7px");
+    x.style("border", "none");
+    x.style("background", "none");
+    x.style("color", "#8fb3ae");
+    x.style("font-family", "Arial, Helvetica, sans-serif");
+    x.style("font-size", "15px");
+    x.style("line-height", "1");
+    x.style("cursor", "pointer");
+    x.style("pointer-events", "auto");
+    x.attribute("aria-label", "Forget " + (c.name || c.code));
+    x.attribute("title", "Take this off your list. The circle itself stays.");
+    x.mousePressed(() => {
+      if (!window.confirm(
+        'Take "' + (c.name || c.code) + '" off this list?\n\n' +
+        "The circle itself carries on and its code still works, so anybody " +
+        "with the link can send it to you again.")) return;
+      forgetCircle(c.code);
+      paintCircleList();
+    });
+  });
+}
+paintCircleList();
+repaintCircles = paintCircleList;
+
+const circlesBack = createButton("Back").parent(circlesCard);
+circlesBack.addClass("gg-hov");
+circlesBack.style("background", "#e0e0e0");
+circlesBack.style("color", "#666");
+circlesBack.style("border", "none");
+circlesBack.style("border-radius", "12px");
+circlesBack.style("padding", "11px");
+circlesBack.style("font-size", "14px");
+circlesBack.style("width", "100%");
+circlesBack.style("margin", "16px 0 0");
+circlesBack.style("cursor", "pointer");
+circlesBack.style("pointer-events", "auto");
+circlesBack.mousePressed(() => showStep("where"));
+
 landingWrap = createDiv().id("landing-wrap").parent(root).addClass("gg-wrap");
 landingWrap.style("display", "flex");
 landingWrap.style("z-index", "100");
@@ -4066,241 +4352,62 @@ if (window.GardenEnter) GardenEnter.on(gratitudeField, landingGo);
    NOTHING IS LOST BY TAKING IT: whatever has been typed stays in the field,
    and the way back is on screen the whole time you are looking. */
 /* ═══════════════════════════════════════════════════════════════════════════
-   THE CIRCLE ROW, UNDER THE BUTTON AND ABOVE THE PEEK
+   IN A CIRCLE, THE LANDING CARD SAYS SO AND CARRIES THE LINK
 
-   WHERE IT IS, IS THE DESIGN. The public garden stays the default and the
-   first thing on this card is still the box and the button; the circle is
-   offered UNDER them, as a smaller second thing. Put at the top it would be
-   a choice to make before writing, which is a decision in front of the one
-   action the page exists for, and most people do not have a circle.
+   The MAKING and JOINING of circles is a screen of its own now, reached from
+   the fork before this one; see `circlesWrap` below. What stays here is what
+   is true only while you are standing IN a circle: which one it is, how to
+   hand it on, and the way back out to the open garden.
 
-   IT SAYS WHAT A CIRCLE IS IN ONE LINE, because "circle" on its own is a
-   word from another app and could mean almost anything.
-   ═══════════════════════════════════════════════════════════════════════ */
-const circleBox = createDiv().parent(card);
-circleBox.style("margin", "16px 0 0");
-circleBox.style("padding", "14px 0 0");
-circleBox.style("border-top", "1px solid #e6efed");
-circleBox.style("text-align", "left");
-
-const circleHead = createP(circleCode
-  ? "You are in the circle <b>" + circleName() + "</b>."
-  : "Or plant in a <b>circle</b>, a garden only the people you give the code to can see.")
-  .parent(circleBox);
-circleHead.style("font-family", "Arial, Helvetica, sans-serif");
-circleHead.style("font-size", "13px");
-circleHead.style("line-height", "1.5");
-circleHead.style("color", "#2f6260");
-circleHead.style("margin", "0 0 9px");
-
-const circleRow = createDiv().parent(circleBox);
-circleRow.style("display", "flex");
-circleRow.style("flex-wrap", "wrap");
-circleRow.style("gap", "7px");
-
-function circleChip(label, onGo, muted) {
-  const b = createButton(label).parent(circleRow);
-  b.style("padding", "7px 13px");
-  b.style("border", "1.5px solid " + (muted ? "#dce9e5" : "#bde0d6"));
-  b.style("border-radius", "999px");
-  b.style("background", muted ? "#f6faf8" : "#ffffff");
-  b.style("color", muted ? "#6d8f8a" : "#1d6466");
-  b.style("font-family", "Arial, Helvetica, sans-serif");
-  b.style("font-size", "13px");
-  b.style("font-weight", muted ? "400" : "600");
-  b.style("cursor", "pointer");
-  b.style("pointer-events", "auto");
-  b.mousePressed(onGo);
-  return b;
-}
-
-/* THE TWO ACTIONS COME FIRST, AND THE CIRCLES YOU ALREADY HAVE COME UNDER
-   THEM. There was a list here once and it was taken out, because the first
-   thing it produced was "what is quiet-fern-moth": a code somebody had
-   joined once, sitting on the first card of the page with no context, which
-   reads as a bug rather than as a shortcut.
-
-   THE LIST IS BACK BECAUSE THE ABSENCE WAS THE BIGGER FAULT. Without it a
-   circle could only be returned to by keeping the link, so somebody in a
-   circle with three friends had to go and find a message from last week
-   every single day. A garden you have to dig a link out of to reach is not
-   somewhere you go daily, which is the one thing this project is asking for.
-
-   WHAT WAS ACTUALLY WRONG WAS THE NAMING, NOT THE LIST, and that is what
-   `paintCircleList` fixes below: a circle is shown by the name somebody gave
-   it, joining asks for one, and anything still carrying a bare code can be
-   named from the card. The old note's other condition is met too: there is
-   a way to leave, which is what `forgetCircle` was kept for. */
-circleChip("Make a circle", () => {
-  const code = makeCode();
-  /* NAMED BY THE PERSON MAKING IT, because "quiet-fern-moth" is a good thing
-     to read down a phone and a poor thing to find in a list next week. The
-     prompt is the browser's, which is plain, and that is the right weight
-     for a thing that takes two seconds: a card of its own would make making
-     a circle feel like setting up an account, which is what this avoids. */
-  const name = window.prompt(
-    "Name this circle, so you can find it again.\n\nIts code is " + code +
-    ". Anybody you give that to can plant in it.", "Our circle");
-  if (name === null) return;
-  rememberCircle(code, String(name).trim().slice(0, 28) || code);
-  location.href = circleLink(code);
-});
-
-circleChip("Join with a code", () => {
-  const v = window.prompt("Paste the circle's code or its link.", "");
-  if (!v) return;
-  let code = cleanCode(v);
-  /* A WHOLE LINK PASTED IN IS THE NORMAL CASE, since that is what somebody
-     is sent. Pulling the code out of it beats telling them off. */
-  const m = String(v).match(/[?&]circle=([^&#\s]+)/);
-  if (m) code = cleanCode(decodeURIComponent(m[1]));
-  if (!code) return;
-  /* AND THEN WHAT TO CALL IT, because a list of bare codes is the exact
-     thing that got the first list removed. Cancelling keeps the code, so
-     this cannot stop anybody joining; it is one OK press for a name that
-     has to last. */
-  const label = window.prompt(
-    "Joined. What do you call this circle?\n\nThis is only for your own list, so pick anything.",
-    code);
-  rememberCircle(code, (label === null ? code : String(label).trim().slice(0, 28)) || code);
-  location.href = circleLink(code);
-});
-
+   IT IS NOT ON THE OPEN GARDEN'S CARD AT ALL. It used to be, as a row under
+   the button offering a circle to everybody who arrived, which put a second
+   decision underneath the one thing this page exists for. The fork asks that
+   question properly, once, before anybody starts writing. */
 if (circleCode) {
-  circleChip("Copy the link", () => {
+  const circleBox = createDiv().parent(card);
+  circleBox.style("margin", "16px 0 0");
+  circleBox.style("padding", "14px 0 0");
+  circleBox.style("border-top", "1px solid #e6efed");
+  circleBox.style("text-align", "left");
+
+  const circleHead = createP("You are in the circle <b>" + circleName() + "</b>.")
+    .parent(circleBox);
+  circleHead.style("font-family", "Arial, Helvetica, sans-serif");
+  circleHead.style("font-size", "13px");
+  circleHead.style("line-height", "1.5");
+  circleHead.style("color", "#2f6260");
+  circleHead.style("margin", "0 0 9px");
+
+  const circleRow = createDiv().parent(circleBox);
+  circleRow.style("display", "flex");
+  circleRow.style("flex-wrap", "wrap");
+  circleRow.style("gap", "7px");
+
+  chip(circleRow, "Copy the link", () => {
     const link = circleLink(circleCode);
     const say = ok => { circleHead.html(ok
       ? "Link copied. Anybody you send it to can plant in <b>" + circleName() + "</b>."
       : "Your circle's link is <b>" + link + "</b>"); };
-    try {
-      navigator.clipboard.writeText(link).then(() => say(true), () => say(false));
-    } catch (e) { say(false); }
+    try { navigator.clipboard.writeText(link).then(() => say(true), () => say(false)); }
+    catch (e) { say(false); }
   });
-  circleChip("Today's open garden", () => {
+  chip(circleRow, "Today's open garden", () => {
     location.href = location.origin + location.pathname;
   }, true);
+  /* NAMING A CIRCLE YOU ARRIVED AT BY LINK. Somebody handed a link has
+     plainly been invited, so the page does not interrogate them on arrival:
+     it remembers the circle under its own code and offers the name here,
+     once, and only while the name IS still the code. */
+  if (circleName() === circleCode) {
+    chip(circleRow, "Name this circle", () => {
+      const label = window.prompt(
+        "What do you call this circle?\n\nThis is only for your own list.", circleCode);
+      if (label === null) return;
+      rememberCircle(circleCode, String(label).trim().slice(0, 28) || circleCode);
+      circleHead.html("You are in the circle <b>" + circleName() + "</b>.");
+    }, true);
+  }
 }
-
-/* ═══════════════════════════════════════════════════════════════════════════
-   YOUR CIRCLES: THE WAY BACK, WITHOUT THE LINK
-
-   A circle is a code in a room key, so returning to one is a navigation and
-   nothing more. What was missing was anywhere to navigate FROM: the browser
-   has remembered every circle it has been in since the feature was built,
-   and nothing ever showed that list, so the only way back was the original
-   message. This is that list.
-
-   IT IS NAMES, NEVER CODES, which is the whole lesson of the first attempt.
-   `circleName` falls back to the code, so anything joined before this, or
-   arrived at by a link and never named, still appears; it just appears
-   wearing its code, and carries a way to name it rather than sitting there
-   as a puzzle.
-
-   IT IS LOCAL AND IT IS NOT A MEMBERSHIP LIST. Planting here still takes no
-   account, so this is a note this browser keeps, like the once a day marker
-   next to it. Clearing your storage loses the list and loses nothing else:
-   the circle is still there and the code still opens it, which is exactly
-   what "anybody you give the code to is in" means.
-
-   LEAVING IS `forgetCircle` AND IT ONLY FORGETS. It cannot remove anybody
-   from a circle, because there is nobody to remove; it takes the row off
-   this browser's list. The copy says so rather than saying "Leave", which
-   would promise something the mechanism cannot do. */
-const circleList = createDiv().parent(circleBox);
-circleList.style("margin", "11px 0 0");
-
-function paintCircleList() {
-  circleList.html("");
-  /* THE ONE YOU ARE STANDING IN IS NOT A WAY TO GO SOMEWHERE, so it is left
-     out: the heading above already says you are in it, and a chip that
-     reloads the page you are on is a dead control. */
-  const list = myCircles().filter(c => c.code !== circleCode);
-  if (!list.length) { circleList.style("display", "none"); return; }
-  circleList.style("display", "block");
-
-  const lab = createP(list.length === 1 ? "A circle you are in:" : "Circles you are in:")
-    .parent(circleList);
-  lab.style("font-family", "Arial, Helvetica, sans-serif");
-  lab.style("font-size", "11.5px");
-  lab.style("letter-spacing", "0.08em");
-  lab.style("text-transform", "uppercase");
-  lab.style("color", "#6d8f8a");
-  lab.style("margin", "0 0 7px");
-
-  const row = createDiv().parent(circleList);
-  row.style("display", "flex");
-  row.style("flex-wrap", "wrap");
-  row.style("gap", "7px");
-
-  list.forEach(c => {
-    /* A CHIP AND ITS CROSS ARE TWO BUTTONS IN ONE PILL, not one button that
-       does two things depending on where it was hit. The pill is the border
-       so the pair reads as one object. */
-    const pill = createDiv().parent(row);
-    pill.style("display", "inline-flex");
-    pill.style("align-items", "stretch");
-    pill.style("border", "1.5px solid #bde0d6");
-    pill.style("border-radius", "999px");
-    pill.style("overflow", "hidden");
-    pill.style("background", "#ffffff");
-
-    const go = createButton(c.name || c.code).parent(pill);
-    go.style("padding", "7px 6px 7px 13px");
-    go.style("border", "none");
-    go.style("background", "none");
-    go.style("color", "#1d6466");
-    go.style("font-family", "Arial, Helvetica, sans-serif");
-    go.style("font-size", "13px");
-    go.style("font-weight", "600");
-    go.style("max-width", "190px");
-    go.style("overflow", "hidden");
-    go.style("text-overflow", "ellipsis");
-    go.style("white-space", "nowrap");
-    go.style("cursor", "pointer");
-    go.style("pointer-events", "auto");
-    go.attribute("title", "Open " + (c.name || c.code) + " (" + c.code + ")");
-    go.mousePressed(() => { location.href = circleLink(c.code); });
-
-    const x = createButton("&times;").parent(pill);
-    x.style("padding", "7px 11px 7px 7px");
-    x.style("border", "none");
-    x.style("background", "none");
-    x.style("color", "#8fb3ae");
-    x.style("font-family", "Arial, Helvetica, sans-serif");
-    x.style("font-size", "15px");
-    x.style("line-height", "1");
-    x.style("cursor", "pointer");
-    x.style("pointer-events", "auto");
-    x.attribute("aria-label", "Forget " + (c.name || c.code));
-    x.attribute("title", "Take this off your list. The circle itself stays.");
-    x.mousePressed(() => {
-      if (!window.confirm(
-        "Take \"" + (c.name || c.code) + "\" off this list?\n\n" +
-        "The circle itself carries on and its code still works, so anybody " +
-        "with the link can send it to you again.")) return;
-      forgetCircle(c.code);
-      paintCircleList();
-    });
-  });
-}
-paintCircleList();
-
-/* NAMING A CIRCLE YOU ARRIVED AT BY LINK. Somebody handed a link has plainly
-   been invited, so the page does not interrogate them on arrival: it
-   remembers the circle under its own code and offers the name here, once,
-   and only while the name IS still the code. Prompting on load would be a
-   dialogue in front of a garden somebody was invited to look at. */
-if (circleCode && circleName() === circleCode) {
-  circleChip("Name this circle", () => {
-    const label = window.prompt(
-      "What do you call this circle?\n\nThis is only for your own list.", circleCode);
-    if (label === null) return;
-    rememberCircle(circleCode, String(label).trim().slice(0, 28) || circleCode);
-    circleHead.html("You are in the circle <b>" + circleName() + "</b>.");
-    paintCircleList();
-  }, true);
-}
-
 const peekLink = createButton("Or look at today's garden first").parent(card);
 peekLink.style("display", "block");
 peekLink.style("width", "100%");
@@ -4314,6 +4421,25 @@ peekLink.style("text-decoration", "underline");
 peekLink.style("cursor", "pointer");
 peekLink.style("pointer-events", "auto");
 peekLink.mousePressed(() => { browsing = true; showStep("garden"); });
+
+/* A WAY BACK TO THE FORK, so choosing the open garden is not a one way door.
+   Only outside a circle: in one, the fork was never shown, and the way out
+   is "Today's open garden" in the row above, which is a navigation rather
+   than a step. */
+if (!circleCode) {
+  const backToWhere = createButton("Back").parent(card);
+  backToWhere.style("display", "block");
+  backToWhere.style("width", "100%");
+  backToWhere.style("margin", "2px 0 0");
+  backToWhere.style("padding", "8px 4px");
+  backToWhere.style("background", "none");
+  backToWhere.style("border", "none");
+  backToWhere.style("color", "#6d8f8a");
+  backToWhere.style("font-size", "13px");
+  backToWhere.style("cursor", "pointer");
+  backToWhere.style("pointer-events", "auto");
+  backToWhere.mousePressed(() => showStep("where"));
+}
 
 /* Username */
 usernameWrap = createDiv().id("username-wrap").parent(root).addClass("gg-wrap");
@@ -5072,6 +5198,12 @@ function showStep(s) {
      personal garden shows its wrap unconditionally for exactly this reason. */
   gardenWrap.style("display", "block");
 
+  whereWrap.style("display", s === "where" ? "flex" : "none");
+  circlesWrap.style("display", s === "circles" ? "flex" : "none");
+  /* The list is repainted on arrival rather than only at build, so a circle
+     joined or left in another tab is not shown stale. Through the hoisted
+     handle, since `paintCircleList` is inside `buildUI`. */
+  if (s === "circles" && repaintCircles) repaintCircles();
   landingWrap.style("display", s === "landing" ? "flex" : "none");
   usernameWrap.style("display", s === "username" ? "flex" : "none");
   selectWrap.style("display", s === "select" ? "flex" : "none");
