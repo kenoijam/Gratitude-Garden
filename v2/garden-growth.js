@@ -46,10 +46,27 @@
   var W = 44;            /* the lane, in px and in user units: the SVG is 1:1 */
   var AMP = 13;          /* how far the stem wanders either side of the lane */
   var WAVE = 540;        /* one full sway, in px of page */
-  var LEAF_EVERY = 235;  /* px of stem between leaves */
+  var LEAF_EVERY = 235;  /* px of stem between one bloom and the next */
   var STEM = "hsl(140,52%,32%)";   /* both gardens' stem green, exactly */
   var LEAF = "rgb(120,210,90)";    /* the hero meadow's own leaf fill */
   var LEAF_DARK = "rgb(92,170,70)";
+  /* ═══ WHAT GROWS ON IT IS FLOWERS, AND LEAVES WERE THE FIRST ANSWER
+     A green stem putting out green leaves down the margin is a creeper, and
+     a creeper is decoration: the author's word for it was weird, and the
+     fault is that it was the one growing thing on this page that was not a
+     flower, on a site whose whole argument is that what you noticed becomes
+     one. Each node is a small bloom now, opening as the tip reaches it, so
+     scrolling the page grows a garden down its own edge.
+
+     THE HUES ARE THE COLOUR WHEEL'S OWN, the eight the flower guide's ring
+     is built from, walked in order so no two neighbours on the stem are the
+     same colour and the whole run reads as a set rather than as a handful.
+     They are NOT `drawSpeciesBloom`: the eight species are drawn by code
+     that lives in the sketches and onto a canvas, and a stem that waited on
+     a renderer to finish growing would be the wrong trade for a 26px mark.
+     This is the five petal bloom the letter and the cursor already draw,
+     which is honest about being a drawing. */
+  var RING_HUES = [350, 22, 48, 140, 190, 232, 272, 332];
 
   var CSS = [
     "#growth-rail{position:absolute;left:auto;right:8px;width:" + W + "px;",
@@ -97,22 +114,53 @@
     return d;
   }
 
-  function leafPath(side) {
-    /* ONE LENS AND A MIDRIB, which is the hero meadow's leaf and nothing
-       more. Anything finer than that is invisible at 30px and is weight
-       everybody pays, which is the rule the cursor is built on. */
-    var k = side;   /* 1 or -1: which way the leaf lies */
-    var g = document.createElementNS("http://www.w3.org/2000/svg", "g");
-    var p = document.createElementNS("http://www.w3.org/2000/svg", "path");
-    p.setAttribute("d", "M0 0 Q 15 " + (-9 * k) + " 31 " + (-2 * k) +
-                        " Q 15 " + (7 * k) + " 0 0 Z");
-    p.setAttribute("fill", LEAF);
-    var r = document.createElementNS("http://www.w3.org/2000/svg", "path");
-    r.setAttribute("d", "M1 0 Q 16 " + (-2 * k) + " 30 " + (-2 * k));
-    r.setAttribute("fill", "none");
-    r.setAttribute("stroke", LEAF_DARK);
-    r.setAttribute("stroke-width", "1.1");
-    g.appendChild(p); g.appendChild(r);
+  /* ONE BLOOM ON A SHORT SPUR. The spur is what joins it to the stem: a
+     flower head floating beside a stem reads as stuck on, and six pixels of
+     green is the whole of what fixes that. A single leaf rides on the spur
+     so the stem still has some green on it, which is what keeps the run
+     reading as a plant rather than as a row of badges. */
+  function nodeArt(side, hue, r) {
+    var k = side;
+    var ns = "http://www.w3.org/2000/svg";
+    var g = document.createElementNS(ns, "g");
+
+    var spur = document.createElementNS(ns, "path");
+    spur.setAttribute("d", "M0 0 Q " + (7 * k) + " " + (-2) + " " + (13 * k) + " " + (-5));
+    spur.setAttribute("fill", "none");
+    spur.setAttribute("stroke", STEM);
+    spur.setAttribute("stroke-width", "2");
+    spur.setAttribute("stroke-linecap", "round");
+    g.appendChild(spur);
+
+    var leaf = document.createElementNS(ns, "path");
+    leaf.setAttribute("d", "M" + (3 * k) + " -1 Q " + (9 * k) + " " + (6 * k) +
+                           " " + (16 * k) + " " + (4 * k) +
+                           " Q " + (9 * k) + " " + (2 * k) + " " + (3 * k) + " -1 Z");
+    leaf.setAttribute("fill", LEAF_DARK);
+    g.appendChild(leaf);
+
+    var head = document.createElementNS(ns, "g");
+    head.setAttribute("transform", "translate(" + (13 * k) + ",-5)");
+    var i, a;
+    for (i = 0; i < 5; i++) {
+      a = (i * 72 - 90) * Math.PI / 180;
+      var e = document.createElementNS(ns, "ellipse");
+      var px = Math.cos(a) * r * 0.52, py = Math.sin(a) * r * 0.52;
+      e.setAttribute("cx", px.toFixed(2));
+      e.setAttribute("cy", py.toFixed(2));
+      e.setAttribute("rx", (r * 0.50).toFixed(2));
+      e.setAttribute("ry", (r * 0.36).toFixed(2));
+      e.setAttribute("transform", "rotate(" + (i * 72) + " " + px.toFixed(2) + " " + py.toFixed(2) + ")");
+      /* The gardens' own saturation and lightness family, 40 to 60 and 55 to
+         70, so a bloom here could have been planted in either of them. */
+      e.setAttribute("fill", "hsl(" + hue + ",56%,70%)");
+      head.appendChild(e);
+    }
+    var c = document.createElementNS(ns, "circle");
+    c.setAttribute("r", (r * 0.30).toFixed(2));
+    c.setAttribute("fill", "#fbe484");
+    head.appendChild(c);
+    g.appendChild(head);
     return g;
   }
 
@@ -184,11 +232,14 @@
       var pt2 = stem.getPointAtLength(Math.min(len, at + 10));
       /* The tangent, so a leaf leaves the stem rather than crossing it. */
       var tang = Math.atan2(pt2.y - pt.y, pt2.x - pt.x) * 180 / Math.PI;
-      var g = leafPath(side);
+      /* The size wanders a little, so the run reads as grown rather than
+         as printed: same reason no two of the hero's eleven are identical. */
+      var r = 11 + ((n * 37) % 5);
+      var g = nodeArt(side, RING_HUES[n % RING_HUES.length], r);
       g.setAttribute("class", "gr-leaf");
-      /* The leaf lies out and slightly UP from the join, which is the angle
-         every leaf in both gardens is drawn at: a leaf at a right angle to
-         its stem reads as a bracket. */
+      /* The spur leaves the stem out and slightly UP, which is the angle
+         every leaf in both gardens is drawn at: at a right angle to its
+         stem it reads as a bracket. */
       var lean = tang + (side > 0 ? -58 : 58) + (side > 0 ? 0 : 180);
       g.style.setProperty("--x", pt.x.toFixed(2) + "px");
       g.style.setProperty("--y", pt.y.toFixed(2) + "px");

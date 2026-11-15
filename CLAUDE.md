@@ -304,57 +304,199 @@ and opening one flower at the end. The reference is jld2nd.dev.
   so a reading taken straight after `scrollTo` reports the PREVIOUS position**;
   dispatch `scroll` and await a few frames before measuring.
 
-## THE WHOLE PAGE DIMS AT DUSK, AND THE TOKENS ARE WHAT DO IT
+## THE PAGE TAKES THE GARDEN'S OWN NIGHT (v2), AND IT TOOK THREE GOES
 
-The author asked whether the cream sections should turn dark like the sky, and
-chose a warm dusk tint over a dark mode. **Five palette tokens in `styles.css`
-now read `--dl-*` variables with their own daytime values as the fallback**, so
-every section ground, every curve, every card and every badge follows the hour
-at once.
+The author asked whether the cream sections should turn dark like the sky.
+They do, and the colours are not invented: **the three section grounds are
+`NIGHT.ground`, `NIGHT.back` and `NIGHT.skyTop` out of `garden-daylight.js`,
+which is to say the exact colours both gardens are painting on their canvases
+at that hour.**
 
-- **TOKENS RATHER THAN A BLOCK OF NIGHT OVERRIDES, and the curves are why.**
-  Each curve is painted in the colour of the section ABOVE it, so a list of
-  overrides would have had to name all six and would have been wrong by a
-  section the first time one moved. **This is also the fix for the author's
-  report that "the last section of the hero garden is still light green at
-  night"**: `.wisdom::before`, the roll out of the hero, is `var(--grass)`,
-  and at ten at night it was the one light green object on a dark page. The
-  token is the meadow's own `fore` now, handed over whole, so the roll is the
-  identical colour to the strip of ground it rolls off.
-- **DIMMED, NOT RECOLOURED, AND THAT WAS A CORRECTION.** The first attempt
-  mixed each token toward a hand picked night colour and the cream landed on a
-  sandy `#ead9b0`; the author's verdict was that it sat outside the palette,
-  and she was right: that is a different colour, not the same colour with less
-  light on it. `dim()` multiplies all three channels by one factor, which holds
-  the hue and the saturation and moves only the brightness. Cream at full dark
-  is `#ded9c5`, which is plainly the project's own cream.
-- **A MID TONE IS THE ONE GROUND NOTHING WORKS ON, which is why this is not a
-  dark mode.** Taken far enough toward dark, cream passes through a value where
-  dark text fails and light text fails too, and every ratio measured on this
-  page would have to be measured again with some having no answer at all.
-- **THE INK GOES DOWN WITH THE LAMP, AND THAT IS WHAT LETS THE DIM BE DEEP
-  ENOUGH TO SEE.** Darkening a pale ground under FIXED dark text walks the two
-  toward each other and the ratio FALLS: measured, the body copy came back at
-  **4.51** on the first cream, which is on the AA line, and the pale blue
-  section went under it outright. With `--ink` darkening alongside, every ratio
-  ends at or ABOVE its daytime figure: body copy **6.56 by day reads 9.06** on
-  the night cream, 6.21 reads 9.24 on the pale blue, 5.03 reads 7.18 on the
-  sky. So the page dims without one measurement having to be revisited.
-- **`--ink` IS A TOKEN BECAUSE THE COLOUR IS WRITTEN IN EIGHT RULES.** A list
-  of night overrides would have missed one.
-- **A PRE-EXISTING FAILURE FELL OUT OF THE RE-MEASURE.** `.feature-desc` was
-  `var(--teal)` on a white card, **3.69 at 14.45px**, under the 4.5 body text
-  needs, and it had been failing at every hour rather than only at night. It
-  takes `--ink` and reads 12.64.
-- **THE MOON HAS NO RAYS.** The gardens' canvas draws `rays: 0` after dark, so
-  theirs is a bare disc; the hero's sun is inline SVG and went on throwing all
-  twelve, which is why it still read as a small sun however far its colour was
-  drained. **The rays ARE the thing that says sun**, so no amount of dimming
-  the whole figure could fix it. They are their own `<g class="hero-sun-rays">`
-  and the night rule takes them to zero.
-- **THE TRANSITION IS 1.2s, the same as the hero gradient and the gardens'
-  canvas**, and the curves are listed BY NAME: untransitioned, a roll would
-  jump a beat before or after the ground it rolls onto.
+- **THE FIRST TWO ATTEMPTS WERE BOTH JUDGED OFF PALETTE, AND BOTH WERE, FOR
+  THE SAME REASON.** The first mixed each token toward a hand picked night
+  colour and cream landed on a sandy `#ead9b0`. The second multiplied the
+  channels instead, which holds the hue exactly and gave a khaki `#ded9c5`.
+  The author's verdict on both was that it was not our palette. **The fault
+  was not the method, it was that the night colour was being INVENTED.** A
+  page cannot be off palette in a colour the palette supplies, and at dusk
+  the landing page and the two gardens now arrive at the same evening rather
+  than at two different ones.
+- **THREE NEW TOKENS, `--paper`, `--paper-cool` AND `--band`, AND THE
+  PALETTE TOKENS WENT BACK TO LITERALS.** `--cream` is the section paper AND
+  the label on every dark button; `--darkteal` is the band's ground AND
+  twenty two pieces of text. **One token cannot darken for one job and
+  lighten for the other**, which is what broke the first attempt at doing
+  this through the palette: at night the buttons came out dark on dark. The
+  grounds are their own three variables now, used by all five section rules
+  and all five curves, and the palette does not move.
+- **`--grass` STILL FOLLOWS THE CLOCK**, because unlike the other five it is
+  only ever a ground. It is the meadow's own `fore`, so `.wisdom::before`,
+  the roll out of the hero, is the identical colour to the strip of ground it
+  rolls off. **That is the fix for "the last section of the hero garden is
+  still light green at night."**
+- **THE COPY ON THOSE GROUNDS TURNS OVER BY NAME, and it has to be a list.**
+  The body ink is written in eight rules and half of them sit on WHITE cards,
+  which stay white at every hour: a token that went light would take the
+  feature cards and the flower tiles down with it. The list was built by
+  WALKING the four sections and reading each element's own computed
+  background, not by reading the stylesheet. It is the section label, title,
+  em and description, plus the flower ring's four annotations, which stand on
+  the open ground because that is what a botanical plate does.
+- **`.cta` IS DELIBERATELY NOT IN THAT LIST.** Its content lives inside
+  `.cta-inner`, a white card, so nothing in that section ever touches the
+  ground. Checked rather than assumed.
+- **THE NIGHT INKS ARE THE HERO'S OWN FOUR**, already proved against a night
+  sky further up the file, so the page has one set of night inks rather than
+  two.
+- **THE WHITE CARDS STAY WHITE**, which keeps every measured card ratio valid
+  and reads as a lit card on a dark page.
+- **MEASURED AFTER, over every text node in all six sections at 22:00: ZERO
+  failures.** The four the sweep still prints are a limitation of the sweep,
+  not of the page: two badges and two notes carry a translucent background
+  over a card GRADIENT, and a walker that stops at the translucent layer
+  cannot composite it. CLAUDE.md already records those as measured properly
+  against the gradient at each element's own position.
+- **THREE PRE-EXISTING FAILURES FELL OUT OF THE RE-MEASURE, all `--teal` as
+  text, all failing at every hour rather than only at night.**
+  `.feature-desc` 3.69 on white, `.section-label` 3.49 on cream and 3.31 on
+  the pale blue at 12.24px, `.flower-mood` 3.69 on white. All three take the
+  body ink. Two chips were marginal and were darkened: `chip-rose` 4.23 and
+  `chip-daisy` 4.45.
+- **THE MOON HAS NO RAYS.** The gardens draw `rays: 0` after dark, so theirs
+  is a bare disc; the hero's is inline SVG and went on throwing all twelve.
+  **The rays ARE the thing that says sun**, so dimming the figure could never
+  have fixed it. Their own `<g class="hero-sun-rays">`, taken to zero.
+- **TWO MEASUREMENT TRAPS COST A ROUND EACH HERE.** The pane serves a CACHED
+  stylesheet through a reload, so the whole first audit was run against the
+  old `.about { background: var(--cream) }` and reported the day palette with
+  the variables plainly set; `fetch(url, {cache:"reload"})` then a reload is
+  the fix, which is the fourth time this project has recorded it. And **the
+  pane throttles `requestAnimationFrame`, which is what drives CSS
+  transitions**, so any transitioned property reads at its START value
+  indefinitely: kill the transitions before measuring anything that has one.
+
+## THE VINE GROWS FLOWERS, NOT LEAVES
+
+The first version put leaves down the stem and the author's word for it was
+weird. The fault is nameable: a green stem putting out green leaves is a
+CREEPER, and a creeper is decoration. It was the one growing thing on a page
+whose whole argument is that what you noticed becomes a flower.
+
+- **EACH NODE IS A SMALL BLOOM ON A SHORT SPUR**, opening as the tip reaches
+  it, so scrolling the page grows a garden down its own edge. The spur is
+  what joins it: a head floating beside a stem reads as stuck on, and six
+  pixels of green is the whole of what fixes that. One leaf rides on the spur
+  so the run still has green in it.
+- **THE HUES ARE THE COLOUR WHEEL'S OWN EIGHT**, the ones the flower guide's
+  ring is built from, walked in order so no two neighbours share a colour and
+  the run reads as a set. Saturation and lightness are the gardens' own
+  family, 56 and 70, so a bloom here could have been planted in either.
+- **THEY ARE NOT `drawSpeciesBloom`.** The eight species are drawn onto a
+  CANVAS by code that lives in the sketches, and a stem that waited on a
+  renderer to finish growing would be the wrong trade for a 26px mark. This
+  is the five petal bloom the letter and the cursor already draw, which is
+  honest about being a drawing.
+
+## THE TWO GARDENS HAVE A DOOR BETWEEN THEM (v2)
+
+They have stood side by side on the landing page since they existed with no
+way across: somebody who wrote a gratitude in the personal garden and wanted
+it in the meadow had to go back to the front page, open the other garden and
+type it again from cold.
+
+- **OFFERED AFTER PLANTING, NOT BEFORE**, as a pill under the personal
+  garden's daily note. You have seen what you made, so the offer costs
+  nothing and can be ignored; offered on the way through it would read as the
+  private garden asking to publish something unfinished.
+- **THIS DIRECTION AND NOT THE OTHER, which was weighed.** Private first and
+  public BY CHOICE is the order this project argues for everywhere else, and
+  the shared garden pulling from the personal one would have to reach into
+  another garden's storage or account row to find anything.
+- **IT IS A BROWSER NOTE, NOT A QUERY STRING.** A gratitude in a URL is a
+  gratitude in the address bar, in the history and in anything that logs a
+  referrer, which is the opposite of what the private garden is for. Keyed by
+  the DATE, so a note left by a tab closed yesterday cannot pre-fill
+  tomorrow's meadow, and **read once and cleared**, so nobody's sentence sits
+  in storage longer than the walk between two pages.
+- **THE SENTENCE, THE SPECIES AND THE HUE TRAVEL. NOTHING ELSE DOES.** Not
+  the mood, the shaper, the moments or the photograph: those are the private
+  garden's. Carrying the sentence without the flower was the alternative and
+  it would have made the same gratitude grow as two different plants.
+- **IT FILLS A BOX, IT DOES NOT SEND.** The field can be edited or emptied,
+  the picker is still live on the carried species, the planting still takes
+  the hold, and the once a day rule refuses exactly as before.
+- **Verified end to end**: the note written, the field pre-filled at 19/100,
+  `chosenSpecies` lavender and `chosenHue` 272 carried, the key cleared, and
+  `shared.flowers` untouched.
+
+## THREE THINGS OUT OF THE EXPERT INTERVIEW (v2)
+
+Viola Amelia, school counsellor, 30 October 2026. The transcript is rough
+machine output from a mix of English and Indonesian; quote it by timecode.
+
+- **A CLOSER WORD FOR THE FEELING (34:14 to 40:26).** Her argument is emotion
+  granularity: *"you don't feel angry, you just feel annoyed"*, *"sad plus
+  angry equals disappointment"*. `dayRatingOptions` was already eight
+  feelings rather than a 1 to 5 rating, which is most of the way there; what
+  was missing is the second word. `EMOTION_SHADES` gives each of the eight
+  four closer ones, shown only once a feeling is picked, the way the picker
+  shows its colour slider only once a flower is. **Tapping the chosen one
+  clears it**, which is the rule every optional pick here follows.
+  - **IT DOES NOT CHANGE WHICH FLOWER GROWS, deliberately.** The species is
+    decided by the feeling and the shaper, and a shade that moved it would
+    mean two people who felt the same thing got different flowers for
+    choosing a different word for it, which punishes the precision this is
+    asking for. The naming IS the value.
+  - **THE CARD NO LONGER ADVANCES ITSELF, so Continue had to be revealed.**
+    It is built `display:none` because the tap used to jump straight on; with
+    the auto advance gone and nothing showing the button there was no way off
+    that screen at all.
+- **MOMENTS, NOT THE DAY (26:05 to 27:49).** *"I have a day with three bad
+  moments"*, against overgeneralisation. Two copy changes and no code: the
+  rating card asks "How did today feel, **on the whole**?", which is the
+  difference between asking for a verdict and asking for a summary, and the
+  free box asks for moments rather than "anything else", because a box
+  labelled anything else invites the summary, which is the easiest thing to
+  write.
+- **THE LAST QUESTION ROTATES (31:33, 33:04).** She asked for *"one thing
+  that you are proud of yourself today"* beside the gratitude one. The
+  author's call was that it is the same SHAPE of question, so it is the same
+  card with the words changed rather than a sixth screen: only the heading,
+  the line and the placeholder move.
+  - **PICKED BY THE DATE**, never at random, which is the fertilizer of the
+    day's own rule: the same question all day for everybody and a reload is
+    not a reroll. It is also the variety the dosage research asks for, since
+    the same question every evening for a fortnight is what a gratitude
+    practice goes stale on.
+  - **WHAT WAS ASKED IS STORED WITH THE ANSWER, as `gladAsk`.** The history
+    prints the ask above the writing, and an answer to "proud of" filed under
+    the gratitude line would be a record of something nobody said. A day from
+    before the rotation carries none and keeps the bare line it always had.
+- **WHAT SHARING MEANS, SAID ONCE, ABOVE THE BUTTON (19:08).** *"Are you sure
+  you want to share this to the communal space just like it is?"*
+  - **A LINE AND NOT A SECOND GATE**, and that is the whole decision.
+    Planting is already a HOLD, so a dialogue on top of it would be two walls
+    in front of the one action the page exists for, and a dialogue everybody
+    dismisses teaches nothing. What was missing is the FACT: the card showed
+    the flower, the sentence and the name and never said in words that the
+    three are about to be readable by strangers.
+  - **THREE WORDINGS**, driven from `paintIdRow` like `syncNameRow`, because
+    what is public differs in the three cases and `identity` starts null:
+    telling somebody their name is going on it before they have been offered
+    anonymous would be wrong in the one place this has to be right.
+  - **IT IS A HOISTED `var` AND IT IS FILLED TWICE.** `paintIdRow` runs from
+    `buildIdRow()` BEFORE this line executes, so `typeof` on a `const` there
+    would throw (the `nameRowEl` trap again) and the one call it makes is
+    skipped by the null guard. Without a second call at creation the note was
+    built, laid out and left EMPTY, which is how it measured.
+- **NOT BUILT, ON THE AUTHOR'S INSTRUCTION: the 119 help line and the
+  disclaimer** (16:51 to 17:46). Asked for explicitly to be left out. Her
+  call; it is recorded here so nobody adds it back by accident, and so it is
+  on file that the expert recommended it.
+- **STILL OPEN from that interview**: small circles, a garden shared with
+  chosen friends (48:14), which she argued for and which `FRIENDS_OFF` in
+  `garden-account.js` already has the machinery for; and the 14 day pre and
+  post gratitude measure she wants instead of a single session (56:03).
 
 ## ENTER GOES ON (`v2/garden-enter.js`), v2 ONLY
 

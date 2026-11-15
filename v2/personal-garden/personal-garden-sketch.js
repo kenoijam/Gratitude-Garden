@@ -98,6 +98,9 @@ let whyText = "";
 let pickedBySelf = false;
 let continueBtn1, continueBtn2, continueBtn3;
 let journalField, gratitudeField, gladBtn;
+/* WHICH question the last card asked today, stored on the flower beside the
+   answer so the history can print the ask it was actually given. */
+let gladAsk = "Grateful for";
 let colorPickerSelect, plantBtn;
 let saveBtn, tipsCard, dailyNote;
 /* The photo picked on the journal step, held until the flower is planted. */
@@ -110,6 +113,41 @@ const LAST_PLANT_KEY = "gratitude_last_planted";
 
 // Preset options
 const dayRatingOptions = ["calm", "happy", "tired", "stressed", "anxious", "grateful", "hopeful", "loved"];
+/* ═══════════════════════════════════════════════════════════════════════════
+   A CLOSER WORD FOR IT (v2)
+
+   Out of the expert interview with Viola Amelia, 30 October 2026, at 34:14 to
+   40:26. Her argument is emotion granularity: **"you don't feel angry, you
+   just feel annoyed"**, and **"sad plus angry equals disappointment"**. The
+   finer the word somebody can put on a feeling, the more it is something they
+   are OBSERVING rather than something they are in, which is the whole
+   mechanism she describes as naming it to tame it. The eight here were
+   already feelings rather than a 1 to 5 rating, which is most of the way
+   there; what was missing is the second, closer word.
+
+   IT IS OPTIONAL AND IT IS ONE TAP. The card shows these only once a feeling
+   is chosen, the way the picker shows its colour slider only once a flower
+   is, and Continue goes on without one. A required second question would
+   turn the quickest screen in the flow into the slowest.
+
+   IT DOES NOT CHANGE WHICH FLOWER GROWS, and that is deliberate rather than
+   an omission. The species is decided by the feeling and the shaper, and a
+   shade that moved it would mean two people who felt the same thing got
+   different flowers for choosing a different word for it, which punishes the
+   precision this is asking for. The naming IS the value; it is kept with the
+   day and shown in the history.
+   ═══════════════════════════════════════════════════════════════════════ */
+const EMOTION_SHADES = {
+  calm:     ["settled", "unhurried", "quiet", "steady"],
+  happy:    ["light", "pleased", "buoyant", "content"],
+  tired:    ["worn out", "heavy", "running low", "ready to stop"],
+  stressed: ["stretched thin", "under pressure", "behind on things", "wound up"],
+  anxious:  ["uneasy", "on edge", "worried about one thing", "restless"],
+  grateful: ["lucky", "looked after", "glad it happened", "full"],
+  hopeful:  ["looking forward", "a bit braver", "curious", "ready"],
+  loved:    ["thought of", "held", "not alone", "wanted around"]
+};
+let dayShade = "";
 const dayShaperOptions = ["work/school", "relationships", "rest or energy", "a small joy", "an unexpected event", "nothing special"];
 
 // Flower meanings, selection keywords, and supportive quotes
@@ -481,6 +519,14 @@ maxStem = height * lerp(0.28, 0.30, t) * stemScale;
        a journal and no gratitude, which has to stay tellable from a day that
        simply left it empty. */
     gratitude: gratitude || "",
+    /* WHICH QUESTION THE LAST CARD ASKED. It rotates by the date between the
+       gratitude one and the proud-of one, so the answer alone does not say
+       what it is an answer TO. A day planted before this rotation existed
+       carries no `gladAsk` at all and the history falls back to "Grateful
+       for", which is the only question there was then. */
+    gladAsk: (typeof gladAsk === "string" && gladAsk) || "Grateful for",
+    /* THE CLOSER WORD, if one was chosen. Optional everywhere. */
+    shade: (typeof dayShade === "string" && dayShade) || "",
     /* WHY THAT FLOWER, in the planter's own words. Its own field rather than
        folded into `journal` for the same reason `gratitude` is: a day planted
        before this screen existed carries neither, and that has to stay
@@ -526,7 +572,8 @@ maxStem = height * lerp(0.28, 0.30, t) * stemScale;
       day: day, species: newFlower.species,
       hue: Math.round(newFlower.hue), sat: Math.round(newFlower.sat),
       light: Math.round(newFlower.light), word: "",
-      note: newFlower.journal || "", glad: newFlower.gratitude || ""
+      note: newFlower.journal || "", glad: newFlower.gratitude || "",
+      gladAsk: newFlower.gladAsk || "", shade: newFlower.shade || ""
     };
     /* The photo goes up here, not when it was chosen, so one picked and then
        abandoned never reaches the database. The entry is written either way:
@@ -3569,8 +3616,12 @@ function buildUI() {
   card1.style("width", "min(460px, 92vw)");
   card1.style("box-sizing", "border-box");
   card1.style("padding", "24px 28px 20px 28px");
-  createElement("h3", "How was your day?").style("text-align", "center").style("color", "#0f5132").style("font-size", "23px").style("font-weight", "600").style("margin", "0 0 16px 0").parent(card1);
-  
+  /* "HOW WAS YOUR DAY" LABELS THE WHOLE DAY, which is the overgeneralisation
+     Viola names at 26:05 to 27:49: a day is not bad, it is a day with some
+     bad moments in it. "On the whole" is small and it is the difference
+     between asking for a verdict and asking for a summary. */
+  createElement("h3", "How did today feel, on the whole?").style("text-align", "center").style("color", "#0f5132").style("font-size", "23px").style("font-weight", "600").style("margin", "0 0 16px 0").parent(card1);
+
   const btnGrid1 = createDiv().parent(card1);
   btnGrid1.style("display", "grid");
   btnGrid1.style("grid-template-columns", "repeat(2, 1fr)");
@@ -3605,9 +3656,69 @@ function buildUI() {
       });
       btn.elt.style.background = '#e0f2f1';
       btn.elt.style.borderColor = '#26a69a';
-      setTimeout(() => showStep("prompt2"), 180);
+      /* IT NO LONGER JUMPS STRAIGHT ON. Picking a feeling opens the closer
+         words for that feeling, the way picking a flower opens its colour
+         slider, and Continue is what leaves. A card that advanced itself
+         would never show them. */
+      dayShade = "";
+      showShades(option);
     });
   });
+
+  /* The closer words. Built empty and filled per feeling, so there is one row
+     rather than eight hidden ones, and `dayShade` is cleared whenever the
+     feeling changes: a shade of "stressed" left lit under "calm" would be a
+     word nobody chose. */
+  const shadeWrap = createDiv().parent(card1);
+  shadeWrap.style("display", "none");
+  shadeWrap.style("margin", "-4px 0 16px");
+  const shadeLabel = createP("Closer than that?").parent(shadeWrap);
+  shadeLabel.style("font-family", "Arial, Helvetica, sans-serif");
+  shadeLabel.style("font-size", "12.5px");
+  shadeLabel.style("font-weight", "600");
+  shadeLabel.style("letter-spacing", "0.02em");
+  shadeLabel.style("color", "#5a9e8e");
+  shadeLabel.style("margin", "0 0 7px");
+  shadeLabel.style("text-align", "left");
+  const shadeRow = createDiv().parent(shadeWrap);
+  shadeRow.style("display", "flex");
+  shadeRow.style("flex-wrap", "wrap");
+  shadeRow.style("gap", "6px");
+
+  function showShades(feeling) {
+    const words = EMOTION_SHADES[feeling] || [];
+    shadeRow.elt.innerHTML = "";
+    /* CONTINUE HAS TO APPEAR WITH THEM. It is built `display:none` because
+       the card used to advance itself on the tap, so with the auto advance
+       gone and nothing showing the button there would be no way off this
+       screen at all. */
+    if (continueBtn1) continueBtn1.style("display", "block");
+    if (!words.length) { shadeWrap.style("display", "none"); return; }
+    shadeWrap.style("display", "block");
+    words.forEach(w => {
+      const c = createButton(w).parent(shadeRow);
+      c.style("padding", "7px 12px");
+      c.style("border", "1.5px solid #bde0d6");
+      c.style("border-radius", "999px");
+      c.style("background", "white");
+      c.style("color", "#2f6260");
+      c.style("font-family", "Arial, Helvetica, sans-serif");
+      c.style("font-size", "13.5px");
+      c.style("cursor", "pointer");
+      c.style("pointer-events", "auto");
+      c.style("transition", "background .15s, border-color .15s");
+      c.mousePressed(() => {
+        /* TAPPING THE CHOSEN ONE CLEARS IT, which is the rule every other
+           optional pick in this project follows: a slot is never a trap. */
+        const already = (dayShade === w);
+        dayShade = already ? "" : w;
+        shadeRow.elt.querySelectorAll("button").forEach(b => {
+          b.style.background = "white"; b.style.borderColor = "#bde0d6";
+        });
+        if (!already) { c.elt.style.background = "#e0f2f1"; c.elt.style.borderColor = "#26a69a"; }
+      });
+    });
+  }
 
   continueBtn1 = createButton("Continue").parent(card1);
   continueBtn1.style("display", "none");
@@ -3718,12 +3829,20 @@ function buildUI() {
   card3.style("width", "min(460px, 92vw)");
   card3.style("box-sizing", "border-box");
   card3.style("padding", "24px 28px 20px 28px");
-  createElement("h3", "Anything else?").style("text-align", "center").style("color", "#0f5132").style("font-size", "23px").style("font-weight", "600").style("margin", "0 0 2px 0").parent(card3);
-  createP("Optional, add more thoughts if you'd like").addClass("gg-sub").style("font-size", "13px").style("margin", "0 0 12px 0").style("text-align", "center").style("color", "#5a9e8e").parent(card3);
-  
+  /* ═══ MOMENTS, NOT THE DAY, out of the expert interview at 26:05 to 27:49.
+     Viola's point is about overgeneralisation and it is the sharpest thing
+     she said: **"I have a day with three bad moments"**, not a bad day. "I
+     failed a maths test" does not mean "I am bad at maths" and does not mean
+     "I am a failure". An open box labelled "anything else" invites the
+     summary, because a summary is the easiest thing to write; asking for
+     MOMENTS asks for the particular, which is the thing that can be looked
+     at. It costs one heading, one line and one placeholder. */
+  createElement("h3", "Any moments from today?").style("text-align", "center").style("color", "#0f5132").style("font-size", "23px").style("font-weight", "600").style("margin", "0 0 2px 0").parent(card3);
+  createP("Optional. One or two that stuck, good or not.").addClass("gg-sub").style("font-size", "13px").style("margin", "0 0 12px 0").style("text-align", "center").style("color", "#5a9e8e").parent(card3);
+
   journalField = createElement("textarea").parent(card3);
   journalField.attribute("maxlength", "500");
-  journalField.attribute("placeholder", "Additional thoughts or reflections...");
+  journalField.attribute("placeholder", "One moment from today was...");
   journalField.style("width", "100%");
   journalField.style("box-sizing", "border-box");
   journalField.style("border", "2px solid #bde0d6");
@@ -3886,7 +4005,48 @@ function buildUI() {
   cardGlad.style("width", "min(460px, 92vw)");
   cardGlad.style("box-sizing", "border-box");
   cardGlad.style("padding", "24px 28px 20px 28px");
-  createElement("h3", "One small gratitude?")
+  /* ═══════════════════════════════════════════════════════════════════════
+     THE LAST QUESTION ROTATES, AND IT IS ONE CARD RATHER THAN TWO
+
+     Viola asked for a second prompt beside the gratitude one at 31:33 and
+     33:04: **"one thing that you are proud of yourself today, that you want
+     to appreciate yourself today"**. The author's call was that it is the
+     same SHAPE of question as the gratitude one, so it should be the same
+     card with the words changed rather than a sixth screen: the grey text in
+     the box asks for something you are proud of on the days it is that one.
+
+     IT IS THE SAME FIELD AND THE SAME BUTTON. Only the heading, the line
+     under it and the placeholder move, so nothing about the flow, the skip
+     or the "anyway" label changes.
+
+     PICKED BY THE DATE, never at random, which is the rule the fertilizer of
+     the day already follows: the same question all day for everybody, and a
+     reload is not a reroll. It is also the variety the dosage research asks
+     for, since the same question every evening for a fortnight is the thing
+     a gratitude practice goes stale on.
+
+     WHAT WAS ASKED IS STORED WITH THE ANSWER, as `gladAsk`. The history
+     prints the ask above the writing, and a day that answered "proud of"
+     filed under "grateful for" would be a record of something nobody said. */
+  const GLAD_ASKS = [
+    { title: "One small gratitude?",
+      sub:   "A cup of tea counts. It helps, even on the days it feels silly.",
+      hint:  "Today I was grateful for...",
+      ask:   "Grateful for" },
+    { title: "One thing you are proud of?",
+      sub:   "However small. Getting through it counts.",
+      hint:  "Today I was proud that I...",
+      ask:   "Proud of" }
+  ];
+  function gladAskToday() {
+    const d = new Date();
+    const n = Math.floor(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()) / 86400000);
+    return GLAD_ASKS[((n % GLAD_ASKS.length) + GLAD_ASKS.length) % GLAD_ASKS.length];
+  }
+  const GLAD = gladAskToday();
+  gladAsk = GLAD.ask;
+
+  createElement("h3", GLAD.title)
     .style("text-align", "center").style("color", "#0f5132")
     .style("font-size", "23px").style("font-weight", "600")
     .style("margin", "0 0 2px 0").parent(cardGlad);
@@ -3903,13 +4063,13 @@ function buildUI() {
      button still reads "See Your Flower anyway" while the box is empty, so
      the skip is still named rather than hidden; the card simply no longer
      pretends to be neutral about which it hopes you pick. */
-  createP("A cup of tea counts. It helps, even on the days it feels silly.")
+  createP(GLAD.sub)
     .addClass("gg-sub").style("font-size", "13px").style("margin", "0 0 12px 0")
     .style("text-align", "center").style("color", "#5a9e8e").parent(cardGlad);
 
   gratitudeField = createElement("textarea").parent(cardGlad);
   gratitudeField.attribute("maxlength", "300");
-  gratitudeField.attribute("placeholder", "Today I was grateful for...");
+  gratitudeField.attribute("placeholder", GLAD.hint);
   gratitudeField.style("width", "100%");
   gratitudeField.style("box-sizing", "border-box");
   gratitudeField.style("border", "2px solid #bde0d6");
@@ -4303,6 +4463,52 @@ prompt1Wrap.style("display", "none");
 showStep(hasPlantedToday() ? "garden" : "fork");
 }
 
+/* ═══════════════════════════════════════════════════════════════════════════
+   WHAT TRAVELS TO THE SHARED GARDEN, AND WHAT DOES NOT
+
+   The sentence, the species and the hue of today's flower, written into this
+   browser under a key the shared garden reads once and then clears.
+
+   IT IS A BROWSER NOTE RATHER THAN A QUERY STRING, for two reasons. A
+   gratitude in a URL is a gratitude in the address bar, in the history and in
+   anything that logs a referrer, which is the opposite of what the private
+   garden is for. And it is keyed by the DATE, so a note left behind by a tab
+   somebody closed yesterday cannot turn up pre-filled in tomorrow's meadow.
+
+   NOTHING ELSE GOES: not the mood, not the shaper, not the moments and not
+   the photograph. Those are the private garden's, and the one thing somebody
+   chose to share is the thing they wrote to be read.
+   ═══════════════════════════════════════════════════════════════════════ */
+const CARRY_KEY = "gg_carry_to_shared";
+
+function carryToShared() {
+  try {
+    const mine = flowers.filter(f => GardenJournal && GardenJournal.fromUS
+      ? GardenJournal.fromUS(f.date) === todayStr2()
+      : false);
+    const f = mine.length ? mine[mine.length - 1] : flowers[flowers.length - 1];
+    if (f) {
+      localStorage.setItem(CARRY_KEY, JSON.stringify({
+        day: todayStr2(),
+        gratitude: String(f.gratitude || ""),
+        species: String(f.species || ""),
+        hue: Math.round(Number(f.hue) || 0)
+      }));
+    }
+  } catch (e) {}
+  window.location.href = "../shared-garden/shared-garden-index.html";
+}
+
+/* YYYY-MM-DD from the visitor's own clock, matching the shared garden's room
+   key. The personal garden stores MM/DD/YYYY on a flower and `GardenJournal`
+   owns that conversion, but the key itself has to be computable here even if
+   the journal module is missing. */
+function todayStr2() {
+  const d = new Date();
+  const p = n => (n < 10 ? "0" : "") + n;
+  return d.getFullYear() + "-" + p(d.getMonth() + 1) + "-" + p(d.getDate());
+}
+
 function updateFlowerPreview() {
   const holder = select("#preview-holder");
   if (!holder) return;
@@ -4418,8 +4624,55 @@ function showStep(s) {
 
   if (dailyNote) {
     const planted = s === "garden" && hasPlantedToday();
-    dailyNote.html(planted ? "Planted today. See you tomorrow." : "");
-    dailyNote.style("display", planted ? "block" : "none");
+    /* ═══════════════════════════════════════════════════════════════════════
+       THE WAY ACROSS TO THE SHARED GARDEN
+
+       The two gardens have stood side by side on the landing page since they
+       existed and there has never been a door between them: somebody who
+       wrote a gratitude here and wanted to put it in the meadow had to go
+       back to the front page, open the other garden, and type it again from
+       cold.
+
+       IT IS OFFERED AFTER PLANTING, NOT BEFORE. You have just seen what you
+       made, so the offer costs nothing and can be ignored; offered on the
+       way through it would read as the private garden asking to publish
+       something you had not finished writing.
+
+       THIS DIRECTION AND NOT THE OTHER, which was weighed. Private first and
+       public BY CHOICE is the order this project argues for everywhere else,
+       and the shared garden pulling from the personal one would have to reach
+       into another garden's storage or account row to find anything. The
+       sentence carried across is the one you actually wrote, rather than a
+       second one typed for an audience.
+
+       NOTHING IS SENT HERE. It writes a note in this browser and opens the
+       other garden, which asks for the flower and the name as it always has
+       and refuses on its own once-a-day rule. Planting still takes the hold.
+       ═══════════════════════════════════════════════════════════════════ */
+    dailyNote.html(planted
+      ? "<span>Planted today. See you tomorrow.</span>" +
+        "<button id=\"to-shared\">Share it in the shared garden</button>"
+      : "");
+    dailyNote.style("display", planted ? "flex" : "none");
+    if (planted) {
+      dailyNote.style("flex-direction", "column");
+      dailyNote.style("align-items", "center");
+      dailyNote.style("gap", "8px");
+      /* The note is `pointer-events:none` so it cannot swallow a tap meant
+         for a flower under it, so the one control in it takes them back for
+         itself. Same rule the shared garden's own pill follows. */
+      const go = document.getElementById("to-shared");
+      if (go) {
+        go.style.cssText = "border:none;cursor:pointer;" +
+          "background:#1d6466;color:#fff9e3;font-family:Arial,Helvetica,sans-serif;" +
+          "font-size:12.5px;font-weight:700;padding:6px 14px;border-radius:999px;" +
+          "line-height:1.1;white-space:nowrap;pointer-events:auto;" +
+          "box-shadow:0 2px 8px rgba(29,100,102,0.28);transition:filter .15s,transform .15s;";
+        go.onpointerenter = () => { go.style.filter = "brightness(1.12)"; go.style.transform = "scale(1.04)"; };
+        go.onpointerleave = () => { go.style.filter = ""; go.style.transform = ""; };
+        go.onclick = () => { carryToShared(); };
+      }
+    }
   }
 
   const logo = select("#gg-logo");
@@ -4592,6 +4845,10 @@ function mountJournal() {
         out[day] = {
           day: day, species: f.species, hue: f.hue, sat: f.sat, light: f.light,
           note: f.journal || "", glad: f.gratitude || "",
+          /* Which question the last card asked that day, and the closer word
+             for the feeling if one was picked. Both optional: a day planted
+             before either existed simply has neither. */
+          gladAsk: f.gladAsk || "", shade: f.shade || "",
           mood: f.dayRating || "", shaper: f.dayShaper || "",
           photo: f.photo || ""
         };

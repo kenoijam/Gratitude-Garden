@@ -2636,6 +2636,11 @@
        page, not a thing to look at. */
     guide = document.createElementNS('http://www.w3.org/2000/svg','ellipse');
     guide.setAttribute('fill','none');
+    /* A CLASS AS WELL AS THE ATTRIBUTE, so the night block can restroke it:
+       `rgba(66,146,136,0.30)` is the ruling on a cream page and nothing at
+       all on a dark one. A presentation ATTRIBUTE loses to any stylesheet
+       rule, which is why this works without `!important`. */
+    guide.setAttribute('class','fr-ring-circle');
     guide.setAttribute('stroke','rgba(66,146,136,0.30)');
     guide.setAttribute('stroke-width','1');
     guide.setAttribute('stroke-dasharray','2 7');
@@ -2668,6 +2673,7 @@
          is eight flowers and nothing else. */
       var line = document.createElementNS('http://www.w3.org/2000/svg','path');
       line.setAttribute('fill','none');
+      line.setAttribute('class','fr-line');
       line.setAttribute('stroke','rgba(29,100,102,0.45)');
       line.setAttribute('stroke-width','1');
       line.setAttribute('stroke-linecap','round');

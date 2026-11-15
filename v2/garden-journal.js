@@ -406,6 +406,12 @@
        the answer to the question the whole project is named after. Same
        left rule so the two read as one block, in the garden's own teal
        rather than the journal's grey green. */
+    /* The ask, small and above the answer, in the same ink as the field
+       labels so it reads as one. No colon: the line under it IS the
+       answer, and a dangling colon with the words on the next line reads
+       as a field that failed to fill. */
+    '.gj-glad-ask{font-size:11.5px;font-weight:700;letter-spacing:.06em;' +
+    'text-transform:uppercase;color:#7b9e97;margin:0 0 3px;}' +
     '.gj-glad{font-size:15px;color:#1d6466;line-height:1.55;margin:0 0 10px;' +
       'padding-left:11px;border-left:2.5px solid #4db6ac;overflow-wrap:anywhere;}' +
     '.gj-none{font-size:13.5px;color:#8aa9a7;line-height:1.6;margin:0;}' +
@@ -780,7 +786,11 @@
            as labels on the day and belong with the species above them; the
            sentence is the day itself, so it wants a clear run rather than
            being wedged between a photograph and a pair of fields. */
-        if (e.mood) body.appendChild(field("Mood", e.mood));
+        /* The closer word rides WITH the feeling rather than on a line of
+           its own: "stressed, stretched thin" is one fact about the day and
+           two lines would read as two. A day with no shade prints exactly
+           what it always printed. */
+        if (e.mood) body.appendChild(field("Mood", e.shade ? (e.mood + ", " + e.shade) : e.mood));
         if (e.shaper) body.appendChild(field("Shaped by", e.shaper));
         /* GLAD OF FIRST, THEN ANYTHING ELSE, which is the order they were
            asked for and also the order they matter in: the gratitude line is
@@ -788,6 +798,12 @@
            it. A day planted before the fourth screen existed has no `glad`
            at all and simply skips this line, which is the same thing a day
            that left it empty does. */
+        /* THE ASK IS PRINTED ABOVE THE ANSWER NOW, because the last card's
+           question rotates by the date: an answer to "one thing you are
+           proud of" filed silently under the gratitude line would be a
+           record of something nobody said. A day from before the rotation
+           carries no `gladAsk` and keeps the bare line it always had. */
+        if (e.glad && e.gladAsk) body.appendChild(el("p", "gj-glad-ask", e.gladAsk));
         if (e.glad) body.appendChild(el("p", "gj-glad", e.glad));
         if (e.note) body.appendChild(el("p", "gj-quote", e.note));
         if (e.photo) {

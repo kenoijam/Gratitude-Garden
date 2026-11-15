@@ -122,13 +122,6 @@
   function mix(a, b, t) { return a + (b - a) * t; }
   function mixRgb(a, b, t) { return [mix(a[0],b[0],t), mix(a[1],b[1],t), mix(a[2],b[2],t)]; }
   function mixHex(a, b, t) { return rgb2hex(mixRgb(hex2rgb(a), hex2rgb(b), t)); }
-  /* TURN THE LAMP DOWN ON A COLOUR WITHOUT CHANGING IT. Scaling all
-     three channels by the same factor holds the hue and the saturation
-     and moves only the brightness, where a mix toward a chosen night
-     colour moves all three and lands somewhere the palette has never
-     been. */
-  function dim(h, k) { var c = hex2rgb(h); var f = 1 - k;
-    return rgb2hex([c[0] * f, c[1] * f, c[2] * f]); }
 
   /* SMOOTHSTEP BETWEEN KEYS, not a straight line. A linear blend arrives at
      each keyframe with its full rate of change and leaves at the same rate,
@@ -202,29 +195,30 @@
 
        `dark` rather than `tint`, because this is about how much LIGHT there
        is in the room and not about what colour the sky has gone. */
-    /* DIMMED, NOT RECOLOURED, AND THAT IS A CORRECTION. The first attempt
-       mixed each token toward a hand picked night colour and the author's
-       verdict was that the result sat outside the palette: cream went to a
-       sandy #ead9b0, which is a different colour rather than the same colour
-       with less light on it. Multiplying the channels instead leaves the HUE
-       and the saturation exactly where they were and only drops the
-       brightness, which is what turning a lamp down actually does to paper.
-       So the page at ten at night is the project's own palette, dimmer. */
-    out.cream    = dim("#fff9e3", 0.13 * out.dark);
-    out.lightsky = dim("#e1f7f7", 0.13 * out.dark);
-    out.sky      = dim("#b7e4e7", 0.13 * out.dark);
-    out.darkteal = dim("#1d6466", 0.20 * out.dark);
-    /* THE INK GOES DOWN WITH THE LAMP, and this is the whole reason the dim
-       can be deep enough to see. Darkening a pale ground under FIXED dark
-       text walks the two toward each other and the ratio FALLS: measured,
-       the body copy on the first cream I tried came back at 4.51, which is
-       on the AA line, and the pale blue section went under it outright. With
-       the ink darkening alongside, every one of those ratios ends up at or
-       ABOVE its daytime figure: body copy 6.56 by day reads 9.06 on the
-       night cream, 6.21 reads 9.24 on the pale blue, 5.03 reads 7.18 on the
-       sky. So the page dims without a single measurement having to be
-       revisited, which is exactly what a dark mode could not have promised. */
-    out.ink      = dim("#2f6260", 0.34 * out.dark);
+    /* ═══ THE PAGE'S THREE GROUNDS ARE THE GARDEN'S OWN, AND THAT IS THE
+       SECOND CORRECTION. The first attempt mixed each one toward a hand
+       picked night colour and cream landed on a sandy #ead9b0; the second
+       dimmed the channels instead, which held the hue and gave a khaki
+       #ded9c5. Both were judged off palette and both were, for the same
+       underlying reason: the night colour was being INVENTED rather than
+       taken from anywhere.
+
+       These are the keyframe's own `ground`, `back` and `skyTop`, which is
+       to say the exact colours both gardens are painting on their canvases
+       at that hour. The landing page cannot be off palette in a colour the
+       palette supplies, and at dusk the page and the two gardens now arrive
+       at the same evening rather than at two different ones.
+
+       They interpolate like everything else, so the page slides into the
+       evening on the same curve the sky does. */
+    out.paper     = mixHex("#fff9e3", out.ground, out.dark);
+    out.paperCool = mixHex("#e1f7f7", out.back,   out.dark);
+    out.band      = mixHex("#1d6466", out.skyTop, out.dark);
+    /* THE COPY THAT STANDS ON THESE GROUNDS TURNS OVER IN `styles.css`,
+       by name, under `html[data-dark='1']`. It cannot be done with a token:
+       half of the body ink's uses sit on WHITE cards, which stay white at
+       every hour, so a light ink would vanish on exactly those. */
+
     /* THE GRASS TOKEN IS THE MEADOW'S OWN FOREGROUND, handed over whole
        rather than dimmed separately, so the curve rolling out of the hero is
        the identical colour to the strip of ground it rolls off. */
@@ -291,12 +285,10 @@
       st.setProperty("--dl-hero2", o.hero2);
       st.setProperty("--dl-cloud", o.cloud);
       st.setProperty("--dl-dark", String(Math.round(o.dark * 1000) / 1000));
-      st.setProperty("--dl-cream", o.cream);
-      st.setProperty("--dl-lightsky", o.lightsky);
-      st.setProperty("--dl-sky", o.sky);
-      st.setProperty("--dl-darkteal", o.darkteal);
+      st.setProperty("--dl-paper", o.paper);
+      st.setProperty("--dl-paper-cool", o.paperCool);
+      st.setProperty("--dl-band", o.band);
       st.setProperty("--dl-grass", o.grass);
-      st.setProperty("--dl-ink", o.ink);
     } catch (e) {}
   }
 

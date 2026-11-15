@@ -25,20 +25,31 @@
 }
 
 :root {
-/* ══════════════ THE FIVE GROUND TOKENS FOLLOW THE CLOCK (v2 ONLY)
-   Each one reads a `--dl-*` variable that `garden-daylight.js` writes on
-   every recompute, with its own daytime value as the FALLBACK, so a page
-   that fails to load the module gets exactly the palette it always had.
-   Writing it here rather than in a block of night overrides is what makes
-   the whole page follow at once: a curve is painted in the colour of the
-   section ABOVE it, every card and badge derives from these, and a list of
-   night rules would have missed one of them and been wrong by a section.
-   See the note in `garden-daylight.js` for why the paper is DIMMED rather
-   than darkened: a mid tone is the one ground on which neither dark nor
-   light text works, and dimming can only improve a dark-on-light ratio. */
---cream: var(--dl-cream, #fff9e3); --sky: var(--dl-sky, #b7e4e7);
---teal: #429288; --lightsky: var(--dl-lightsky, #e1f7f7);
---yellow: #fbe484; --darkteal: var(--dl-darkteal, #1d6466); --white: #ffffff;
+/* THE PALETTE PROPER, WHICH DOES NOT MOVE. These five are used as INK and as
+   FILL both: `--cream` is the section paper AND the label on every dark
+   button, `--darkteal` is the band's ground AND twenty two pieces of text.
+   One token cannot darken for one job and lighten for the other, so none of
+   them follows the clock. The three GROUNDS below do that instead. */
+--cream: #fff9e3; --sky: #b7e4e7;
+--teal: #429288; --lightsky: #e1f7f7;
+--yellow: #fbe484; --darkteal: #1d6466; --white: #ffffff;
+/* ══════════════ THE THREE SECTION GROUNDS FOLLOW THE CLOCK (v2 ONLY)
+   Every section's background and every curve is painted from one of these,
+   never from the palette tokens above, which is what lets the whole page
+   turn over at dusk from three values. A curve is painted in the colour of
+   the section ABOVE it, so these have to be the same variable the section
+   itself uses or a roll would be left in yesterday's colour.
+
+   AT NIGHT THEY ARE THE GARDENS' OWN NIGHT COLOURS, not invented ones:
+   `#24474a` is `NIGHT.ground`, `#1d4350` is `NIGHT.back` and `#13293f` is
+   `NIGHT.skyTop`, all three already on screen in both gardens at that hour.
+   The first attempt dimmed the cream instead and landed on a sandy khaki
+   that is in no part of this project; the author's word for it was that it
+   was not our palette, and she was right. Taking the colours FROM the
+   palette is the only version of this that cannot drift from it. */
+--paper:      var(--dl-paper, var(--cream));
+--paper-cool: var(--dl-paper-cool, var(--lightsky));
+--band:       var(--dl-band, var(--darkteal));
 /* the meadow's ground, painted on the hero canvas. About's curve carries it
    down into the cream, so the two must match: the canvas literal is
    `ctx.fillStyle='#7ec4b4'` in index.html. AT NIGHT IT IS THE MEADOW'S OWN
@@ -47,11 +58,12 @@
    it rolls off. Left at the literal it was the one light green object on a
    dark page, which is what the author saw. */
 --grass: var(--dl-grass, #7ec4b4);
-/* THE BODY COPY'S INK, which darkens as the paper dims so that no contrast
-   ratio on this page ever falls below its daytime figure. It is a token
-   rather than a night override because the colour is written in eight
-   separate rules and a list of overrides would have missed one. */
---ink: var(--dl-ink, #2f6260);
+/* THE BODY COPY'S INK. It does NOT follow the clock, because half of its
+   eight uses sit on WHITE cards, which stay white at every hour: a light
+   ink would vanish on exactly those. The copy that stands directly on a
+   section ground is turned over by name in the night block at the end of
+   this file, which is a short and checkable list. */
+--ink: #2f6260;
 /* Ink for the bouquet card. Its ground is the meadow's teal, and plain
    --darkteal on that measures 3.86, under the 4.5 body text needs. This is
    5.68. Anything written on that card uses it. */
@@ -413,7 +425,11 @@ body { padding-left: 0 !important; }
 
 /* ── SECTIONS ── */
 section { padding: 5rem 5rem; }
-.section-label { font-family: Arial,Helvetica,sans-serif; font-size: 0.72rem; letter-spacing: 0.22em; text-transform: uppercase; color: var(--teal); display: block; margin-bottom: 0.5rem; }
+/* `--teal` HERE WAS A FAILURE AT EVERY HOUR, found while measuring the page
+   for the night grounds: 3.49 on cream, 3.31 on the pale blue and 3.69 on a
+   white card, at 12.24px against the 4.5 that size needs. The body ink is
+   this project's floor for copy and reads 6.56, 6.21 and 6.92. */
+.section-label { font-family: Arial,Helvetica,sans-serif; font-size: 0.72rem; letter-spacing: 0.22em; text-transform: uppercase; color: var(--ink); display: block; margin-bottom: 0.5rem; }
 .section-title {
   font-variation-settings: 'SOFT' 50, 'WONK' 0; font-family: 'Fraunces','Georgia',serif; font-size: clamp(2.2rem,3.8vw,3.4rem); line-height: 1.1; color: var(--darkteal); margin-bottom: 1rem; }
 .section-title em { font-family: 'Fraunces','Georgia',serif; font-style: italic; color: var(--teal); }
@@ -441,7 +457,7 @@ section { padding: 5rem 5rem; }
    the standard padding it was 0.74 of a screen wedged between a 1.00 hero and
    a 1.23 cards section, and read as a strip rather than a stop. */
 .about {
-  background: var(--cream);
+  background: var(--paper);
   padding-top: 116px;   /* 100px clear of the curve, see the headroom note */
   padding-bottom: 124px;  /* 100px below the copy, matching the 100 above it */
   position: relative;
@@ -485,7 +501,7 @@ section { padding: 5rem 5rem; }
    up, and it is `.wisdom::before` that now carries the grass down. */
 .about::before {
   content: ''; position: absolute; top: -60px; left: 50%; transform: translateX(-50%);
-  width: 110%; height: 100px; background: var(--darkteal); border-radius: 0 0 50% 50%;
+  width: 110%; height: 100px; background: var(--band); border-radius: 0 0 50% 50%;
 }
 .about-title, .about-body, .about-right { position: relative; z-index: 1; }
 /* CENTRED, LIKE EVERY OTHER SECTION'S. It was left aligned because it used
@@ -565,7 +581,7 @@ section { padding: 5rem 5rem; }
    which is why 116 and 140 both land on 100. Measure the first element,
    do not read the padding. */
 .gardens {
-  background: var(--lightsky);
+  background: var(--paper-cool);
   padding-top: 116px;
   position: relative;
   overflow: hidden;
@@ -575,7 +591,7 @@ section { padding: 5rem 5rem; }
    quietly stated beats an inconsistent one. */
 .gardens::before {
   content: ''; position: absolute; top: -60px; left: 50%; transform: translateX(-50%);
-  width: 110%; height: 100px; background: var(--cream); border-radius: 0 0 50% 50%;
+  width: 110%; height: 100px; background: var(--paper); border-radius: 0 0 50% 50%;
 }
 .gardens-header, .gardens-grid { position: relative; z-index: 1; }
 .gardens-header { text-align: center; margin-bottom: 3rem; }
@@ -886,14 +902,14 @@ section { padding: 5rem 5rem; }
    spilling down into the pale blue. Content inside needs `position: relative`
    and a z-index or the curve paints over it. */
 .catalogue {
-  background: var(--cream);
+  background: var(--paper);
   padding-top: 116px;
   position: relative;
   overflow: hidden;
 }
 .catalogue::before {
   content: ''; position: absolute; top: -60px; left: 50%; transform: translateX(-50%);
-  width: 110%; height: 100px; background: var(--lightsky); border-radius: 0 0 50% 50%;
+  width: 110%; height: 100px; background: var(--paper-cool); border-radius: 0 0 50% 50%;
 }
 .catalogue-header, .flowers-grid { position: relative; z-index: 1; }
 .catalogue-header { margin-bottom: 2.5rem; }
@@ -904,11 +920,13 @@ section { padding: 5rem 5rem; }
 .flower-svg-wrap { height: 150px; width: 100%; position: relative; display: block; margin-bottom: 0.5rem; }
 canvas.flower-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: block; }
 .flower-name { font-family: 'Fraunces','Georgia',serif; font-size: 1.15rem; color: var(--darkteal); }
-.flower-mood { font-family: Arial,Helvetica,sans-serif; font-size: 0.8rem; color: var(--teal); font-style: italic; }
+/* 3.69 on the white tile at 13.6px, the same `--teal` fault as the eyebrow
+   above and the About cards' copy. 6.92 as the body ink. */
+.flower-mood { font-family: Arial,Helvetica,sans-serif; font-size: 0.8rem; color: var(--ink); font-style: italic; }
 .flower-chip { display: inline-block; padding: 0.25rem 0.75rem; border-radius: 50px; font-family: Arial,Helvetica,sans-serif; font-size: 0.72rem; font-weight: 600; margin-top: 0.2rem; }
-.chip-rose { background:#fde8e8;color:#b05070; } .chip-sun { background:#fffacc;color:#8a6a00; }
+.chip-rose { background:#fde8e8;color:#a04464; }   /* was #b05070, 4.23 */ .chip-sun { background:#fffacc;color:#8a6a00; }
 .chip-peony { background:#fbe3ee;color:#9c4a72; }  /* was .chip-lotus: the peony took its tile */ .chip-lav { background:#e4daf0; color:#6b4d8a; }
-.chip-daisy { background:#fff4d6; color:#8a6d2a; } .chip-tulip { background:#eef8ee;color:#386040; } 
+.chip-daisy { background:#fff4d6; color:#7a5f20; } /* was #8a6d2a, 4.45 */ .chip-tulip { background:#eef8ee;color:#386040; } 
 .chip-lily { background:#fde8f0;color:#905060; } .chip-poppy { background:#fde3e1;color:#a83a35; }  /* was .chip-sakura */
 /* the hidden florist pair: no tile uses these, kept so turning them on needs no CSS work */
 /* THE ORCHID IS PICKABLE NOW, so its chip is a real orchid purple rather
@@ -938,7 +956,7 @@ canvas.flower-canvas { position: absolute; top: 0; left: 0; width: 100%; height:
    screen against about 1.0 elsewhere. Extra padding brings them nearer 0.8 so
    the page tapers rather than dropping away. Desktop only: stacked into one
    column they are already in proportion. */
-.wisdom { background: var(--darkteal); position: relative; overflow: hidden; padding-top: 140px; padding-bottom: 100px; }
+.wisdom { background: var(--band); position: relative; overflow: hidden; padding-top: 140px; padding-bottom: 100px; }
 /* the curve above is the colour of whatever section sits above it, bleeding
    down into the dark teal. The flower guide is pale blue. */
 /* THE CURVE IS ALWAYS THE COLOUR OF THE SECTION ABOVE, and above Wisdom is
@@ -1050,14 +1068,14 @@ canvas.flower-canvas { position: absolute; top: 0; left: 0; width: 100%; height:
    of the section above it, so it moves with this. Miss that and the footer
    gets a cream roll off a blue section. */
 .cta {
-  background: var(--lightsky); text-align: center;
+  background: var(--paper-cool); text-align: center;
   padding: 116px 5rem 124px;   /* 100px below the copy, matching the 100 above */
   position: relative; overflow: hidden;
 }
 /* CREAM now: the flower guide sits above this, not the dark band. */
 .cta::before {
   content: ''; position: absolute; top: -60px; left: 50%; transform: translateX(-50%);
-  width: 110%; height: 100px; background: var(--cream); border-radius: 0 0 50% 50%;
+  width: 110%; height: 100px; background: var(--paper); border-radius: 0 0 50% 50%;
 }
 .cta-inner { position: relative; z-index: 1; }
 /* The border does more work now than it did on cream. White on pale blue is
@@ -1077,13 +1095,13 @@ footer {
   /* 140px, not 3.5rem. At 60px the curve dipped 40 in and the first row of the
      footer started at 60, so it had 20px of headroom against 100 everywhere
      else, and it was the join that read as cramped. */
-  background: var(--darkteal); color: rgba(255,249,227,0.65); padding: 140px 5rem 2rem;
+  background: var(--band); color: rgba(255,249,227,0.65); padding: 140px 5rem 2rem;
   position: relative; overflow: hidden;
 }
 footer::before {
   content: ''; position: absolute; top: -60px; left: 50%; transform: translateX(-50%);
   /* The closing section's colour, not cream. See the note on `.cta`. */
-  width: 110%; height: 100px; background: var(--lightsky); border-radius: 0 0 50% 50%;
+  width: 110%; height: 100px; background: var(--paper-cool); border-radius: 0 0 50% 50%;
 }
 .footer-top, .footer-bottom { position: relative; z-index: 1; }
 
@@ -2408,4 +2426,42 @@ html[data-daylight] .wisdom::before,
 html[data-daylight] .cta::before,
 html[data-daylight] footer::before {
   transition: background-color 1.2s linear, background 1.2s linear;
+}
+
+/* ───────────────────────────── AND THE COPY ON THEM TURNS OVER WITH THEM
+
+   A SHORT LIST, AND IT HAS TO BE A LIST RATHER THAN A TOKEN. The body ink
+   is written in eight rules and half of those sit on WHITE cards, which
+   stay white at every hour: a token that went light would take the feature
+   cards and the flower tiles down with it. What follows is every piece of
+   text that stands DIRECTLY on a section ground, found by walking the four
+   sections and reading each element's own computed background rather than
+   by reading the stylesheet.
+
+   `.cta` IS DELIBERATELY NOT IN IT. Its content lives inside `.cta-inner`,
+   which is a white card, so nothing in that section ever touches the
+   ground. Checked, not assumed.
+
+   THE COLOURS ARE THE HERO'S OWN NIGHT COLOURS, the four already proved
+   against a night sky further up this file, so the page has one set of
+   night inks rather than two. */
+html[data-dark="1"] :is(.about, .catalogue, .gardens) .section-title { color: #fff9e3; }
+html[data-dark="1"] :is(.about, .catalogue, .gardens) .section-title em,
+html[data-dark="1"] :is(.about, .catalogue, .gardens) .section-title .wl { color: #ffe9a8; }
+html[data-dark="1"] :is(.about, .catalogue, .gardens) .section-desc,
+html[data-dark="1"] .about .about-lede { color: #d6ece6; }
+html[data-dark="1"] :is(.about, .catalogue, .gardens) .section-label { color: #bfe0da; }
+/* The flower guide's ring annotations: its leader lines end in real text
+   standing on the open ground, which is the whole idea of a botanical
+   plate and also why none of it is on a card to protect it. */
+html[data-dark="1"] .catalogue .fr-name { color: #fff9e3; }
+html[data-dark="1"] .catalogue .fr-mean,
+html[data-dark="1"] .catalogue .fr-centre,
+html[data-dark="1"] .catalogue .fr-note { color: #d6ece6; }
+/* The dashed circle the eight stand on is `rgba(66,146,136,0.30)`, which is
+   the ruling on a cream page and nothing at all on a dark one. */
+html[data-dark="1"] .catalogue .fr-ring-circle { stroke: rgba(214,236,230,0.34); }
+html[data-dark="1"] .catalogue .fr-line { stroke: rgba(214,236,230,0.42); }
+html[data-daylight] :is(.about, .catalogue, .gardens) :is(.section-title, .section-desc, .section-label, .fr-name, .fr-mean, .fr-centre, .fr-note) {
+  transition: color 1.2s linear;
 }

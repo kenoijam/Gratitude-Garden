@@ -3652,7 +3652,52 @@ gratitudeText = gratitudeField.elt.value;
 charCount.html(`${gratitudeText.length}/100`);
 });
 
-charCount = createP("0/100").style("text-align", "right").parent(card);
+/* ═══════════════════════════════════════════════════════════════════════════
+   WHAT CAME ACROSS FROM THE PERSONAL GARDEN
+
+   The other garden writes one note into this browser when somebody presses
+   "Share it in the shared garden" after planting: the sentence they wrote,
+   the species and the hue, keyed by today's date. This reads it ONCE and
+   clears it, so a reload is a blank card again and nobody's gratitude sits
+   in storage longer than the walk between two pages.
+
+   THE DATE IS CHECKED, so a note left by a tab closed yesterday cannot
+   pre-fill tomorrow's meadow with a sentence about a different day.
+
+   IT IS FILLED IN, NOT SENT. The box is a box: it can be edited, emptied, or
+   abandoned, the flower is still chosen on the picker and the planting still
+   takes the hold. Nothing about the once a day rule changes either, so
+   somebody who has already planted here is refused exactly as before. */
+let carried = null;
+try {
+  const raw = localStorage.getItem("gg_carry_to_shared");
+  if (raw) {
+    localStorage.removeItem("gg_carry_to_shared");
+    const c = JSON.parse(raw);
+    if (c && c.day === todayStr()) carried = c;
+  }
+} catch (e) {}
+if (carried && carried.gratitude) {
+  gratitudeField.elt.value = carried.gratitude;
+  gratitudeText = carried.gratitude;
+  const note = createP("Brought over from your own garden. Change it or leave it.")
+    .parent(card);
+  note.style("font-family", "Arial, Helvetica, sans-serif");
+  note.style("font-size", "12.5px");
+  note.style("color", "#5a9e8e");
+  note.style("text-align", "left");
+  note.style("margin", "6px 0 0");
+  /* THE FLOWER COMES TOO, BUT ONLY AS A STARTING POINT. The picker opens on
+     the species and the hue they planted at home, so the two gardens show
+     the same flower when somebody meant them to; every tile is still live
+     and changing it costs one tap. Carrying the sentence and NOT the flower
+     was the alternative, and it would have made the same gratitude grow as
+     two different plants. */
+  if (carried.species) chosenSpecies = carried.species;
+  if (typeof carried.hue === "number") chosenHue = carried.hue;
+}
+
+charCount = createP(carried && carried.gratitude ? (carried.gratitude.length + "/100") : "0/100").style("text-align", "right").parent(card);
 continueBtn = createButton("Continue").addClass("gg-btn").parent(card);
 /* ONE ACTION, TWO WAYS IN. The button and the Enter key run the identical
    function, including its refusal on an empty box, so the key can never be
@@ -4038,6 +4083,10 @@ function paintIdRow() {
      so the usual typeof guard is no guard at all here. `nameRowEl` is a
      `var`, which hoists as undefined and can be tested safely. */
   syncNameRow();
+  /* The same hoisting trap as `syncNameRow`: this also runs before the note
+     below it is built, so it is guarded on the element rather than on the
+     function. */
+  if (publicNote) syncPublicNote();
 }
 /* ══════════════════════════════════════════════ AN ANONYMOUS FLOWER IS NAMED
    Every anonymous bloom used to read "Someone", so a meadow with four of them
@@ -4120,6 +4169,7 @@ if (window.GardenGardener && GardenGardener.onChange) GardenGardener.onChange(bu
    its planted-today check is reused, and building a second field here would
    be two inputs writing to one variable. */
 var nameRowEl = null;      /* `var`, so `syncNameRow` can test it before this runs */
+var publicNote = null;     /* and the same for `syncPublicNote`, see below */
 const nameRow = createDiv().id("select-name").parent(confirmCard);
 nameRowEl = nameRow;
 nameRow.style("text-align", "left");
@@ -4164,6 +4214,63 @@ function syncNameRow() {
   nameRowEl.style("display", (identity === "name" && !signedIn) ? "block" : "none");
 }
 syncNameRow();
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   WHAT SHARING MEANS, SAID ONCE, DIRECTLY ABOVE THE BUTTON
+
+   Out of the expert interview, 19:08: **"are you sure you want to share this
+   to the communal space just like it is?"** Her worry is somebody putting
+   something into a public place without having registered that it is one.
+
+   IT IS A LINE AND NOT A SECOND GATE, and that is the whole decision. Planting
+   is already a HOLD, so a confirmation dialogue on top of it would be two
+   walls in front of the one action this page exists for, and a dialogue
+   everybody dismisses teaches nothing. What was actually missing is the FACT:
+   the card showed the flower, the sentence and the name and never said in
+   words that the three of them are about to be readable by strangers until
+   midnight. Said plainly, once, where the decision is made.
+
+   IT NAMES THE DAY, because the room key is the date and that is the honest
+   limit: this is not for ever, it is for today.
+   ═══════════════════════════════════════════════════════════════════════ */
+/* A HOISTED `var`, NOT A `const`, AND THAT IS THE SAME TRAP AS `nameRowEl`
+   TWENTY LINES UP. `paintIdRow` runs once from `buildIdRow()` before this
+   line has executed, and `typeof` on a `const` in its temporal dead zone
+   THROWS a ReferenceError rather than returning "undefined", so the usual
+   guard is no guard at all. A `var` hoists as undefined and can be tested. */
+publicNote = createP("").parent(confirmCard);
+publicNote.style("font-family", "Arial, Helvetica, sans-serif");
+publicNote.style("font-size", "12.5px");
+publicNote.style("line-height", "1.45");
+publicNote.style("color", "#5a8f8d");
+publicNote.style("margin", "2px 0 12px");
+publicNote.style("text-align", "left");
+/* FILLED ONCE HERE AS WELL AS FROM `paintIdRow`. That function runs from
+   `buildIdRow()` BEFORE this line has executed, so the one call it makes is
+   skipped by the null guard and nothing else would ever fill the box: the
+   note was built, laid out and left EMPTY, which measured as a blank
+   paragraph sitting above the Plant button. */
+syncPublicNote();
+
+/* THE SENTENCE CHANGES WITH THE IDENTITY CHOICE, because what is public is
+   not the same in the three cases, and a line that said "your name" to
+   somebody who had just chosen anonymous would be wrong in the one place it
+   has to be right. Called from `paintIdRow`, like `syncNameRow`, so it can
+   never disagree with which button is lit. */
+function syncPublicNote() {
+  if (!publicNote) return;
+  /* THREE WORDINGS, BECAUSE WHAT IS PUBLIC IS NOT THE SAME IN THE THREE
+     CASES. `identity` starts null on purpose, so the neutral one is what
+     somebody reads before they have chosen, and it must not promise either
+     way: telling a visitor their name is going on it before they have been
+     offered anonymous would be wrong in the one place this has to be right. */
+  const what = identity === "anon"
+    ? "Your words go into today's garden, where anyone can read them. No name is stored."
+    : identity === "name"
+    ? "Your words and your name go into today's garden, where anyone can read them."
+    : "Whatever you plant goes into today's garden, where anyone can read it.";
+  publicNote.html(what + " It clears at midnight.");
+}
 
 const plantBtn = createButton("Plant in Garden").addClass("gg-btn").parent(confirmCard);
 plantBtnEl = plantBtn;
