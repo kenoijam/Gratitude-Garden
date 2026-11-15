@@ -43,6 +43,53 @@ function flowerLabel(f) {
   if (f && f.anon) return f.word || "Someone";
   return (f && f.word) || "";
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   A LABEL THAT DOES NOT FIT GOES ON TWO LINES, CENTRED ON THE BLOOM
+
+   It used to be CUT: anything past eleven characters lost its tail to an
+   ellipsis, so "Lovely Lavender" came out "Lovely Lav…" and an anonymous
+   flower was labelled with half of a name this project had invented for it.
+   A name is the one thing on a flower that has to be readable whole.
+
+   TWO WORDS ALWAYS BREAK, whatever their length, and that is deliberate
+   rather than a length rule in disguise. Every anonymous alias is an
+   adjective and a species, so the break lands exactly where the name's own
+   seam is and the two halves each mean something. "Lovely Lily" is eleven
+   characters and would pass any length test, and it still reads better
+   stacked, because the flower it sits on is round and a wide label on a
+   round bloom overhangs it on both sides.
+
+   ONE WORD TOO LONG BREAKS IN HALF, which is the only thing left to do with
+   it: there is no seam to use, and cutting is what this replaced. The halves
+   are still capped, so a pasted paragraph cannot grow a label down the whole
+   garden.
+
+   IT IS ONE FUNCTION BECAUSE TWO WOULD DRIFT. `keepFlowersOnScreen` holds a
+   flower in far enough for its own label, so it has to measure exactly what
+   the draw is about to paint; the file already carries that warning about
+   `flowerLabel` itself, and wrapping doubles the chance of getting it wrong.
+   The widest LINE is what matters to it now, which is narrower than the old
+   single line, so blooms sit nearer the edges than they used to. */
+function labelLines(f, maxChars) {
+  const raw = String(flowerLabel(f) || "");
+  const cut = (t) => t.length > maxChars ? t.slice(0, maxChars - 1) + "\u2026" : t;
+  const sp = raw.indexOf(" ");
+  if (sp > 0) {
+    /* The space NEAREST THE MIDDLE, so a three word name breaks evenly
+       rather than leaving one word alone on a line. */
+    let at = -1, best = 1e9;
+    for (let i = 0; i < raw.length; i++) {
+      if (raw.charAt(i) !== " ") continue;
+      const d = Math.abs(i - raw.length / 2);
+      if (d < best) { best = d; at = i; }
+    }
+    return [cut(raw.slice(0, at)), cut(raw.slice(at + 1))];
+  }
+  if (raw.length <= maxChars) return [raw];
+  const h = Math.ceil(raw.length / 2);
+  return [cut(raw.slice(0, h)), cut(raw.slice(h))];
+}
 let gratitudeText = "";
 let username = "";
 let chosenSpecies = null;
@@ -770,10 +817,18 @@ function drawSunGradient() {
    ovals". Two faults, and the second is the one that made it unfixable by
    nudging the numbers.
 
-   TWO BUMPS CANNOT MAKE A CLOUD. With one big disc and one small one there is
-   a single step along the top and the eye reads the parts rather than the
-   whole. Four bumps of four different radii, the largest left of centre, give
-   a top line that never repeats.
+   THE SILHOUETTE IS THE ORIGINAL ONE AND IT IS STAYING. Two redraws were
+   tried, four descending bumps and then a tall centre with two shoulders,
+   and the author's verdict on both was that the old cloud was better. It
+   was: a bar with a big disc and a small one on it is the cloud everybody
+   draws, and the numbers below are the original's, to the digit.
+
+   WHAT WAS ACTUALLY WRONG WAS NEVER THE SHAPE, IT WAS THE SEAMS. The three
+   pieces were filled SEPARATELY at alpha 230, so every place a disc crossed
+   the bar came out a shade denser than the rest and the assembly was drawn
+   in light: you could see the bar, and you could see two circles on it. The
+   fix is this one path and a fully opaque fill, which is the author's own
+   instruction. The shape nobody needed to change.
 
    AND THREE TRANSLUCENT FILLS OVERLAP INTO SEAMS. At alpha 230 every place a
    disc crossed the bar came out a shade denser, so the joins were drawn in
@@ -794,9 +849,8 @@ function drawSunGradient() {
    box comes out 0.46 of the width tall, which is the 0.459 the old assembly
    measured, so nothing that positions a cloud had to move.
    ═══════════════════════════════════════════════════════════════════════ */
-var CLOUD_BAR = [0.03, 0.97, 0.365, 0.095];
-var CLOUD_BUMPS = [[0.155, 0.315, 0.125], [0.30, 0.235, 0.215],
-                   [0.55, 0.285, 0.165], [0.74, 0.325, 0.125]];
+var CLOUD_BAR = [0, 1, 0.3245, 0.1345];
+var CLOUD_BUMPS = [[0.3545, 0.2165, 0.2165], [0.613, 0.209, 0.157]];
 function cloudOutline(W) {
   var x0 = CLOUD_BAR[0], x1 = CLOUD_BAR[1], bcy = CLOUD_BAR[2], br = CLOUD_BAR[3];
   var L = x0 + br, R = x1 - br, N = 44, i, pts = [];
@@ -820,7 +874,10 @@ function cloudOutline(W) {
 function drawClouds() {
 noStroke();
 const cc = color(sky().cloud || "#ffffff");
-cc.setAlpha(230);
+/* FULLY OPAQUE, ON THE AUTHOR'S INSTRUCTION. It was 230, which is what
+   made the overlaps inside a cloud visible; opaque, plus the single path
+   above, and a cloud is one solid shape. */
+cc.setAlpha(255);
 for (const c of clouds) {
 c.x += c.speed;
 if (c.x > width + 170) c.x = -170;
@@ -1957,13 +2014,13 @@ if (folded) pop();
 const scaleFactor = (width < 720 ? gardenScale : 1);
 const labelSize = max(11, 16 * scaleFactor);
 
-let label = flowerLabel(f);
 const maxChars = width < 720 ? 9 : 11;
-let displayWord = label;
-
-if (label.length > maxChars) {
-displayWord = label.slice(0, maxChars - 1) + "…";
-}
+const lines = labelLines(f, maxChars);
+/* The STACK is centred on the bloom, not hung from its middle: with two
+   lines the pair straddles `labelY` by half a line each way, so a one line
+   and a two line label sit on the same centre. */
+const lineH = labelSize * 0.92;
+const lineOff = (lines.length - 1) * lineH / 2;
 
 textAlign(CENTER, CENTER);
 textSize(labelSize);
@@ -1978,18 +2035,17 @@ const outlineLight = light - 20;
 
 const o = 1 * scaleFactor;
 
-fill(hue, outlineSat, outlineLight, 0.85);
-text(displayWord, -o,  labelY);
-text(displayWord,  o,  labelY);
-text(displayWord,  0,  labelY - o);
-text(displayWord,  0,  labelY + o);
-text(displayWord, -o,  labelY - o);
-text(displayWord,  o,  labelY - o);
-text(displayWord, -o,  labelY + o);
-text(displayWord,  o,  labelY + o);
-
-fill(0, 0, 100);
-text(displayWord, 0, labelY);
+for (let li = 0; li < lines.length; li++) {
+  const ln = lines[li];
+  const ly = labelY - lineOff + li * lineH;
+  fill(hue, outlineSat, outlineLight, 0.85);
+  text(ln, -o, ly);      text(ln,  o, ly);
+  text(ln,  0, ly - o);  text(ln,  0, ly + o);
+  text(ln, -o, ly - o);  text(ln,  o, ly - o);
+  text(ln, -o, ly + o);  text(ln,  o, ly + o);
+  fill(0, 0, 100);
+  text(ln, 0, ly);
+}
 
 colorMode(RGB);
 }
@@ -3170,9 +3226,11 @@ push();
 textSize(max(11, 16 * (width < 720 ? gardenScale : 1)));
 const maxChars = width < 720 ? 9 : 11;
 for (const f of flowers) {
-  const w = String(flowerLabel(f));
-  const shown = w.length > maxChars ? w.slice(0, maxChars - 1) + "\u2026" : w;
-  const half = Math.max(textWidth(shown) / 2 + 10, (f.size || 20) * 1.4 + 6);
+  /* THE WIDEST LINE, through the same function the draw uses, or the two
+     disagree and a bloom is held in for a label it is not drawing. */
+  let wide = 0;
+  for (const ln of labelLines(f, maxChars)) wide = Math.max(wide, textWidth(ln));
+  const half = Math.max(wide / 2 + 10, (f.size || 20) * 1.4 + 6);
   if (half * 2 < width) f.x = constrain(f.x, half, width - half);
 }
 pop();
@@ -3348,11 +3406,57 @@ const DEMO_COUNT = 5;
    from nowhere; the project is written in Jakarta for Indonesian young
    adults, and a meadow whose five strangers are plausibly the participant's
    own classmates is a very different first impression from one whose five
-   could be anybody. Lower case on purpose: the field asks for "your name or
-   nickname" and this is what people type into a box like that. */
+   could be anybody.
+
+   THEY ARE STORED LOWER CASE AND TYPED BY `typeLike`, which is the bit that
+   makes them read as five PEOPLE rather than five rows of a list. Everybody
+   used to be lower case, on the reasoning that the field asks for "your name
+   or nickname" and that is what people type: true of most people, and the
+   giveaway was that it was true of ALL five. A real meadow has somebody who
+   capitalises, somebody who shouts, and somebody who holds the last letter
+   down. */
 const DEMO_NAMES = ["jessica", "kevin", "vivian", "felicia", "andre",
                     "michelle", "brandon", "clarissa", "nicholas",
                     "angeline", "steven", "natasha"];
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   FIVE PEOPLE TYPE IN FIVE WAYS
+
+   ONE STYLE PER PERSON, APPLIED TO BOTH THEIR NAME AND THEIR SENTENCE, and
+   that is the whole of why it reads as a person rather than as noise. Somebody
+   who writes in capitals writes their name in capitals too; somebody who holds
+   the last letter down does it in both places. Styling the two independently
+   would give a meadow where the handwriting changes halfway through a flower.
+
+   LOWER CASE IS STILL THE COMMONEST, at about four in ten, because it is what
+   most people actually type into a box asking for a nickname. The point was
+   never that lower case was wrong, it was that all five being lower case is a
+   thing five strangers do not do.
+
+   NOTHING HERE TOUCHES AN ANONYMOUS ALIAS. "Lovely Lily" is generated by this
+   project rather than typed by anybody, so shouting it would be the project
+   putting words in somebody's mouth. Their SENTENCE is still styled, since
+   they did type that. */
+const DEMO_TYPING = [["lower", 0.38], ["title", 0.34], ["stretch", 0.17], ["caps", 0.11]];
+function pickTyping(rng) {
+  let r = rng(), acc = 0;
+  for (const t of DEMO_TYPING) { acc += t[1]; if (r < acc) return t[0]; }
+  return "lower";
+}
+function typeLike(s, style) {
+  if (!s) return s;
+  if (style === "caps")  return s.toUpperCase();
+  if (style === "title") return s.charAt(0).toUpperCase() + s.slice(1);
+  if (style === "stretch") {
+    /* The last letter held down, which is what a phone keyboard does when
+       somebody leans on it. Only on a letter: a sentence ending in a full
+       stop would come out "today..", which reads as a typo rather than as
+       a person. */
+    const last = s.charAt(s.length - 1);
+    return /[a-z]/.test(last) ? s + last + last : s;
+  }
+  return s;
+}
 /* Small on purpose. The whole argument of the project is that the thing you
    noticed can be tiny, and five grand gratitudes in the meadow would quietly
    say the opposite to everybody who reads them. */
@@ -3414,10 +3518,13 @@ function demoFlowers() {
        that left one meadow naming its anonymous flowers two different ways,
        one alliterative and one not. The function moved out instead. */
     const isAnon = rnd() < 0.34;
-    const name = isAnon ? anonAlias(sp, rnd) : take(names);
+    /* ONE HAND PER PERSON. See `typeLike` above: the same style goes on the
+       name and on the sentence, because one person typed both. */
+    const hand = pickTyping(rnd);
+    const name = isAnon ? anonAlias(sp, rnd) : typeLike(take(names), hand);
     out.push({
       word: name,
-      gratitude: take(words),
+      gratitude: typeLike(take(words), hand),
       look: null,
       anon: isAnon,
       demo: true,

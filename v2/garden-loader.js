@@ -12,11 +12,32 @@
    but a loader that appears on one page of four reads as that page being the
    broken one, so all four carry it.
 
-   NOTHING here is p5. The gardens' own flower code lives inside their
-   sketches, and the sketch is precisely what has not loaded yet at the moment
-   this has to draw, so the bloom is a generic one drawn on a raw canvas. It
-   is deliberately not any of the eight: a loader that showed a daisy would be
-   promising a daisy.
+   NOTHING here is p5, and that is still true: the gardens' flower code lives
+   inside their sketches and needs a p5 instance that has not started yet.
+
+   IT IS ONE OF THE REAL EIGHT WHERE IT CAN BE, AND THAT REVERSES THE OLD
+   NOTE. The note read: "deliberately not any of the eight, because a loader
+   showing a daisy would be promising a daisy." What answers that is RANDOM:
+   a different species every visit plainly reads as "a flower" rather than as
+   a promise of that one, and it is the garden's own drawing rather than a
+   stand in for it. `window._bloomFns` and `window._ringSpecies` are the
+   landing page's own catalogue family and its palette, which already take a
+   raw 2D context, so no drawing is copied here.
+
+   WHERE THEY ARE NOT THERE IT FALLS BACK, which today is both garden pages:
+   their species families need a `p5.Graphics` and a running instance. The
+   generic bloom is kept for exactly that, and it picks a fresh hue each
+   visit so two loads still differ. **If the catalogue family is ever lifted
+   out of `index.html` into a file of its own, loading it on the gardens is
+   all this needs to show the real eight everywhere.**
+
+   AND THE BLOOM FINISHES BEFORE THE PAGE ARRIVES. It used to LOOP every 2.5
+   seconds and be cut off wherever it had got to, so the thing you watched
+   was half a flower and then a page. `done()` now only marks the page ready;
+   the loader leaves when the page is ready AND the bloom has opened. The cap
+   still overrides both. The cost is honest and is paid once: a fast page is
+   held for the length of one bloom, and `gg_loaded` means that is the first
+   load of a session only.
 
    Two ways out, and both are needed:
 
@@ -29,7 +50,8 @@
 (function () {
   "use strict";
 
-  var MIN = 550;      /* ms. Below this it is a flash, which reads as a fault */
+  var CYCLE = 2400;   /* ms. One bloom, start to open. It no longer repeats. */
+  var HOLD  = 240;    /* ms. A beat on the finished flower before it goes */
   var LIMIT = 9000;   /* ms. The cap: never hold the page longer than this */
   var FADE = 420;
 
@@ -41,6 +63,13 @@
   try { if (sessionStorage.getItem(KEY) === "1") return; } catch (e) {}
 
   var held = false, shown = 0, gone = false, el = null, raf = 0;
+  /* Two independent facts, and the loader leaves only when both are true.
+     `ready` is the page saying it has something to show; `bloomed` is this
+     animation saying it has finished. */
+  var ready = false, bloomed = false;
+  /* The species for this visit, chosen once in `build` so a repaint cannot
+     change the flower halfway through it opening. */
+  var pick = null;
 
   var CSS =
     '#gg-load{position:fixed;inset:0;z-index:9999;display:flex;flex-direction:column;' +
@@ -83,17 +112,50 @@
     var ctx = cv.getContext("2d");
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
+    /* ONE OF THE EIGHT IF THE PAGE HAS THEM. Chosen here rather than per
+       frame, or the flower would change species while it was opening. */
+    pick = choose();
+
     var t0 = Date.now();
     function frame() {
-      /* 0 to 1 over two and a half seconds, then round again. The cycle is
-         long enough that a fast page shows only the first part of it, which
-         is the stem going up: the beginning of something rather than a loop
-         caught mid turn. */
-      var p = still ? 1 : ((Date.now() - t0) % 2500) / 2500;
+      /* 0 to 1 ONCE, not round and round. Reduced motion gets the finished
+         flower immediately, which is the choice `garden-life.js` already
+         makes: the picture is not what anybody opted out of. */
+      var p = still ? 1 : clamp01((Date.now() - t0) / CYCLE);
       draw(ctx, 132, p);
-      if (!gone && !still) raf = requestAnimationFrame(frame);
+      if (p >= 1 && !bloomed) {
+        bloomed = true;
+        setTimeout(maybeGo, HOLD);
+      }
+      if (!gone && p < 1) raf = requestAnimationFrame(frame);
     }
     frame();
+  }
+
+  /* THE FALLBACK BLOOM'S HUE, ROLLED ONCE A VISIT. It was a fixed 206, the
+     cursor's blue, which is right for a thing that is deliberately not a
+     species and wrong once the point is that the flower differs each time.
+     The palette's own range, so it cannot land on a colour this project
+     does not use. */
+  var FALLBACK_HUE = [206, 272, 350, 48, 190, 28, 232, 140][
+    Math.floor(Math.random() * 8)];
+
+  /* ONE OF THE EIGHT, IF THIS PAGE CARRIES THEM. `_bloomFns` is the landing
+     page's catalogue family, keyed by species id and taking a raw 2D
+     context; `_ringSpecies` is the flower guide's own list of the eight with
+     the palette each is drawn in, which is what keeps a loader daisy the
+     same yellow as the daisy in the guide a screen below it. Both are
+     already exported for the scroll vine, so this costs no new surface.
+     Either one missing and the generic bloom stands. */
+  function choose() {
+    try {
+      var fns = window._bloomFns, ring = window._ringSpecies;
+      if (!fns || !ring || !ring.length) return null;
+      var pool = ring.filter(function (r) { return typeof fns[r.id] === "function"; });
+      if (!pool.length) return null;
+      var r = pool[Math.floor(Math.random() * pool.length)];
+      return { fn: fns[r.id], hue: r.hue, sat: r.sat, light: r.light };
+    } catch (e) { return null; }
   }
 
   /* One bloom, drawn in four overlapping stages so nothing pops into being:
@@ -122,6 +184,24 @@
     }
 
     var petalP = clamp01((p - 0.40) / 0.42);
+
+    /* ONE OF THE REAL EIGHT, OPENING. The bloom scales 0.18 to 1 through the
+       opening, which is `GROW_OPEN`'s own figure in both gardens, so a
+       flower opens here at the proportions it opens at in the garden this
+       is loading. The drawing is the landing page's catalogue family,
+       called with a raw context exactly as the scroll vine calls it. */
+    if (pick && petalP > 0) {
+      var k = 0.18 + 0.82 * ease(petalP);
+      ctx.save();
+      ctx.translate(cx, topY);
+      ctx.scale(k, k);
+      try {
+        pick.fn(ctx, 0, 0, S * 0.26, pick.hue, pick.sat, pick.light);
+      } catch (e) { /* a species that throws must not take the page down */ }
+      ctx.restore();
+      return;
+    }
+
     if (petalP > 0) {
       var R = S * 0.21;
       ctx.save();
@@ -133,7 +213,8 @@
         if (own <= 0) continue;
         ctx.save();
         ctx.rotate((i * 60 + 12) * Math.PI / 180);
-        ctx.fillStyle = i % 2 ? "hsl(206,62%,72%)" : "hsl(206,58%,66%)";
+        ctx.fillStyle = i % 2 ? "hsl(" + FALLBACK_HUE + ",62%,72%)"
+                              : "hsl(" + FALLBACK_HUE + ",58%,66%)";
         ctx.beginPath();
         ctx.ellipse(0, -R * 0.62 * own, R * 0.34 * own, R * 0.62 * own, 0, 0, 6.283);
         ctx.fill();
@@ -141,7 +222,7 @@
       }
       var eyeP = ease(clamp01((p - 0.70) / 0.24));
       if (eyeP > 0) {
-        ctx.fillStyle = "hsl(206,58%,34%)";
+        ctx.fillStyle = "hsl(" + FALLBACK_HUE + ",58%,34%)";
         ctx.beginPath();
         ctx.arc(0, 0, R * 0.26 * eyeP, 0, 6.283);
         ctx.fill();
@@ -176,13 +257,14 @@
     setTimeout(function () { if (el && el.parentNode) el.parentNode.removeChild(el); }, FADE + 60);
   }
 
-  /* A minimum on screen, because a loader that flashes for 80ms reads as the
-     page glitching rather than as the page loading. */
-  function finish() {
-    var waited = Date.now() - shown;
-    if (waited >= MIN) hide();
-    else setTimeout(hide, MIN - waited);
-  }
+  /* BOTH, OR NEITHER. The page being ready is not enough on its own any more,
+     which is the whole of "have the animation full before entering": a loader
+     cut off at 40 percent of a bloom shows half a flower and then a page, and
+     the half flower is the bit somebody remembers. This also replaces the old
+     550ms minimum, which existed so a fast page did not flash the loader for
+     80ms: a finished bloom cannot flash. */
+  function maybeGo() { if (ready && bloomed) hide(); }
+  function finish() { ready = true; maybeGo(); }
 
   function boot() {
     build();

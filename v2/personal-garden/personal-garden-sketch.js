@@ -732,10 +732,18 @@ function drawSunGradient() {
    ovals". Two faults, and the second is the one that made it unfixable by
    nudging the numbers.
 
-   TWO BUMPS CANNOT MAKE A CLOUD. With one big disc and one small one there is
-   a single step along the top and the eye reads the parts rather than the
-   whole. Four bumps of four different radii, the largest left of centre, give
-   a top line that never repeats.
+   THE SILHOUETTE IS THE ORIGINAL ONE AND IT IS STAYING. Two redraws were
+   tried, four descending bumps and then a tall centre with two shoulders,
+   and the author's verdict on both was that the old cloud was better. It
+   was: a bar with a big disc and a small one on it is the cloud everybody
+   draws, and the numbers below are the original's, to the digit.
+
+   WHAT WAS ACTUALLY WRONG WAS NEVER THE SHAPE, IT WAS THE SEAMS. The three
+   pieces were filled SEPARATELY at alpha 230, so every place a disc crossed
+   the bar came out a shade denser than the rest and the assembly was drawn
+   in light: you could see the bar, and you could see two circles on it. The
+   fix is this one path and a fully opaque fill, which is the author's own
+   instruction. The shape nobody needed to change.
 
    AND THREE TRANSLUCENT FILLS OVERLAP INTO SEAMS. At alpha 230 every place a
    disc crossed the bar came out a shade denser, so the joins were drawn in
@@ -756,9 +764,8 @@ function drawSunGradient() {
    box comes out 0.46 of the width tall, which is the 0.459 the old assembly
    measured, so nothing that positions a cloud had to move.
    ═══════════════════════════════════════════════════════════════════════ */
-var CLOUD_BAR = [0.03, 0.97, 0.365, 0.095];
-var CLOUD_BUMPS = [[0.155, 0.315, 0.125], [0.30, 0.235, 0.215],
-                   [0.55, 0.285, 0.165], [0.74, 0.325, 0.125]];
+var CLOUD_BAR = [0, 1, 0.3245, 0.1345];
+var CLOUD_BUMPS = [[0.3545, 0.2165, 0.2165], [0.613, 0.209, 0.157]];
 function cloudOutline(W) {
   var x0 = CLOUD_BAR[0], x1 = CLOUD_BAR[1], bcy = CLOUD_BAR[2], br = CLOUD_BAR[3];
   var L = x0 + br, R = x1 - br, N = 44, i, pts = [];
@@ -782,7 +789,10 @@ function cloudOutline(W) {
 function drawClouds() {
   noStroke();
   const cc = color(sky().cloud || "#ffffff");
-  cc.setAlpha(230);
+  /* FULLY OPAQUE, ON THE AUTHOR'S INSTRUCTION. It was 230, which is what
+     made the overlaps inside a cloud visible; opaque, plus the single path
+     above, and a cloud is one solid shape. */
+  cc.setAlpha(255);
   for (const c of clouds) {
     c.x += c.speed;
     if (c.x > width + 170) c.x = -170;

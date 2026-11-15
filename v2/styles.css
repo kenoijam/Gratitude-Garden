@@ -159,7 +159,7 @@ body { padding-left: 0 !important; }
    did. */
 .cloud { position: absolute; pointer-events: none; width: var(--cw, 160px); }
 .cloud svg { display: block; width: 100%; height: auto; overflow: visible;
-  fill: rgba(255,255,255,0.9); }
+  fill: #ffffff; }
 /* FIVE clouds in TWO speed groups, and the numbers were searched rather than
    picked. A cloud "arrives" when it crosses the left edge, and with the old
    three, at 22, 30 and 25 seconds, the longest stretch with no arrival at all
@@ -2489,7 +2489,7 @@ html[data-ink] .hero-mark em { color: var(--dl-sky-accent, #429288); }
 /* The CSS clouds take the same derived tone the canvas ones do, so the hero
    and the gardens cannot disagree about what a cloud looks like at 9pm. */
 .cloud svg {
-  fill: var(--dl-cloud, rgba(255,255,255,0.9));
+  fill: var(--dl-cloud, #ffffff);
   transition: fill 1.2s linear;
 }
 
