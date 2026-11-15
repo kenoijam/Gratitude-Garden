@@ -194,16 +194,54 @@
     /* The places DOM text actually stands: the sky's top third, where the
        garden's name and the daily note sit; the ground, where the tips card
        sits; and the hero's own two upper stops. */
-    var spots = [top, mixRgb(top, bot, 0.33), hex2rgb(o.ground),
-                 hex2rgb(o.fore), hex2rgb(o.front),
-                 hex2rgb(o.hero0), mixRgb(hex2rgb(o.hero0), hex2rgb(o.hero1), 0.5)];
-    var worst = function (ink) {
+    /* WHERE THE READING IS: the sky's top third, which is the garden's name
+       and the daily note, and the hero's own two upper stops. */
+    var reading = [top, mixRgb(top, bot, 0.33),
+                   hex2rgb(o.hero0), mixRgb(hex2rgb(o.hero0), hex2rgb(o.hero1), 0.5)];
+    /* AND THE GROUND, which only the Garden Tips card stands on. It is out
+       of the DECISION and still in the halo's, for the reason below. */
+    var ground = [hex2rgb(o.ground), hex2rgb(o.fore), hex2rgb(o.front)];
+    var worst = function (ink, sp) {
       var m = 99, i;
-      for (i = 0; i < spots.length; i++) m = Math.min(m, contrast(ink, spots[i]));
+      for (i = 0; i < sp.length; i++) m = Math.min(m, contrast(ink, sp[i]));
       return m;
     };
-    var wl = worst(hex2rgb(INK_LIGHT)), wd = worst(hex2rgb(INK_DARK));
-    return { light: wl >= wd, worst: Math.max(wl, wd) };
+    var L = hex2rgb(INK_LIGHT), D = hex2rgb(INK_DARK);
+    var wl = worst(L, reading), wd = worst(D, reading);
+
+    /* ═════════ THE GROUND IS OUT OF THE DECISION, AND THAT IS THE SUNSET ═
+       It used to be in, and holding all seven colours to one ink kept the
+       ink DARK until about 19:50, because the garden's ground stays a mid
+       green well after the sky above it has gone. So the sky was plainly
+       evening and the writing on it was still the daytime ink, which is
+       what "for the sunset use the lighter" is about.
+
+       THE GROUND IS ONE ELEMENT AND THE SKY IS THREE. Only the Garden Tips
+       card stands on the ground; the garden's name, the daily note and the
+       whole of the hero's copy stand on the sky. Letting the one drag the
+       three was the wrong way round. The cost is measured and it is small:
+       through the half hour where the two disagree the tips card goes from
+       2.55 to 2.29, and both of those are already under AA and already
+       being carried by the halo, so nothing crosses a line that it was on
+       the right side of before.
+
+       IT STILL COUNTS FOR THE HALO, THOUGH, which is the other half. The
+       worst below is taken across ALL the colours with the ink that won, so
+       a bad ground still firms the halo up even though it no longer gets a
+       vote on the colour.
+
+       A TIE GOES TO THE LIGHT INK, within 15 percent. At dusk the two cross
+       almost exactly where the author was looking, so a strict comparison
+       leaves it dark for another twenty minutes on a sky that is plainly
+       evening. Cream is also the direction of travel at that hour, so
+       flipping on the tie means flipping ONCE, early and cleanly, rather
+       than holding on and jumping at the last minute. Measured, this moves
+       the evening flip from about 19:50 to about 19:20 and does not touch
+       the morning one, where the two are nowhere near a tie. */
+    var light = wl >= wd * 0.85;
+    return { light: light,
+             worst: Math.min(worst(light ? L : D, reading),
+                             worst(light ? L : D, ground)) };
   }
 
   /* ═════════ THE HALO IS ONLY AS STRONG AS THE HOUR MAKES IT NEED TO BE ══

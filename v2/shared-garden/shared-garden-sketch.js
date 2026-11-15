@@ -762,6 +762,61 @@ function drawSunGradient() {
    `c.size` stays the centre circle diameter it always was, so the stored
    clouds do not change; W is 1.6 of it, which is the width the old trio
    spanned. The alpha is the hero's 0.9, not the old 205. */
+/* ═══════════════════════════════════════════════════════════════════════════
+   A CLOUD IS ONE OUTLINE, NOT A BAR WITH TWO CIRCLES ON IT
+
+   It was a rounded rectangle and two discs, drawn as three separate fills at
+   alpha 230, and the author's description of it was exact: "circle circle and
+   ovals". Two faults, and the second is the one that made it unfixable by
+   nudging the numbers.
+
+   TWO BUMPS CANNOT MAKE A CLOUD. With one big disc and one small one there is
+   a single step along the top and the eye reads the parts rather than the
+   whole. Four bumps of four different radii, the largest left of centre, give
+   a top line that never repeats.
+
+   AND THREE TRANSLUCENT FILLS OVERLAP INTO SEAMS. At alpha 230 every place a
+   disc crossed the bar came out a shade denser, so the joins were drawn in
+   light: the assembly was visible even when the silhouette was not. This is
+   ONE path, filled once, so there is nothing to seam.
+
+   THE SHAPE IS A UNION, COMPUTED, NOT A TRACED OUTLINE. A stadium bar along
+   the bottom and four discs sitting on it; `cloudOutline` walks the width and
+   takes the HIGHEST of the five at each step for the top edge and the bar's
+   own underside for the bottom. Every disc's bottom is kept inside the bar
+   (`cy + r <= 0.46`), which is what guarantees the union is one connected
+   shape with no floating lump and no vertical cut at either end.
+
+   EVERY NUMBER IS A FRACTION OF THE CLOUD'S WIDTH, and the figures are shared
+   by all four places a cloud is drawn in this project: both gardens, the
+   landing page's card panels, and the hero, which bakes this same outline
+   into an SVG symbol because its clouds are markup rather than canvas. The
+   box comes out 0.46 of the width tall, which is the 0.459 the old assembly
+   measured, so nothing that positions a cloud had to move.
+   ═══════════════════════════════════════════════════════════════════════ */
+var CLOUD_BAR = [0.03, 0.97, 0.365, 0.095];
+var CLOUD_BUMPS = [[0.155, 0.315, 0.125], [0.30, 0.235, 0.215],
+                   [0.55, 0.285, 0.165], [0.74, 0.325, 0.125]];
+function cloudOutline(W) {
+  var x0 = CLOUD_BAR[0], x1 = CLOUD_BAR[1], bcy = CLOUD_BAR[2], br = CLOUD_BAR[3];
+  var L = x0 + br, R = x1 - br, N = 44, i, pts = [];
+  function barY(x, s) {
+    var k = x < L ? x - L : (x > R ? x - R : 0);
+    return bcy + s * Math.sqrt(Math.max(0, br * br - k * k));
+  }
+  function top(x) {
+    var t = barY(x, -1), j, b, d;
+    for (j = 0; j < CLOUD_BUMPS.length; j++) {
+      b = CLOUD_BUMPS[j]; d = b[2] * b[2] - (x - b[0]) * (x - b[0]);
+      if (d > 0) t = Math.min(t, b[1] - Math.sqrt(d));
+    }
+    return t;
+  }
+  for (i = 0; i <= N; i++) { var xa = x0 + (x1 - x0) * i / N; pts.push([xa * W, top(xa) * W]); }
+  for (i = N; i >= 0; i--) { var xb = x0 + (x1 - x0) * i / N; pts.push([xb * W, barY(xb, 1) * W]); }
+  return pts;
+}
+
 function drawClouds() {
 noStroke();
 const cc = color(sky().cloud || "#ffffff");
@@ -773,10 +828,12 @@ if (c.x > width + 170) c.x = -170;
 fill(cc);
 const W = c.size * 1.6;
 const x = c.x - W / 2, y = c.y - W * 0.22;
-const bodyH = W * 0.269, b1 = W * 0.433, b2 = W * 0.314;
-rect(x, y + W * 0.19, W, bodyH, bodyH / 2);
-circle(x + W * 0.138 + b1 / 2, y + b1 / 2, b1);
-circle(x + W * 0.456 + b2 / 2, y + W * 0.052 + b2 / 2, b2);
+/* ONE SHAPE, ONE FILL. See `cloudOutline` above: three translucent
+   fills used to overlap into visible seams along every join. */
+const pts = cloudOutline(W);
+beginShape();
+for (let i = 0; i < pts.length; i++) vertex(x + pts[i][0], y + pts[i][1]);
+endShape(CLOSE);
 }
 }
 

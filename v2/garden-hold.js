@@ -39,11 +39,27 @@
        gardens build these buttons with p5.dom and set every colour inline:
        a background written here would lose to the inline one. An overlay
        child wins by being a different element. */
-    ".gg-hold{position:relative;overflow:hidden;isolation:isolate;}",
+    ".gg-hold{position:relative;overflow:hidden;isolation:isolate;",
+    "transition:box-shadow .18s ease, filter .18s ease;}",
+    /* THE SWEEP IS A GRADIENT, NOT A FLAT WASH, AND IT WAS TOO QUIET.
+       At a flat `rgba(255,255,255,0.28)` over the button's inline teal the
+       fill was about a tenth of a step of lightness: it was there, and on a
+       button somebody is holding for the first time it did not read as
+       anything happening, which is the one thing this gesture has to do.
+       It is brighter now AND it has a LEADING EDGE: the gradient runs from
+       0.26 at the left to 0.60 at the right, and because the whole pseudo
+       element is scaled on x, that bright end travels with the front of the
+       sweep. A fill with a front reads as filling; a flat block reads as
+       the button having changed colour. */
     ".gg-hold::after{content:'';position:absolute;inset:0;z-index:0;",
     "transform:scaleX(var(--hold,0));transform-origin:left center;",
-    "background:rgba(255,255,255,0.28);pointer-events:none;",
-    "transition:transform .12s linear;}",
+    "background:linear-gradient(90deg,rgba(255,255,255,0.26) 0%,",
+    "rgba(255,255,255,0.40) 62%,rgba(255,255,255,0.60) 100%);",
+    "pointer-events:none;transition:transform .12s linear;}",
+    /* AND THE BUTTON ITSELF SAYS IT IS BEING HELD, with the ring a chosen
+       picker tile and a focused field already wear, so the press is visible
+       even at the very start when the sweep is still a sliver. */
+    ".gg-hold[data-held='1']{box-shadow:0 0 0 3px rgba(38,166,154,0.38);}",
     /* RELEASING SPRINGS BACK FASTER THAN IT FILLED. A fill that drains at
        the same rate it filled reads as an animation playing backwards; a
        quick snap reads as letting go of something. */
@@ -51,7 +67,7 @@
     /* The label has to sit above the sweep. p5 writes the text as a bare
        child, so it is wrapped on arm(). */
     ".gg-hold .gg-hold-label{position:relative;z-index:1;}",
-    ".gg-hold[data-held='1']{filter:brightness(1.04);}",
+    ".gg-hold[data-held='1']{filter:brightness(1.07);}",
     /* A press that was too short says so, once, where the label is. */
     ".gg-hold[data-nudge='1'] .gg-hold-label{animation:ggHoldNudge .5s ease;}",
     "@keyframes ggHoldNudge{0%,100%{transform:translateX(0);}",

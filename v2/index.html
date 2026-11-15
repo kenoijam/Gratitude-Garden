@@ -214,38 +214,30 @@
        circles from r60 inward, each a little more opaque, then twelve rays from
        r55 to r90. Drawn here rather than as a gradient so the rays are the same
        shape the gardens draw. It does not pulse; the gardens' does not either. -->
-  <svg class="hero-sun" viewBox="0 0 180 180" aria-hidden="true" focusable="false">
-    <g fill="#ffdc78">
-      <circle cx="90" cy="90" r="60" fill-opacity="0.15"/>
-      <circle cx="90" cy="90" r="52" fill-opacity="0.26"/>
-      <circle cx="90" cy="90" r="44" fill-opacity="0.38"/>
-      <circle cx="90" cy="90" r="36" fill-opacity="0.49"/>
-      <circle cx="90" cy="90" r="28" fill-opacity="0.60"/>
-      <circle cx="90" cy="90" r="20" fill-opacity="0.72"/>
-      <circle cx="90" cy="90" r="12" fill-opacity="0.83"/>
-      <circle cx="90" cy="90" r="4"  fill-opacity="0.94"/>
-    </g>
-    <!-- The rays are their OWN group so the night rule can take them off
-         outright. A moon has no rays, and the gardens' own `rays: 0` at
-         night means their canvas draws none, so a hero moon still throwing
-         twelve of them was the one sun left in the sky. Fading the whole
-         SVG could not fix it: the rays are what made the disc look like a
-         sun whatever its colour. -->
-    <g class="hero-sun-rays" stroke="#ffd278" stroke-opacity="0.47" stroke-width="2" stroke-linecap="round">
-      <line x1="145.0" y1="90.0"  x2="180.0" y2="90.0"/>
-      <line x1="137.6" y1="117.5" x2="167.9" y2="135.0"/>
-      <line x1="117.5" y1="137.6" x2="135.0" y2="167.9"/>
-      <line x1="90.0"  y1="145.0" x2="90.0"  y2="180.0"/>
-      <line x1="62.5"  y1="137.6" x2="45.0"  y2="167.9"/>
-      <line x1="42.4"  y1="117.5" x2="12.1"  y2="135.0"/>
-      <line x1="35.0"  y1="90.0"  x2="0.0"   y2="90.0"/>
-      <line x1="42.4"  y1="62.5"  x2="12.1"  y2="45.0"/>
-      <line x1="62.5"  y1="42.4"  x2="45.0"  y2="12.1"/>
-      <line x1="90.0"  y1="35.0"  x2="90.0"  y2="0.0"/>
-      <line x1="117.5" y1="42.4"  x2="135.0" y2="12.1"/>
-      <line x1="137.6" y1="62.5"  x2="167.9" y2="45.0"/>
-    </g>
-  </svg>
+  <!-- ONE SUN AND ONE MOON IN THE WHOLE PROJECT, AND THIS IS NOW THE
+       GARDENS'. It was an inline SVG of its own: eight discs and twelve
+       rays, hand matched to `drawSunGradient` and then kept in step by
+       hand, which is the drift this project pays for in seven places with
+       the flowers. And it had no MOON. Night was the same sun desaturated,
+       brightened and scaled to 0.44 by a CSS rule, with the rays switched
+       off separately, so the figure in the night sky here and the figure in
+       the night sky one click away were two different drawings of two
+       different things.
+
+       It is a canvas painted by `paintHeroSun` below, which is
+       `drawSunGradient` ported to raw Canvas 2D exactly as the flowers are
+       ported between these files. Everything comes off the daylight
+       module's own keyframes, so the disc shrinks, pales and loses its rays
+       on the same curve the gardens' does, and the moon is a moon because
+       the keyframe says `rays: 0` rather than because a stylesheet hid
+       something.
+
+       THE BOX GREW 132 TO 176 AND THE DISC DID NOT MOVE. The rays reach
+       1.5R and R peaks at 74 at golden hour, which is 111 units against the
+       old box's 90, so the old box clipped them. `top` and `right` are
+       pulled back by the same 22 the box gained on each side, so the disc's
+       centre sits exactly where it always did. -->
+  <canvas class="hero-sun" id="hero-sun" aria-hidden="true"></canvas>
 
   <!-- The birds. Its own canvas over the whole hero section, so they can fly
        up among the clouds rather than just above the flowers: the meadow
@@ -256,12 +248,22 @@
   <!-- FIVE clouds, not three. See the timing note in styles.css: with three
        the left edge of the sky stood empty for up to 22 seconds at a stretch,
        so a cloud only appeared once the others had left. -->
+  <!-- THE CLOUD'S OUTLINE, DEFINED ONCE. It is the same union of a stadium
+       bar and four discs that `cloudOutline` computes for every canvas in
+       this project, baked to a path because the hero's clouds are markup
+       rather than canvas. One symbol and five `use`s, so the five cannot
+       drift from each other or from the gardens, and the 6KB five copies of
+       this path would cost is paid once. -->
+  <svg width="0" height="0" aria-hidden="true" focusable="false"
+       style="position:absolute;pointer-events:none;">
+    <symbol id="gg-cloud" viewBox="0 0 1000 460"><path d="M30.0 365.0 46.8 252.4 63.6 229.8 80.4 214.7 97.1 163.8 113.9 127.3 130.7 102.5 147.5 83.4 164.3 68.2 181.1 55.9 197.9 45.8 214.6 37.7 231.4 31.2 248.2 26.3 265.0 22.9 281.8 20.8 298.6 20.0 315.4 20.5 332.1 22.4 348.9 25.6 365.7 30.3 382.5 36.5 399.3 44.3 416.1 54.0 432.9 66.0 449.6 80.6 466.4 98.9 483.2 122.5 500.0 127.8 516.8 123.4 533.6 120.8 550.4 120.0 567.1 120.9 583.9 123.5 600.7 128.0 617.5 134.4 634.3 143.2 651.1 154.6 667.9 169.5 684.6 189.6 701.4 206.1 718.2 201.9 735.0 200.1 751.8 200.6 768.6 203.3 785.4 208.5 802.1 216.5 818.9 228.1 835.7 244.6 852.5 270.0 869.3 270.0 886.1 270.6 902.9 274.2 919.6 281.1 936.4 292.5 953.2 311.1 970.0 365.0 953.2 418.9 936.4 437.5 919.6 448.9 902.9 455.8 886.1 459.4 869.3 460.0 852.5 460.0 835.7 460.0 818.9 460.0 802.1 460.0 785.4 460.0 768.6 460.0 751.8 460.0 735.0 460.0 718.2 460.0 701.4 460.0 684.6 460.0 667.9 460.0 651.1 460.0 634.3 460.0 617.5 460.0 600.7 460.0 583.9 460.0 567.1 460.0 550.4 460.0 533.6 460.0 516.8 460.0 500.0 460.0 483.2 460.0 466.4 460.0 449.6 460.0 432.9 460.0 416.1 460.0 399.3 460.0 382.5 460.0 365.7 460.0 348.9 460.0 332.1 460.0 315.4 460.0 298.6 460.0 281.8 460.0 265.0 460.0 248.2 460.0 231.4 460.0 214.6 460.0 197.9 460.0 181.1 460.0 164.3 460.0 147.5 460.0 130.7 460.0 113.9 459.4 97.1 455.8 80.4 448.9 63.6 437.5 46.8 418.9 30.0 365.0Z"/></symbol>
+  </svg>
   <div class="cloud-wrap">
-    <div class="cloud cloud-1"><div class="bump1"></div><div class="bump2"></div><div class="body"></div></div>
-    <div class="cloud cloud-2"><div class="bump1"></div><div class="bump2"></div><div class="body"></div></div>
-    <div class="cloud cloud-3"><div class="bump1"></div><div class="bump2"></div><div class="body"></div></div>
-    <div class="cloud cloud-4"><div class="bump1"></div><div class="bump2"></div><div class="body"></div></div>
-    <div class="cloud cloud-5"><div class="bump1"></div><div class="bump2"></div><div class="body"></div></div>
+    <div class="cloud cloud-1"><svg viewBox="0 0 1000 460"><use href="#gg-cloud"/></svg></div>
+    <div class="cloud cloud-2"><svg viewBox="0 0 1000 460"><use href="#gg-cloud"/></svg></div>
+    <div class="cloud cloud-3"><svg viewBox="0 0 1000 460"><use href="#gg-cloud"/></svg></div>
+    <div class="cloud cloud-4"><svg viewBox="0 0 1000 460"><use href="#gg-cloud"/></svg></div>
+    <div class="cloud cloud-5"><svg viewBox="0 0 1000 460"><use href="#gg-cloud"/></svg></div>
   </div>
 
   <div class="hero-text-block">
@@ -537,9 +539,20 @@
        the base does not move at all, since the stem's control points take a
        fraction of the same offset. Each flower is offset in the cycle by its
        own x, or the whole row leans together and reads as the page tilting. */
+    /* THE STEM STARTS BELOW THE GROUND LINE, SO THE FLOWER IS PLANTED.
+       It used to start exactly AT `GY`, and the front ground strip is
+       filled from `GY` downward after the flowers are drawn, so the base
+       met the ground on precisely the same pixel: the row read as eleven
+       flowers STANDING ON a line rather than growing out of it. Sixteen
+       units of stem below the line and the strip buries it, which is the
+       same thing both gardens already get from drawing their foreground
+       hill after the front row. The leaves are unaffected: they sit at
+       t 0.60 of the curve, and moving the first control point shifts that
+       point by (1-t)^3, which is about one unit. */
+    var STEM_BURY = 16;
     function stem(bx,sl,sw,sway){
       sway = sway || 0;
-      var x0=bx,y0=GY,
+      var x0=bx,y0=GY+STEM_BURY,
           c1x=bx+10+sway*0.35,c1y=GY-sl*.40,
           c2x=bx-6+sway*0.75,c2y=GY-sl*.70,
           x3=bx+sway,y3=GY-sl;
@@ -2952,20 +2965,67 @@
   /* The hero's cloud, which both gardens now draw too: a rounded bar with two
      circles sitting on it, asymmetric. `W` is the bar's width and every other
      figure is a fraction of it, the same numbers drawClouds() uses. */
+  /* ═══════════════════════════════════════════════════════════════════════════
+     A CLOUD IS ONE OUTLINE, NOT A BAR WITH TWO CIRCLES ON IT
+
+     It was a rounded rectangle and two discs, drawn as three separate fills at
+     alpha 230, and the author's description of it was exact: "circle circle and
+     ovals". Two faults, and the second is the one that made it unfixable by
+     nudging the numbers.
+
+     TWO BUMPS CANNOT MAKE A CLOUD. With one big disc and one small one there is
+     a single step along the top and the eye reads the parts rather than the
+     whole. Four bumps of four different radii, the largest left of centre, give
+     a top line that never repeats.
+
+     AND THREE TRANSLUCENT FILLS OVERLAP INTO SEAMS. At alpha 230 every place a
+     disc crossed the bar came out a shade denser, so the joins were drawn in
+     light: the assembly was visible even when the silhouette was not. This is
+     ONE path, filled once, so there is nothing to seam.
+
+     THE SHAPE IS A UNION, COMPUTED, NOT A TRACED OUTLINE. A stadium bar along
+     the bottom and four discs sitting on it; `cloudOutline` walks the width and
+     takes the HIGHEST of the five at each step for the top edge and the bar's
+     own underside for the bottom. Every disc's bottom is kept inside the bar
+     (`cy + r <= 0.46`), which is what guarantees the union is one connected
+     shape with no floating lump and no vertical cut at either end.
+
+     EVERY NUMBER IS A FRACTION OF THE CLOUD'S WIDTH, and the figures are shared
+     by all four places a cloud is drawn in this project: both gardens, the
+     landing page's card panels, and the hero, which bakes this same outline
+     into an SVG symbol because its clouds are markup rather than canvas. The
+     box comes out 0.46 of the width tall, which is the 0.459 the old assembly
+     measured, so nothing that positions a cloud had to move.
+     ═══════════════════════════════════════════════════════════════════════ */
+  var CLOUD_BAR = [0.03, 0.97, 0.365, 0.095];
+  var CLOUD_BUMPS = [[0.155, 0.315, 0.125], [0.30, 0.235, 0.215],
+                     [0.55, 0.285, 0.165], [0.74, 0.325, 0.125]];
+  function cloudOutline(W) {
+    var x0 = CLOUD_BAR[0], x1 = CLOUD_BAR[1], bcy = CLOUD_BAR[2], br = CLOUD_BAR[3];
+    var L = x0 + br, R = x1 - br, N = 44, i, pts = [];
+    function barY(x, s) {
+      var k = x < L ? x - L : (x > R ? x - R : 0);
+      return bcy + s * Math.sqrt(Math.max(0, br * br - k * k));
+    }
+    function top(x) {
+      var t = barY(x, -1), j, b, d;
+      for (j = 0; j < CLOUD_BUMPS.length; j++) {
+        b = CLOUD_BUMPS[j]; d = b[2] * b[2] - (x - b[0]) * (x - b[0]);
+        if (d > 0) t = Math.min(t, b[1] - Math.sqrt(d));
+      }
+      return t;
+    }
+    for (i = 0; i <= N; i++) { var xa = x0 + (x1 - x0) * i / N; pts.push([xa * W, top(xa) * W]); }
+    for (i = N; i >= 0; i--) { var xb = x0 + (x1 - x0) * i / N; pts.push([xb * W, barY(xb, 1) * W]); }
+    return pts;
+  }
   function cloud(ctx, cx, cy, W) {
     var x = cx - W / 2, y = cy - W * 0.22;
-    var bodyH = W * 0.269, r = bodyH / 2, top = y + W * 0.19;
-    var b1 = W * 0.433, b2 = W * 0.314;
+    var pts = cloudOutline(W), i;
     ctx.beginPath();
-    ctx.moveTo(x + r, top);
-    ctx.lineTo(x + W - r, top);
-    ctx.arc(x + W - r, top + r, r, -Math.PI / 2, Math.PI / 2);
-    ctx.lineTo(x + r, top + bodyH);
-    ctx.arc(x + r, top + r, r, Math.PI / 2, -Math.PI / 2);
+    ctx.moveTo(x + pts[0][0], y + pts[0][1]);
+    for (i = 1; i < pts.length; i++) ctx.lineTo(x + pts[i][0], y + pts[i][1]);
     ctx.closePath(); ctx.fill();
-    function disc(dx, dy, d) { ctx.beginPath(); ctx.arc(dx, dy, d / 2, 0, Math.PI * 2); ctx.fill(); }
-    disc(x + W * 0.138 + b1 / 2, y + b1 / 2, b1);
-    disc(x + W * 0.456 + b2 / 2, y + W * 0.052 + b2 / 2, b2);
   }
   /* roundRect is not written out because Safari only took it in 16 */
   function panelPath(ctx, w, h, r) {
@@ -3978,5 +4038,66 @@
   </script>
 
   <script src="garden-music.js" data-mood="whimsy"></script>
+<script>
+/* ═══════════════════════════════════════════════════════════════════════════
+   THE HERO'S SUN AND MOON, WHICH ARE THE GARDENS'
+
+   `drawSunGradient` ported from `personal-garden-sketch.js` to raw Canvas 2D.
+   Same concentric discs, same `R / 7.5` step (a flat 8 draws a small moon in
+   three bands and it comes out as a target), same twelve rays from 0.92R to
+   1.5R, same early return under `rays <= 0.02` so a moon costs nothing.
+   **Change one and change the other**, like the flowers.
+
+   IT IS A 240 UNIT BOX WITH THE SUN AT ITS MIDDLE, so the rays have room at
+   golden hour, where R is 74 and they reach 111.
+
+   IT POLLS RATHER THAN RUNNING A FRAME LOOP. The palette is cached for
+   twelve seconds inside the module and a sun does not move between hours, so
+   a loop would repaint an identical picture sixty times a second for the
+   life of the page. Ten seconds also picks up `GardenDaylight.override` from
+   the console and the `?clock=` gate within a beat. */
+(function () {
+  "use strict";
+  var c = document.getElementById("hero-sun");
+  if (!c) return;
+  var BOX = 240, CX = BOX / 2, CY = BOX / 2;
+
+  function paint() {
+    var DL = window.GardenDaylight && window.GardenDaylight.now();
+    if (!DL) return;
+    var dpr = Math.min(2, window.devicePixelRatio || 1);
+    if (c.width !== BOX * dpr) { c.width = BOX * dpr; c.height = BOX * dpr; }
+    var ctx = c.getContext("2d");
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, BOX, BOX);
+
+    var R = DL.sunR, co = DL.sunCore, ry = DL.sunRay;
+    var step = Math.max(2, R / 7.5), r, a;
+    for (r = R; r > 0; r -= step) {
+      /* p5's `map(r, R, 0, 0.15, 1)`, written out. */
+      a = (0.15 + (1 - 0.15) * (1 - r / R)) * DL.sunAlpha;
+      ctx.fillStyle = "rgba(" + Math.round(co[0]) + "," + Math.round(co[1]) +
+                      "," + Math.round(co[2]) + "," + a.toFixed(3) + ")";
+      ctx.beginPath(); ctx.arc(CX, CY, r, 0, Math.PI * 2); ctx.fill();
+    }
+    if (DL.rays <= 0.02) return;
+    ctx.strokeStyle = "rgba(" + Math.round(ry[0]) + "," + Math.round(ry[1]) +
+                      "," + Math.round(ry[2]) + "," + (0.47 * DL.rays).toFixed(3) + ")";
+    ctx.lineWidth = 2; ctx.lineCap = "round";
+    for (var i = 0; i < 12; i++) {
+      var t = i * 30 * Math.PI / 180;
+      ctx.beginPath();
+      ctx.moveTo(CX + Math.cos(t) * R * 0.92, CY + Math.sin(t) * R * 0.92);
+      ctx.lineTo(CX + Math.cos(t) * R * 1.5,  CY + Math.sin(t) * R * 1.5);
+      ctx.stroke();
+    }
+  }
+  paint();
+  window.addEventListener("load", paint);
+  window.addEventListener("resize", paint);
+  setInterval(paint, 10000);
+  window._paintHeroSun = paint;     /* so a probe can force it */
+})();
+</script>
 </body>
 </html>

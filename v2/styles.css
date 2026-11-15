@@ -141,11 +141,25 @@ body { padding-left: 0 !important; }
    at 132px the disc is still the 88px the old circle was. top and right are
    shifted by the 22px of ray that now sits outside it, which keeps the sun
    where it has always been. */
-.hero-sun { position: absolute; top: 68px; right: calc(10% - 22px); width: 132px; height: 132px; z-index: 2; }
+/* The box is 176 rather than 132 so the rays have room at golden hour,
+   and `top` and `right` are pulled back by the 22 it gained on each side
+   so the disc's own centre has not moved. See the canvas's note in the
+   markup. */
+.hero-sun { position: absolute; top: 46px; right: calc(10% - 44px); width: 176px; height: 176px; z-index: 2; display: block; }
 .cloud-wrap { position: absolute; top: 0; left: 0; right: 0; bottom: 0; pointer-events: none; overflow: hidden; z-index: 2; }
-.cloud { position: absolute; pointer-events: none; }
-.cloud .body { position: absolute; background: rgba(255,255,255,0.9); border-radius: 50px; }
-.cloud .bump1, .cloud .bump2 { position: absolute; background: rgba(255,255,255,0.9); border-radius: 50%; }
+/* A CLOUD IS ONE SHAPE NOW, NOT A BAR WITH TWO CIRCLES ON IT. It was
+   `.body` plus `.bump1` plus `.bump2`, three boxes at alpha 0.9, which read
+   as exactly what it was: "circle circle and ovals", with every overlap a
+   shade denser than the rest. It is the `#gg-cloud` symbol in the markup,
+   which carries the identical silhouette the two gardens and the landing
+   page's card panels compute, so one cloud is drawn in four places and they
+   cannot disagree. The width is the only thing each cloud sets; the height
+   follows the 1000 by 460 viewBox, which is the 0.46 of the width the old
+   assembly happened to measure, so every `top` below still lands where it
+   did. */
+.cloud { position: absolute; pointer-events: none; width: var(--cw, 160px); }
+.cloud svg { display: block; width: 100%; height: auto; overflow: visible;
+  fill: rgba(255,255,255,0.9); }
 /* FIVE clouds in TWO speed groups, and the numbers were searched rather than
    picked. A cloud "arrives" when it crosses the left edge, and with the old
    three, at 22, 30 and 25 seconds, the longest stretch with no arrival at all
@@ -163,15 +177,15 @@ body { padding-left: 0 !important; }
    the sky is already populated on the first frame rather than filling up over
    the first half minute. */
 .cloud-1 { animation: cloudDrift1 24s linear infinite; top: 13%; } @keyframes cloudDrift1 { 0% { transform: translateX(-220px); } 100% { transform: translateX(calc(100vw + 220px)); } }
-.cloud-1 .body { width: 160px; height: 44px; top: 30px; left: 0; } .cloud-1 .bump1 { width: 72px; height: 72px; top: 0; left: 22px; } .cloud-1 .bump2 { width: 52px; height: 52px; top: 8px; left: 72px; }
+.cloud-1 { --cw: 160px; }
 .cloud-2 { animation: cloudDrift2 33s linear infinite; top: 19%; animation-delay: -16s; } @keyframes cloudDrift2 { 0% { transform: translateX(-280px); } 100% { transform: translateX(calc(100vw + 280px)); } }
-.cloud-2 .body { width: 220px; height: 56px; top: 40px; left: 0; } .cloud-2 .bump1 { width: 92px; height: 92px; top: 0; left: 34px; } .cloud-2 .bump2 { width: 68px; height: 68px; top: 10px; left: 104px; }
+.cloud-2 { --cw: 220px; }
 .cloud-3 { animation: cloudDrift3 24s linear infinite; top: 10%; animation-delay: -8s; } @keyframes cloudDrift3 { 0% { transform: translateX(-200px); } 100% { transform: translateX(calc(100vw + 200px)); } }
-.cloud-3 .body { width: 130px; height: 36px; top: 26px; left: 0; } .cloud-3 .bump1 { width: 56px; height: 56px; top: 0; left: 16px; } .cloud-3 .bump2 { width: 40px; height: 40px; top: 8px; left: 58px; }
+.cloud-3 { --cw: 130px; }
 .cloud-4 { animation: cloudDrift3 24s linear infinite; top: 22%; animation-delay: -16s; }
-.cloud-4 .body { width: 146px; height: 40px; top: 28px; left: 0; } .cloud-4 .bump1 { width: 64px; height: 64px; top: 0; left: 18px; } .cloud-4 .bump2 { width: 46px; height: 46px; top: 8px; left: 66px; }
+.cloud-4 { --cw: 146px; }
 .cloud-5 { animation: cloudDrift2 33s linear infinite; top: 7%; }
-.cloud-5 .body { width: 188px; height: 50px; top: 34px; left: 0; } .cloud-5 .bump1 { width: 80px; height: 80px; top: 0; left: 28px; } .cloud-5 .bump2 { width: 58px; height: 58px; top: 9px; left: 88px; }
+.cloud-5 { --cw: 188px; }
 /* Centred in the sky, by auto margins rather than a padding.
    .meadow-scene already carries `margin-top: auto`, so with a second auto
    margin here the free space is split evenly between the two and the block
@@ -2465,19 +2479,18 @@ html[data-ink] .hero-mark em { color: var(--dl-sky-accent, #429288); }
    and brought down to 44 percent it reads as a small pale disc in a dark
    sky, which is what a moon is at this size. The rays survive as a faint
    halo, which is also what a moon has. */
-html[data-dark="1"] .hero-sun {
-  filter: grayscale(0.85) brightness(1.5);
-  transform: scale(0.44);
-  transform-origin: 70% 30%;
-  opacity: 0.95;
-}
-html[data-daylight] .hero-sun { transition: filter 1.2s linear, transform 1.2s linear; }
+/* THE NIGHT RULE IS GONE, AND THAT IS THE POINT OF THE SWAP. It desaturated
+   and shrank the SUN to stand in for a moon, which is a CSS filter doing a
+   drawing's job: the canvas reads `sunR`, `sunCore` and `rays` straight off
+   the keyframes now, so at night it draws the small pale rayless disc the
+   gardens draw, for the same reason and at the same moment. Nothing here has
+   to know what time it is. */
 
 /* The CSS clouds take the same derived tone the canvas ones do, so the hero
    and the gardens cannot disagree about what a cloud looks like at 9pm. */
-.cloud .body, .cloud .bump1, .cloud .bump2 {
-  background: var(--dl-cloud, rgba(255,255,255,0.9));
-  transition: background 1.2s linear;
+.cloud svg {
+  fill: var(--dl-cloud, rgba(255,255,255,0.9));
+  transition: fill 1.2s linear;
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -2491,8 +2504,9 @@ html[data-daylight] .hero-sun { transition: filter 1.2s linear, transform 1.2s l
    on the ray group's own class, and the eight stacked discs that remain are
    the moon.
    ═══════════════════════════════════════════════════════════════════════ */
-html[data-dark="1"] .hero-sun-rays { opacity: 0; }
-html[data-daylight] .hero-sun-rays { transition: opacity 1.2s linear; }
+/* `.hero-sun-rays` is gone with the SVG. The rays are drawn from the
+   keyframes' own `rays`, which runs to 0 through the night, so a moon has
+   none because the hour says so rather than because a rule hid them. */
 
 /* ═══════════════════════════════════════════════════════════════════════════
    THE WHOLE PAGE DIMS AT DUSK, AND IT IS THE TOKENS THAT DO IT
