@@ -283,6 +283,8 @@ function addFlower(text, name, species, hue, look, anon) {
   localFlower.plantedTime = Date.now();
   localFlower.isMyFlower = true;
   flowers.push(localFlower);
+  /* Written down at once, so the flower is still yours after a reload. */
+  rememberMine(localFlower);
 
   myLocalFlowerIndex = flowers.length - 1;
 
@@ -2129,10 +2131,18 @@ myFlower = f;
 }
 if (!myFlower) return;
 
-const age = (Date.now() - (myFlower.plantedTime || Date.now())) / 1000;
-const maxAge = 60;
-if (age > maxAge) return;
-const alpha = map(age, maxAge * 0.6, maxAge, 1, 0, true);
+/* THEY DO NOT EXPIRE, AND THAT IS A FIX RATHER THAN A PREFERENCE. This used
+   to fade out over a minute from `plantedTime`, so the one mark in the
+   meadow saying WHICH of these is yours was gone sixty seconds after you
+   planted it and could never come back: nothing stored `plantedTime` and
+   nothing restored `isMyFlower`, so a reload left the garden with no answer
+   to "where is mine" at all. The personal garden has never expired its own
+   (`isLatest`, alpha 1), so the shared one was also the odd garden out. The
+   room is keyed by the date, so these go at midnight with the flower.
+
+   The Garden Tips card has promised the whole time that sparkles mark your
+   bloom; now they do. */
+const alpha = 1;
 
 const t = frameCount * 0.01 + myFlower.phase * 0.001;
 const swayNoise = swayOn ? map(noise(t), 0, 1, -1, 1) * 4 : 0;
@@ -3098,8 +3108,16 @@ GardenLoader.done();
    tomorrow, which is the rule the room key itself follows: a reload is not a
    reroll. */
 const DEMO_COUNT = 5;
-const DEMO_NAMES = ["mira", "jo", "alif", "renata", "sam", "pim", "dee", "tari",
-                    "noor", "beni", "clove", "yuki"];
+/* CHINESE INDONESIAN GIVEN NAMES, which is who this is actually for. The
+   first list was a scatter of short international names and read as a demo
+   from nowhere; the project is written in Jakarta for Indonesian young
+   adults, and a meadow whose five strangers are plausibly the participant's
+   own classmates is a very different first impression from one whose five
+   could be anybody. Lower case on purpose: the field asks for "your name or
+   nickname" and this is what people type into a box like that. */
+const DEMO_NAMES = ["jessica", "kevin", "vivian", "felicia", "andre",
+                    "michelle", "brandon", "clarissa", "nicholas",
+                    "angeline", "steven", "natasha"];
 /* Small on purpose. The whole argument of the project is that the thing you
    noticed can be tiny, and five grand gratitudes in the meadow would quietly
    say the opposite to everybody who reads them. */
@@ -3130,6 +3148,9 @@ function demoFlowers() {
   const rnd = () => { h = Math.imul(h ^ (h >>> 15), 2246822507); h ^= h >>> 13; return ((h >>> 0) % 100000) / 100000; };
 
   const layers = ["back", "mid", "front", "mid", "front"];
+  /* `addFlower`'s own ranges, so a demo stands exactly as tall as a real
+     flower planted into that row would. Further back is taller. */
+  const DEMO_STEM = { front: [0.16, 0.22], mid: [0.26, 0.32], back: [0.33, 0.39] };
   /* DRAWN WITHOUT REPLACEMENT. Picking independently from each list gave two
      flowers called "noor" and two people grateful for "warm laundry" in the
      same meadow, which reads as a bug rather than as five people: five
@@ -3172,7 +3193,14 @@ function demoFlowers() {
          never stack and never line up either. */
       xNorm: (i + 0.5) / DEMO_COUNT + (rnd() - 0.5) * 0.09,
       baseY: 0, x: 0, stemLen: 0, size: 0,
-      stemNorm: 0.14 + rnd() * 0.05,
+      /* THE STEM COMES OFF THE LAYER, and it used to be one flat range for
+         all five. `addFlower` has always given a back row flower a longer
+         stem than a front row one, so the five demos were the only flowers
+         in the meadow standing the same height whatever row they were in,
+         and a back row at a front row's height is what reads as a garden
+         with no depth in it. These are `addFlower`'s own bands. */
+      stemNorm: DEMO_STEM[layers[i]][0] +
+                rnd() * (DEMO_STEM[layers[i]][1] - DEMO_STEM[layers[i]][0]),
       sizeNorm: 0.034 + rnd() * 0.006,
       phase: rnd() * 360,
       petals: speciesPetalCount(sp),
@@ -3232,6 +3260,11 @@ break;
 }
 
 flowers = flowers.concat(demoFlowers());
+
+/* The room has just been re-copied, so anything that was marked mine was
+   thrown away with the old array. `oldMyFlower` puts it back for a visit
+   that planted; this is what puts it back for one that did not. */
+claimMyFlower();
 
 updateResponsiveFlowerLayout();
 }
@@ -3328,6 +3361,61 @@ function sharedPlantedToday(name) {
 
 function markSharedPlanted() {
   try { localStorage.setItem(SHARED_DAY_KEY, roomKey); } catch (e) {}
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   WHICH FLOWER IS MINE, AFTER A RELOAD
+
+   `isMyFlower` was set in ONE place, `addFlower`, and nothing ever put it
+   back. So it survived exactly as long as the tab did: reload the page, open
+   the garden on a laptop having planted on a phone, or simply come back an
+   hour later, and the sketch no longer knew which of the flowers in the
+   meadow was yours. Everything keyed on that flag went quiet with it, the
+   sparkles first.
+
+   TWO WAYS BACK, because neither covers the other. The room is keyed by the
+   date and so is this note, so both expire with the garden.
+     · THE INDEX, written here when you plant. It is the only thing that can
+       find an ANONYMOUS flower, whose `word` is an invented alias that
+       matches no name anybody could look up.
+     · THE NAME, for a flower planted under an account on another device,
+       which this browser has no note of at all.
+
+   IT IS A LOCAL NOTE AND NOTHING GOES INTO THE ROOM. `createdIndex` is
+   already public, so writing it down here tells nobody anything they could
+   not read already, and the room stays exactly as honest as it was. */
+const SHARED_MINE_KEY = "gg_shared_mine";
+
+function rememberMine(f) {
+  try { localStorage.setItem(SHARED_MINE_KEY, roomKey + "|" + f.createdIndex); } catch (e) {}
+}
+
+function claimMyFlower() {
+  if (!flowers || !flowers.length) return;
+  for (let i = 0; i < flowers.length; i++) if (flowers[i].isMyFlower) return;
+
+  let idx = null;
+  try {
+    const raw = localStorage.getItem(SHARED_MINE_KEY) || "";
+    const bits = raw.split("|");
+    if (bits[0] === roomKey && bits[1] !== undefined) idx = Number(bits[1]);
+  } catch (e) {}
+
+  const me = (typeof myPlantedName === "function") ? myPlantedName() : "";
+  for (let i = 0; i < flowers.length; i++) {
+    const f = flowers[i];
+    if (f.demo) continue;
+    const byIndex = idx !== null && f.createdIndex === idx;
+    const byName  = !!me && String(f.word || "").trim().toLowerCase() === me;
+    if (byIndex || byName) {
+      f.isMyFlower = true;
+      /* NO `plantedTime`, DELIBERATELY. A flower reclaimed on a later visit
+         was not planted just now, and writing the current moment in would be
+         a lie the history could read back. Nothing needs it any more. */
+      myLocalFlowerIndex = i;
+      return;
+    }
+  }
 }
 
 /* Runs whenever the username step is shown or the name is typed, so somebody
@@ -3566,11 +3654,16 @@ charCount.html(`${gratitudeText.length}/100`);
 
 charCount = createP("0/100").style("text-align", "right").parent(card);
 continueBtn = createButton("Continue").addClass("gg-btn").parent(card);
-continueBtn.mousePressed(() => {
+/* ONE ACTION, TWO WAYS IN. The button and the Enter key run the identical
+   function, including its refusal on an empty box, so the key can never be
+   a second route through the flow with different rules. */
+const landingGo = () => {
 if (!gratitudeText.trim()) return;
 browsing = false;
 goToFlowers();
-});
+};
+continueBtn.mousePressed(landingGo);
+if (window.GardenEnter) GardenEnter.on(gratitudeField, landingGo);
 
 /* A WAY IN WITHOUT WRITING ANYTHING FIRST. It is a quiet text link under the
    button rather than a second button, because it is the smaller of the two
@@ -3646,6 +3739,11 @@ usernameField.style("background", "#f1f8f7");
 usernameField.style("color", "#5a8f8d");
 usernameNote.html("Signed in as " + u + ", so your flower carries this name.");
 syncSelectName();
+/* THE ACCOUNT ARRIVES AFTER THE ROOM DOES, which is a network race and not
+   an edge case: `claimMyFlower` runs on a room copy, and at that moment
+   there may be no name to match on yet. This is the other end of it, so a
+   flower planted on another device is found the moment the session lands. */
+if (typeof claimMyFlower === "function") claimMyFlower();
 if (typeof sharedPlantedToday === "function" && sharedPlantedToday(u)) refreshUsernameStep();
 } else {
 usernameField.elt.readOnly = false;
@@ -4043,6 +4141,20 @@ usernameField.style("box-sizing", "border-box");
 usernameNote.parent(nameRow);
 usernameNote.style("margin", "0");
 
+/* ENTER HERE MOVES TO THE PLANT BUTTON, IT DOES NOT PLANT. Every other
+   field's Enter goes to the next card, which is reversible by a Back;
+   planting is the one gesture on this page that is not, and it was
+   deliberately made a HOLD so that it is felt rather than tapped. A key in
+   a name field that put a flower in a public meadow would undo that whole
+   argument. It dismisses the phone's keyboard and puts the button under the
+   thumb, and the button's own keyboard path takes it from there. */
+if (window.GardenEnter) GardenEnter.on(usernameField, () => {
+  /* `plantBtnEl`, the hoisted `var`, and not the `const plantBtn`
+     declared further down: the same temporal dead zone reason
+     `nameRowEl` exists. */
+  if (plantBtnEl && plantBtnEl.elt && !plantBtnEl.elt.disabled) plantBtnEl.elt.focus();
+});
+
 /* ONE PLACE DECIDES WHETHER IT IS ON SCREEN, called from `paintIdRow` so it
    can never disagree with which identity button is lit. */
 function syncNameRow() {
@@ -4328,12 +4440,23 @@ const inGarden = step === "garden";
 dailyNote.html(inGarden && mine
 ? "Your flower is planted. Enjoy today's garden, and come back tomorrow for another."
 : (inGarden && browsing
-? "Have a look around. When something comes to mind, <button id=\"peek-back\">Plant yours</button>"
+? "<span>Have a look around. When something comes to mind,</span>" +
+  "<button id=\"peek-back\">Plant yours</button>"
 : ""));
 const shown = inGarden && (mine || browsing);
 /* `flex`, not `block`: the box is a fixed 38px tall so that its line sits
    level with the icons, and flex is what centres the line inside it. */
 dailyNote.style("display", shown ? "flex" : "none");
+/* THE PILL SITS UNDER THE LINE, NOT AT THE END OF IT. Beside the sentence
+   it had to share a row with it, so on any window narrow enough for that
+   line to wrap the button landed in the middle of a sentence; and a control
+   at the end of a line of prose reads as the last word of the prose, which
+   is the exact fault the underline had before it became a pill. On its own
+   row it is plainly a thing to press. The box grows DOWNWARD into empty sky
+   rather than upward into the top of the window, which is why `min-height`
+   and not `height`. */
+dailyNote.style("flex-direction", "column");
+dailyNote.style("gap", "7px");
 /* THE BOX IS `pointer-events: none` so it never swallows a tap meant for a
    flower under it, so the one thing in it that IS a control has to take them
    back for itself. */
@@ -4350,7 +4473,7 @@ if (back) {
      `pointer-events:auto` is still load bearing: `#daily-note` is
      `pointer-events:none` so it cannot swallow a tap meant for a flower, so
      the one control inside it has to take them back for itself. */
-  back.style.cssText = "margin-left:8px;border:none;cursor:pointer;" +
+  back.style.cssText = "border:none;cursor:pointer;" +
     "background:#1d6466;color:#fff9e3;font-family:Arial,Helvetica,sans-serif;" +
     "font-size:12.5px;font-weight:700;padding:6px 14px;border-radius:999px;" +
     "line-height:1.1;white-space:nowrap;pointer-events:auto;" +

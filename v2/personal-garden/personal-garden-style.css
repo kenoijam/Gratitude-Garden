@@ -867,3 +867,65 @@ html[data-dark="1"] #gg-name {
 /* The Home pill draws a house through `swapHomeIcon`, which strokes in
    `currentColor`, so the glyph follows the text above and needs no rule of
    its own. Stated because it looks like an omission. */
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   A FIELD IS A WRITING SURFACE, NOT A HOLE IN THE CARD
+
+   Every box you type into in this project is a white rectangle on a white
+   card behind a 2px #bde0d6 ring, which at a glance is no surface at all:
+   the one place on the screen you are being asked to put something was the
+   quietest mark on it. These give it the same treatment the rest of the
+   project gives anything you can act on, so a field reads as a thing to
+   write in before anybody has clicked it.
+
+   THE FOCUS RULE ABOVE HAS NEVER ONCE FIRED, and that is worth keeping.
+   `textarea:focus { border-color: powderblue }` cannot reach any of these,
+   because `buildUI()` writes `border: 2px solid #bde0d6` INLINE on every
+   one of them and inline beats a stylesheet on everything but `!important`.
+   So for the whole life of this project a focused field has looked exactly
+   like an unfocused one, and the colour it was trying to use (`powderblue`,
+   a stock CSS keyword) appears nowhere else in the palette. The ring here
+   is `#26a69a`, which is this project's own "chosen" teal, the colour a
+   picked flower tile already wears. **Seventh control caught by the inline
+   style trap.**
+
+   THE HALO NEEDS NO `!important` AND THE BORDER DOES. `box-shadow` is a
+   property `buildUI()` never writes, so it wins unaided, which is the same
+   device `.gg-hov` and the picker's hover lift both use; the border has to
+   be forced because the shorthand inline sets its colour. Both are declared
+   so the focus still reads where a box-shadow is suppressed.
+   ═══════════════════════════════════════════════════════════════════════ */
+.gg-card textarea,
+.gg-card input[type="text"] {
+  /* A HAIR OFF WHITE, SO THE BOX IS A SURFACE. Measured against the card's
+     own #fffefc it is a visible step without being a grey field in a white
+     room, and every ink on it is darker than it was on white. */
+  background: #fdfbf2;
+  color: #1d4e4a;
+  line-height: 1.5;
+  transition: box-shadow .16s ease, border-color .16s ease, background .16s ease;
+}
+.gg-card textarea::placeholder,
+.gg-card input[type="text"]::placeholder {
+  /* The browser's default placeholder grey is the one colour on these cards
+     that belongs to no palette. This is the garden's own teal, held light
+     enough that it still reads as a prompt rather than as typed text. */
+  color: #8fb3ae;
+  opacity: 1;
+}
+.gg-card textarea:hover,
+.gg-card input[type="text"]:hover {
+  box-shadow: 0 2px 10px rgba(29,100,102,0.10);
+}
+.gg-card textarea:focus,
+.gg-card input[type="text"]:focus {
+  background: #ffffff;
+  border-color: #26a69a !important;
+  box-shadow: 0 0 0 3px rgba(38,166,154,0.20);
+}
+/* A touch screen has no pointer to hover with, and a `:hover` rule there is
+   eaten by the first tap: the standing rule for all four stylesheets. */
+@media (hover: none) {
+  .gg-card textarea:hover,
+  .gg-card input[type="text"]:hover { box-shadow: none; }
+}

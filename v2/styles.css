@@ -25,12 +25,33 @@
 }
 
 :root {
---cream: #fff9e3; --sky: #b7e4e7; --teal: #429288; --lightsky: #e1f7f7;
---yellow: #fbe484; --darkteal: #1d6466; --white: #ffffff;
+/* ══════════════ THE FIVE GROUND TOKENS FOLLOW THE CLOCK (v2 ONLY)
+   Each one reads a `--dl-*` variable that `garden-daylight.js` writes on
+   every recompute, with its own daytime value as the FALLBACK, so a page
+   that fails to load the module gets exactly the palette it always had.
+   Writing it here rather than in a block of night overrides is what makes
+   the whole page follow at once: a curve is painted in the colour of the
+   section ABOVE it, every card and badge derives from these, and a list of
+   night rules would have missed one of them and been wrong by a section.
+   See the note in `garden-daylight.js` for why the paper is DIMMED rather
+   than darkened: a mid tone is the one ground on which neither dark nor
+   light text works, and dimming can only improve a dark-on-light ratio. */
+--cream: var(--dl-cream, #fff9e3); --sky: var(--dl-sky, #b7e4e7);
+--teal: #429288; --lightsky: var(--dl-lightsky, #e1f7f7);
+--yellow: #fbe484; --darkteal: var(--dl-darkteal, #1d6466); --white: #ffffff;
 /* the meadow's ground, painted on the hero canvas. About's curve carries it
    down into the cream, so the two must match: the canvas literal is
-   `ctx.fillStyle='#7ec4b4'` in index.html. */
---grass: #7ec4b4;
+   `ctx.fillStyle='#7ec4b4'` in index.html. AT NIGHT IT IS THE MEADOW'S OWN
+   `fore`, handed over whole by the daylight module, so `.wisdom::before`,
+   the roll out of the hero, is the identical colour to the strip of ground
+   it rolls off. Left at the literal it was the one light green object on a
+   dark page, which is what the author saw. */
+--grass: var(--dl-grass, #7ec4b4);
+/* THE BODY COPY'S INK, which darkens as the paper dims so that no contrast
+   ratio on this page ever falls below its daytime figure. It is a token
+   rather than a night override because the colour is written in eight
+   separate rules and a list of overrides would have missed one. */
+--ink: var(--dl-ink, #2f6260);
 /* Ink for the bouquet card. Its ground is the meadow's teal, and plain
    --darkteal on that measures 3.86, under the 4.5 body text needs. This is
    5.68. Anything written on that card uses it. */
@@ -129,7 +150,7 @@ body { padding-left: 0 !important; }
    hero sky at 17.85px, the same bug .section-desc carried and for the same
    reason: an opacity mixes the text with whatever is behind it. #2f6260 is the
    body copy floor this page already uses. */
-.hero-subtitle { font-family: Arial,Helvetica,sans-serif; font-size: 1.05rem; color: #2f6260; max-width: 600px; margin: 0 auto; line-height: 1.75; }
+.hero-subtitle { font-family: Arial,Helvetica,sans-serif; font-size: 1.05rem; color: var(--ink, #2f6260); max-width: 600px; margin: 0 auto; line-height: 1.75; }
 /* The 1.8rem that used to sit under the subtitle is gone for the same reason
    the 2.5rem under the block is: it separated the copy from the buttons. Left
    in, it was 30px of dead space inside the block and the auto margins centred
@@ -404,7 +425,7 @@ section { padding: 5rem 5rem; }
    blend produced over cream, and it failed WCAG AA everywhere it was used:
    4.33 on cream, 4.10 on pale blue, 3.32 on the stronger blue, against a 4.5
    requirement. This is 6.56, 6.21 and 5.03. */
-.section-desc { font-family: Arial,Helvetica,sans-serif; font-size: 1.05rem; line-height: 1.8; color: #2f6260; max-width: 700px; }
+.section-desc { font-family: Arial,Helvetica,sans-serif; font-size: 1.05rem; line-height: 1.8; color: var(--ink, #2f6260); max-width: 700px; }
 
 /* ── ABOUT: 2-col grid, title spans left col row1, cards align to body text row2 ── */
 /* Cream, flat, and so are the cards below it: About and the three cards are one
@@ -503,7 +524,11 @@ section { padding: 5rem 5rem; }
 .feature-card { background: var(--white); border-radius: 16px; padding: 1.2rem 1.3rem; border: 1.5px solid var(--sky); display: flex; align-items: flex-start; gap: 0.85rem; }
 .feature-icon { width: 40px; height: 40px; flex-shrink: 0; display: block; margin-top: 2px; }
 .feature-title { font-family: 'Fraunces','Georgia',serif; font-size: 1rem; color: var(--darkteal); margin-bottom: 0.2rem; }
-.feature-desc { font-family: Arial,Helvetica,sans-serif; font-size: 0.85rem; color: var(--teal); line-height: 1.55; }
+/* `--teal` ON A WHITE CARD MEASURES 3.69 AT 14.45px, which is under the
+   4.5 body text needs, and it had been failing at every hour rather than
+   only at night: found while re-measuring this page for the dusk dim.
+   The body ink is this project's floor for copy and reads 12.64 there. */
+.feature-desc { font-family: Arial,Helvetica,sans-serif; font-size: 0.85rem; color: var(--ink, #2f6260); line-height: 1.55; }
 /* A LINK IN A FEATURE CARD GOES DARKER, NOT BLUER. `--teal` is already at the
    edge of readable at this size, and the browser's own link blue is the one
    colour on this page that belongs to nothing. Underlined, because colour
@@ -952,7 +977,7 @@ canvas.flower-canvas { position: absolute; top: 0; left: 0; width: 100%; height:
 .gardener-h em { font-style: italic; color: var(--teal); }
 .gardener-p {
   font-family: Arial, Helvetica, sans-serif; font-size: 1rem;
-  color: #2f6260; line-height: 1.6;
+  color: var(--ink, #2f6260); line-height: 1.6;
   max-width: 560px; margin: 0 auto;
 }
 /* FIVE ACROSS, a fixed count rather than auto-fit, which is the rule every
@@ -977,7 +1002,7 @@ canvas.flower-canvas { position: absolute; top: 0; left: 0; width: 100%; height:
 .gardener-card canvas { display: block; width: 100%; height: auto; }
 .gardener-name {
   font-family: Arial, Helvetica, sans-serif;
-  font-size: .82rem; color: #2f6260; font-weight: 700; letter-spacing: .02em;
+  font-size: .82rem; color: var(--ink, #2f6260); font-weight: 700; letter-spacing: .02em;
 }
 /* THEY BOB, EACH ON ITS OWN PERIOD, or the five rise and fall together and
    the row reads as the page tilting. Same rule the hero's objects follow. */
@@ -1779,7 +1804,7 @@ section { padding: 2.2rem 3.4rem; }
   line-height: 1.45;
   /* The body copy floor on this page, measured against the darkest ground any
      of it sits on. Nothing here goes lighter. */
-  color: #2f6260;
+  color: var(--ink, #2f6260);
   pointer-events: none;
   transition: opacity .22s ease;
 }
@@ -1846,7 +1871,7 @@ section { padding: 2.2rem 3.4rem; }
   font-family: Arial, Helvetica, sans-serif;
   font-size: 0.72rem;
   line-height: 1.4;
-  color: #2f6260;
+  color: var(--ink, #2f6260);
 }
 .fr-label[data-side="l"] { text-align: right; }
 .fr-label[data-side="r"] { text-align: left; }
@@ -1898,7 +1923,7 @@ section { padding: 2.2rem 3.4rem; }
   line-height: 1.55;
   /* The body copy floor on this page, measured against the darkest ground any
      of it sits on. Nothing here goes lighter. */
-  color: #2f6260;
+  color: var(--ink, #2f6260);
   pointer-events: none;
 }
 .fr-note-a { left: 0; text-align: right; }
@@ -2217,7 +2242,7 @@ html:not([data-hero]) .hero-sun {
 }
 .meadow-tip span {
   display: block;
-  font-family: Arial, Helvetica, sans-serif; font-size: 11.5px; color: #2f6260;
+  font-family: Arial, Helvetica, sans-serif; font-size: 11.5px; color: var(--ink, #2f6260);
 }
 
 /* A touch screen has no pointer to lean with and no hover to answer. */
@@ -2340,4 +2365,47 @@ html[data-daylight] .hero-sun { transition: filter 1.2s linear, transform 1.2s l
 .cloud .body, .cloud .bump1, .cloud .bump2 {
   background: var(--dl-cloud, rgba(255,255,255,0.9));
   transition: background 1.2s linear;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   THE MOON HAS NO RAYS
+
+   The gardens' canvas draws `rays: 0` after dark, so their moon is a bare
+   disc; the hero's sun is inline SVG and went on throwing all twelve of
+   them, which is why it still read as a small sun rather than as a moon
+   however far its colour was drained. Dimming the whole figure could not
+   fix that: the rays ARE the thing that says sun. They come off instead,
+   on the ray group's own class, and the eight stacked discs that remain are
+   the moon.
+   ═══════════════════════════════════════════════════════════════════════ */
+html[data-dark="1"] .hero-sun-rays { opacity: 0; }
+html[data-daylight] .hero-sun-rays { transition: opacity 1.2s linear; }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   THE WHOLE PAGE DIMS AT DUSK, AND IT IS THE TOKENS THAT DO IT
+
+   Nothing below is a night palette. The five ground tokens at the top of
+   this file read `--dl-*` variables now, so every section ground, every
+   curve, every card, every badge and every chip already follows the hour;
+   all that is left here is to make the change SLIDE rather than snap, at
+   the same 1.2s the hero's gradient and the gardens' canvas use, so the
+   three cannot disagree about how long an hour takes to arrive.
+
+   The curves are included BY NAME because each is painted in the colour of
+   the section ABOVE it: left untransitioned, a roll would jump a beat
+   before or after the ground it rolls onto.
+   ═══════════════════════════════════════════════════════════════════════ */
+html[data-daylight] .about,
+html[data-daylight] .gardens,
+html[data-daylight] .catalogue,
+html[data-daylight] .wisdom,
+html[data-daylight] .cta,
+html[data-daylight] footer,
+html[data-daylight] .about::before,
+html[data-daylight] .gardens::before,
+html[data-daylight] .catalogue::before,
+html[data-daylight] .wisdom::before,
+html[data-daylight] .cta::before,
+html[data-daylight] footer::before {
+  transition: background-color 1.2s linear, background 1.2s linear;
 }

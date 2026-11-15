@@ -248,6 +248,253 @@ not have to list the phases and get forgotten when one is added.
   naming `#name-suffix` matched nothing and left the title half cream and half
   green. It is selected by its parent.
 
+## SCROLL AS GROWTH (`v2/garden-growth.js`), LANDING PAGE ONLY
+
+**One stem down the whole page, grown by the scroll**, from the top of the
+section under the hero to the footer, putting out a leaf every 235px of itself
+and opening one flower at the end. The reference is jld2nd.dev.
+
+- **WHY: Strauss and Fuad-Luke's slow design principle EVOLVE**, that an
+  artefact should reveal itself over time rather than arriving whole. Every
+  section of this page is about something that takes time, the About grid
+  says in so many words that your flower grows, and until this nothing on the
+  landing page grew. It is the one place where the page performs its own
+  subject.
+- **THE GROWTH IS A `stroke-dashoffset` ON ONE PATH.** The browser already
+  knows that path's length, so revealing it is a single number per frame and
+  nothing is rebuilt as the page moves. The leaves are CSS transforms toggled
+  by a class, so each animates itself once and is never touched again.
+- **z-index 4, AND IT IS MEASURED AGAINST THIS PAGE.** Section content is 5,
+  so the stem passes BEHIND every paragraph and card; the section backgrounds
+  and their curves carry no z-index at all, so it passes OVER those, which is
+  the whole point of a stem that crosses the joins. Dust is 6, Hortus 240, the
+  music button 260, the side nav 9000, the letter 9500.
+- **IT IS `position: absolute` WITH NO POSITIONED ANCESTOR**, so it resolves
+  against the initial containing block, which is anchored at the DOCUMENT
+  origin: `top` is a page coordinate and `right` is measured from the
+  viewport's right edge. That is why it needs no wrapper and why body did not
+  have to become `position: relative`.
+- **THE PATH IS MEASURED, NEVER WRITTEN.** Its height IS the page's height
+  between those two points, so a hand written `d` would be right at one window
+  size and wrong at every other. Rebuilt on a WIDTH change or a document
+  HEIGHT change only, never on a plain resize: iOS collapses its address bar
+  as you scroll and that fires one. The height is in the test because the
+  footer's folds and the About scroller change how tall the page is without
+  the window moving, and because the fonts land after boot and every section
+  grows when they do, which is what the three re-measures are for.
+- **A POLYLINE EVERY 8px RATHER THAN A BEZIER**, because `getTotalLength` and
+  `getPointAtLength` are what place the leaves and a dense polyline gives both
+  to well under a pixel.
+- **A LEAF EVERY FIXED ARC LENGTH, NOT EVERY FIXED FRACTION**, so a longer page
+  gets MORE leaves rather than the same leaves further apart, which is what a
+  plant does. Alternating sides, each turned by the stem's own tangent where it
+  joins, because a leaf at a right angle to its stem reads as a bracket.
+- **HIDDEN UNDER 1100px, THE SIDE NAV'S OWN BREAKPOINT.** That is where the
+  page's side padding drops to 2.5rem and the copy moves into the gutters;
+  above it there is 5rem of empty margin and the stem has a lane. A vine over a
+  paragraph is the fault the side nav was removed for. Measured at 1440: the
+  rail sits at 1388 to 1432 against content ending at 1355, and
+  `scrollWidth === clientWidth`, so nothing overflows sideways.
+- **REDUCED MOTION GETS THE WHOLE STEM, NOT NO STEM**, grown to full length
+  with every leaf out, which is the choice `garden-life.js` already makes: the
+  picture is not what anybody opted out of.
+- **Verified at 1440 by 900**: rail top 900, height 3505, path 3525 long, 14
+  leaves, and the offset lands exactly where the arithmetic says at every
+  scroll position (y 2600 gives 1109). **The pane throttles `requestAnimationFrame`,
+  so a reading taken straight after `scrollTo` reports the PREVIOUS position**;
+  dispatch `scroll` and await a few frames before measuring.
+
+## THE WHOLE PAGE DIMS AT DUSK, AND THE TOKENS ARE WHAT DO IT
+
+The author asked whether the cream sections should turn dark like the sky, and
+chose a warm dusk tint over a dark mode. **Five palette tokens in `styles.css`
+now read `--dl-*` variables with their own daytime values as the fallback**, so
+every section ground, every curve, every card and every badge follows the hour
+at once.
+
+- **TOKENS RATHER THAN A BLOCK OF NIGHT OVERRIDES, and the curves are why.**
+  Each curve is painted in the colour of the section ABOVE it, so a list of
+  overrides would have had to name all six and would have been wrong by a
+  section the first time one moved. **This is also the fix for the author's
+  report that "the last section of the hero garden is still light green at
+  night"**: `.wisdom::before`, the roll out of the hero, is `var(--grass)`,
+  and at ten at night it was the one light green object on a dark page. The
+  token is the meadow's own `fore` now, handed over whole, so the roll is the
+  identical colour to the strip of ground it rolls off.
+- **DIMMED, NOT RECOLOURED, AND THAT WAS A CORRECTION.** The first attempt
+  mixed each token toward a hand picked night colour and the cream landed on a
+  sandy `#ead9b0`; the author's verdict was that it sat outside the palette,
+  and she was right: that is a different colour, not the same colour with less
+  light on it. `dim()` multiplies all three channels by one factor, which holds
+  the hue and the saturation and moves only the brightness. Cream at full dark
+  is `#ded9c5`, which is plainly the project's own cream.
+- **A MID TONE IS THE ONE GROUND NOTHING WORKS ON, which is why this is not a
+  dark mode.** Taken far enough toward dark, cream passes through a value where
+  dark text fails and light text fails too, and every ratio measured on this
+  page would have to be measured again with some having no answer at all.
+- **THE INK GOES DOWN WITH THE LAMP, AND THAT IS WHAT LETS THE DIM BE DEEP
+  ENOUGH TO SEE.** Darkening a pale ground under FIXED dark text walks the two
+  toward each other and the ratio FALLS: measured, the body copy came back at
+  **4.51** on the first cream, which is on the AA line, and the pale blue
+  section went under it outright. With `--ink` darkening alongside, every ratio
+  ends at or ABOVE its daytime figure: body copy **6.56 by day reads 9.06** on
+  the night cream, 6.21 reads 9.24 on the pale blue, 5.03 reads 7.18 on the
+  sky. So the page dims without one measurement having to be revisited.
+- **`--ink` IS A TOKEN BECAUSE THE COLOUR IS WRITTEN IN EIGHT RULES.** A list
+  of night overrides would have missed one.
+- **A PRE-EXISTING FAILURE FELL OUT OF THE RE-MEASURE.** `.feature-desc` was
+  `var(--teal)` on a white card, **3.69 at 14.45px**, under the 4.5 body text
+  needs, and it had been failing at every hour rather than only at night. It
+  takes `--ink` and reads 12.64.
+- **THE MOON HAS NO RAYS.** The gardens' canvas draws `rays: 0` after dark, so
+  theirs is a bare disc; the hero's sun is inline SVG and went on throwing all
+  twelve, which is why it still read as a small sun however far its colour was
+  drained. **The rays ARE the thing that says sun**, so no amount of dimming
+  the whole figure could fix it. They are their own `<g class="hero-sun-rays">`
+  and the night rule takes them to zero.
+- **THE TRANSITION IS 1.2s, the same as the hero gradient and the gardens'
+  canvas**, and the curves are listed BY NAME: untransitioned, a roll would
+  jump a beat before or after the ground it rolls onto.
+
+## ENTER GOES ON (`v2/garden-enter.js`), v2 ONLY
+
+**One module at the v2 root, used by every text field in both gardens.** Every
+field in this project is a `<textarea>`, including the ones that want a word,
+so Enter put a newline in a box nobody wanted one in and the only way forward
+was to reach for the mouse. A reflection flow whose whole argument is that it
+should not feel like a form was asking for a mouse at the end of every sentence.
+
+- **SHIFT+ENTER STILL MAKES A NEW LINE**, so a paragraph is still possible and
+  the key that does the obvious thing is the unmodified one. That is the
+  convention every chat box has taught, which is the whole reason it is safe.
+- **IT RUNS THE STEP'S OWN ACTION**, handed over at the call site, so the
+  gating a card already does is honoured without the module knowing anything
+  about it. A key that skipped a check the button enforces would be a second
+  route through the flow with different rules. The gratitude card's Enter
+  therefore leaves on an EMPTY box exactly as its button does, or the one
+  optional question in the flow would quietly become required.
+- **IT BLURS FIRST**, because on a phone the keyboard covers the bottom third
+  and a card that changes underneath it leaves somebody reading through a
+  keyboard they then have to dismiss by hand.
+- **AN IME MID COMPOSITION IS IGNORED** (`isComposing`, `keyCode === 229`).
+  Enter there is choosing a candidate, and a key that jumped the card out from
+  under somebody typing in Chinese or Japanese would be unusable.
+- **ENTER IN THE SHARED GARDEN'S NAME FIELD MOVES TO THE PLANT BUTTON, IT DOES
+  NOT PLANT.** Every other Enter goes to a card a Back can undo; planting is
+  the one gesture here that cannot be, and it was deliberately made a HOLD so
+  it is felt rather than tapped. A key in a text field that put a flower in a
+  public meadow would undo that whole argument. It uses `plantBtnEl`, the
+  hoisted `var`, not the `const plantBtn` declared further down: the same
+  temporal dead zone reason `nameRowEl` exists.
+
+## A FIELD IS A WRITING SURFACE, AND THE FOCUS RULE HAD NEVER FIRED
+
+Every box you type into was a white rectangle on a white card behind a pale
+ring, so the one place on the screen asking for something was the quietest mark
+on it. Both garden stylesheets end with a treatment that gives it a surface.
+
+- **`textarea:focus { border-color: powderblue }` HAS NEVER ONCE FIRED, in
+  either garden, for the whole life of this project.** `buildUI()` writes
+  `border: 2px solid #bde0d6` INLINE on every field and inline beats a
+  stylesheet on everything but `!important`, so a focused field has always
+  looked exactly like an unfocused one. **Seventh control caught by that trap.**
+  The colour it was reaching for, `powderblue`, is a stock CSS keyword that
+  appears nowhere else in the palette; the ring is `#26a69a` now, which is the
+  teal a chosen picker tile already wears.
+- **THE HALO NEEDS NO `!important` AND THE BORDER DOES.** `box-shadow` is a
+  property `buildUI()` never writes, so it wins unaided, the same device
+  `.gg-hov` and the picker's hover lift use; the border has to be forced
+  because the inline shorthand sets its colour. Measured: with the declarations
+  applied the border computes `rgb(38,166,154)` against the inline
+  `2px solid rgb(189,224,214)`.
+- **A MEASUREMENT TRAP, AND IT COST A ROUND.** The browser pane's window is not
+  focused, so **`:focus` never matches there** however the element is focused:
+  `document.activeElement === el` is true while `el.matches(":focus")` is
+  false. And the pane throttles `requestAnimationFrame`, **which is what drives
+  CSS transitions**, so a transitioned property read in the pane can sit at its
+  START value indefinitely and look like a rule that did not apply. Kill the
+  transition and apply the declarations through a class to test them.
+
+## FIVE DEMO FLOWERS: CHINESE INDONESIAN NAMES, AND A STEM PER ROW
+
+- **THE NAMES ARE CHINDO GIVEN NAMES NOW**, which is who this is actually for.
+  The first list was a scatter of short international names and read as a demo
+  from nowhere; a meadow whose five strangers are plausibly the participant's
+  own classmates is a very different first impression. Lower case on purpose:
+  the field asks for "your name or nickname" and that is what people type.
+- **THE STEM COMES OFF THE LAYER, and it used to be one flat range for all
+  five.** `addFlower` has always given a back row flower a longer stem than a
+  front row one, so the demos were the only flowers in the meadow standing the
+  same height whatever row they were in. `DEMO_STEM` holds `addFlower`'s own
+  bands. Verified: back 0.38, mid 0.32 and 0.29, front 0.16 and 0.19, five
+  distinct names, five distinct gratitudes, `shared.flowers` holding 0 demos.
+
+## THE SHARED GARDEN'S SPARKLES WERE GONE, AND IT WAS TWO FAULTS
+
+The Garden Tips card has said the whole time that sparkles mark your bloom.
+
+- **`isMyFlower` WAS SET IN ONE PLACE AND NEVER PUT BACK.** `addFlower` set it,
+  and nothing restored it, so it survived exactly as long as the tab did:
+  reload, or open the garden on a laptop having planted on a phone, and the
+  sketch no longer knew which flower in the meadow was yours. **`claimMyFlower()`
+  runs after every room copy** and takes two routes, because neither covers the
+  other: a local note of the `createdIndex` written when you plant, which is
+  the only thing that can find an ANONYMOUS flower whose `word` is an invented
+  alias nobody could look up; and the NAME, for a flower planted under an
+  account on another device this browser has no note of. Both are keyed by the
+  room, so both expire with the garden, and **nothing goes into the room**:
+  `createdIndex` is already public.
+- **IT RUNS FROM `applyAccountUsername` TOO**, because the account arrives
+  after the room does and that is a network race: at the moment of the room
+  copy there may be no name to match on yet.
+- **A DEMO CAN NEVER BE CLAIMED.** Verified: the index path, the name path, and
+  a stored index of 900000 claiming nothing.
+- **THE SPARKLES NO LONGER EXPIRE.** They faded out over 60 seconds from
+  `plantedTime`, so the one mark saying which flower is yours was gone a minute
+  after planting and could never come back. The personal garden has never
+  expired its own (`isLatest`, alpha 1), so the shared one was the odd garden
+  out as well as the broken one. The room is keyed by the date, so these go at
+  midnight with the flower. **A reclaimed flower is given no `plantedTime`**,
+  deliberately: it was not planted just now and the history could read that
+  back.
+
+## "PLANT YOURS" SITS UNDER THE LINE, NOT AT THE END OF IT
+
+Beside the sentence it shared a row with it, so on any window narrow enough for
+that line to wrap the button landed mid sentence; and a control at the end of a
+line of prose reads as the last word of the prose, which is the exact fault the
+underline had before it became a pill. `#daily-note` is a flex COLUMN with a
+7px gap now, so the box grows downward into empty sky rather than upward into
+the top of the window, which is why it is `min-height` and not `height`.
+Measured: sentence 62 to 78, pill 85 to 111, centred to the pixel.
+
+## THE BACK ROW IS THE TALLEST ROW (PERSONAL GARDEN), AND IT WAS THE SHORTEST
+
+It ran 0.11 to 0.21 of the height against a front row of 0.13 to 0.23, so the
+flowers furthest back were the stubbiest things in the garden and the depth was
+carried entirely by `targetBaseY` lifting their feet. What that reads as is a
+back row that has not grown. **A garden is not a photograph and these rows are
+not a perspective: they are a stage, and on a stage the back stands taller so
+nothing is hidden behind anything.**
+
+- **THE LIMIT IS `minAllowedY`, NOT TASTE, AND THE TWO MUST BE READ TOGETHER.**
+  A back flower's highest painted pixel is `0.76 - 0.17 (the lift) - stem -
+  size`, and that ceiling scales the WHOLE garden down the moment anything
+  crosses it. The band is 0.24 to 0.30 now, which tops out near 0.245, so the
+  ceiling came down from 0.32 to **0.24**. Raise either and check the other, or
+  every flower in the garden quietly shrinks the day somebody plants a ninth.
+  0.24 is still clear of everything above it: the name sits at 18 on a laptop
+  and its line runs to about 140 on a phone, against 195 at 0.24 of an 812 tall
+  screen.
+- **`STEM_FLOOR.back` MOVED WITH THE BAND**, 0.11 to 0.24, since it is that
+  band's own lowest value.
+- **Measured over 24 planted flowers**: front 0.181 average, mid 0.218, back
+  0.269, highest painted top 0.289 of the height, and the garden is NOT scaled
+  down.
+- **The shared garden already did this correctly** and needed nothing: its own
+  `addFlower` bands run front 0.16 to 0.24, mid 0.26 to 0.36, back 0.32 to
+  0.42. Only its five demos were flat.
+
 ## THE HERO FOLLOWS THE CLOCK TOO, AND `tint` IS NOT `dark`
 
 The landing page opens on `#b7e4e7 -> #e1f7f7 -> #fff9e3` and the gardens on

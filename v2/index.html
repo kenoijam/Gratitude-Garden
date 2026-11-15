@@ -16,6 +16,10 @@
        because it writes the hero's sky variables on <html> and anything
        that paints before it would paint a midday scene for a frame. -->
   <script src="garden-daylight.js"></script>
+  <!-- SCROLL AS GROWTH. Landing page only: it is the page performing its
+       own subject, and a garden you are standing in needs no second one.
+       It boots on DOMContentLoaded, so the tag may sit in the head. -->
+  <script src="garden-growth.js"></script>
   <script src="garden-life.js"></script>
 
   <!-- One cursor for the whole project: a leaf at rest, a bloom over
@@ -221,7 +225,13 @@
       <circle cx="90" cy="90" r="12" fill-opacity="0.83"/>
       <circle cx="90" cy="90" r="4"  fill-opacity="0.94"/>
     </g>
-    <g stroke="#ffd278" stroke-opacity="0.47" stroke-width="2" stroke-linecap="round">
+    <!-- The rays are their OWN group so the night rule can take them off
+         outright. A moon has no rays, and the gardens' own `rays: 0` at
+         night means their canvas draws none, so a hero moon still throwing
+         twelve of them was the one sun left in the sky. Fading the whole
+         SVG could not fix it: the rays are what made the disc look like a
+         sun whatever its colour. -->
+    <g class="hero-sun-rays" stroke="#ffd278" stroke-opacity="0.47" stroke-width="2" stroke-linecap="round">
       <line x1="145.0" y1="90.0"  x2="180.0" y2="90.0"/>
       <line x1="137.6" y1="117.5" x2="167.9" y2="135.0"/>
       <line x1="117.5" y1="137.6" x2="135.0" y2="167.9"/>
@@ -1755,6 +1765,28 @@
     </a>
   </div>
 </footer>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     SCROLL AS GROWTH: ONE STEM DOWN THE WHOLE PAGE (v2 ONLY)
+
+     The reference is jld2nd.dev, whose vine grows as the page is scrolled.
+     It is in here because of what it makes the PAGE do rather than because
+     of what it looks like: Strauss and Fuad-Luke's slow design principle
+     EVOLVE is that an artefact should reveal itself over time instead of
+     arriving whole, and this is the one place on the site where the page
+     itself performs the thing every one of its six sections is about. The
+     About grid already claims "a flower that grows"; until now nothing on
+     the landing page grew.
+
+     IT IS ONE PATH AND THE GROWTH IS ITS DASH OFFSET, which is why it costs
+     nothing per frame: the tip is `stroke-dashoffset`, so the browser is
+     revealing a line it has already laid out rather than being handed a new
+     one thirty times a second.
+
+     EMPTY IN THE MARKUP ON PURPOSE. The path's length is the page's own
+     height, so it has to be measured; written by hand it would be wrong at
+     every window size but one. -->
+<div id="growth-rail" aria-hidden="true"></div>
 
 <script>
   /* THE FOOTER'S SIGN UP OPENS THE PROJECT'S OWN ACCOUNT CARD. `openSignIn`

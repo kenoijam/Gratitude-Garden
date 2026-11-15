@@ -411,8 +411,22 @@ const t = backFlowers.length / ROW_CAPACITY;
 targetLayer = "back";
 targetBaseY = groundLevel - height * 0.17;
 /* no narrow-screen shrink here: see stemNorm below */ const stemScale = 1;
-minStem = height * lerp(0.11, 0.17, t) * stemScale;
-maxStem = height * lerp(0.15, 0.21, t) * stemScale;
+/* ══════════ THE BACK ROW IS THE TALLEST ROW, AND IT USED TO BE THE SHORTEST
+   It ran 0.11 to 0.21 against a front row of 0.13 to 0.23, so the flowers
+   furthest back were the stubbiest things in the garden and the depth was
+   carried entirely by `targetBaseY` lifting their feet. What that reads as
+   is a back row that has not grown. A garden is not a photograph and these
+   rows are not a perspective: they are a stage, and on a stage the back
+   stands taller so that nothing is hidden behind anything.
+
+   THE LIMIT IS THE CEILING AT THE TOP OF THIS FUNCTION, not taste. A back
+   flower's highest painted pixel is `0.76 - 0.17 (the lift) - stem - size`,
+   and `minAllowedY` scales the WHOLE garden down the moment anything crosses
+   it. At 0.30 of stem that comes to 0.245, so the ceiling moved with these
+   numbers and the two have to be read together: raise one of these bands
+   and check `minAllowedY` or every flower in the garden quietly shrinks. */
+minStem = height * lerp(0.24, 0.26, t) * stemScale;
+maxStem = height * lerp(0.28, 0.30, t) * stemScale;
 }
 
   const maxAttempts = 80;
@@ -1610,7 +1624,10 @@ var SHADOW_FIT = 0.82;
 
 /* The shortest stem each layer can be planted with, from `addFlower`'s own
    ranges at their lowest. Used to lift flowers that were saved short. */
-const STEM_FLOOR = { front: 0.13, mid: 0.17, back: 0.11 };
+/* Each layer's shortest possible stem, from `addFlower`'s own ranges at
+   their lowest, so the three move together: the back row is the tallest
+   row now and its floor went up with its band. */
+const STEM_FLOOR = { front: 0.13, mid: 0.17, back: 0.24 };
 
 function bloomShadow(f, R, alphaK) {
   var k = (alphaK === undefined) ? 1 : alphaK;
@@ -2979,7 +2996,15 @@ function updateResponsiveFlowerLayout() {
     f.size    = f.sizeNormOrig * height;
   }
 
-  const minAllowedY = height * 0.32;
+  /* THE CEILING, AND IT CAME DOWN WITH THE BACK ROW. It was 0.32, which is
+     exactly what the back row's old short stems were tuned against: with
+     that row now standing 0.24 to 0.30 on feet already lifted 0.17, a full
+     height back flower tops out around 0.245 and at 0.32 the whole garden
+     would have been scaled down the moment anybody planted a ninth flower.
+     0.24 is still clear of everything above it: the garden's name sits at
+     18 on a laptop and 62 on a phone with its line under it to about 140,
+     against 0.24 of an 812 tall phone, which is 195. */
+  const minAllowedY = height * 0.24;
   let highestBloomY = Infinity;
   for (const f of flowers) {
     const bloomY = f.baseY - f.stemLen - f.size;
@@ -3498,7 +3523,11 @@ function buildUI() {
   /* WHO OR WHAT COMES AFTER WHY, and only on the flower-first path. On the
      write-first path that question was already asked before the flower, so
      asking it again here would be the same question twice in one sitting. */
-  whyGo.mousePressed(() => showStep(pickedBySelf ? "prompt2" : "prompt3"));
+  /* ONE ACTION, TWO WAYS IN: the button and Enter run the identical step,
+     so the key can never be a second route through the flow. */
+  const whyNext = () => showStep(pickedBySelf ? "prompt2" : "prompt3");
+  whyGo.mousePressed(whyNext);
+  if (window.GardenEnter) GardenEnter.on(whyBox, whyNext);
   gbtn(cardWhy, "Back").mousePressed(() => {
     showStep(pickedBySelf ? "pick" : "prompt2");
   });
@@ -3815,7 +3844,9 @@ function buildUI() {
   continueBtn3.style("cursor", "pointer");
   continueBtn3.style("margin-bottom", "8px");
   continueBtn3.style("pointer-events", "auto");
-  continueBtn3.mousePressed(() => showStep("prompt4"));
+  const journalNext = () => showStep("prompt4");
+  continueBtn3.mousePressed(journalNext);
+  if (window.GardenEnter) GardenEnter.on(journalField, journalNext);
 
   const backBtn3 = createButton("Back").parent(card3);
   backBtn3.style("background", "#e0e0e0");
@@ -3921,6 +3952,14 @@ function buildUI() {
        the "why" screen has to move with it.
 
        The hue is still random, and still set where the species is. */
+    showStep("flowerPreview");
+    updateFlowerPreview();
+  });
+  /* Enter leaves the gratitude box the same way the button does, empty or
+     not: the card argues for an answer and names the skip, and a key that
+     refused an empty box would quietly turn the one optional question in
+     the flow into a required one. */
+  if (window.GardenEnter) GardenEnter.on(gratitudeField, () => {
     showStep("flowerPreview");
     updateFlowerPreview();
   });
