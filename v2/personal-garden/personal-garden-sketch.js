@@ -71,9 +71,9 @@ let prompt1Wrap, prompt2Wrap, prompt3Wrap, prompt4Wrap, flowerPreviewWrap, garde
           |                     |
        pick a flower       prompt1 how was your day
           |                prompt2 what shaped it
-          |                     | (chooseFlowerForMood)
-          +-------> why "why that one?" <-------+
-                    prompt3 anything else
+       why "why that one?"       | (chooseFlowerForMood)
+          |                      |
+          +-----> prompt3 any moments from today <----+
                     prompt4 one small gratitude
                     flowerPreview
                     garden
@@ -3640,31 +3640,30 @@ function buildUI() {
   }
   whyBox.input(() => { whyText = whyBox.value().trim(); whyLabel(); });
   whyLabel();
-  /* WHO OR WHAT COMES AFTER WHY, and only on the flower-first path. On the
-     write-first path that question was already asked before the flower, so
-     asking it again here would be the same question twice in one sitting. */
+  /* WHO OR WHAT COMES AFTER WHY. That question is asked before the flower
+     on the write-first path and after it here, which is the only ordering
+     difference left between the two. */
   /* ONE ACTION, TWO WAYS IN: the button and Enter run the identical step,
      so the key can never be a second route through the flow. */
-  const whyNext = () => showStep(pickedBySelf ? "prompt2" : "prompt3");
+  /* THE PATH FORK IS GONE FROM BOTH OF THESE. This card is only ever
+     reached from the picker now, so `pickedBySelf` is always true here and
+     a branch on it would be a choice with one arm. */
+  const whyNext = () => showStep("prompt2");
   whyGo.mousePressed(whyNext);
   if (window.GardenEnter) GardenEnter.on(whyBox, whyNext);
-  gbtn(cardWhy, "Back").mousePressed(() => {
-    showStep(pickedBySelf ? "pick" : "prompt2");
-  });
+  gbtn(cardWhy, "Back").mousePressed(() => showStep("pick"));
 
-  /* The question differs by path, and `showStep` cannot set it because the
-     wording belongs with the card. You can say why you picked one; you cannot
-     say why a machine did, only what you make of it. */
+  /* ONE WORDING NOW, AND THE SECOND ONE IS DELETED RATHER THAN LEFT IN.
+     There was a write-first variant reading "What do you make of it?" over
+     "Your day chose this flower", and it asked about a flower that had been
+     CHOSEN but not yet SHOWN: on that path the species is decided after
+     prompt2 and does not appear until the preview three cards later. The
+     card is skipped on that path now, so the variant has nothing to say and
+     keeping it would be a branch waiting to be reached by accident. */
   window.__tuneWhy = function () {
-    if (pickedBySelf) {
-      whyHead.html("Why that one?");
-      whySub.html("A word or two is plenty.");
-      whyBox.attribute("placeholder", "Because...");
-    } else {
-      whyHead.html("What do you make of it?");
-      whySub.html("Your day chose this flower. A word or two is plenty.");
-      whyBox.attribute("placeholder", "It feels...");
-    }
+    whyHead.html("Why that one?");
+    whySub.html("A word or two is plenty.");
+    whyBox.attribute("placeholder", "Because...");
     whyLabel();
   };
 
@@ -4627,7 +4626,17 @@ function updateFlowerPreview() {
 function chooseAndAsk() {
   chosenSpecies = chooseFlowerForMood(dayRating, dayShaper, "");
   chosenHue = random(0, 360);
-  showStep("why");
+  /* STRAIGHT ON, AND THE "WHY" CARD IS SKIPPED ON THIS PATH. It used to
+     come next, asking "What do you make of it?" about a flower that is NOT
+     ON SCREEN: the species is decided here and not shown until the preview
+     three cards later, so the question was about something invisible. A
+     card asking you to react to a thing you have not been shown is not a
+     slow question, it is a confusing one.
+
+     THE CARD BELONGS TO THE FLOWER-FIRST PATH AND ONLY THAT. Its question
+     is why you PICKED one, and on this path nobody picked. It also takes a
+     writing screen out of a path that already has four. */
+  showStep("prompt3");
 }
 
 function showStep(s) {
