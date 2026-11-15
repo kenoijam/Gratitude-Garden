@@ -112,8 +112,135 @@ let myLocalFlowerIndex = -1;
 
 // ---------------------------- GENERAL HELPER FUNCTIONS ----------------------------
 
+/* ═══════════════════════════════════════════════════════════════════════════
+   SMALL CIRCLES: A GARDEN WITH THE PEOPLE YOU CHOOSE
+
+   Out of the expert interview with Viola Amelia, 30 October 2026, at 48:14:
+   "the idea of having this kind of a smaller circle optional, keep it for
+   yourself or share it communally, share it with your circle, with your
+   community that you choose... let them have this garden together, bring
+   friends", and the line the whole feature turns on, **"not for the social
+   validation, but just simply for the social blessing"**. She grounds it at
+   46:34 in Erikson's isolation versus intimacy, which is the developmental
+   question of this project's own age group, and at 47:54 in low maintenance
+   friendship. It was the one thing she argued FOR that the project had no
+   answer to at all: a gratitude could be private or it could be public to
+   every stranger on the internet that day, with nothing in between.
+
+   ───────────────────────────────────── A CIRCLE IS A CODE, NOT AN ACCOUNT
+   The room key is `garden-<date>-<code>` instead of `garden-<date>`, and
+   that is the entire mechanism. Everybody holding the code is in the circle.
+
+   THERE IS DELIBERATELY NO MEMBERSHIP TABLE, and the reasoning is the same
+   one that keeps the public garden open: planting here takes no account on
+   purpose, because being able to try the page in ten seconds is the point of
+   it, and a circle you have to sign up for is a circle most people never
+   make. A table would also mean a new Supabase step, a new set of row level
+   security policies and a feature that is simply missing on any copy where
+   the SQL has not been run. A code works today, on a static site, for
+   somebody with no account, which is what this project is.
+
+   WHAT THAT COSTS, PLAINLY: anybody who is given the code, or who guesses
+   one, is in. It is a quiet room rather than a locked one. The codes are
+   three words out of a 20 by 20 by 20 list plus the date, so guessing one by
+   accident is not a realistic worry, but a code forwarded to somebody is a
+   person added, and the page says so in words rather than implying privacy
+   it cannot enforce. For anything that needs real membership the friends
+   system in `garden-account.js` is already built and behind `FRIENDS_OFF`.
+
+   ─────────────────────────────────── EVERYTHING ELSE FOLLOWS FOR FREE
+   Because the whole design is the room key, and the room key is already
+   threaded through everything: the once a day marker stores `roomKey` so a
+   circle and the public garden are counted separately; `GardenSocial` is
+   handed `roomKey` at the call site so likes and comments land in their own
+   bucket; and the day snapshot is keyed the same way. None of those three
+   needed a line.
+
+   ───────────────────────────────────────── IT IS READ IN `preload`
+   p5 calls `preload` before anything else and the room has to be named
+   there, so the circle cannot be chosen from a card inside the sketch: it
+   comes off the URL, which is also what makes a circle SHAREABLE. Picking
+   one from the landing card navigates.
+   ═══════════════════════════════════════════════════════════════════════ */
+const CIRCLES_KEY = "gg_circles";
+
+/* Lower case, letters, digits and single hyphens, capped. A room key is a
+   string on somebody else's websocket server, so what goes into it is
+   sanitised here rather than trusted. */
+function cleanCode(v) {
+  return String(v || "")
+    .toLowerCase()
+    .replace(/[^a-z0-9-]+/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "")
+    .slice(0, 32);
+}
+
+function circleFromUrl() {
+  try {
+    return cleanCode(new URLSearchParams(location.search).get("circle") || "");
+  } catch (e) { return ""; }
+}
+
+/* The circles this browser knows about, newest first. An account is not
+   required and this is not synced: a circle is a code somebody gave you, and
+   the list is a convenience so you do not have to keep the link. */
+function myCircles() {
+  try {
+    const v = JSON.parse(localStorage.getItem(CIRCLES_KEY) || "[]");
+    return Array.isArray(v) ? v.filter(c => c && c.code) : [];
+  } catch (e) { return []; }
+}
+function rememberCircle(code, name) {
+  const list = myCircles().filter(c => c.code !== code);
+  list.unshift({ code: code, name: name || code });
+  try { localStorage.setItem(CIRCLES_KEY, JSON.stringify(list.slice(0, 12))); } catch (e) {}
+}
+function forgetCircle(code) {
+  try {
+    localStorage.setItem(CIRCLES_KEY,
+      JSON.stringify(myCircles().filter(c => c.code !== code)));
+  } catch (e) {}
+}
+
+/* THREE WORDS, NOT A HASH. "quiet-fern-moth" is a thing somebody can read
+   down a phone to a friend in a cafe, which is how a circle actually gets
+   made; a base64 string is a thing you have to copy and paste. The three
+   lists are deliberately gentle and have nothing to do with anybody's name.
+   20 by 20 by 20 is 8000 codes per day, and a collision only ever means two
+   circles sharing a garden, which the date clears at midnight. */
+const CODE_A = ["quiet","sunny","gentle","bright","soft","kind","warm","still",
+                "easy","open","slow","clear","calm","fresh","light","close",
+                "little","wide","early","late"];
+const CODE_B = ["fern","moss","reed","vine","leaf","seed","root","bud",
+                "petal","stem","dew","rain","sun","moon","star","cloud",
+                "hill","field","pond","path"];
+const CODE_C = ["moth","wren","bee","finch","swift","hare","deer","owl",
+                "robin","crane","otter","lark","dove","newt","toad","shrew",
+                "stoat","vole","heron","snail"];
+function makeCode() {
+  const pick = a => a[Math.floor(Math.random() * a.length)];
+  return pick(CODE_A) + "-" + pick(CODE_B) + "-" + pick(CODE_C);
+}
+
+function circleLink(code) {
+  return location.origin + location.pathname + "?circle=" + encodeURIComponent(code);
+}
+
+/* The circle this page is in, "" for the public garden. Set in `preload`,
+   read everywhere, never changed after: switching circles is a navigation. */
+let circleCode = "";
+function circleName() {
+  const c = myCircles().find(x => x.code === circleCode);
+  return (c && c.name) || circleCode;
+}
+
 function preload() {
-roomKey = "garden-" + todayStr();
+circleCode = circleFromUrl();
+/* THE DATE IS STILL IN IT, so a circle's garden empties at midnight exactly
+   like the public one. A circle that accumulated for ever would be a feed,
+   and the one thing this project has never been is a feed. */
+roomKey = "garden-" + todayStr() + (circleCode ? "-" + circleCode : "");
 partyConnect("wss://demoserver.p5party.org", "gratitude_garden");
 shared = partyLoadShared(roomKey);
 }
@@ -3075,6 +3202,57 @@ showStep("garden");
 }
 }
 
+/* ═══════════════════════════════════════════════════════════════════════════
+   AN ANONYMOUS FLOWER IS AN ADJECTIVE AND ITS SPECIES
+
+   "Lovely Lily", "Sunny Sunflower". Every anonymous bloom used to read
+   "Someone", so a meadow with four of them had four identical labels and no
+   way to tell one person's flower from another's.
+
+   IT IS STILL ANONYMOUS. Nothing about the planter goes into it: the
+   adjective is picked at random and the noun is the species they chose,
+   which is already public on the flower itself. The real name is never
+   written to the room.
+
+   AT TRUE MODULE SCOPE, AND IT TOOK TWO GOES TO GET THERE. It lived inside
+   `buildUI()`, so nothing in `draw()` could see it: `demoFlowers()` called
+   it and threw `anonAlias is not defined` on the first frame, and the
+   workaround was a second, shorter adjective list written beside the demos.
+   That left one meadow naming its anonymous flowers two different ways, one
+   alliterative and one not.
+
+   MOVING IT NEXT TO `DEMO_COUNT` WAS NOT ENOUGH, which is the part worth
+   keeping: **the whole demo block lives INSIDE `draw()`**, lines 3205 to
+   3496, so a function declared beside `DEMO_COUNT` is declared inside the
+   draw loop and is invisible to `buildUI`, which is where a REAL planter
+   choosing anonymous calls it from. The symptom was the demos working
+   perfectly, because they are in that same block, while the real path had
+   silently lost its only copy. **Check which function a line is inside
+   before calling a move to module scope done**: in this file the top level
+   is not where the indentation suggests.
+
+   `rng` IS OPTIONAL AND THE DEMOS PASS ONE. `Math.random` is right for a
+   real planter and wrong for the five demo flowers, which have to be the
+   same five all day: an unseeded pick would rename them on every reload.
+   ═══════════════════════════════════════════════════════════════════════ */
+const ANON_WORDS = {
+  daisy:     ["Dear", "Dainty", "Dreamy", "Darling"],
+  tulip:     ["Tender", "Thoughtful", "Tranquil", "True"],
+  rose:      ["Restful", "Radiant", "Ready", "Rosy"],
+  sunflower: ["Sunny", "Steady", "Soft", "Sincere"],
+  lily:      ["Lovely", "Lively", "Light", "Little"],
+  hibiscus:  ["Happy", "Hopeful", "Humble", "Hearty"],
+  orchid:    ["Open", "Optimistic", "Openhearted"],
+  lavender:  ["Lucky", "Loyal", "Lilting", "Low-key"]
+};
+function anonAlias(sp, rng) {
+  const list = ANON_WORDS[sp];
+  const noun = sp ? sp.charAt(0).toUpperCase() + sp.slice(1) : "Someone";
+  if (!list || !list.length) return noun;   /* a species with no list still gets a name */
+  const r = (typeof rng === "function") ? rng() : Math.random();
+  return list[Math.floor(r * list.length)] + " " + noun;
+}
+
 function draw() {
 /* The room has answered and there is a frame on the canvas, so the loader
    has something real to hand over to. `showing()` keeps this to one call
@@ -3138,6 +3316,12 @@ const DEMO_WORDS = [
 let demoCache = null;
 function demoFlowers() {
   if (DEMO_COUNT <= 0) return [];
+  /* NEVER IN A CIRCLE. These exist so a quiet PUBLIC day is not a field of
+     grass to somebody being shown the project; a circle of three friends
+     opening their garden to find five strangers already in it is the exact
+     opposite of what a circle is for, and the first thing anybody would ask
+     is who those people are. */
+  if (circleCode) return [];
   if (demoCache) return demoCache;
   /* One seeded generator, so the five are stable within a day and the SAME
      five for everybody looking at that date. `todayStr()` is the room key's
@@ -3166,21 +3350,14 @@ function demoFlowers() {
     /* ROUGHLY A THIRD ANONYMOUS, which is about what the identity row's own
        choices would produce.
 
-       THE ALIAS IS BUILT HERE RATHER THAN BY `anonAlias`, FOR TWO REASONS
-       AND THE FIRST IS FATAL. `anonAlias` and its `ANON_WORDS` are declared
-       INSIDE `buildUI()`, so nothing in `draw()` can see them: calling it
-       threw `anonAlias is not defined` on the first frame and took the whole
-       sketch down. And it picks with `Math.random`, which would give these
-       five a different name on every reload and break the one thing they are
-       supposed to have, which is being the same five all day. The FORM is
-       the same, an adjective and the species, so a demo anonymous flower
-       still reads exactly like a real one. */
+       IT IS `anonAlias`, THE SAME ONE A REAL PLANTER GETS, handed the
+       SEEDED generator so the five keep their names all day. It used to be
+       a second, shorter adjective list written here, because `anonAlias`
+       was declared inside `buildUI()` and calling it from `draw()` threw;
+       that left one meadow naming its anonymous flowers two different ways,
+       one alliterative and one not. The function moved out instead. */
     const isAnon = rnd() < 0.34;
-    const DEMO_ADJ = ["Quiet", "Sunny", "Kind", "Gentle", "Bright", "Easy"];
-    const noun = sp.charAt(0).toUpperCase() + sp.slice(1);
-    const name = isAnon
-      ? DEMO_ADJ[Math.floor(rnd() * DEMO_ADJ.length)] + " " + noun
-      : take(names);
+    const name = isAnon ? anonAlias(sp, rnd) : take(names);
     out.push({
       word: name,
       gratitude: take(words),
@@ -3630,8 +3807,16 @@ landingWrap.style("z-index", "100");
 landingWrap.style("pointer-events", "auto");
 
 const card = createDiv().addClass("gg-card").parent(landingWrap);
-createElement("h1", "The Shared Garden").addClass("gg-title").parent(card);
-createP("Plant one thing you're grateful for.")
+/* ARRIVING BY LINK IS JOINING. Somebody handed a circle's link has plainly
+   been invited into it, so it goes into this browser's list on arrival and
+   they never have to keep the message it came in. The code is its own name
+   until whoever made it tells them a better one. */
+if (circleCode && !myCircles().some(c => c.code === circleCode)) rememberCircle(circleCode, circleCode);
+
+createElement("h1", circleCode ? circleName() : "The Shared Garden").addClass("gg-title").parent(card);
+createP(circleCode
+  ? "A circle. Only the people with this link plant here."
+  : "Plant one thing you're grateful for.")
 .addClass("gg-sub")
 .parent(card);
 
@@ -3716,6 +3901,105 @@ if (window.GardenEnter) GardenEnter.on(gratitudeField, landingGo);
    them a decision.
    NOTHING IS LOST BY TAKING IT: whatever has been typed stays in the field,
    and the way back is on screen the whole time you are looking. */
+/* ═══════════════════════════════════════════════════════════════════════════
+   THE CIRCLE ROW, UNDER THE BUTTON AND ABOVE THE PEEK
+
+   WHERE IT IS, IS THE DESIGN. The public garden stays the default and the
+   first thing on this card is still the box and the button; the circle is
+   offered UNDER them, as a smaller second thing. Put at the top it would be
+   a choice to make before writing, which is a decision in front of the one
+   action the page exists for, and most people do not have a circle.
+
+   IT SAYS WHAT A CIRCLE IS IN ONE LINE, because "circle" on its own is a
+   word from another app and could mean almost anything.
+   ═══════════════════════════════════════════════════════════════════════ */
+const circleBox = createDiv().parent(card);
+circleBox.style("margin", "16px 0 0");
+circleBox.style("padding", "14px 0 0");
+circleBox.style("border-top", "1px solid #e6efed");
+circleBox.style("text-align", "left");
+
+const circleHead = createP(circleCode
+  ? "You are in the circle <b>" + circleName() + "</b>."
+  : "Or plant in a <b>circle</b>, a garden only the people you give the code to can see.")
+  .parent(circleBox);
+circleHead.style("font-family", "Arial, Helvetica, sans-serif");
+circleHead.style("font-size", "13px");
+circleHead.style("line-height", "1.5");
+circleHead.style("color", "#2f6260");
+circleHead.style("margin", "0 0 9px");
+
+const circleRow = createDiv().parent(circleBox);
+circleRow.style("display", "flex");
+circleRow.style("flex-wrap", "wrap");
+circleRow.style("gap", "7px");
+
+function circleChip(label, onGo, muted) {
+  const b = createButton(label).parent(circleRow);
+  b.style("padding", "7px 13px");
+  b.style("border", "1.5px solid " + (muted ? "#dce9e5" : "#bde0d6"));
+  b.style("border-radius", "999px");
+  b.style("background", muted ? "#f6faf8" : "#ffffff");
+  b.style("color", muted ? "#6d8f8a" : "#1d6466");
+  b.style("font-family", "Arial, Helvetica, sans-serif");
+  b.style("font-size", "13px");
+  b.style("font-weight", muted ? "400" : "600");
+  b.style("cursor", "pointer");
+  b.style("pointer-events", "auto");
+  b.mousePressed(onGo);
+  return b;
+}
+
+/* Every circle this browser knows, so somebody who was given a link once
+   does not have to keep it. The one they are already in is not offered. */
+myCircles().forEach(c => {
+  if (c.code === circleCode) return;
+  circleChip(c.name || c.code, () => { location.href = circleLink(c.code); });
+});
+
+circleChip("Make a circle", () => {
+  const code = makeCode();
+  /* NAMED BY THE PERSON MAKING IT, because "quiet-fern-moth" is a good thing
+     to read down a phone and a poor thing to find in a list next week. The
+     prompt is the browser's, which is plain, and that is the right weight
+     for a thing that takes two seconds: a card of its own would make making
+     a circle feel like setting up an account, which is what this avoids. */
+  const name = window.prompt(
+    "Name this circle, so you can find it again.\n\nIts code is " + code +
+    ". Anybody you give that to can plant in it.", "Our circle");
+  if (name === null) return;
+  rememberCircle(code, String(name).trim().slice(0, 28) || code);
+  location.href = circleLink(code);
+});
+
+circleChip("Join with a code", () => {
+  const v = window.prompt("Paste the circle's code or its link.", "");
+  if (!v) return;
+  let code = cleanCode(v);
+  /* A WHOLE LINK PASTED IN IS THE NORMAL CASE, since that is what somebody
+     is sent. Pulling the code out of it beats telling them off. */
+  const m = String(v).match(/[?&]circle=([^&#\s]+)/);
+  if (m) code = cleanCode(decodeURIComponent(m[1]));
+  if (!code) return;
+  rememberCircle(code, code);
+  location.href = circleLink(code);
+});
+
+if (circleCode) {
+  circleChip("Copy the link", () => {
+    const link = circleLink(circleCode);
+    const say = ok => { circleHead.html(ok
+      ? "Link copied. Anybody you send it to can plant in <b>" + circleName() + "</b>."
+      : "Your circle's link is <b>" + link + "</b>"); };
+    try {
+      navigator.clipboard.writeText(link).then(() => say(true), () => say(false));
+    } catch (e) { say(false); }
+  });
+  circleChip("Today's open garden", () => {
+    location.href = location.origin + location.pathname;
+  }, true);
+}
+
 const peekLink = createButton("Or look at today's garden first").parent(card);
 peekLink.style("display", "block");
 peekLink.style("width", "100%");
@@ -4108,23 +4392,6 @@ function paintIdRow() {
    THE COST IS UNCHANGED. `sharedPlantedToday` reads names out of the room and
    an alias matches no real username, so an anonymous flower is still invisible
    to it and only the browser marker holds that person to one a day. */
-const ANON_WORDS = {
-  daisy:     ["Dear", "Dainty", "Dreamy", "Darling"],
-  tulip:     ["Tender", "Thoughtful", "Tranquil", "True"],
-  rose:      ["Restful", "Radiant", "Ready", "Rosy"],
-  sunflower: ["Sunny", "Steady", "Soft", "Sincere"],
-  lily:      ["Lovely", "Lively", "Light", "Little"],
-  hibiscus:  ["Happy", "Hopeful", "Humble", "Hearty"],
-  orchid:    ["Open", "Optimistic", "Openhearted"],
-  lavender:  ["Lucky", "Loyal", "Lilting", "Low-key"]
-};
-function anonAlias(sp) {
-  const list = ANON_WORDS[sp];
-  const noun = sp ? sp.charAt(0).toUpperCase() + sp.slice(1) : "Someone";
-  if (!list || !list.length) return noun;          /* a species with no list still gets a name */
-  return list[Math.floor(Math.random() * list.length)] + " " + noun;
-}
-
 function buildIdRow() {
   idRow.elt.innerHTML = "";
   idButtons = [];
@@ -4264,11 +4531,18 @@ function syncPublicNote() {
      somebody reads before they have chosen, and it must not promise either
      way: telling a visitor their name is going on it before they have been
      offered anonymous would be wrong in the one place this has to be right. */
+  /* IN A CIRCLE THE SENTENCE HAS TO CHANGE, and it is the one place on the
+     page where getting this wrong would be a lie: "anyone can read them" is
+     true of the open garden and false of a circle, and a visitor who read it
+     in a circle would either be needlessly frightened or would stop
+     believing the line in the garden where it IS true. */
+  const where = circleCode ? "the circle " + circleName() : "today's garden";
+  const who = circleCode ? "everyone with its link" : "anyone";
   const what = identity === "anon"
-    ? "Your words go into today's garden, where anyone can read them. No name is stored."
+    ? "Your words go into " + where + ", where " + who + " can read them. No name is stored."
     : identity === "name"
-    ? "Your words and your name go into today's garden, where anyone can read them."
-    : "Whatever you plant goes into today's garden, where anyone can read it.";
+    ? "Your words and your name go into " + where + ", where " + who + " can read them."
+    : "Whatever you plant goes into " + where + ", where " + who + " can read it.";
   publicNote.html(what + " It clears at midnight.");
 }
 
@@ -4544,10 +4818,19 @@ const inGarden = step === "garden";
    back to writing it, and somebody who ignores it can look as long as they
    like. That is the only version of this that belongs on a page about not
    being hurried. */
+/* THE GARDEN ITSELF HAS TO SAY WHICH ONE IT IS. The meadow, the sky and the
+   flowers are identical in a circle and in the open garden, so with nothing
+   in words somebody could plant in the wrong one without ever knowing there
+   were two. The line names it, and in a circle it also carries the way to
+   hand the link on, which is the one thing a circle needs that the open
+   garden does not. */
+const whereNow = circleCode ? circleName() : "today's garden";
 dailyNote.html(inGarden && mine
-? "Your flower is planted. Enjoy today's garden, and come back tomorrow for another."
+? "<span>Your flower is planted in " + whereNow + ". Come back tomorrow for another.</span>" +
+  (circleCode ? "<button id=\"peek-back\">Copy the circle's link</button>" : "")
 : (inGarden && browsing
-? "<span>Have a look around. When something comes to mind,</span>" +
+? "<span>Have a look around" + (circleCode ? " in " + whereNow : "") +
+  ". When something comes to mind,</span>" +
   "<button id=\"peek-back\">Plant yours</button>"
 : ""));
 const shown = inGarden && (mine || browsing);
@@ -4587,7 +4870,23 @@ if (back) {
     "box-shadow:0 2px 8px rgba(29,100,102,0.28);transition:filter .15s,transform .15s;";
   back.onpointerenter = () => { back.style.filter = "brightness(1.12)"; back.style.transform = "scale(1.04)"; };
   back.onpointerleave = () => { back.style.filter = ""; back.style.transform = ""; };
-  back.onclick = () => { browsing = false; showStep("landing"); };
+  /* ONE BUTTON, TWO JOBS, DECIDED BY WHICH LINE IT IS SITTING UNDER: already
+     planted in a circle, it hands the link on; browsing, it goes back to
+     writing. They can never both be on screen, since one line is for
+     somebody who has planted and the other for somebody who has not. */
+  back.onclick = () => {
+    if (mine && circleCode) {
+      const link = circleLink(circleCode);
+      const span = dailyNote.elt.querySelector("span");
+      const say = ok => { if (span) span.textContent = ok
+        ? "Link copied. Send it to whoever should be in " + whereNow + "."
+        : link; };
+      try { navigator.clipboard.writeText(link).then(() => say(true), () => say(false)); }
+      catch (e) { say(false); }
+      return;
+    }
+    browsing = false; showStep("landing");
+  };
 }
 }
 

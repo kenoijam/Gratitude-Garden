@@ -43,8 +43,11 @@
 (function () {
   "use strict";
 
-  var W = 44;            /* the lane, in px and in user units: the SVG is 1:1 */
-  var AMP = 13;          /* how far the stem wanders either side of the lane */
+  var W = 60;            /* the lane, in px and in user units: the SVG is 1:1 */
+  var AMP = 10;          /* how far the stem wanders either side of the lane */
+  var SPUR = 12;         /* how far a bloom sits off the stem */
+  var NODE = 28;         /* a bloom's box, in CSS px */
+  var ENDNODE = 40;      /* the last one, which is the biggest */
   var WAVE = 540;        /* one full sway, in px of page */
   var LEAF_EVERY = 235;  /* px of stem between one bloom and the next */
   var STEM = "hsl(140,52%,32%)";   /* both gardens' stem green, exactly */
@@ -69,7 +72,7 @@
   var RING_HUES = [350, 22, 48, 140, 190, 232, 272, 332];
 
   var CSS = [
-    "#growth-rail{position:absolute;left:auto;right:8px;width:" + W + "px;",
+    "#growth-rail{position:absolute;left:auto;right:12px;width:" + W + "px;",
     "z-index:4;pointer-events:none;}",
     /* z-index 4 is measured against what is on this page: every section's own
        content is 5, so the stem passes BEHIND the copy and the cards; the
@@ -81,12 +84,17 @@
     ".gr-leaf,.gr-bloom{transform:translate(var(--x),var(--y)) rotate(var(--a)) scale(0);",
     "opacity:0;transition:transform .6s cubic-bezier(.2,.9,.25,1),opacity .45s linear;}",
     ".gr-leaf.is-out,.gr-bloom.is-out{transform:translate(var(--x),var(--y)) rotate(var(--a)) scale(1);opacity:1;}",
+    /* The species canvases are absolute children of the RAIL, not of the
+       SVG, so they are placed in px and scaled about their own middle. */
+    ".gr-bud{position:absolute;transform-origin:50% 50%;transform:scale(0);",
+    "opacity:0;transition:transform .6s cubic-bezier(.2,.9,.25,1),opacity .45s linear;}",
+    ".gr-bud.is-out{transform:scale(1);opacity:1;}",
     /* A CSS TRANSLATE IN px ON AN SVG CHILD IS IN USER UNITS, which is why
        the anchors are written straight in viewBox numbers with no
        conversion. Same note `garden-mascot.js` carries about its gaze. */
     "@media (max-width:1100px){#growth-rail{display:none;}}",
     "@media (prefers-reduced-motion:reduce){",
-    ".gr-leaf,.gr-bloom{transition:none;}}"
+    ".gr-leaf,.gr-bloom,.gr-bud{transition:none;}}"
   ].join("");
 
   var rail, svg, stem, leaves = [], bloom = null;
@@ -114,53 +122,69 @@
     return d;
   }
 
-  /* ONE BLOOM ON A SHORT SPUR. The spur is what joins it to the stem: a
-     flower head floating beside a stem reads as stuck on, and six pixels of
-     green is the whole of what fixes that. A single leaf rides on the spur
-     so the stem still has some green on it, which is what keeps the run
-     reading as a plant rather than as a row of badges. */
-  function nodeArt(side, hue, r) {
+  /* ─────────────────────────────── THE REAL EIGHT, DRAWN BY THE REAL CODE
+     `window._bloomFns` and `window._fitBloom` are the landing page's own
+     catalogue family, the one that paints the flower guide's tiles, and
+     `window._ringSpecies` is the guide's own list of the eight with their
+     palette. So a bloom on this vine is the SAME DRAWING as the bloom in
+     the guide a screen further down, in the same colour, and the two cannot
+     drift. The first version drew a generic five petal flower here and the
+     author's note was to use the species we have.
+
+     IT IS A CANVAS PER NODE, NOT SVG, BECAUSE THAT IS WHAT THOSE FUNCTIONS
+     TAKE: they are raw Canvas 2D, `fn(ctx, cx, cy, R, hue, sat, light)`.
+     Each one is a `position:absolute` child of the rail rather than a child
+     of the SVG, placed at the spur's end in rail coordinates, which the SVG
+     shares exactly because its viewBox is 1:1 with its pixel size.
+
+     THERE IS STILL A FALLBACK. The catalogue family is defined in the third
+     inline block at the foot of `index.html`; that runs before
+     DOMContentLoaded, so it is there by boot, but a page that failed to
+     parse it gets the plain five petal bloom rather than a bare stem. */
+  function speciesList() {
+    var R = window._ringSpecies;
+    if (R && R.length) return R;
+    return null;
+  }
+
+  function bloomCanvas(sp, px) {
+    var fns = window._bloomFns, fit = window._fitBloom;
+    if (!fns || !fit || !fns[sp.id]) return null;
+    var c = document.createElement("canvas");
+    var dpr = Math.min(window.devicePixelRatio || 1, 2);
+    c.width = Math.round(px * dpr);
+    c.height = Math.round(px * dpr);
+    c.style.width = px + "px";
+    c.style.height = px + "px";
+    var ctx = c.getContext("2d");
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    /* 0.86 of the box, which is what the guide's own tiles leave: a bloom
+       drawn to the edge has no air around it and reads as cropped. */
+    var f = fit(sp.id, px, px, 0.86, 0.86);
+    fns[sp.id](ctx, f.cx, f.cy, f.R, sp.hue, sp.sat, sp.light);
+    return c;
+  }
+
+  /* The spur and its one leaf stay in the SVG, because they are part of the
+     stem: a flower head floating beside a stem reads as stuck on, and twelve
+     pixels of green is the whole of what fixes that. */
+  function spurArt(side) {
     var k = side;
     var ns = "http://www.w3.org/2000/svg";
     var g = document.createElementNS(ns, "g");
-
     var spur = document.createElementNS(ns, "path");
-    spur.setAttribute("d", "M0 0 Q " + (7 * k) + " " + (-2) + " " + (13 * k) + " " + (-5));
+    spur.setAttribute("d", "M0 0 Q " + (7 * k) + " -2 " + (SPUR * k) + " -5");
     spur.setAttribute("fill", "none");
     spur.setAttribute("stroke", STEM);
     spur.setAttribute("stroke-width", "2");
     spur.setAttribute("stroke-linecap", "round");
     g.appendChild(spur);
-
     var leaf = document.createElementNS(ns, "path");
     leaf.setAttribute("d", "M" + (3 * k) + " -1 Q " + (9 * k) + " " + (6 * k) +
                            " " + (16 * k) + " " + (4 * k) +
                            " Q " + (9 * k) + " " + (2 * k) + " " + (3 * k) + " -1 Z");
     leaf.setAttribute("fill", LEAF_DARK);
     g.appendChild(leaf);
-
-    var head = document.createElementNS(ns, "g");
-    head.setAttribute("transform", "translate(" + (13 * k) + ",-5)");
-    var i, a;
-    for (i = 0; i < 5; i++) {
-      a = (i * 72 - 90) * Math.PI / 180;
-      var e = document.createElementNS(ns, "ellipse");
-      var px = Math.cos(a) * r * 0.52, py = Math.sin(a) * r * 0.52;
-      e.setAttribute("cx", px.toFixed(2));
-      e.setAttribute("cy", py.toFixed(2));
-      e.setAttribute("rx", (r * 0.50).toFixed(2));
-      e.setAttribute("ry", (r * 0.36).toFixed(2));
-      e.setAttribute("transform", "rotate(" + (i * 72) + " " + px.toFixed(2) + " " + py.toFixed(2) + ")");
-      /* The gardens' own saturation and lightness family, 40 to 60 and 55 to
-         70, so a bloom here could have been planted in either of them. */
-      e.setAttribute("fill", "hsl(" + hue + ",56%,70%)");
-      head.appendChild(e);
-    }
-    var c = document.createElementNS(ns, "circle");
-    c.setAttribute("r", (r * 0.30).toFixed(2));
-    c.setAttribute("fill", "#fbe484");
-    head.appendChild(c);
-    g.appendChild(head);
     return g;
   }
 
@@ -232,34 +256,58 @@
       var pt2 = stem.getPointAtLength(Math.min(len, at + 10));
       /* The tangent, so a leaf leaves the stem rather than crossing it. */
       var tang = Math.atan2(pt2.y - pt.y, pt2.x - pt.x) * 180 / Math.PI;
-      /* The size wanders a little, so the run reads as grown rather than
-         as printed: same reason no two of the hero's eleven are identical. */
-      var r = 11 + ((n * 37) % 5);
-      var g = nodeArt(side, RING_HUES[n % RING_HUES.length], r);
-      g.setAttribute("class", "gr-leaf");
       /* The spur leaves the stem out and slightly UP, which is the angle
          every leaf in both gardens is drawn at: at a right angle to its
          stem it reads as a bracket. */
+      var g = spurArt(side);
+      g.setAttribute("class", "gr-leaf");
       var lean = tang + (side > 0 ? -58 : 58) + (side > 0 ? 0 : 180);
       g.style.setProperty("--x", pt.x.toFixed(2) + "px");
       g.style.setProperty("--y", pt.y.toFixed(2) + "px");
       g.style.setProperty("--a", lean.toFixed(1) + "deg");
       svg.appendChild(g);
       leaves.push({ el: g, at: at / len, out: false });
+
+      /* THE EIGHT IN ORDER, so no two neighbours are the same flower and a
+         long page shows the whole set rather than a handful of favourites.
+         A canvas rather than an SVG child, so it has to be placed in rail
+         coordinates by hand; the SVG's viewBox is 1:1 with its pixels, so
+         the point it reports IS the offset from the rail's top left. */
+      var ring = speciesList();
+      var head = ring ? bloomCanvas(ring[n % ring.length], NODE) : null;
+      if (head) {
+        head.className = "gr-bud";
+        head.style.left = (pt.x + SPUR * side - NODE / 2).toFixed(1) + "px";
+        head.style.top  = (pt.y - 5 - NODE / 2).toFixed(1) + "px";
+        rail.appendChild(head);
+        leaves.push({ el: head, at: at / len, out: false });
+      }
       at += LEAF_EVERY;
       side = -side;
       n++;
     }
 
-    var end = stem.getPointAtLength(len);
-    bloom = bloomNode();
-    bloom.setAttribute("class", "gr-bloom");
-    bloom.style.setProperty("--x", end.x.toFixed(2) + "px");
-    bloom.style.setProperty("--y", end.y.toFixed(2) + "px");
-    bloom.style.setProperty("--a", "0deg");
-    svg.appendChild(bloom);
-
     rail.appendChild(svg);
+
+    /* THE LAST ONE IS THE BIGGEST, and it is a species as well. It sits on
+       the tip of the stem rather than off a spur, which is what makes it
+       read as the thing the whole stem was growing toward. */
+    var end = stem.getPointAtLength(len);
+    var ring = speciesList();
+    bloom = ring ? bloomCanvas(ring[(n + 1) % ring.length], ENDNODE) : null;
+    if (bloom) {
+      bloom.className = "gr-bud gr-end";
+      bloom.style.left = (end.x - ENDNODE / 2).toFixed(1) + "px";
+      bloom.style.top  = (end.y - ENDNODE / 2 - 2).toFixed(1) + "px";
+      rail.appendChild(bloom);
+    } else {
+      bloom = bloomNode();
+      bloom.setAttribute("class", "gr-bloom");
+      bloom.style.setProperty("--x", end.x.toFixed(2) + "px");
+      bloom.style.setProperty("--y", end.y.toFixed(2) + "px");
+      bloom.style.setProperty("--a", "0deg");
+      svg.appendChild(bloom);
+    }
     built = true;
     return true;
   }
@@ -283,14 +331,14 @@
       }
     }
     /* The flower opens only when the stem has actually reached it. */
-    bloom.classList.toggle("is-out", p > 0.985);
+    if (bloom) bloom.classList.toggle("is-out", p > 0.985);
   }
 
   function full() {
     if (!built) return;
     stem.style.strokeDashoffset = "0";
     leaves.forEach(function (l) { l.out = true; l.el.classList.add("is-out"); });
-    bloom.classList.add("is-out");
+    if (bloom) bloom.classList.add("is-out");
   }
 
   var raf = 0;

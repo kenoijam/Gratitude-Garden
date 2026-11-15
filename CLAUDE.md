@@ -27,6 +27,12 @@ one. That needs both online at the same time, so:
   | the mascot | absent | present |
   | the guide and the fertilizer of the day | absent | present |
   | footer "Why this exists" | absent | present |
+  | the garden knows the hour, and the page dims with it | absent | present |
+  | planting is held, not tapped | absent | present |
+  | scroll as growth on the landing page | absent | present |
+  | small circles in the shared garden | absent | present |
+  | a door from the personal garden to the shared one | absent | present |
+  | Enter goes to the next card | absent | present |
   | everything else | identical | identical |
 
 - **THE LETTER WAS TAKEN BACK OUT OF THE ROOT, and it is a SPLIT rather than a
@@ -304,34 +310,37 @@ and opening one flower at the end. The reference is jld2nd.dev.
   so a reading taken straight after `scrollTo` reports the PREVIOUS position**;
   dispatch `scroll` and await a few frames before measuring.
 
-## THE PAGE TAKES THE GARDEN'S OWN NIGHT (v2), AND IT TOOK THREE GOES
+## THE PAGE TAKES THE PROJECT'S OWN DARK TEALS AT NIGHT (v2), AFTER FOUR GOES
 
 The author asked whether the cream sections should turn dark like the sky.
-They do, and the colours are not invented: **the three section grounds are
-`NIGHT.ground`, `NIGHT.back` and `NIGHT.skyTop` out of `garden-daylight.js`,
-which is to say the exact colours both gardens are painting on their canvases
-at that hour.**
+They do. **The three section grounds at night are `#1d6466`, `#17565a` and
+`#0f3b40`: `--darkteal`, the colour the Fertilizer band and the footer have
+worn since the beginning, and that same teal taken down twice.** The copy on
+them is cream, with the palette's own yellow for the emphasis.
 
-- **THE FIRST TWO ATTEMPTS WERE BOTH JUDGED OFF PALETTE, AND BOTH WERE, FOR
-  THE SAME REASON.** The first mixed each token toward a hand picked night
-  colour and cream landed on a sandy `#ead9b0`. The second multiplied the
-  channels instead, which holds the hue exactly and gave a khaki `#ded9c5`.
-  The author's verdict on both was that it was not our palette. **The fault
-  was not the method, it was that the night colour was being INVENTED.** A
-  page cannot be off palette in a colour the palette supplies, and at dusk
-  the landing page and the two gardens now arrive at the same evening rather
-  than at two different ones.
-- **THREE NEW TOKENS, `--paper`, `--paper-cool` AND `--band`, AND THE
-  PALETTE TOKENS WENT BACK TO LITERALS.** `--cream` is the section paper AND
-  the label on every dark button; `--darkteal` is the band's ground AND
-  twenty two pieces of text. **One token cannot darken for one job and
-  lighten for the other**, which is what broke the first attempt at doing
-  this through the palette: at night the buttons came out dark on dark. The
-  grounds are their own three variables now, used by all five section rules
-  and all five curves, and the palette does not move.
-- **`--grass` STILL FOLLOWS THE CLOCK**, because unlike the other five it is
-  only ever a ground. It is the meadow's own `fore`, so `.wisdom::before`,
-  the roll out of the hero, is the identical colour to the strip of ground it
+- **FOUR ATTEMPTS, AND EACH ONE FAILED THE SAME WAY UNTIL THE LAST.** Mixing
+  cream toward a hand picked night colour gave a sandy `#ead9b0`; dimming its
+  channels held the hue exactly and gave a khaki `#ded9c5`; taking the
+  daylight module's own NIGHT keyframe is right in principle and wrong in
+  fact, because that keyframe's sky is a NAVY (`#13293f`) and a navy band
+  under teal sections reads as two palettes. **The lesson is that a night
+  colour has to come from the palette, and the palette's dark end is teal.**
+  The author's own instruction settled it: the normal garden colours, the
+  darker ones, cream on top.
+- **THE ALTERNATION SURVIVES**, which is why the three are at three depths
+  rather than one. The cream sections become the LIGHTEST of the three and
+  the band stays the darkest, so the page still reads light, dark, light,
+  dark down its length exactly as it does at noon.
+- **THREE NEW TOKENS, `--paper`, `--paper-cool` AND `--band`, AND THE PALETTE
+  TOKENS WENT BACK TO LITERALS.** `--cream` is the section paper AND the
+  label on every dark button; `--darkteal` is the band's ground AND twenty
+  two pieces of text. **One token cannot darken for one job and lighten for
+  the other**, which is what broke the first attempt at doing this through
+  the palette: the buttons came out dark on dark. The grounds are their own
+  three variables, used by all five section rules and all five curves.
+- **`--grass` STILL FOLLOWS THE CLOCK**, because unlike the others it is only
+  ever a ground. It is the meadow's own `fore`, so `.wisdom::before`, the
+  roll out of the hero, is the identical colour to the strip of ground it
   rolls off. **That is the fix for "the last section of the hero garden is
   still light green at night."**
 - **THE COPY ON THOSE GROUNDS TURNS OVER BY NAME, and it has to be a list.**
@@ -339,63 +348,68 @@ at that hour.**
   which stay white at every hour: a token that went light would take the
   feature cards and the flower tiles down with it. The list was built by
   WALKING the four sections and reading each element's own computed
-  background, not by reading the stylesheet. It is the section label, title,
-  em and description, plus the flower ring's four annotations, which stand on
-  the open ground because that is what a botanical plate does.
-- **`.cta` IS DELIBERATELY NOT IN THAT LIST.** Its content lives inside
-  `.cta-inner`, a white card, so nothing in that section ever touches the
-  ground. Checked rather than assumed.
-- **THE NIGHT INKS ARE THE HERO'S OWN FOUR**, already proved against a night
-  sky further up the file, so the page has one set of night inks rather than
-  two.
+  background. Cream `#fff9e3` for titles, `--yellow` for the em, `#f1ead3`
+  for copy, `#ded6bd` for the eyebrow: on the lightest of the three grounds
+  those measure 6.49, 5.39, 5.69 and 4.71, and higher on the other two.
+- **`.cta` IS DELIBERATELY NOT IN THE LIST.** Its content lives inside
+  `.cta-inner`, a white card, so nothing in that section touches the ground.
+  Checked rather than assumed.
 - **THE WHITE CARDS STAY WHITE**, which keeps every measured card ratio valid
   and reads as a lit card on a dark page.
-- **MEASURED AFTER, over every text node in all six sections at 22:00: ZERO
-  failures.** The four the sweep still prints are a limitation of the sweep,
-  not of the page: two badges and two notes carry a translucent background
-  over a card GRADIENT, and a walker that stops at the translucent layer
-  cannot composite it. CLAUDE.md already records those as measured properly
-  against the gradient at each element's own position.
+- **MEASURED, over every text node in all six sections: ZERO failures.** The
+  four the sweep still prints are the sweep's own limit, not the page's: two
+  badges and two notes carry a translucent background over a card GRADIENT,
+  and a walker that stops at the translucent layer cannot composite it.
 - **THREE PRE-EXISTING FAILURES FELL OUT OF THE RE-MEASURE, all `--teal` as
-  text, all failing at every hour rather than only at night.**
-  `.feature-desc` 3.69 on white, `.section-label` 3.49 on cream and 3.31 on
-  the pale blue at 12.24px, `.flower-mood` 3.69 on white. All three take the
-  body ink. Two chips were marginal and were darkened: `chip-rose` 4.23 and
-  `chip-daisy` 4.45.
-- **THE MOON HAS NO RAYS.** The gardens draw `rays: 0` after dark, so theirs
-  is a bare disc; the hero's is inline SVG and went on throwing all twelve.
-  **The rays ARE the thing that says sun**, so dimming the figure could never
-  have fixed it. Their own `<g class="hero-sun-rays">`, taken to zero.
-- **TWO MEASUREMENT TRAPS COST A ROUND EACH HERE.** The pane serves a CACHED
-  stylesheet through a reload, so the whole first audit was run against the
-  old `.about { background: var(--cream) }` and reported the day palette with
-  the variables plainly set; `fetch(url, {cache:"reload"})` then a reload is
-  the fix, which is the fourth time this project has recorded it. And **the
-  pane throttles `requestAnimationFrame`, which is what drives CSS
-  transitions**, so any transitioned property reads at its START value
-  indefinitely: kill the transitions before measuring anything that has one.
+  text, all failing at every hour.** `.feature-desc` 3.69 on white,
+  `.section-label` 3.49 on cream and 3.31 on the pale blue, `.flower-mood`
+  3.69 on white. All three take the body ink. Two chips were marginal and
+  were darkened: `chip-rose` 4.23 and `chip-daisy` 4.45.
+- **THE MOON HAS NO RAYS.** The gardens draw `rays: 0` after dark; the hero's
+  is inline SVG and went on throwing all twelve. **The rays ARE the thing
+  that says sun**, so dimming the figure could never have fixed it.
+- **TWO MEASUREMENT TRAPS COST A ROUND EACH.** The pane serves a CACHED
+  stylesheet through a reload, so a whole audit ran against the old rules and
+  reported the day palette with the variables plainly set; `fetch(url,
+  {cache:"reload"})` then a reload is the fix, the fourth time this project
+  has recorded it. And **the pane throttles `requestAnimationFrame`, which is
+  what drives CSS transitions**, so any transitioned property reads at its
+  START value indefinitely: kill the transitions before measuring one.
 
-## THE VINE GROWS FLOWERS, NOT LEAVES
+## THE VINE GROWS THE REAL EIGHT SPECIES
 
 The first version put leaves down the stem and the author's word for it was
-weird. The fault is nameable: a green stem putting out green leaves is a
-CREEPER, and a creeper is decoration. It was the one growing thing on a page
-whose whole argument is that what you noticed becomes a flower.
+weird; the second put a generic five petal bloom at each node; the third, and
+the one that holds, puts **the project's own eight species on it, drawn by
+the project's own code.**
 
-- **EACH NODE IS A SMALL BLOOM ON A SHORT SPUR**, opening as the tip reaches
-  it, so scrolling the page grows a garden down its own edge. The spur is
-  what joins it: a head floating beside a stem reads as stuck on, and six
-  pixels of green is the whole of what fixes that. One leaf rides on the spur
-  so the run still has green in it.
-- **THE HUES ARE THE COLOUR WHEEL'S OWN EIGHT**, the ones the flower guide's
-  ring is built from, walked in order so no two neighbours share a colour and
-  the run reads as a set. Saturation and lightness are the gardens' own
-  family, 56 and 70, so a bloom here could have been planted in either.
-- **THEY ARE NOT `drawSpeciesBloom`.** The eight species are drawn onto a
-  CANVAS by code that lives in the sketches, and a stem that waited on a
-  renderer to finish growing would be the wrong trade for a 26px mark. This
-  is the five petal bloom the letter and the cursor already draw, which is
-  honest about being a drawing.
+- **A GREEN STEM PUTTING OUT GREEN LEAVES IS A CREEPER**, and a creeper is
+  decoration. It was the one growing thing on a page whose whole argument is
+  that what you noticed becomes a flower.
+- **IT IS `window._bloomFns`, `window._fitBloom` AND `window._ringSpecies`**,
+  which are the landing page's own catalogue family and the flower guide's own
+  list of the eight with their palette. So a bloom on this vine is the SAME
+  DRAWING in the SAME COLOUR as the bloom in the guide a screen further down,
+  and the two cannot drift. `_ringSpecies` was added for this; the other two
+  already existed for the modal.
+- **A CANVAS PER NODE, NOT SVG, BECAUSE THAT IS WHAT THOSE FUNCTIONS TAKE:**
+  raw Canvas 2D, `fn(ctx, cx, cy, R, hue, sat, light)`. Each is a
+  `position:absolute` child of the RAIL rather than of the SVG, placed in rail
+  coordinates, which the SVG shares exactly because its viewBox is 1:1 with
+  its pixel size. There is still a five petal fallback if the catalogue block
+  has not parsed.
+- **`window._ringSpecies = RING` HAS TO SIT AFTER THE ARRAY, AND THAT COST A
+  ROUND.** It went beside `_fitBloom` first, sixty lines earlier; `RING` is a
+  `var`, so the NAME is hoisted and the VALUE is not, and the export quietly
+  assigned `undefined`. The vine then fell back to its generic bloom and
+  looked exactly like a vine that had not been changed.
+- **THE LANE WIDENED FROM 44 TO 60 AND THE SWAY CAME DOWN FROM 13 TO 10**, so
+  a 28px species bloom on a 12px spur still lands inside the window.
+  Measured at 1440: the blooms span 1376 to 1420, against content ending at
+  1355 and a window of 1440, and `scrollWidth === clientWidth`.
+- **THE SPUR AND ITS LEAF STAY IN THE SVG**, because they are part of the
+  stem: a flower head floating beside a stem reads as stuck on, and twelve
+  pixels of green is the whole of what fixes that.
 
 ## THE TWO GARDENS HAVE A DOOR BETWEEN THEM (v2)
 
@@ -428,6 +442,98 @@ type it again from cold.
 - **Verified end to end**: the note written, the field pre-filled at 19/100,
   `chosenSpecies` lavender and `chosenHue` 272 carried, the key cleared, and
   `shared.flowers` untouched.
+
+## ONE ANONYMOUS ALIAS, AND IT WAS IN THE WRONG SCOPE TWICE
+
+An anonymous flower is an alliterative adjective and its species, "Lovely
+Lily", "Sunny Sunflower". The project was doing it two different ways in one
+meadow: `anonAlias` for a real planter, and a second, shorter, NON alliterative
+adjective list written beside the five demo flowers.
+
+- **THE DUPLICATE EXISTED BECAUSE OF SCOPE.** `anonAlias` and `ANON_WORDS`
+  were declared INSIDE `buildUI()`, so nothing in `draw()` could see them and
+  calling it from the demos threw. One table and one function now, with an
+  OPTIONAL `rng` argument: `Math.random` for a real planter, the demos' own
+  seeded generator for the five, which have to keep their names all day.
+- **MOVING IT NEXT TO `DEMO_COUNT` WAS NOT ENOUGH, and this is the part worth
+  keeping.** The whole demo block lives INSIDE `draw()`, so a function
+  declared beside `DEMO_COUNT` is declared inside the draw loop and is
+  invisible to `buildUI`, which is where a REAL planter choosing anonymous
+  calls it from. The symptom was the demos working perfectly, because they
+  are in that same block, while the real path had silently lost its only
+  copy. **Check which function a line is inside before calling a move to
+  module scope done**: in this file the top level is not where the
+  indentation suggests.
+- Verified: `anonAlias` reachable globally, "Dainty Daisy", "Lilting
+  Lavender", "Optimistic Orchid", "Hearty Hibiscus", and stable under a seed.
+
+## SMALL CIRCLES: A GARDEN WITH THE PEOPLE YOU CHOOSE (v2)
+
+Out of the expert interview at **48:14**: *"the idea of having this kind of a
+smaller circle optional, keep it for yourself or share it communally, share it
+with your circle, with your community that you choose... let them have this
+garden together, bring friends"*, and the line the whole feature turns on,
+**"not for the social validation, but just simply for the social blessing."**
+She grounds it at 46:34 in Erikson's isolation versus intimacy, which is the
+developmental question of this project's own age group, and at 47:54 in low
+maintenance friendship. It was the one thing she argued FOR that the project
+had no answer to: a gratitude could be private, or public to every stranger on
+the internet that day, with nothing in between.
+
+- **A CIRCLE IS A CODE, AND THAT IS THE WHOLE MECHANISM.** The room key is
+  `garden-<date>-<code>` instead of `garden-<date>`. Everybody holding the
+  code is in the circle.
+- **THERE IS DELIBERATELY NO MEMBERSHIP TABLE**, and the reasoning is the one
+  that keeps the public garden open: planting here takes no account on
+  purpose, because being able to try the page in ten seconds is the point of
+  it, and a circle you have to sign up for is a circle most people never make.
+  A table would also mean a new Supabase step, a new set of policies, and a
+  feature simply missing on any copy where the SQL has not been run. A code
+  works today, on a static site, for somebody with no account.
+- **WHAT THAT COSTS, SAID PLAINLY ON THE PAGE:** anybody given the code is in.
+  It is a quiet room rather than a locked one. The copy says "only the people
+  you give the code to", never "private", because the page must not imply a
+  guarantee it cannot enforce. For real membership, the friends system in
+  `garden-account.js` is already built and behind `FRIENDS_OFF`.
+- **EVERYTHING ELSE FOLLOWED FOR FREE, and that is the sign the design is in
+  the right place.** The once a day marker already stores `roomKey`, so a
+  circle and the open garden are counted separately; `GardenSocial` is handed
+  `roomKey` at the call site, so likes and comments land in their own bucket;
+  the day snapshot is keyed the same way. **None of those three needed a
+  line.**
+- **THE DATE IS STILL IN THE KEY**, so a circle empties at midnight exactly
+  like the open garden. A circle that accumulated for ever would be a feed,
+  and the one thing this project has never been is a feed.
+- **IT IS READ IN `preload`**, because p5 names the room before anything else
+  runs, so the circle cannot be chosen from a card inside the sketch: it comes
+  off the URL, which is also what makes a circle SHAREABLE. Choosing one from
+  the landing card navigates.
+- **THE CODE IS THREE WORDS, NOT A HASH.** "quiet-fern-moth" is a thing
+  somebody can read down a phone to a friend in a cafe, which is how a circle
+  actually gets made; a base64 string is a thing you have to copy and paste.
+  20 by 20 by 20 is 8000 a day, and a collision only ever means two circles
+  sharing a garden, which midnight clears. `cleanCode` sanitises anything that
+  reaches the room key, since that string goes to somebody else's websocket
+  server.
+- **ARRIVING BY LINK IS JOINING.** Somebody handed a circle's link has plainly
+  been invited, so it goes into this browser's list on arrival and they never
+  have to keep the message. "Join with a code" accepts a WHOLE LINK pasted in,
+  because that is what people are actually sent.
+- **NO DEMO FLOWERS IN A CIRCLE.** The five exist so a quiet PUBLIC day is not
+  a field of grass; a circle of three friends opening their garden to find
+  five strangers in it is the exact opposite of what a circle is for.
+- **THE GARDEN ITSELF SAYS WHICH ONE IT IS**, in the daily note, because the
+  meadow, the sky and the flowers are identical in both and with nothing in
+  words somebody could plant in the wrong one without ever knowing there were
+  two. In a circle that line also carries the way to hand the link on.
+- **THE "WHAT SHARING MEANS" LINE CHANGES WITH IT**, and this is the one place
+  where getting it wrong would be a lie: "anyone can read them" is true of the
+  open garden and false of a circle, and a visitor who read it in a circle
+  would either be needlessly frightened or would stop believing the line in
+  the garden where it IS true.
+- **STILL ON THE LANDING PAGE'S OWN COPY**: the shared garden card's small
+  print says "Open to all", which is now true of the default and not of the
+  whole page. That copy is measured and was left alone.
 
 ## THREE THINGS OUT OF THE EXPERT INTERVIEW (v2)
 

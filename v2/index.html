@@ -2512,6 +2512,7 @@
 
   window._fitBloom = fitBloom;   /* exposed for the modal, like _bloomFns */
 
+
   /* ── Catalogue blooms ── */
   function renderFlowerCanvas(canvas){
     var flower=canvas.dataset.flower;
@@ -2609,6 +2610,18 @@
     { id:'orchid',    a:157.5,  hue:305, sat:50, light:68 },
     { id:'rose',      a:-157.5, hue:350, sat:55, light:55 }
   ];
+  /* THE RING'S OWN EIGHT, species and palette together, exposed for the
+     scroll-as-growth vine, which draws the real species with `_bloomFns`.
+     Reading the colours from here rather than carrying its own copy is what
+     stops the vine and the flower guide ever disagreeing about what colour a
+     lavender is. Same device `_bloomFns` itself is.
+
+     IT HAS TO BE *AFTER* THIS ARRAY AND NOT BESIDE `_fitBloom`, which is
+     where it went first: `RING` is a `var`, so the name is hoisted and the
+     VALUE is not, and the export sixty lines earlier quietly assigned
+     `undefined`. The vine then fell back to its generic bloom and looked
+     exactly like a vine that had not been changed. */
+  window._ringSpecies = RING;
 
 
   /* The lead and the tick are not decoration, they are the ring's budget:

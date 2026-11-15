@@ -195,25 +195,29 @@
 
        `dark` rather than `tint`, because this is about how much LIGHT there
        is in the room and not about what colour the sky has gone. */
-    /* ═══ THE PAGE'S THREE GROUNDS ARE THE GARDEN'S OWN, AND THAT IS THE
-       SECOND CORRECTION. The first attempt mixed each one toward a hand
-       picked night colour and cream landed on a sandy #ead9b0; the second
-       dimmed the channels instead, which held the hue and gave a khaki
-       #ded9c5. Both were judged off palette and both were, for the same
-       underlying reason: the night colour was being INVENTED rather than
-       taken from anywhere.
+    /* ═══ THE PAGE'S THREE GROUNDS ARE THE GARDEN'S OWN DARK TEALS
 
-       These are the keyframe's own `ground`, `back` and `skyTop`, which is
-       to say the exact colours both gardens are painting on their canvases
-       at that hour. The landing page cannot be off palette in a colour the
-       palette supplies, and at dusk the page and the two gardens now arrive
-       at the same evening rather than at two different ones.
+       THIS IS THE THIRD ANSWER AND THE AUTHOR'S OWN. The first mixed cream
+       toward a hand picked night colour and landed on a sandy #ead9b0; the
+       second dimmed the channels and gave a khaki #ded9c5; the third took
+       the daylight module's own NIGHT keyframe, which is right in principle
+       and wrong in fact, because that keyframe's sky is a navy (#13293f) and
+       a navy band under teal sections reads as two palettes. Her
+       instruction: the normal garden colours, the darker ones, with cream
+       on top.
 
-       They interpolate like everything else, so the page slides into the
-       evening on the same curve the sky does. */
-    out.paper     = mixHex("#fff9e3", out.ground, out.dark);
-    out.paperCool = mixHex("#e1f7f7", out.back,   out.dark);
-    out.band      = mixHex("#1d6466", out.skyTop, out.dark);
+       So these are the project's own teals and nothing else. `#1d6466` IS
+       `--darkteal`, the colour the Fertilizer band and the footer have worn
+       since the beginning; the other two are that same teal taken down, so
+       the page at night is the dark band repeated at three depths rather
+       than a new palette. The alternation survives: the cream sections
+       become the LIGHTEST of the three and the band stays the darkest, so
+       the page still reads light, dark, light, dark down its length.
+
+       Cream on them measures 6.49, 7.92 and 11.58. */
+    out.paper     = mixHex("#fff9e3", "#1d6466", out.dark);
+    out.paperCool = mixHex("#e1f7f7", "#17565a", out.dark);
+    out.band      = mixHex("#1d6466", "#0f3b40", out.dark);
     /* THE COPY THAT STANDS ON THESE GROUNDS TURNS OVER IN `styles.css`,
        by name, under `html[data-dark='1']`. It cannot be done with a token:
        half of the body ink's uses sit on WHITE cards, which stay white at

@@ -2445,23 +2445,28 @@ html[data-daylight] footer::before {
    THE COLOURS ARE THE HERO'S OWN NIGHT COLOURS, the four already proved
    against a night sky further up this file, so the page has one set of
    night inks rather than two. */
+/* CREAM, AND THE PALETTE'S OWN YELLOW FOR THE EMPHASIS. The grounds are the
+   project's dark teals now, which is the pairing the Fertilizer band and the
+   footer have always used, so the ink is the one those two already use.
+   Measured on the lightest of the three grounds (#1d6466): 6.49, 5.39, 5.69
+   and 4.71, and higher on the other two. */
 html[data-dark="1"] :is(.about, .catalogue, .gardens) .section-title { color: #fff9e3; }
 html[data-dark="1"] :is(.about, .catalogue, .gardens) .section-title em,
-html[data-dark="1"] :is(.about, .catalogue, .gardens) .section-title .wl { color: #ffe9a8; }
+html[data-dark="1"] :is(.about, .catalogue, .gardens) .section-title .wl { color: #fbe484; }
 html[data-dark="1"] :is(.about, .catalogue, .gardens) .section-desc,
-html[data-dark="1"] .about .about-lede { color: #d6ece6; }
-html[data-dark="1"] :is(.about, .catalogue, .gardens) .section-label { color: #bfe0da; }
+html[data-dark="1"] .about .about-lede { color: #f1ead3; }
+html[data-dark="1"] :is(.about, .catalogue, .gardens) .section-label { color: #ded6bd; }
 /* The flower guide's ring annotations: its leader lines end in real text
    standing on the open ground, which is the whole idea of a botanical
    plate and also why none of it is on a card to protect it. */
 html[data-dark="1"] .catalogue .fr-name { color: #fff9e3; }
 html[data-dark="1"] .catalogue .fr-mean,
 html[data-dark="1"] .catalogue .fr-centre,
-html[data-dark="1"] .catalogue .fr-note { color: #d6ece6; }
+html[data-dark="1"] .catalogue .fr-note { color: #f1ead3; }
 /* The dashed circle the eight stand on is `rgba(66,146,136,0.30)`, which is
    the ruling on a cream page and nothing at all on a dark one. */
-html[data-dark="1"] .catalogue .fr-ring-circle { stroke: rgba(214,236,230,0.34); }
-html[data-dark="1"] .catalogue .fr-line { stroke: rgba(214,236,230,0.42); }
+html[data-dark="1"] .catalogue .fr-ring-circle { stroke: rgba(255,249,227,0.30); }
+html[data-dark="1"] .catalogue .fr-line { stroke: rgba(255,249,227,0.40); }
 html[data-daylight] :is(.about, .catalogue, .gardens) :is(.section-title, .section-desc, .section-label, .fr-name, .fr-mean, .fr-centre, .fr-note) {
   transition: color 1.2s linear;
 }
