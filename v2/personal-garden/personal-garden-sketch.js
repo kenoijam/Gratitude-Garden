@@ -2238,9 +2238,9 @@ function drawNewestSparkles() {
   const alpha = 1;
 
   const t = frameCount * 0.01 + newest.phase * 0.001;
-  const swayNoise = swayOn ? map(noise(t), 0, 1, -1, 1) * 4 : 0;
+  const swayNoise = (swayOn ? map(noise(t), 0, 1, -1, 1) * 4 : 0) + partLean(newest);
   const cx = newest.x + swayNoise;
-  const baseCy = newest.baseY - newest.stemLen;
+  const baseCy = newest.baseY - newest.stemLen - liftOf(newest);
 
   let cyOffset, orbitW, orbitH;
   if (newest.species === "lavender") {
@@ -2302,10 +2302,10 @@ function drawAllDates() {
   for (const f of flowers) {
     if (f.growthStage !== GROWTH_STAGES.BLOOM) continue;
     const t = frameCount * 0.01 + f.phase * 0.001;
-    const swayNoise = swayOn ? map(noise(t), 0, 1, -1, 1) * 4 : 0;
+    const swayNoise = (swayOn ? map(noise(t), 0, 1, -1, 1) * 4 : 0) + partLean(f);
 
     push();
-    translate(f.x + swayNoise, f.baseY - f.stemLen);
+    translate(f.x + swayNoise, f.baseY - f.stemLen - liftOf(f));
     colorMode(HSL, 360, 100, 100, 1);
 
     const scaleFactor = (width < 720 ? gardenScale : 1);
@@ -2399,7 +2399,7 @@ function drawLeavesOnStem(x0, y0, c1x, c1y, c2x, c2y, x3, y3, lenK, tAt) {
 function drawFlowerStemAndLeaves(f) {
   const scaleFactor = (width < 720 ? gardenScale : 1);
   const t = frameCount * 0.01 + f.phase * 0.001;
-  const swayNoise = swayOn ? map(noise(t), 0, 1, -1, 1) * 4 : 0;
+  const swayNoise = (swayOn ? map(noise(t), 0, 1, -1, 1) * 4 : 0) + partLean(f);
   const totalSway = swayNoise;
 
   stroke(40, 120, 90);
@@ -2407,11 +2407,11 @@ function drawFlowerStemAndLeaves(f) {
   noFill();
 
   const c1x = 10;
-  const c1y = -f.stemLen * 0.4;
+  const c1y = -stemOf(f) * 0.4;
   const c2x = -6;
-  const c2y = -f.stemLen * 0.7;
+  const c2y = -stemOf(f) * 0.7;
   const x3  = totalSway;
-  const y3  = -f.stemLen;
+  const y3  = -stemOf(f);
 
   bezier(0, 0, c1x, c1y, c2x, c2y, x3, y3);
   drawLeavesOnStem(0, 0, c1x, c1y, c2x, c2y, x3, y3);
@@ -2419,11 +2419,11 @@ function drawFlowerStemAndLeaves(f) {
 
 function drawFlowerBloom(f) {
   const t = frameCount * 0.01 + f.phase * 0.001;
-  const swayNoise = swayOn ? map(noise(t), 0, 1, -1, 1) * 4 : 0;
+  const swayNoise = (swayOn ? map(noise(t), 0, 1, -1, 1) * 4 : 0) + partLean(f);
   const totalSway = swayNoise;
 
   push();
-  translate(totalSway, -f.stemLen);
+  translate(totalSway, -stemOf(f));
   drawBloom(f);
   pop();
 }
@@ -2754,6 +2754,12 @@ function mousePressed(event) {
      next frame: the pointer is still over that flower, so the hover tick
      below would otherwise undo the press instantly and the card would never
      shut. It is released as soon as the pointer moves off. */
+  /* THE SPARKLE FIRES ON ANY TAP THAT LANDS ON A FLOWER, before the card
+     decides whether to open or close: the burst answers the finger, and
+     whether the card is coming or going is a separate question. */
+  fireBurst(hoveredFlower.x + partLean(hoveredFlower),
+            hoveredFlower.baseY - hoveredFlower.stemLen - liftOf(hoveredFlower),
+            hoveredFlower.hue);
   if (flowerCardOpen() && flowerCardFor === hoveredFlower) {
     hideFlowerCard();
     hoverSuppress = hoveredFlower;
@@ -2920,8 +2926,8 @@ function showFlowerCard(f) {
   const rect = (canvas && canvas.elt ? canvas.elt : document.querySelector("#garden-wrap canvas, canvas")).getBoundingClientRect();
   const sx = rect.width / width, sy = rect.height / height;
   const bx = rect.left + f.x * sx;
-  const top = rect.top + (f.baseY - f.stemLen - f.size * 1.3) * sy;
-  const bottom = rect.top + (f.baseY - f.stemLen + f.size * 1.1) * sy;
+  const top = rect.top + (f.baseY - f.stemLen - liftOf(f) - f.size * 1.3) * sy;
+  const bottom = rect.top + (f.baseY - f.stemLen - liftOf(f) + f.size * 1.1) * sy;
   const w = el.offsetWidth, h = el.offsetHeight;
   let x = Math.max(10, Math.min(window.innerWidth - w - 10, bx - w / 2));
   let y = top - h - 10;
@@ -2936,11 +2942,11 @@ function checkHover(px = mouseX, py = mouseY) {
 
   for (const f of flowers) {
     const t = frameCount * 0.01 + f.phase * 0.001;
-    const swayNoise = swayOn ? map(noise(t), 0, 1, -1, 1) * 4 : 0;
+    const swayNoise = (swayOn ? map(noise(t), 0, 1, -1, 1) * 4 : 0) + partLean(f);
     const totalSway = swayNoise;
 
     const fx = f.x + totalSway;
-    const fy = f.baseY - f.stemLen;
+    const fy = f.baseY - f.stemLen - liftOf(f);
 
     const d = dist(px, py, fx, fy);
     if (d < f.size * 1.5 && d < bestDist) {
@@ -2965,10 +2971,10 @@ function drawHoverTooltip() {
 
   const f = hoveredFlower;
   const t = frameCount * 0.01 + f.phase * 0.001;
-  const swayNoise = swayOn ? map(noise(t), 0, 1, -1, 1) * 4 : 0;
+  const swayNoise = (swayOn ? map(noise(t), 0, 1, -1, 1) * 4 : 0) + partLean(f);
   
   const flowerX = f.x + swayNoise;
-  const flowerY = f.baseY - f.stemLen;
+  const flowerY = f.baseY - f.stemLen - liftOf(f);
 
   push();
   const boxPadding = 11;
@@ -3121,7 +3127,7 @@ function updateResponsiveFlowerLayout() {
   const minAllowedY = height * 0.24;
   let highestBloomY = Infinity;
   for (const f of flowers) {
-    const bloomY = f.baseY - f.stemLen - f.size;
+    const bloomY = f.baseY - f.stemLen - liftOf(f) - f.size;
     if (bloomY < highestBloomY) highestBloomY = bloomY;
   }
 
@@ -4814,7 +4820,121 @@ function setup() {
   tintCursor();
 }
 
+/* ═══════════════════════════════════════════════════════════════════════════
+   THE POINTER PARTS THE GARDEN, A FLOWER LIFTS, AND A TAP SPARKLES
+
+   The hero on the landing page has done all three since it was built and the
+   gardens had none of them, so the meadow you look at answered the pointer
+   and the meadow you PLANT IN did not. These are ports of the hero's own
+   maths; the reasoning is recorded there in full and the parts that matter
+   here are repeated, because the two copies have to be edited together.
+
+   THE SHAPE IS `u * exp(-(u^2 + v^2))`, A GAUSSIAN DERIVATIVE, and the stem
+   the pointer sits directly over is why. The obvious `sign(dx) * falloff` is
+   DISCONTINUOUS there: the flower snaps from full lean one way to full lean
+   the other as the cursor crosses it. This one is odd in u and smoothly zero
+   at the middle, so a bloom is pushed ahead of the pointer, passes through
+   upright as it goes by, and is pushed the other way behind it. That IS
+   parting.
+
+   IT PEAKS AT u = 0.707, WHERE `u * exp(-u^2)` IS 0.429, so the 2.33 scales
+   that peak to `LEAN_MAX` exactly. Change one and the other is wrong.
+
+   A DAMPED SPRING, NOT AN EASE. An exponential approach arrives and stops; a
+   spring overshoots a little and settles, which is what a pushed stem does.
+
+   THE LIFT GOES ON THE STEM LENGTH, not on the bloom, so the stem follows it
+   up rather than the head detaching from it.
+
+   IT RIDES THE SWAY'S OWN PATH. Every place that positions a flower already
+   computes a noise sway and adds it to `f.x`; the lean is added to the same
+   number in the same places, so nothing new has to know where a flower is.
+
+   OFF FOR TOUCH AND FOR REDUCED MOTION, like the hero's: a finger is not a
+   hover, and somebody who asked for less movement did not ask for a still
+   garden, only a still one. The flowers stay exactly where they are planted.
+
+   THE INDEX IS LOOKED UP RATHER THAN STORED, which is O(n) per call against
+   a garden of at most a few dozen flowers and avoids a field on the flower
+   that would have to be kept true through every re-layout and re-sort. */
+const LEAN_MAX = 13, LEAN_R = 190, SPRING_K = 0.18, SPRING_D = 0.76;
+const LIFT_MAX = 7, LIFT_K = 0.18;
+let leanX = [], leanV = [], liftK = [];
+let partOff = false;
+try {
+  partOff = !!(window.matchMedia &&
+    (window.matchMedia("(prefers-reduced-motion: reduce)").matches ||
+     window.matchMedia("(hover: none)").matches));
+} catch (e) {}
+
+function updateParting() {
+  const n = flowers.length;
+  if (leanX.length !== n) {
+    leanX = new Array(n).fill(0); leanV = new Array(n).fill(0);
+    liftK = new Array(n).fill(0);
+  }
+  const live = !partOff && step === "garden" && !isSaving &&
+               mouseX > 0 && mouseY > 0 && mouseX < width && mouseY < height;
+  for (let i = 0; i < n; i++) {
+    const f = flowers[i];
+    let target = 0;
+    if (live) {
+      const u = (f.x - mouseX) / LEAN_R;
+      const v = ((f.baseY - f.stemLen - liftOf(f)) - mouseY) / LEAN_R;
+      target = 2.33 * LEAN_MAX * u * Math.exp(-(u * u + v * v));
+    }
+    leanV[i] = (leanV[i] + (target - leanX[i]) * SPRING_K) * SPRING_D;
+    leanX[i] += leanV[i];
+    const want = (!partOff && hoveredFlower === f) ? LIFT_MAX : 0;
+    liftK[i] += (want - liftK[i]) * LIFT_K;
+  }
+}
+function partLean(f) { const i = flowers.indexOf(f); return i < 0 ? 0 : (leanX[i] || 0); }
+function liftOf(f)   { const i = flowers.indexOf(f); return i < 0 ? 0 : (liftK[i] || 0); }
+/* THE LIFT IS PART OF THE STEM, NOT AN OFFSET ON THE HEAD, so the stem grows
+   with it and the bloom does not float off its own tip. The GROWING path
+   below is deliberately left alone: a flower still coming out of the ground
+   is not something anybody is hovering, and lifting it would fight the
+   growth it is already doing. */
+function stemOf(f)   { return f.stemLen + liftOf(f); }
+
+/* ─────────────────────────────── A TAP THROWS THE GARDEN'S OWN SPARKLE
+   The same four pointed star `drawNewestSparkles` uses, inner corners at
+   0.35 of the radius, so a tapped flower and a newly planted one speak the
+   same language. The loop only runs while a burst is alive. */
+let bursts = [];
+function fireBurst(x, y, hue) { bursts.push({ x: x, y: y, hue: hue, t: millis() }); }
+function drawBursts() {
+  if (!bursts.length) return;
+  const now = millis();
+  bursts = bursts.filter(b => now - b.t < 900);
+  push();
+  colorMode(HSL, 360, 100, 100, 1);
+  noStroke();
+  for (const b of bursts) {
+    const k = (now - b.t) / 900;
+    const out = 14 + 42 * (1 - Math.pow(1 - k, 3));
+    const a = 1 - k;
+    for (let i = 0; i < 9; i++) {
+      const ang = i * 40 + k * 18;
+      const sx = b.x + cos(ang) * out;
+      const sy = b.y + sin(ang) * out;
+      const r = 5.5 * (1 - k * 0.55);
+      fill(b.hue, 70, 82, a * 0.9);
+      beginShape();
+      for (let q = 0; q < 8; q++) {
+        const rr = q % 2 ? r * 0.35 : r;
+        vertex(sx + cos(q * 45) * rr, sy + sin(q * 45) * rr);
+      }
+      endShape(CLOSE);
+    }
+  }
+  pop();
+  colorMode(RGB);
+}
+
 function draw() {
+  updateParting();
   background(240);
   drawSky();
   drawSunGradient();
@@ -4852,6 +4972,7 @@ function draw() {
   if (window.GardenLife) GardenLife.meadow(drawingContext, width, height, { horizon: height * 0.56 });
 
   drawNewestSparkles();
+  drawBursts();
 
   if (isSaving) {
     return;
