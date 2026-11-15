@@ -195,29 +195,45 @@
 
        `dark` rather than `tint`, because this is about how much LIGHT there
        is in the room and not about what colour the sky has gone. */
-    /* ═══ THE PAGE'S THREE GROUNDS ARE THE GARDEN'S OWN DARK TEALS
+    /* ═══════ THE PAGE'S FOUR GROUNDS: THE PROJECT'S OWN COLOURS, SWITCHED
 
-       THIS IS THE THIRD ANSWER AND THE AUTHOR'S OWN. The first mixed cream
-       toward a hand picked night colour and landed on a sandy #ead9b0; the
-       second dimmed the channels and gave a khaki #ded9c5; the third took
-       the daylight module's own NIGHT keyframe, which is right in principle
-       and wrong in fact, because that keyframe's sky is a navy (#13293f) and
-       a navy band under teal sections reads as two palettes. Her
-       instruction: the normal garden colours, the darker ones, with cream
-       on top.
+       THE DAY SET is every ground light and every ink dark, which is the
+       author's instruction: cream, pale blue, the meadow's pale green for
+       the Fertilizer band, and a dark teal footer, because a dark foot is
+       where a page ENDS and interrupts nothing. The band was the page's one
+       dark section and is not any more; the cost is written down under
+       `--band` in `styles.css`.
 
-       So these are the project's own teals and nothing else. `#1d6466` IS
-       `--darkteal`, the colour the Fertilizer band and the footer have worn
-       since the beginning; the other two are that same teal taken down, so
-       the page at night is the dark band repeated at three depths rather
-       than a new palette. The alternation survives: the cream sections
-       become the LIGHTEST of the three and the band stays the darkest, so
-       the page still reads light, dark, light, dark down its length.
+       THE NIGHT SET is the project's own dark teals and nothing invented:
+       `#1d6466` IS `--darkteal`, the colour the band and the footer have
+       worn since the beginning, and the other three are that same teal
+       taken down in steps. Three earlier attempts each made a night colour
+       up (a sandy mix, a dimmed khaki, the sky keyframe's navy) and each
+       landed outside the palette. The alternation survives, since the four
+       step down in order.
 
-       Cream on them measures 6.49, 7.92 and 11.58. */
-    out.paper     = mixHex("#fff9e3", "#1d6466", out.dark);
-    out.paperCool = mixHex("#e1f7f7", "#17565a", out.dark);
-    out.band      = mixHex("#1d6466", "#0f3b40", out.dark);
+       ─────────── THEY SWITCH, THEY DO NOT CROSSFADE, AND THAT IS MEASURED
+       Interpolating a ground from light to dark walks it through a MID TONE,
+       and a mid tone is the one ground on which neither ink works: measured
+       across the band's own two ends, every blend between 20 and 70 percent
+       leaves BOTH the dark ink and the cream under 4.5, bottoming out at
+       2.58 and 2.80. Since the text can only ever be one or the other, a
+       continuously blended ground means a window every evening, about an
+       hour wide, where the page cannot be read. A boolean has no such
+       window: the ground and the ink change at the same instant and the
+       1.2s CSS transition in `styles.css` is the only time either is in
+       between, which is what every dark mode on the internet does.
+
+       THE SKY AND THE GARDENS STILL SLIDE. This is only the page's flat
+       sections, which carry text; a canvas sky carries none and interpolates
+       exactly as before. */
+    var nightOn = out.dark >= 0.45;
+    out.paper     = nightOn ? "#1d6466" : "#fff9e3";
+    out.paperCool = nightOn ? "#17565a" : "#e1f7f7";
+    out.band      = nightOn ? "#134a4e" : "#dff0e8";
+    out.foot      = nightOn ? "#0f3b40" : "#1d6466";
+    out.night     = nightOn;
+
     /* THE COPY THAT STANDS ON THESE GROUNDS TURNS OVER IN `styles.css`,
        by name, under `html[data-dark='1']`. It cannot be done with a token:
        half of the body ink's uses sit on WHITE cards, which stay white at
@@ -265,7 +281,7 @@
     if (cache && forced !== null && cache.hour === forced) return cache;
     cache = at(hourNow());
     cacheAt = t;
-    flagPhase(cache.phase);
+    flagPhase(cache.phase, cache.night);
     paintVars(cache);
     return cache;
   }
@@ -292,22 +308,30 @@
       st.setProperty("--dl-paper", o.paper);
       st.setProperty("--dl-paper-cool", o.paperCool);
       st.setProperty("--dl-band", o.band);
+      st.setProperty("--dl-foot", o.foot);
       st.setProperty("--dl-grass", o.grass);
     } catch (e) {}
   }
 
-  var lastPhase = "";
-  function flagPhase(p) {
-    if (p === lastPhase) return;
-    lastPhase = p;
+  var lastPhase = "", lastDark = "";
+  function flagPhase(p, night) {
     try {
       var r = document.documentElement;
-      r.setAttribute("data-daylight", p);
-      /* A SECOND, COARSER FLAG, because four of the six phases want light
-         text and writing `[data-daylight='dusk'],[data-daylight='night']` on
-         every rule is a list that will be forgotten the next time a phase is
-         added. */
-      r.setAttribute("data-dark", (p === "night" || p === "dusk") ? "1" : "0");
+      if (p !== lastPhase) { lastPhase = p; r.setAttribute("data-daylight", p); }
+      /* ─────────────── `data-dark` IS THE SAME THRESHOLD THE GROUNDS USE
+         It used to be the PHASE NAME, `night` or `dusk`, and that was wrong
+         in a way worth recording: dusk begins at 19:00 and `dark` is only
+         about 0.33 there, so the ink flipped to cream while the grounds were
+         still two thirds light and the page spent the best part of an hour
+         unreadable every evening. One number decides both now, so the ground
+         and the ink can never disagree about what time it is.
+
+         It stays a SEPARATE flag from `data-daylight` because what a rule
+         usually wants to know is "is it dark", and spelling that out as a
+         list of phase names on every rule is a list that gets forgotten the
+         next time a phase is added. */
+      var d = night ? "1" : "0";
+      if (d !== lastDark) { lastDark = d; r.setAttribute("data-dark", d); }
     } catch (e) {}
   }
 
@@ -322,5 +346,5 @@
 
   /* Flag the phase as early as possible, so a stylesheet is not repainting
      the whole interface a beat after the page has already been seen. */
-  (function () { var o = at(hourNow()); flagPhase(o.phase); paintVars(o); })();
+  (function () { var o = at(hourNow()); flagPhase(o.phase, o.night); paintVars(o); })();
 })();

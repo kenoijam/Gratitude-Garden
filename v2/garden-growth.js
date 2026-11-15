@@ -81,23 +81,30 @@
        joins. The page dust is 6, Hortus 240, the music button 260, the side
        nav 9000 and the letter 9500, so it is under all of them. */
     "#growth-rail svg{display:block;overflow:visible;}",
-    ".gr-leaf,.gr-bloom{transform:translate(var(--x),var(--y)) rotate(var(--a)) scale(0);",
-    "opacity:0;transition:transform .6s cubic-bezier(.2,.9,.25,1),opacity .45s linear;}",
-    ".gr-leaf.is-out,.gr-bloom.is-out{transform:translate(var(--x),var(--y)) rotate(var(--a)) scale(1);opacity:1;}",
+    /* NO TRANSITIONS. Every scale here is written per frame from the scroll
+       position, so the growth runs backwards when the page does. */
+    ".gr-leaf{transform:translate(var(--x),var(--y)) rotate(var(--a)) scale(var(--s,0));}",
+    ".gr-budshape{transform:translate(var(--x),var(--y)) scale(var(--s,0));}",
+    ".gr-bud-skin{fill:var(--bud,#8fbf72);}",
     /* The species canvases are absolute children of the RAIL, not of the
        SVG, so they are placed in px and scaled about their own middle. */
-    ".gr-bud{position:absolute;transform-origin:50% 50%;transform:scale(0);",
+    ".gr-head{position:absolute;transform-origin:50% 50%;transform:scale(var(--s,0));}",
+    /* The last flower still fades in, since nothing grows past it. */
+    ".gr-bloom{transform:translate(var(--x),var(--y)) rotate(var(--a)) scale(0);",
     "opacity:0;transition:transform .6s cubic-bezier(.2,.9,.25,1),opacity .45s linear;}",
+    ".gr-bloom.is-out{transform:translate(var(--x),var(--y)) rotate(var(--a)) scale(1);opacity:1;}",
+    ".gr-bud{position:absolute;transform-origin:50% 50%;transform:scale(0);opacity:0;",
+    "transition:transform .6s cubic-bezier(.2,.9,.25,1),opacity .45s linear;}",
     ".gr-bud.is-out{transform:scale(1);opacity:1;}",
     /* A CSS TRANSLATE IN px ON AN SVG CHILD IS IN USER UNITS, which is why
        the anchors are written straight in viewBox numbers with no
        conversion. Same note `garden-mascot.js` carries about its gaze. */
     "@media (max-width:1100px){#growth-rail{display:none;}}",
     "@media (prefers-reduced-motion:reduce){",
-    ".gr-leaf,.gr-bloom,.gr-bud{transition:none;}}"
+    ".gr-bloom,.gr-bud{transition:none;}}"
   ].join("");
 
-  var rail, svg, stem, leaves = [], bloom = null;
+  var rail, svg, stem, leaves = [], nodes = [], bloom = null;
   var railTop = 0, railH = 0, len = 0, built = false;
   var reduced = false;
   try { reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches; } catch (e) {}
@@ -188,6 +195,50 @@
     return g;
   }
 
+  /* ─────────────────────────── A BUD, AND IT IS THE GARDENS' OWN BUD
+     `drawBudShape` in both sketches draws sepals, a teardrop body and a seam
+     down it, and the note beside it says why: a sphere on a stem reads as a
+     PIN, and the seam is what says the thing is closed and about to open
+     rather than merely round. This is that shape in SVG, at the one size it
+     is ever drawn here.
+
+     THE SKIN RIPENS THE SHORT WAY ROUND THE WHEEL. The gardens take the bud
+     from a green at hue 112 to the flower's own hue as it ripens, and they
+     do NOT lerp: `lerpColor` walks every component in a straight line, so
+     green to a rose at 350 goes through 231 and the bud comes out PURPLE on
+     every warm flower. `shortHue` takes the shorter arc, 112 to 51 to 350,
+     down through yellow green and orange, which is how a bud actually
+     colours up. Same trap, same fix, written out here because this file
+     cannot reach the sketches' copy. */
+  function shortHue(from, to, t) {
+    var d = ((to - from) % 360 + 540) % 360 - 180;
+    return (from + d * t + 360) % 360;
+  }
+
+  function budArt(side) {
+    var k = side, ns = "http://www.w3.org/2000/svg";
+    var g = document.createElementNS(ns, "g");
+    var body = document.createElementNS(ns, "path");
+    /* A teardrop, point up, about 9 by 13. */
+    body.setAttribute("d", "M0 -7 C 4.6 -4.2 5.2 1.6 3 4.6 C 1.4 6.6 -1.4 6.6 -3 4.6 C -5.2 1.6 -4.6 -4.2 0 -7 Z");
+    body.setAttribute("class", "gr-bud-skin");
+    g.appendChild(body);
+    var seam = document.createElementNS(ns, "path");
+    seam.setAttribute("d", "M0 -6 C 1.6 -3 1.8 1.4 0.6 4.4");
+    seam.setAttribute("fill", "none");
+    seam.setAttribute("stroke", "rgba(0,0,0,0.14)");
+    seam.setAttribute("stroke-width", "0.9");
+    seam.setAttribute("stroke-linecap", "round");
+    g.appendChild(seam);
+    /* Two sepals hugging the base, in the stem's own green. */
+    var sep = document.createElementNS(ns, "path");
+    sep.setAttribute("d", "M-3.4 3.2 C -5.2 5.6 -3.2 7.4 0 7.4 C 3.2 7.4 5.2 5.6 3.4 3.2 C 1.8 5.4 -1.8 5.4 -3.4 3.2 Z");
+    sep.setAttribute("fill", STEM);
+    g.appendChild(sep);
+    g.setAttribute("transform", "translate(" + (SPUR * k) + ",-5)");
+    return g;
+  }
+
   function bloomNode() {
     /* THE FIVE PETAL BLOOM THIS PROJECT ALREADY DRAWS, the one the letter and
        the cursor carry, rather than one of the eight species: the eight are
@@ -225,6 +276,7 @@
     rail.style.height = railH + "px";
     rail.innerHTML = "";
     leaves = [];
+    nodes = [];
 
     svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
     svg.setAttribute("width", W);
@@ -266,7 +318,6 @@
       g.style.setProperty("--y", pt.y.toFixed(2) + "px");
       g.style.setProperty("--a", lean.toFixed(1) + "deg");
       svg.appendChild(g);
-      leaves.push({ el: g, at: at / len, out: false });
 
       /* THE EIGHT IN ORDER, so no two neighbours are the same flower and a
          long page shows the whole set rather than a handful of favourites.
@@ -274,13 +325,28 @@
          coordinates by hand; the SVG's viewBox is 1:1 with its pixels, so
          the point it reports IS the offset from the rail's top left. */
       var ring = speciesList();
-      var head = ring ? bloomCanvas(ring[n % ring.length], NODE) : null;
+      var sp = ring ? ring[n % ring.length] : null;
+      var head = sp ? bloomCanvas(sp, NODE) : null;
       if (head) {
-        head.className = "gr-bud";
+        head.className = "gr-head";
         head.style.left = (pt.x + SPUR * side - NODE / 2).toFixed(1) + "px";
         head.style.top  = (pt.y - 5 - NODE / 2).toFixed(1) + "px";
         rail.appendChild(head);
-        leaves.push({ el: head, at: at / len, out: false });
+        /* THE BUD IT OPENS OUT OF, in the SVG with the spur, drawn BEFORE
+           the bloom in the tree so the bloom comes out in front of it. The
+           bloom does not replace the bud: through the opening the bloom
+           scales up while the bud shrinks around it, so there is no frame
+           where one picture swaps for another. Both gardens do exactly
+           this, and a straight crossfade was the obvious alternative there
+           too: it reads as two drawings dissolving rather than as one thing
+           opening. */
+        var bud = budArt(side);
+        bud.setAttribute("class", "gr-budshape");
+        bud.style.setProperty("--x", pt.x.toFixed(2) + "px");
+        bud.style.setProperty("--y", pt.y.toFixed(2) + "px");
+        svg.appendChild(bud);
+        nodes.push({ spur: g, bud: bud, head: head, hue: sp.hue, sat: sp.sat,
+                     light: sp.light, at: at });
       }
       at += LEAF_EVERY;
       side = -side;
@@ -315,29 +381,81 @@
   /* WHAT RUNS ON SCROLL IS ONE NUMBER. The tip is kept a little above the
      bottom of the window, at 0.78 of it, so the stem is growing AHEAD of the
      reader rather than arriving at the same moment they do. */
+  /* ═══════════════════════ IT GROWS THE WAY A GARDEN FLOWER GROWS
+     The first version faded each bloom up at full size, which made the vine
+     the one thing on this site that APPEARS rather than grows, on a page
+     whose whole argument is the opposite. Both gardens plant a flower in two
+     movements, `GROW_RISE` then `GROW_OPEN`: the stem rises with a BUD on its
+     tip, and the bud opens into the bloom while shrinking around it. The
+     same two movements here, driven by the scroll instead of by a clock.
+
+     THE PROPORTIONS ARE THE GARDENS' OWN. 3400ms of rise against 1700ms of
+     opening is two thirds to one third, so `OPEN_AT` is 0.66: a node is a
+     bud for the first two thirds of its window and opens through the last.
+     `NODE_RUN` is how much stem that window is worth, in px, which is what
+     scroll is measured in here.
+
+     NO CSS TRANSITION ON ANY OF IT. A transition is a thing that plays at
+     its own speed once it is triggered; this has to follow the scroll both
+     ways, including backwards, which is what makes it read as the page
+     growing the flower rather than as the flower noticing it has been
+     scrolled past. Each value is written straight.
+
+     THE BUD RIPENS AS IT GOES, green to the flower's own hue the short way
+     round the wheel, which is `shortHue` above. */
+  var NODE_RUN = 170;    /* px of stem one flower takes to grow */
+  var OPEN_AT  = 0.66;   /* where the bud stops rising and starts opening */
+  function ease(t) { return 1 - Math.pow(1 - t, 3); }       /* the rise */
+  function smooth(t) { return t * t * (3 - 2 * t); }        /* the opening */
+
   var lastP = -1;
+  function paintNode(nd, g) {
+    if (g <= 0) {
+      nd.bud.style.setProperty("--s", "0");
+      nd.head.style.setProperty("--s", "0");
+      nd.spur.style.setProperty("--s", "0");
+      return;
+    }
+    /* The spur and its leaf unfold with the first half of the rise, the way
+       a leaf comes out on the way up rather than arriving with the bloom. */
+    nd.spur.style.setProperty("--s", smooth(Math.min(1, g / 0.5)).toFixed(3));
+
+    if (g < OPEN_AT) {
+      var r = ease(g / OPEN_AT);
+      nd.bud.style.setProperty("--s", (0.25 + 0.75 * r).toFixed(3));
+      nd.head.style.setProperty("--s", "0");
+      var h = shortHue(112, nd.hue, r);
+      nd.bud.style.setProperty("--bud",
+        "hsl(" + h.toFixed(1) + "," + (28 + (nd.sat - 28) * r).toFixed(1) + "%," +
+        (48 + (nd.light - 48) * r).toFixed(1) + "%)");
+    } else {
+      var o = smooth((g - OPEN_AT) / (1 - OPEN_AT));
+      /* 0.18 to 1 is the gardens' own figure for the opening bloom. */
+      nd.head.style.setProperty("--s", (0.18 + 0.82 * o).toFixed(3));
+      nd.bud.style.setProperty("--s", (1 - o).toFixed(3));
+    }
+  }
+
   function tick() {
     if (!built) return;
     var p = (window.pageYOffset + window.innerHeight * 0.78 - railTop) / railH;
     p = p < 0 ? 0 : (p > 1 ? 1 : p);
     if (Math.abs(p - lastP) < 0.0008) return;
     lastP = p;
+    var tip = p * len;
     stem.style.strokeDashoffset = (len * (1 - p)).toFixed(1);
-    for (var i = 0; i < leaves.length; i++) {
-      var want = p >= leaves[i].at;
-      if (want !== leaves[i].out) {
-        leaves[i].out = want;
-        leaves[i].el.classList.toggle("is-out", want);
-      }
+    for (var i = 0; i < nodes.length; i++) {
+      var g = (tip - nodes[i].at) / NODE_RUN;
+      paintNode(nodes[i], g < 0 ? 0 : (g > 1 ? 1 : g));
     }
-    /* The flower opens only when the stem has actually reached it. */
+    /* The last flower opens only once the stem has actually reached it. */
     if (bloom) bloom.classList.toggle("is-out", p > 0.985);
   }
 
   function full() {
     if (!built) return;
     stem.style.strokeDashoffset = "0";
-    leaves.forEach(function (l) { l.out = true; l.el.classList.add("is-out"); });
+    nodes.forEach(function (nd) { paintNode(nd, 1); });
     if (bloom) bloom.classList.add("is-out");
   }
 

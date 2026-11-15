@@ -3950,13 +3950,16 @@ function circleChip(label, onGo, muted) {
   return b;
 }
 
-/* Every circle this browser knows, so somebody who was given a link once
-   does not have to keep it. The one they are already in is not offered. */
-myCircles().forEach(c => {
-  if (c.code === circleCode) return;
-  circleChip(c.name || c.code, () => { location.href = circleLink(c.code); });
-});
+/* NO LIST OF CIRCLES YOU HAVE BEEN IN, AND THAT IS THE AUTHOR'S CALL. There
+   was one, a chip per remembered circle, and the first thing it produced was
+   "what is quiet-fern-moth": a code somebody had joined once sitting on the
+   first card of the page with no context, which reads as a bug rather than
+   as a shortcut. Two actions and nothing else. A circle is kept the way its
+   members keep it, which is the link, and this browser still remembers the
+   NAME so that arriving by one says more than the code does.
 
+   IF A LIST EVER COMES BACK it needs the circle's name to be real and a way
+   to leave, which is `forgetCircle`, kept for exactly that. */
 circleChip("Make a circle", () => {
   const code = makeCode();
   /* NAMED BY THE PERSON MAKING IT, because "quiet-fern-moth" is a good thing

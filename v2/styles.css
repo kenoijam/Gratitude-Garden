@@ -49,7 +49,33 @@
    palette is the only version of this that cannot drift from it. */
 --paper:      var(--dl-paper, var(--cream));
 --paper-cool: var(--dl-paper-cool, var(--lightsky));
---band:       var(--dl-band, var(--darkteal));
+/* ── THE FERTILIZER BAND IS LIGHT IN THE DAY NOW, and it was the page's one
+   dark section. The author's call: every ground light and every ink dark
+   while the sun is up. What it costs is written down rather than argued,
+   because the note it reverses is still true: a dark band was one short stop
+   between two long cream ones, and the page has lost that. What keeps it a
+   stop at all is that `#dff0e8` is the only light colour on the page NOT
+   already in use, cream being About and the flower guide and pale blue being
+   the gardens and the closing section. It is the gardens' own ground, so it
+   is in palette by construction.
+   `.about::before`, the roll out of the band, is painted from this token and
+   follows it without a line. */
+--band:       var(--dl-band, #dff0e8);
+/* The band's three inks, which have to turn over with it: dark on the pale
+   green by day, cream on the deep teal at night. 5.79, 3.12 at 49px (large
+   text needs 3.0) and 4.21 by day; 9.4, 7.81 and 8.24 at night. */
+--band-ink:   var(--darkteal);
+/* `--teal` on the pale green measures 3.12, which carries a 54.7px title
+   (large text needs 3.0) and nothing smaller. A shade down holds the accent
+   and clears it with room: 3.68. */
+--band-em:    #3b857c;
+/* 4.21 was under the 4.5 a 15.6px line needs; this is 4.76. */
+--band-soft:  #36716c;
+/* THE FOOTER IS ITS OWN TOKEN AND STAYS DARK. A dark foot is where a page
+   ENDS, and it is the one place a dark block interrupts nothing, since there
+   is nothing after it. It shared `--band` until the band went light, which
+   would have taken the footer with it. */
+--foot:       var(--dl-foot, var(--darkteal));
 /* the meadow's ground, painted on the hero canvas. About's curve carries it
    down into the cream, so the two must match: the canvas literal is
    `ctx.fillStyle='#7ec4b4'` in index.html. AT NIGHT IT IS THE MEADOW'S OWN
@@ -1044,9 +1070,13 @@ canvas.flower-canvas { position: absolute; top: 0; left: 0; width: 100%; height:
    the tips section used to be the only one with a curve on both edges, and the
    only one curving upward. */
 .wisdom-inner { position: relative; z-index: 1; padding: 3rem 0; }
-.wisdom .section-label { color: var(--yellow); }
-.wisdom .section-title { color: var(--cream); }
-.wisdom .section-title em { color: var(--yellow); }
+/* THE EYEBROW IS NOT THE EM. At 12.24px it needs 4.5 and the accent
+   carries 3.68, so it takes the page's own body ink like every other
+   section's eyebrow does: 5.85 here. The accent is for the one
+   emphasised word in the title, which is large text. */
+.wisdom .section-label { color: var(--ink); }
+.wisdom .section-title { color: var(--band-ink); }
+.wisdom .section-title em { color: var(--band-em); }
 .tips-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 1.2rem; margin-top: 2.5rem; }
 .tip-card { background: rgba(255,255,255,0.08); border: 1.5px solid rgba(255,255,255,0.18); border-radius: 18px; padding: 1.4rem 1.3rem; display: flex; flex-direction: column; gap: 0; }
 .tip-icon-wrap { width: 56px; height: 56px; border-radius: 14px; background: rgba(255,255,255,0.18); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
@@ -1095,7 +1125,7 @@ footer {
   /* 140px, not 3.5rem. At 60px the curve dipped 40 in and the first row of the
      footer started at 60, so it had 20px of headroom against 100 everywhere
      else, and it was the join that read as cramped. */
-  background: var(--band); color: rgba(255,249,227,0.65); padding: 140px 5rem 2rem;
+  background: var(--foot); color: rgba(255,249,227,0.65); padding: 140px 5rem 2rem;
   position: relative; overflow: hidden;
 }
 footer::before {
@@ -2303,7 +2333,7 @@ html:not([data-hero]) .hero-sun {
   font-family: 'Fraunces', Georgia, serif; font-weight: 600;
   font-variation-settings: 'SOFT' 50, 'WONK' 0;
   font-size: clamp(1.5rem, 3.2vw, 2.3rem); line-height: 1.3;
-  color: var(--cream);
+  color: var(--band-ink);
 }
 
 /* NO POINTER EVENTS. The Hortus you talk to is the one that follows you down
@@ -2324,7 +2354,7 @@ html:not([data-hero]) .hero-sun {
 
 .today-note {
   font-family: Arial, Helvetica, sans-serif; font-size: 0.92rem;
-  color: rgba(255,249,227,0.62); margin: 1.6rem 0 0;
+  color: var(--band-soft); margin: 1.6rem 0 0;
 }
 
 @media (max-width: 768px) {
@@ -2344,7 +2374,7 @@ html:not([data-hero]) .hero-sun {
   font-family: Arial, Helvetica, sans-serif;
   font-weight: 400;
   font-size: 1rem;
-  color: rgba(255,249,227,0.62);
+  color: var(--band-soft);
 }
 
 
@@ -2465,8 +2495,18 @@ html[data-dark="1"] .catalogue .fr-centre,
 html[data-dark="1"] .catalogue .fr-note { color: #f1ead3; }
 /* The dashed circle the eight stand on is `rgba(66,146,136,0.30)`, which is
    the ruling on a cream page and nothing at all on a dark one. */
+/* The Fertilizer band's own three inks. They SWITCH with the ground rather
+   than blending toward it, for the reason measured in `garden-daylight.js`:
+   between the pale green and the deep teal every blend leaves both inks
+   under 4.5, so a ground that slid would take an hour every evening to
+   cross a gap the text cannot be read in. 9.4, 7.81 and 8.24 at night. */
+html[data-dark="1"] { --band-ink: #fff9e3; --band-em: var(--yellow); --band-soft: #f1ead3; }
+/* The band's eyebrow takes `--ink` by day, which is a dark ink and wrong on
+   the night band, so it turns over with the rest. 8.24 on #134a4e. */
+html[data-dark="1"] .wisdom .section-label { color: #f1ead3; }
 html[data-dark="1"] .catalogue .fr-ring-circle { stroke: rgba(255,249,227,0.30); }
 html[data-dark="1"] .catalogue .fr-line { stroke: rgba(255,249,227,0.40); }
-html[data-daylight] :is(.about, .catalogue, .gardens) :is(.section-title, .section-desc, .section-label, .fr-name, .fr-mean, .fr-centre, .fr-note) {
+html[data-daylight] :is(.about, .catalogue, .gardens) :is(.section-title, .section-desc, .section-label, .fr-name, .fr-mean, .fr-centre, .fr-note),
+html[data-daylight] .wisdom :is(.section-title, .section-label, .today-line, .today-note) {
   transition: color 1.2s linear;
 }
