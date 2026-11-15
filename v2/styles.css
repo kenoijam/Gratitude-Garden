@@ -2387,13 +2387,78 @@ html:not([data-hero]) .hero-sun {
    the hero is the ONE section whose ground is the sky rather than cream, so
    its eyebrow, title and subtitle are the only body text on this page that a
    night sky sits behind. Everything below the hero is cream at every hour and
-   needs nothing. */
-html[data-dark="1"] .hero-title { color: #fff9e3; }
-html[data-dark="1"] .hero-title em { color: #ffe9a8; }
-html[data-dark="1"] .hero-subtitle { color: #d6ece6; }
-html[data-dark="1"] .hero-eyebrow,
-html[data-dark="1"] .hero-mark { color: #bfe0da; }
-/* The wordmark and the wiggling letters inherit, so they need no rule. */
+   needs nothing.
+
+   ───────────────── IT TURNS OVER ON MEASUREMENT NOW, NOT ON `data-dark`
+   This was `html[data-dark='1']`, which is the flag the page's flat sections
+   use, and on a sky that is the wrong question. The sections can CHANGE
+   COLOUR at a threshold; the hero's sky slides all day because it is the
+   picture, and `dark` is how much light there is rather than how light the
+   pixel behind a letter is. At dawn those are opposites: at about 06:20
+   `dark` has just crossed its threshold so the title had already gone cream,
+   while the hero's gradient down at the horizon is still a pale peach.
+   Measured on the hero's own stops, **1.73 to one**, which is a headline you
+   cannot read, every morning.
+
+   `garden-daylight.js` measures which of the two inks is readable against
+   the stops it is about to write and hands it over as `--dl-sky-ink`. One
+   decision, shared with both gardens, and the fallback in every rule is the
+   colour the hero had before, so a page without the module is unchanged.
+
+   SWITCHING THE HERO'S SKY DAY AND NIGHT WAS WEIGHED AND REFUSED, and the
+   reason is the horizon. The hero's MEADOW canvas takes `back`, `front`,
+   `fore` and the flowers' `fold` from the same module and slides, and the
+   gradient's own bottom stop is mixed toward that ground. A switching sky
+   over a sliding meadow puts a midday blue directly above a golden olive
+   field and the two disagree exactly where they meet. Capping how far the
+   hero travels was measured too and is worse: at 19:00 it would hold the
+   hero at 0.14 of a sunset when the hour wants 0.89, which throws golden
+   hour away to buy what the halo buys for nothing.
+
+   SO THE HALO, CENTRED AND BLURRED, in the opposite ink. A dusk sky is a mid
+   blue over a mid peach and no flat colour reads on both: best of the two
+   inks bottoms out at 2.36 on these stops. The halo's edge against its own
+   THE HALO'S STRENGTH IS NOT FIXED. `--dl-halo-k` is how badly the hour
+   needs it, 0 wherever the flat ink to sky ratio already clears AA and 1
+   where it has fallen to 2 to one, so the three alphas below are a
+   `calc()` rather than a constant. At noon that is a faint edge on type
+   that was already crisp; through dusk it firms up as the sky closes on
+   the ink. Its fallback is 1, so a page without the module gets the full
+   halo rather than none: the failure worth guarding against is unreadable
+   text, not a slightly soft headline.
+
+   ink is a fixed 11.58 to one whatever the sky is doing, and that is what
+   carries those minutes. It is NOT the hard `1px 1px 0` white shadow this
+   project deleted from both gardens, which offset every letter and read as
+   misregistered print; three centred passes from tight to wide at falling
+   alpha lift the words off the sky without moving them.
+
+   THE EM IS THE ONE ACCENT AND IT IS NO LONGER `--teal`. That colour is one
+   this project has already had to take off three other pieces of text for
+   failing AA. `--dl-sky-accent` is the palette's yellow on a dark ink and
+   the dark teal the title used to be on a light one, so the emphasised word
+   stays a step lighter than the ink around it either way. */
+html[data-ink] :is(.hero-title, .hero-subtitle, .hero-eyebrow, .hero-mark) {
+  color: var(--dl-sky-ink, #1d6466);
+  text-shadow:
+    0 0 1px  rgba(var(--dl-sky-halo-rgb, 255, 249, 227), calc(0.55 + 0.40 * var(--dl-halo-k, 1))),
+    0 0 4px  rgba(var(--dl-sky-halo-rgb, 255, 249, 227), calc(0.33 + 0.52 * var(--dl-halo-k, 1))),
+    0 0 12px rgba(var(--dl-sky-halo-rgb, 255, 249, 227), calc(0.10 + 0.50 * var(--dl-halo-k, 1)));
+  transition: color .9s ease, text-shadow .9s ease;
+}
+/* The subtitle and the eyebrow are small, so their halo is tighter: a 12px
+   blur around 11px uppercase closes the letters up and the line reads as
+   glowing rather than as lifted. */
+html[data-ink] :is(.hero-subtitle, .hero-eyebrow) {
+  text-shadow:
+    0 0 1px rgba(var(--dl-sky-halo-rgb, 255, 249, 227), calc(0.55 + 0.40 * var(--dl-halo-k, 1))),
+    0 0 3px rgba(var(--dl-sky-halo-rgb, 255, 249, 227), calc(0.33 + 0.52 * var(--dl-halo-k, 1))),
+    0 0 8px rgba(var(--dl-sky-halo-rgb, 255, 249, 227), calc(0.10 + 0.45 * var(--dl-halo-k, 1)));
+}
+html[data-ink] .hero-title em,
+html[data-ink] .hero-mark em { color: var(--dl-sky-accent, #429288); }
+/* The wiggling letters are spans inside the title and inherit both the
+   colour and the shadow, so they need no rule. */
 
 /* THE SUN KEEPS ITS SHAPE AND LOSES ITS COLOUR. Swapping the inline SVG for
    a moon would mean a second drawing in the markup; desaturated, brightened

@@ -3950,16 +3950,23 @@ function circleChip(label, onGo, muted) {
   return b;
 }
 
-/* NO LIST OF CIRCLES YOU HAVE BEEN IN, AND THAT IS THE AUTHOR'S CALL. There
-   was one, a chip per remembered circle, and the first thing it produced was
-   "what is quiet-fern-moth": a code somebody had joined once sitting on the
-   first card of the page with no context, which reads as a bug rather than
-   as a shortcut. Two actions and nothing else. A circle is kept the way its
-   members keep it, which is the link, and this browser still remembers the
-   NAME so that arriving by one says more than the code does.
+/* THE TWO ACTIONS COME FIRST, AND THE CIRCLES YOU ALREADY HAVE COME UNDER
+   THEM. There was a list here once and it was taken out, because the first
+   thing it produced was "what is quiet-fern-moth": a code somebody had
+   joined once, sitting on the first card of the page with no context, which
+   reads as a bug rather than as a shortcut.
 
-   IF A LIST EVER COMES BACK it needs the circle's name to be real and a way
-   to leave, which is `forgetCircle`, kept for exactly that. */
+   THE LIST IS BACK BECAUSE THE ABSENCE WAS THE BIGGER FAULT. Without it a
+   circle could only be returned to by keeping the link, so somebody in a
+   circle with three friends had to go and find a message from last week
+   every single day. A garden you have to dig a link out of to reach is not
+   somewhere you go daily, which is the one thing this project is asking for.
+
+   WHAT WAS ACTUALLY WRONG WAS THE NAMING, NOT THE LIST, and that is what
+   `paintCircleList` fixes below: a circle is shown by the name somebody gave
+   it, joining asks for one, and anything still carrying a bare code can be
+   named from the card. The old note's other condition is met too: there is
+   a way to leave, which is what `forgetCircle` was kept for. */
 circleChip("Make a circle", () => {
   const code = makeCode();
   /* NAMED BY THE PERSON MAKING IT, because "quiet-fern-moth" is a good thing
@@ -3984,7 +3991,14 @@ circleChip("Join with a code", () => {
   const m = String(v).match(/[?&]circle=([^&#\s]+)/);
   if (m) code = cleanCode(decodeURIComponent(m[1]));
   if (!code) return;
-  rememberCircle(code, code);
+  /* AND THEN WHAT TO CALL IT, because a list of bare codes is the exact
+     thing that got the first list removed. Cancelling keeps the code, so
+     this cannot stop anybody joining; it is one OK press for a name that
+     has to last. */
+  const label = window.prompt(
+    "Joined. What do you call this circle?\n\nThis is only for your own list, so pick anything.",
+    code);
+  rememberCircle(code, (label === null ? code : String(label).trim().slice(0, 28)) || code);
   location.href = circleLink(code);
 });
 
@@ -4000,6 +4014,126 @@ if (circleCode) {
   });
   circleChip("Today's open garden", () => {
     location.href = location.origin + location.pathname;
+  }, true);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   YOUR CIRCLES: THE WAY BACK, WITHOUT THE LINK
+
+   A circle is a code in a room key, so returning to one is a navigation and
+   nothing more. What was missing was anywhere to navigate FROM: the browser
+   has remembered every circle it has been in since the feature was built,
+   and nothing ever showed that list, so the only way back was the original
+   message. This is that list.
+
+   IT IS NAMES, NEVER CODES, which is the whole lesson of the first attempt.
+   `circleName` falls back to the code, so anything joined before this, or
+   arrived at by a link and never named, still appears; it just appears
+   wearing its code, and carries a way to name it rather than sitting there
+   as a puzzle.
+
+   IT IS LOCAL AND IT IS NOT A MEMBERSHIP LIST. Planting here still takes no
+   account, so this is a note this browser keeps, like the once a day marker
+   next to it. Clearing your storage loses the list and loses nothing else:
+   the circle is still there and the code still opens it, which is exactly
+   what "anybody you give the code to is in" means.
+
+   LEAVING IS `forgetCircle` AND IT ONLY FORGETS. It cannot remove anybody
+   from a circle, because there is nobody to remove; it takes the row off
+   this browser's list. The copy says so rather than saying "Leave", which
+   would promise something the mechanism cannot do. */
+const circleList = createDiv().parent(circleBox);
+circleList.style("margin", "11px 0 0");
+
+function paintCircleList() {
+  circleList.html("");
+  /* THE ONE YOU ARE STANDING IN IS NOT A WAY TO GO SOMEWHERE, so it is left
+     out: the heading above already says you are in it, and a chip that
+     reloads the page you are on is a dead control. */
+  const list = myCircles().filter(c => c.code !== circleCode);
+  if (!list.length) { circleList.style("display", "none"); return; }
+  circleList.style("display", "block");
+
+  const lab = createP(list.length === 1 ? "A circle you are in:" : "Circles you are in:")
+    .parent(circleList);
+  lab.style("font-family", "Arial, Helvetica, sans-serif");
+  lab.style("font-size", "11.5px");
+  lab.style("letter-spacing", "0.08em");
+  lab.style("text-transform", "uppercase");
+  lab.style("color", "#6d8f8a");
+  lab.style("margin", "0 0 7px");
+
+  const row = createDiv().parent(circleList);
+  row.style("display", "flex");
+  row.style("flex-wrap", "wrap");
+  row.style("gap", "7px");
+
+  list.forEach(c => {
+    /* A CHIP AND ITS CROSS ARE TWO BUTTONS IN ONE PILL, not one button that
+       does two things depending on where it was hit. The pill is the border
+       so the pair reads as one object. */
+    const pill = createDiv().parent(row);
+    pill.style("display", "inline-flex");
+    pill.style("align-items", "stretch");
+    pill.style("border", "1.5px solid #bde0d6");
+    pill.style("border-radius", "999px");
+    pill.style("overflow", "hidden");
+    pill.style("background", "#ffffff");
+
+    const go = createButton(c.name || c.code).parent(pill);
+    go.style("padding", "7px 6px 7px 13px");
+    go.style("border", "none");
+    go.style("background", "none");
+    go.style("color", "#1d6466");
+    go.style("font-family", "Arial, Helvetica, sans-serif");
+    go.style("font-size", "13px");
+    go.style("font-weight", "600");
+    go.style("max-width", "190px");
+    go.style("overflow", "hidden");
+    go.style("text-overflow", "ellipsis");
+    go.style("white-space", "nowrap");
+    go.style("cursor", "pointer");
+    go.style("pointer-events", "auto");
+    go.attribute("title", "Open " + (c.name || c.code) + " (" + c.code + ")");
+    go.mousePressed(() => { location.href = circleLink(c.code); });
+
+    const x = createButton("&times;").parent(pill);
+    x.style("padding", "7px 11px 7px 7px");
+    x.style("border", "none");
+    x.style("background", "none");
+    x.style("color", "#8fb3ae");
+    x.style("font-family", "Arial, Helvetica, sans-serif");
+    x.style("font-size", "15px");
+    x.style("line-height", "1");
+    x.style("cursor", "pointer");
+    x.style("pointer-events", "auto");
+    x.attribute("aria-label", "Forget " + (c.name || c.code));
+    x.attribute("title", "Take this off your list. The circle itself stays.");
+    x.mousePressed(() => {
+      if (!window.confirm(
+        "Take \"" + (c.name || c.code) + "\" off this list?\n\n" +
+        "The circle itself carries on and its code still works, so anybody " +
+        "with the link can send it to you again.")) return;
+      forgetCircle(c.code);
+      paintCircleList();
+    });
+  });
+}
+paintCircleList();
+
+/* NAMING A CIRCLE YOU ARRIVED AT BY LINK. Somebody handed a link has plainly
+   been invited, so the page does not interrogate them on arrival: it
+   remembers the circle under its own code and offers the name here, once,
+   and only while the name IS still the code. Prompting on load would be a
+   dialogue in front of a garden somebody was invited to look at. */
+if (circleCode && circleName() === circleCode) {
+  circleChip("Name this circle", () => {
+    const label = window.prompt(
+      "What do you call this circle?\n\nThis is only for your own list.", circleCode);
+    if (label === null) return;
+    rememberCircle(circleCode, String(label).trim().slice(0, 28) || circleCode);
+    circleHead.html("You are in the circle <b>" + circleName() + "</b>.");
+    paintCircleList();
   }, true);
 }
 

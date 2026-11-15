@@ -221,38 +221,95 @@ than at a threshold minute.
   58 percent of its width every night. Caught by reading the function rather
   than by looking at it.
 
-### AFTER DARK THE WRITING TURNS OVER, and it is contrast rather than mood
+### THE INK ON THE SKY IS MEASURED, NOT TAKEN OFF THE HOUR
 
-`garden-daylight.js` puts the phase on `<html>` as `data-daylight`, plus a
-coarser **`data-dark`** for the two phases that need light text, so a rule does
-not have to list the phases and get forgotten when one is added.
+**This replaces a night only block, and the block was wrong in a way that
+only showed in the morning.** `garden-daylight.js` still puts the phase on
+`<html>` as `data-daylight` and a coarser `data-dark`, and `data-dark` is
+still what the page's flat SECTIONS switch on. What changed is the text
+standing on the sky.
 
-- **IT WAS MEASURED, AND ALL FIVE FAILED.** The garden's name, the daily note,
-  the Garden Tips card and its heading are DOM text standing directly on the
-  sky with no panel behind them. Against the night sky they came back at
-  **1.56, 2.84, 1.55 and 1.44 to one**, every one failing WCAG AA and most by
-  more than half. After the block: 13.9, 11.6, 10.9 and 12.8. A night that is
-  actually dark is only honest with this; the alternative was a washed out
-  "night" pale enough for dark text, which reads as an overcast afternoon.
-- **DUSK IS IN IT TOO.** The dark teal measures 1.6 against the dusk sky, so it
-  fails there as well.
-- **THE SPECIFICITY IS WHY IT CAN SIT AFTER THE PHONE BLOCK.**
-  `html[data-dark='1'] #x` is one id plus one attribute, which beats both a
-  bare id and the phone block's own `html body a#back-to-home`, so it wins on
-  weight rather than on order. `!important` is against the inline styles
-  `buildUI()` writes, as everywhere else in these two files.
-- **HOME IS DELIBERATELY NOT IN THE LIST, AND LEAVING IT IN WAS A MEASUREMENT
-  MISTAKE WORTH KEEPING.** The probe sampled the CANVAS pixel behind each
-  element, which is right for text on the sky and wrong for `#back-to-home`:
-  it is a cream pill at `rgba(255,249,227,0.92)` carrying its own background,
-  so it reported 2.14 against a night sky it never sits on, and turning it
-  pale produced a cream pill with cream text in it, plainly visible in the
-  screenshot. **Sample an element's own computed background before its
-  surroundings.**
-- **THE SUFFIX IS AN UNNAMED `<span>`.** `buildUI()` writes "'s Gratitude
-  Garden" into a bare span inside `#name-wrap` with no id, so a first attempt
-  naming `#name-suffix` matched nothing and left the title half cream and half
-  green. It is selected by its parent.
+- **`data-dark` IS THE WRONG QUESTION FOR TEXT ON A SKY.** A section can
+  change colour at a threshold; a sky cannot, because it is the picture, so
+  it goes on sliding all day. `dark` is how much LIGHT THERE IS and what a
+  letter needs to know is how light the PIXEL BEHIND IT is, and at dawn
+  those are opposites: the sun is barely up and the sky it is coming up
+  through is nearly white. **At about 06:20, `dark` had just crossed 0.45 so
+  the ink was already cream while the sky at the horizon was `#fed2bb`:
+  measured, 1.27 to one.** Thirty ten minute windows a day were under 4.5.
+- **SO THE MODULE MEASURES.** `inkFor` computes the WCAG contrast of both
+  inks against the seven colours it is about to paint and hands over the
+  better one as `--dl-sky-ink`, the other as `--dl-sky-halo` (and as
+  `--dl-sky-halo-rgb`, because CSS cannot add an alpha to a hex in a
+  variable). `data-ink` carries the same decision for rules that have to
+  switch something other than a colour.
+- **ONE FLAG SERVES ALL THREE PLACES TEXT STANDS, and that was checked.**
+  Sampled every five minutes, the sky, the ground and the hero want the same
+  ink in **279 of 288** samples, and the nine that disagree sit at the
+  crossover where both are marginal. The ink flips exactly TWICE a day.
+- **THE DARK INK IS `#0f3b40` AND THE DARKENING IS A MEASURED FIX, NOT A
+  RESTYLE.** At the old `#1d6466` the Garden Tips card was under 4.5 for
+  **63 percent of the day**, because the garden's own ground is a mid teal
+  and every earlier audit here sampled the NIGHT sky. It is the night
+  footer's own colour, so nothing is invented.
+- **`.gg-title` WAS NEVER IN ANY LIST AND IT IS NOW.** In the personal
+  garden "Daily Reflection" is an `h1` standing ABOVE its card, directly on
+  the sky: **1.38 at night**, 2.52 at dusk, nothing carrying it. It was
+  missed because the SHARED garden uses that class inside its cards, so the
+  class as a whole looks like card furniture, which is also why the rule is
+  scoped `.gg-title:not(.gg-card .gg-title)`. Unscoped it would turn
+  "Choose Your Flower" cream on a cream card, which is the Home pill's
+  lesson again. 12.21 at night now.
+
+### AND THEN A HALO, CENTRED, AS STRONG AS THE HOUR NEEDS
+
+**Even the better of the two inks cannot clear 4.5 at every minute.** A dusk
+sky is a mid blue over a mid peach and no flat colour reads on both: the best
+of the two bottoms out at **2.44**. So the letters carry their own edge.
+
+- **IT IS NOT THE SHADOW THIS PROJECT DELETED, and that note still stands.**
+  That one was `1px 1px 0` hard white, an OFFSET, which fattened every letter
+  on two sides and read as print that had not quite registered. This is
+  CENTRED and BLURRED, three stacked passes from tight to wide, which is the
+  same reasoning the bloom's own halo carries: centred and soft separates a
+  thing from its ground and says nothing about where the sun is. **Do not put
+  an offset shadow back.**
+- **ITS EDGE AGAINST ITS OWN INK IS A FIXED 11.58 TO ONE** whatever the sky
+  is doing, and that is the mechanism: the glyph is defined by its own edge
+  rather than by the sky behind it, which is why it survives the minutes the
+  flat ratio cannot.
+- **THE STRENGTH IS NOT FIXED.** `--dl-halo-k` is how badly the hour needs
+  it, 0 wherever the flat ratio already clears AA and 1 where it has fallen
+  to 2, and the three alphas are a `calc()` on it. Measured: k is **0 for
+  most of the day**, 0.31 at 06:00, 0.41 at 19:00, 0.79 at 19:30. So noon is
+  clean dark teal with a faint edge and dusk firms up. **Its fallback is 1**,
+  so a page that fails to load the module gets the full halo rather than
+  none: the failure worth guarding is unreadable text, not a soft headline.
+- **THE HERO KEEPS ITS SUNSET AND TAKES THE SAME HALO.** Switching the
+  hero's sky day and night was weighed and refused because of the HORIZON:
+  the hero's meadow canvas takes `back`, `front`, `fore` and `fold` from the
+  same module and slides, and the gradient's bottom stop is mixed toward
+  that ground, so a switching sky over a sliding meadow puts a midday blue
+  directly above a golden olive field. Capping the travel was measured too
+  and is worse: at 19:00 it would hold the hero at **0.14 of a sunset when
+  the hour wants 0.89**. The hero's `em` takes `--dl-sky-accent`, the yellow
+  on a dark ink and the dark teal on a light one, rather than `--teal`,
+  which is a colour this project has already had to take off three other
+  pieces of text for failing AA.
+- **MEASURED IN THE REAL GARDEN, not only on paper**, reading the canvas
+  pixel behind each element at thirty minute steps: **worst 2.55, and 7 of
+  58 samples under 4.5**, all inside 05:30 to 06:30 and 19:00 to 19:30,
+  against a worst of **1.00** before. Everything else runs 4.45 to 12.81.
+  The module's own predicted worst agrees with the measured garden to two
+  decimals (3.47 and 2.53 predicted against 3.47 and 2.55 measured).
+- **TWO MEASUREMENT TRAPS, BOTH OF WHICH PRODUCED FALSE READINGS FIRST.**
+  The ink crossfades over 0.9s, so a sample taken 120ms after changing the
+  hour reads a MID colour like `rgb(161,175,163)` that is neither ink and
+  reports a ratio of 1.00; **wait past the transition and assert the colour
+  is one of the two before trusting a number.** And the pane serves stale
+  screenshot FRAMES, so two different hours came back as the same grey
+  picture while the DOM plainly held the right values: measure, and force a
+  paint with a wait before believing a screenshot.
 
 ## SCROLL AS GROWTH (`v2/garden-growth.js`), LANDING PAGE ONLY
 
@@ -558,13 +615,37 @@ the internet that day, with nothing in between.
   been invited, so this browser remembers its NAME and they never have to keep
   the message. "Join with a code" accepts a WHOLE LINK pasted in, because that
   is what people are actually sent.
-- **TWO ACTIONS AND NOTHING ELSE: Make a circle, Join with a code.** There was
-  a chip per remembered circle and the first thing it produced was "what is
-  quiet-fern-moth": a code somebody had joined once, sitting on the first card
-  of the page with no context, which reads as a bug rather than as a shortcut.
-  A circle is kept the way its members keep it, which is the link.
-  `forgetCircle` is kept for the day a list comes back, which would need the
-  name to be real and a way to leave.
+- **TWO ACTIONS, AND THEN THE CIRCLES YOU ARE ALREADY IN.** The list was
+  taken out once and is back, and both halves of that are worth keeping.
+  - **WHY IT WENT:** a chip per remembered circle, and the first thing it
+    produced was "what is quiet-fern-moth", a code somebody had joined once
+    sitting on the first card of the page with no context, which reads as a
+    bug rather than as a shortcut.
+  - **WHY IT CAME BACK:** the absence was the bigger fault. Without it a
+    circle could only be returned to by keeping the link, so somebody in a
+    circle with three friends had to find a message from last week every
+    day. A garden you have to dig a link out of to reach is not somewhere
+    anybody goes daily, which is the one thing this project is asking for.
+  - **WHAT WAS ACTUALLY WRONG WAS THE NAMING, NOT THE LIST.** A circle is
+    shown by the name its owner gave it; joining with a code now asks for a
+    name as a second prompt, cancellable to the code; and a circle arrived
+    at by LINK is never interrogated on load, it carries a "Name this
+    circle" chip that appears only while its name is still its code.
+  - **THE ONE YOU ARE STANDING IN IS LEFT OUT OF THE LIST**, because the
+    line above already says you are in it and a chip that reloads the page
+    you are on is a dead control.
+  - **LEAVING IS `forgetCircle` AND IT ONLY FORGETS.** It cannot remove
+    anybody from a circle, because there is no membership to remove from;
+    it takes the row off this browser. The confirm says so rather than
+    saying "Leave", which would promise what the mechanism cannot do.
+  - **IT IS A BROWSER NOTE, NOT A MEMBERSHIP TABLE**, like the once a day
+    marker beside it. Clearing storage loses the list and nothing else: the
+    circle is still there and the code still opens it, which is exactly
+    what "anybody you give the code to is in" means.
+  - Verified: three seeded circles render by name, an unnamed one renders
+    as its code, the current circle is excluded, a chip navigates to
+    `?circle=`, and the cross drops the row from both the card and
+    `localStorage`.
 - **NO DEMO FLOWERS IN A CIRCLE.** The five exist so a quiet PUBLIC day is not
   a field of grass; a circle of three friends opening their garden to find
   five strangers in it is the exact opposite of what a circle is for.

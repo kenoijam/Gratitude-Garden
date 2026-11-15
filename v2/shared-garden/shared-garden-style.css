@@ -684,63 +684,127 @@ button, a, [role="button"], summary, input[type="range"], label[for] {
   #select-wrap .gg-sub { margin: 2px 0 12px !important; }
 }
 
-/* ═════════════════════════════════════ AFTER DARK, THE WRITING TURNS OVER
-   `garden-daylight.js` puts the phase on `<html>` as `data-daylight` and a
-   coarser `data-dark` for the two phases that need light text. This is the
-   half of a night sky that is not canvas.
-
-   IT IS A CONTRAST FAILURE, NOT A MOOD, AND IT WAS MEASURED. The garden's
-   name, the daily note, the Garden Tips card and the Home pill are all DOM
-   text standing directly on the sky with no panel behind them, and against
-   the night sky they came back at 1.56, 2.84, 1.55, 1.44 and 2.14 to one.
-   Every one of those fails WCAG AA, four of them by more than half. A night
-   that is actually dark is only honest if this block comes with it; the
-   alternative was a washed out "night" pale enough for dark text, which
-   reads as an overcast afternoon.
-
-   `!important` IS AGAINST THE INLINE STYLES, as everywhere else in these two
-   files: `buildUI()` sets these colours with p5.dom `.style()` calls and
-   inline beats a stylesheet on everything else.
-
-   THE SPECIFICITY IS DELIBERATE AND IS WHY THIS CAN SIT AFTER THE PHONE
-   BLOCK. `html[data-dark='1'] #x` is one id plus one attribute, which beats
-   both a bare id and the phone block's own `html body a#back-to-home`, so
-   this wins on weight rather than on order and nothing below it can quietly
-   undo it.
-
-   DUSK IS IN IT TOO, not only night. Checked at the dusk keyframe: the dark
-   teal came back at 1.6 against that sky, so it fails there as well. */
 /* THE SUFFIX IS AN UNNAMED SPAN. `buildUI()` writes "'s Gratitude Garden"
    into a bare `<span>` inside `#name-wrap` with no id of its own, so the
    first attempt at this block named `#name-suffix`, matched nothing, and
    left the garden's name half cream and half green. Selected by its parent
    instead. */
-html[data-dark="1"] #gg-name,
-html[data-dark="1"] #name-wrap span,
-html[data-dark="1"] #tips-card h3 {
-  color: #fff9e3 !important;
+/* FOR THE RECORD, THE NIGHT FIGURES THIS BLOCK WAS ORIGINALLY WRITTEN FOR,
+   because they are still why it exists at all: against the night sky the
+   garden's name, the daily note, the tips card and its heading measured
+   1.56, 2.84, 1.55 and 1.44 to one, every one failing AA and most by more
+   than half. A night that is actually dark is only honest with this. What
+   changed is that the SAME argument turned out to apply at dawn and dusk in
+   the other direction, and to the tips card at noon. */
+/* ═════════════════════ THE INK TURNS OVER WHENEVER THE SKY NEEDS IT TO
+   THIS USED TO BE A NIGHT ONLY BLOCK, `html[data-dark='1']`, AND THAT WAS
+   THE BUG. The grounds switch on how dark the HOUR is, which is right for
+   them; this text stands on a SKY, which slides all day because it is the
+   picture. The two disagreed worst at dawn: at about 06:20 `dark` has just
+   crossed its threshold so the ink had already gone cream, while the dawn
+   sky at the horizon is a pale peach `#fed2bb`. Measured, **1.27 to one**,
+   and there were thirty ten minute windows a day under 4.5.
+
+   `garden-daylight.js` now MEASURES which of the two inks is readable on
+   the colours it is about to paint and hands it over as `--dl-sky-ink`,
+   with the other one as `--dl-sky-halo`. So these rules run at EVERY hour
+   rather than only after dark, and there is one decision rather than a
+   threshold in the module and a guess in here. Each carries the old hard
+   coded value as its fallback, so a page that fails to load the module
+   looks exactly as it did.
+
+   THE INK IS DARKER BY DAY THAN IT WAS, `#0f3b40` rather than `#1d6466`,
+   and that is a measured fix rather than a restyle: the garden's GROUND is
+   a mid teal, so the Garden Tips card standing on it was under 4.5 for
+   **63 percent of the day**. Every earlier audit here sampled the NIGHT
+   sky and so never saw it. `#0f3b40` is the night footer's own teal, so no
+   colour is invented.
+
+   ───────────────────────────────────────────── AND THEN A HALO, CENTRED
+   Even the better of the two inks cannot clear 4.5 at every minute: a dusk
+   sky is a mid blue over a mid peach and no flat colour reads on both, with
+   the best of the two bottoming out at 2.44. So the letters carry their own
+   edge, in the opposite ink, at a fixed **11.58 to one** whatever the sky
+   is doing. That edge is what makes the word legible in the minutes the
+   flat ratio cannot.
+
+   THE HALO'S STRENGTH IS NOT FIXED. `--dl-halo-k` is how badly the hour
+   needs it, 0 wherever the flat ink to sky ratio already clears AA and 1
+   where it has fallen to 2 to one, so the three alphas below are a
+   `calc()` rather than a constant. At noon that is a faint edge on type
+   that was already crisp; through dusk it firms up as the sky closes on
+   the ink. Its fallback is 1, so a page without the module gets the full
+   halo rather than none: the failure worth guarding against is unreadable
+   text, not a slightly soft headline.
+
+   IT IS NOT THE SHADOW THIS PROJECT DELETED. That one was `1px 1px 0` hard
+   white, an offset that fattened every letter on two sides and read as
+   print that had not quite registered, and the note saying not to put it
+   back still stands. This is CENTRED and BLURRED, three stacked passes from
+   tight to wide at falling alpha: the 1px pass draws the letterform, the
+   10px pass lifts the whole word off the sky. It is the same reasoning the
+   bloom's own halo carries, that centred and soft separates a thing from
+   its ground and says nothing about where the sun is.
+
+   `!important` IS AGAINST THE INLINE STYLES as everywhere else in this
+   file, since `buildUI()` writes these colours with p5.dom `.style()`. The
+   selectors keep one id plus one attribute of weight so they still beat the
+   phone block without depending on order. */
+/* `.gg-title` IS IN THIS LIST AND IT HAD NEVER BEEN IN ANY LIST, which is
+   the one piece of text on the sky every earlier audit walked past. In the
+   personal garden "Daily Reflection" is an `h1` standing ABOVE its card,
+   directly on the sky: measured, **1.38 to one at night** and 2.52 at dusk,
+   with nothing carrying it. It was missed because the shared garden uses
+   the same class INSIDE its cards, so the class as a whole looks like card
+   furniture.
+
+   WHICH IS ALSO WHY IT IS SCOPED. A bare `.gg-title` would turn the shared
+   garden's "Choose Your Flower" cream on a cream card, which is the exact
+   mistake the Home pill taught: an element carrying its own background must
+   be measured against that, not against what is behind the card. The
+   `:not()` holds a complex selector, which is Selectors 4 and is checked as
+   supported in the browsers this is served to. */
+html[data-ink] #gg-name,
+html[data-ink] #name-wrap span,
+html[data-ink] #tips-card h3,
+html[data-ink] .gg-title:not(.gg-card .gg-title) {
+  color: var(--dl-sky-ink, #0f3b40) !important;
+  text-shadow:
+    0 0 1px  rgba(var(--dl-sky-halo-rgb, 255, 249, 227), calc(0.55 + 0.40 * var(--dl-halo-k, 1))),
+    0 0 4px  rgba(var(--dl-sky-halo-rgb, 255, 249, 227), calc(0.33 + 0.52 * var(--dl-halo-k, 1))),
+    0 0 11px rgba(var(--dl-sky-halo-rgb, 255, 249, 227), calc(0.10 + 0.50 * var(--dl-halo-k, 1)));
+  transition: color .9s ease, text-shadow .9s ease;
 }
 /* HOME IS NOT IN THIS LIST, AND THAT WAS A MEASUREMENT MISTAKE WORTH
    RECORDING. The contrast probe sampled the CANVAS pixel behind each
    element, which is right for text standing on the sky and wrong for
    `#back-to-home`: it is a cream pill at `rgba(255,249,227,0.92)` carrying
-   its own background, so it reported 2.14 against the night sky it never
+   its own background, so it reported 2.14 against a night sky it never
    actually sits on, and turning it pale made a cream pill with cream text
    in it. **Sample the element's own computed background before its
    surroundings.** */
-html[data-dark="1"] #daily-note,
-html[data-dark="1"] #tips-card,
-html[data-dark="1"] #tips-card p,
-html[data-dark="1"] #tips-card li {
-  color: #d6ece6 !important;
+/* THE SMALLER TEXT TAKES A TIGHTER HALO. A 10px blur around 13px type
+   closes up the counters of the letters and the line reads as glowing
+   rather than as lifted; around a 26px name it is simply air. */
+html[data-ink] #daily-note,
+html[data-ink] #tips-card,
+html[data-ink] #tips-card p,
+html[data-ink] #tips-card li {
+  color: var(--dl-sky-ink, #0f3b40) !important;
+  text-shadow:
+    0 0 1px rgba(var(--dl-sky-halo-rgb, 255, 249, 227), calc(0.55 + 0.40 * var(--dl-halo-k, 1))),
+    0 0 3px rgba(var(--dl-sky-halo-rgb, 255, 249, 227), calc(0.33 + 0.52 * var(--dl-halo-k, 1))),
+    0 0 7px rgba(var(--dl-sky-halo-rgb, 255, 249, 227), calc(0.10 + 0.45 * var(--dl-halo-k, 1)));
+  transition: color .9s ease, text-shadow .9s ease;
 }
 /* The field keeps its own caret and selection readable: an input whose text
-   has gone cream still has the page's default white background on focus in
+   has turned over still has the page's default white background on focus in
    some browsers, so the background is pinned transparent with it. */
-html[data-dark="1"] #gg-name {
+html[data-ink] #gg-name {
   background: transparent !important;
-  -webkit-text-fill-color: #fff9e3;
+  -webkit-text-fill-color: var(--dl-sky-ink, #0f3b40);
 }
+
 /* The Home pill draws a house through `swapHomeIcon`, which strokes in
    `currentColor`, so the glyph follows the text above and needs no rule of
    its own. Stated because it looks like an omission. */

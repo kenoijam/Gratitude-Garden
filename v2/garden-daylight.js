@@ -123,6 +123,115 @@
   function mixRgb(a, b, t) { return [mix(a[0],b[0],t), mix(a[1],b[1],t), mix(a[2],b[2],t)]; }
   function mixHex(a, b, t) { return rgb2hex(mixRgb(hex2rgb(a), hex2rgb(b), t)); }
 
+  /* ═══════════════════ WCAG CONTRAST, BECAUSE THE INK IS CHOSEN BY IT ═════
+     The relative luminance formula and the ratio, in forty lines, so the
+     module can answer "which of these two inks is readable on that" without
+     anybody having to run an audit by hand afterwards. */
+  function relLum(c) {
+    var f = function (v) {
+      v /= 255;
+      return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
+    };
+    return 0.2126 * f(c[0]) + 0.7152 * f(c[1]) + 0.0722 * f(c[2]);
+  }
+  function contrast(a, b) {
+    var x = relLum(a), y = relLum(b);
+    return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05);
+  }
+
+  /* ═════════ THE INK ON THE SKY IS MEASURED, NOT TAKEN OFF THE HOUR ══════
+     `data-dark` is the right switch for the page's flat SECTIONS, which can
+     change colour, and it is the WRONG switch for text standing on a SKY,
+     which cannot: a sky is the picture, so it has to go on sliding, and no
+     flat ink is readable on all of it.
+
+     THE TWO DISAGREED BADLY AND IT WAS MEASURED. At about 06:20 `dark` has
+     just crossed 0.45, so the ink was already cream, while the dawn sky at
+     the horizon is a pale peach `#fed2bb`. Cream on that is **1.27 to one**,
+     which is not low contrast, it is text you cannot see. There were THIRTY
+     ten minute windows a day under 4.5, morning and evening. The fault is
+     that `dark` is how much LIGHT THERE IS and what text needs to know is
+     how light the PIXEL BEHIND IT is, and at dawn those are opposites: the
+     sun is barely up and the sky it is coming up through is nearly white.
+
+     So the ink is whichever of the two measures better against the colours
+     it is about to stand on, out of the same palette the canvas is painted
+     from. Over the whole day that takes the worst case from 1.27 to 3.04 on
+     the sky, and it flips the ink exactly TWICE, once each way, so nothing
+     strobes at the crossover.
+
+     ONE FLAG SERVES ALL THREE PLACES TEXT STANDS, and that was checked
+     rather than assumed. Sampled every five minutes, the sky (the garden's
+     name and the daily note), the ground (the Garden Tips card) and the
+     hero want the SAME ink in 279 of 288 samples, and the nine that disagree
+     sit at the crossover where both inks are marginal and the halo is doing
+     the work anyway. A flag per region would be three things to keep in
+     step for nine samples a day.
+
+     THE DARK INK IS `#0f3b40`, WHICH IS THE NIGHT FOOTER'S OWN TEAL, and it
+     is darker than the `#1d6466` the text used to be for a measured reason
+     rather than a stylistic one: the garden's GROUND is a mid teal, and at
+     `#1d6466` the Garden Tips card standing on it was under 4.5 for **63
+     percent of the day**, a pre-existing failure nobody had measured
+     because every earlier audit sampled the night sky. At `#0f3b40` that
+     falls to 13 percent, and those remaining windows are what the halo in
+     the two garden stylesheets is for. Nothing is invented: it is a colour
+     this palette already carries.
+
+     WHAT THE HALO IS NOT: the hard white `1px 1px 0` shadow this project
+     deleted from both gardens, which fattened every letter on two sides and
+     read as print that had not quite registered. This is a CENTRED, blurred
+     halo in the opposite ink, which is the same reasoning the bloom shadow
+     already carries ("centred and soft it is a halo that separates, and says
+     nothing about the sun"). Its own edge against its ink is a fixed **11.58
+     to one** at every hour, whatever the sky is doing, which is the thing
+     that carries the minutes where neither flat ink clears 4.5. */
+  var INK_LIGHT = "#fff9e3";    /* --cream */
+  var INK_DARK  = "#0f3b40";    /* the night footer's teal */
+
+  function inkFor(o) {
+    var top = hex2rgb(o.skyTop), bot = hex2rgb(o.skyBot);
+    /* The places DOM text actually stands: the sky's top third, where the
+       garden's name and the daily note sit; the ground, where the tips card
+       sits; and the hero's own two upper stops. */
+    var spots = [top, mixRgb(top, bot, 0.33), hex2rgb(o.ground),
+                 hex2rgb(o.fore), hex2rgb(o.front),
+                 hex2rgb(o.hero0), mixRgb(hex2rgb(o.hero0), hex2rgb(o.hero1), 0.5)];
+    var worst = function (ink) {
+      var m = 99, i;
+      for (i = 0; i < spots.length; i++) m = Math.min(m, contrast(ink, spots[i]));
+      return m;
+    };
+    var wl = worst(hex2rgb(INK_LIGHT)), wd = worst(hex2rgb(INK_DARK));
+    return { light: wl >= wd, worst: Math.max(wl, wd) };
+  }
+
+  /* ═════════ THE HALO IS ONLY AS STRONG AS THE HOUR MAKES IT NEED TO BE ══
+     A halo held at full strength all day is a glow on a headline that did
+     not need one: at noon the ink is already at 10 to one on its sky and
+     the only thing a firm halo adds there is a soft edge on type that was
+     perfectly crisp. Measured in the real garden across the day, the flat
+     ink to sky ratio is 4.45 or better for all but about half an hour at
+     dawn and half an hour at dusk, and it is only those two windows that
+     need carrying.
+
+     So the module hands out how badly it is needed rather than a fixed
+     value. `haloK` is 0 wherever the flat ratio already clears AA and 1
+     where it has fallen to 2, which is the worst the day reaches, and the
+     stylesheets scale the halo's three alphas by it in a `calc()`. By day
+     the letters are clean dark teal with the faintest edge; through dusk
+     the edge firms up exactly as the sky closes on the ink; and the move
+     between the two rides the same crossfade the colour does, so nothing
+     steps.
+
+     ITS FALLBACK IS 1, NOT 0. A page that fails to load this module gets
+     the full halo rather than none, because the failure that matters is
+     unreadable text and not a slightly soft headline. */
+  function haloStrength(worst) {
+    var k = (4.5 - worst) / 2.5;          /* 0 at AA, 1 at 2.0 to one */
+    return Math.max(0, Math.min(1, k));
+  }
+
   /* SMOOTHSTEP BETWEEN KEYS, not a straight line. A linear blend arrives at
      each keyframe with its full rate of change and leaves at the same rate,
      so the colour visibly "corners" at every key; eased, the palette settles
@@ -243,6 +352,25 @@
        rather than dimmed separately, so the curve rolling out of the hero is
        the identical colour to the strip of ground it rolls off. */
     out.grass    = out.fore;
+
+    /* THE INK FOR ANYTHING STANDING ON THE SKY OR THE GROUND, and the halo
+       behind it, which is always the other one of the two. See
+       `inkFor` above for why this is measured rather than taken off
+       the hour. */
+    var pick    = inkFor(out);
+    out.inkLight = pick.light;
+    out.inkWorst = pick.worst;
+    out.haloK    = haloStrength(pick.worst);
+    out.ink      = out.inkLight ? INK_LIGHT : INK_DARK;
+    out.inkHalo  = out.inkLight ? INK_DARK  : INK_LIGHT;
+    out.inkHaloRgb = hex2rgb(out.inkHalo).map(Math.round).join(", ");
+    /* THE ACCENT IS THE EMPHASISED WORD IN THE HERO'S OWN TITLE, and both
+       of its values are palette colours: the yellow on a dark ink, and the
+       dark teal the title used to be on a light one, which keeps the em a
+       step lighter than the ink around it either way. It used to be `--teal`
+       at every hour, which is a colour this project has already had to take
+       off three other pieces of text for failing AA. */
+    out.inkAccent = out.inkLight ? "#fbe484" : "#1d6466";
     out.hour = hour;
     out.phase = hour < 5.4 || hour >= 20.4 ? "night"
               : hour < 7.4  ? "dawn"
@@ -281,7 +409,7 @@
     if (cache && forced !== null && cache.hour === forced) return cache;
     cache = at(hourNow());
     cacheAt = t;
-    flagPhase(cache.phase, cache.night);
+    flagPhase(cache.phase, cache.night, cache.inkLight);
     paintVars(cache);
     return cache;
   }
@@ -310,11 +438,23 @@
       st.setProperty("--dl-band", o.band);
       st.setProperty("--dl-foot", o.foot);
       st.setProperty("--dl-grass", o.grass);
+      /* THE INK AND ITS HALO GO OUT AS VARIABLES so the two garden
+         stylesheets and the landing page all read ONE decision. The halo
+         also goes out as a bare "r, g, b" triple, because the halo is used
+         at three alphas and CSS cannot add an alpha to a hex held in a
+         variable. Every rule that uses these carries the old hard coded
+         value as its fallback, so a page that fails to load this module
+         looks exactly as it always did. */
+      st.setProperty("--dl-sky-ink", o.ink);
+      st.setProperty("--dl-sky-halo", o.inkHalo);
+      st.setProperty("--dl-sky-halo-rgb", o.inkHaloRgb);
+      st.setProperty("--dl-sky-accent", o.inkAccent);
+      st.setProperty("--dl-halo-k", String(Math.round(o.haloK * 100) / 100));
     } catch (e) {}
   }
 
-  var lastPhase = "", lastDark = "";
-  function flagPhase(p, night) {
+  var lastPhase = "", lastDark = "", lastInk = "";
+  function flagPhase(p, night, inkLight) {
     try {
       var r = document.documentElement;
       if (p !== lastPhase) { lastPhase = p; r.setAttribute("data-daylight", p); }
@@ -332,6 +472,14 @@
          next time a phase is added. */
       var d = night ? "1" : "0";
       if (d !== lastDark) { lastDark = d; r.setAttribute("data-dark", d); }
+      /* `data-ink` IS A THIRD FLAG AND IT IS NOT `data-dark`. The grounds
+         switch on how dark the HOUR is, which is settled and measured; text
+         on the sky switches on how light the SKY ITSELF is, and the two are
+         not the same question. At dawn they are opposites. Rules that only
+         need the colour should use `--dl-sky-ink`; this flag is for the few
+         that have to switch something else with it, such as a border. */
+      var k = inkLight ? "light" : "dark";
+      if (k !== lastInk) { lastInk = k; r.setAttribute("data-ink", k); }
     } catch (e) {}
   }
 
@@ -346,5 +494,5 @@
 
   /* Flag the phase as early as possible, so a stylesheet is not repainting
      the whole interface a beat after the page has already been seen. */
-  (function () { var o = at(hourNow()); flagPhase(o.phase, o.night); paintVars(o); })();
+  (function () { var o = at(hourNow()); flagPhase(o.phase, o.night, o.inkLight); paintVars(o); })();
 })();
