@@ -19,7 +19,15 @@
   <!-- SCROLL AS GROWTH. Landing page only: it is the page performing its
        own subject, and a garden you are standing in needs no second one.
        It boots on DOMContentLoaded, so the tag may sit in the head. -->
-  <script src="garden-growth.js"></script>
+  <!-- SCROLL AS GROWTH IS UNLINKED, NOT DELETED, which is how this project
+       retires things: `garden-growth.js` and its stylesheet rules are intact
+       on disk, so putting it back is this tag and the rail div below it.
+       Taken off on the author's instruction in the same pass as the 22 scroll
+       reveals: the page now answers a scroll with nothing at all, which is a
+       deliberate quiet rather than an omission. **It was a row in the before
+       and after table**, so that table has been corrected with it. Note that
+       `window._ringSpecies`, which was added FOR this vine, must stay: the
+       loader now picks its random species from it. -->
   <script src="garden-life.js"></script>
 
   <!-- One cursor for the whole project: a leaf at rest, a bloom over
@@ -267,7 +275,6 @@
   </div>
 
   <div class="hero-text-block">
-    <span class="hero-eyebrow">YOUR DAILY GRATITUDE PRACTICE</span>
     <!-- Two words carry data-wiggle. The script near the bottom of this file
          splits each into one span per letter so they can bounce one after the
          other; without it the whole word tips over as a block, which reads as
@@ -1332,7 +1339,6 @@
          with no wiggling word. A heading here also gives the band the same
          shape every other section has, an eyebrow over a title, rather than
          a label floating over a sentence. -->
-    <span class="section-label reveal">Today</span>
     <h2 class="section-title reveal">Fertilizer of the <em>day</em></h2>
     <!-- HORTUS STANDS IN THE MIDDLE AND THE LINE ARRIVES UNDER THEM. They
          were side by side, which made the band a sentence with a butterfly
@@ -1353,7 +1359,6 @@
 <section class="about" id="about">
 
   <div class="about-title reveal">
-    <span class="section-label">What is it?</span>
     <h2 class="section-title">One practice, two <em>places.</em></h2>
   </div>
 
@@ -1474,7 +1479,6 @@
      what the section above it describes. -->
 <section class="gardens" id="gardens">
   <div class="gardens-header reveal">
-    <span class="section-label">Two ways in, one practice</span>
     <!-- BOTH VERBS MOVE, not just the emphasised one. They are the page's own
          summary of itself, so the title is the one place where the whole line
          is the emphasis. The em needs no attribute: every section title's em
@@ -1493,7 +1497,7 @@
           <span class="garden-badge badge-private"><svg class="badge-icon" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="2" y="6" width="10" height="7" rx="1.5" fill="#14494b"/><path d="M4 6V4.5a3 3 0 0 1 6 0V6" stroke="rgba(20,73,75,0.65)" stroke-width="1.5" stroke-linecap="round"/></svg>Reflect</span>
           <h3 class="garden-card-title">The Personal Garden</h3>
           <p class="garden-card-desc">Answer a few daily prompts, and your words choose a symbolic flower. Sign in and it follows you between devices, every day kept to look back on.</p>
-          <div class="password-note"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="7" cy="7" r="6" stroke="#1d6466" stroke-width="1.5"/><line x1="7" y1="5" x2="7" y2="8" stroke="#1d6466" stroke-width="1.5" stroke-linecap="round"/><circle cx="7" cy="10" r="0.8" fill="#1d6466"/></svg>Private &bull; On every device</div>
+          <div class="password-note"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="7" cy="7" r="6" stroke="#1d6466" stroke-width="1.5"/><line x1="7" y1="5" x2="7" y2="8" stroke="#1d6466" stroke-width="1.5" stroke-linecap="round"/><circle cx="7" cy="10" r="0.8" fill="#1d6466"/></svg>Private, on every device</div>
         </div>
         <!-- A three slide loop: a step from the flow, the flower it produces,
              then three real blooms you can hover or tap for what each one
@@ -1517,7 +1521,7 @@
           <p class="garden-card-desc">Post a moment of gratitude and plant a bloom. Every flower around yours is a real feeling, and signing in lets you like one or write back.</p>
           <div class="password-note public-note">
             <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="7" cy="7" r="6" stroke="#1d6466" stroke-width="1.5"/><line x1="7" y1="5" x2="7" y2="8" stroke="#1d6466" stroke-width="1.5" stroke-linecap="round"/><circle cx="7" cy="10" r="0.8" fill="#1d6466"/></svg>
-            Open to all &bull; One a day
+            Open to all, one a day
           </div>
         </div>
         <!-- A three slide loop: a step from the flow, the flower it produces,
@@ -1551,7 +1555,6 @@
   <div class="catalogue-split">
     <div class="catalogue-header reveal">
       <div>
-        <span class="section-label">The flower guide</span>
         <h2 class="section-title">Every mood has a <em>symbolic bloom</em></h2>
         <p class="section-desc">Tap on a flower to learn more</p>
       </div>
@@ -1690,7 +1693,6 @@
 
 <section class="cta" id="start">
   <div class="cta-inner reveal">
-    <span class="section-label">Ready to begin?</span>
     <h2 class="section-title">Your first flower is <em>waiting</em></h2>
     <p class="section-desc">Two minutes and honesty is all it takes.</p>
     <div class="cta-buttons">
@@ -1799,7 +1801,6 @@
      EMPTY IN THE MARKUP ON PURPOSE. The path's length is the page's own
      height, so it has to be measured; written by hand it would be wrong at
      every window size but one. -->
-<div id="growth-rail" aria-hidden="true"></div>
 
 <script>
   /* THE FOOTER'S SIGN UP OPENS THE PROJECT'S OWN ACCOUNT CARD. `openSignIn`

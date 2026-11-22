@@ -145,7 +145,15 @@ body { padding-left: 0 !important; }
    and `top` and `right` are pulled back by the 22 it gained on each side
    so the disc's own centre has not moved. See the canvas's note in the
    markup. */
-.hero-sun { position: absolute; top: 46px; right: calc(10% - 44px); width: 176px; height: 176px; z-index: 2; display: block; }
+/* `right` IS CLAMPED AT 0 AND THAT IS A REGRESSION FIXED. Widening the box
+   132 to 176 meant pulling `right` back by 22 to keep the disc still, and
+   `calc(10% - 44px)` goes NEGATIVE under 440px wide: at 375 it resolved to
+   -6.5px, and `.hero` is `overflow: visible`, so the sun hung off the right
+   edge and the page gained a sideways scroll on a phone. `max(0px, ...)`
+   leaves every width above 440 exactly as it was and simply stops the box
+   crossing the edge below it; the disc moves about six pixels on a phone,
+   which is less than the overhang it replaces. */
+.hero-sun { position: absolute; top: 46px; right: max(0px, calc(10% - 44px)); width: 176px; height: 176px; z-index: 2; display: block; }
 .cloud-wrap { position: absolute; top: 0; left: 0; right: 0; bottom: 0; pointer-events: none; overflow: hidden; z-index: 2; }
 /* A CLOUD IS ONE SHAPE NOW, NOT A BAR WITH TWO CIRCLES ON IT. It was
    `.body` plus `.bump1` plus `.bump2`, three boxes at alpha 0.9, which read
@@ -1337,7 +1345,23 @@ footer { padding-left: calc((100vw - 1400px)/2); padding-right: calc((100vw - 14
 }
 
 /* ── SCROLL REVEAL ── */
-.reveal { opacity: 0; transform: translateY(24px); transition: opacity 0.65s ease, transform 0.65s ease; }
+/* ═══════════ NOTHING FADES UP ANY MORE, AND THE CLASS STAYS ANYWAY
+   Twenty two elements used to fade and slide up as they came into view. It
+   is the commonest tell there is, and on this page it also competed with
+   the one scroll moment that was actually the project's own, the vine that
+   grew the eight species down the rail. The author's instruction was to
+   take out BOTH, so a scroll here now moves the page and nothing else: the
+   quiet is deliberate.
+
+   THE CLASS IS NEUTRALISED RATHER THAN DELETED, and that is not laziness.
+   `.reveal.visible` sets `transform: none`, which is LOAD BEARING: the
+   flower ring's two side notes are centred inside an element carrying this
+   class, and a `translate(-50%, -50%)` has been silently wiped by it before
+   now. Deleting the class would mean finding every one of the 22 call sites
+   and the observer that feeds them; setting it to its own end state cannot
+   break any of that, and the observer simply adds a class that changes
+   nothing. */
+.reveal { opacity: 1; transform: none; transition: none; }
 .reveal.visible { opacity: 1; transform: none; }
 @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
@@ -1540,7 +1564,7 @@ footer { padding: 140px 2.5rem 2rem; }   /* 100px clear, matching the sections, 
   /* Scroll hints */
   .about-right::before { display: none; }
   .about::after {
-    content: 'Swipe to see more →';
+    content: 'Swipe to see more';
     display: block;
     font-family: Arial, Helvetica, sans-serif;
     font-size: 0.72rem;

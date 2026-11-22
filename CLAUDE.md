@@ -29,11 +29,16 @@ one. That needs both online at the same time, so:
   | footer "Why this exists" | absent | present |
   | the garden knows the hour, and the page dims with it | absent | present |
   | planting is held, not tapped | absent | present |
-  | scroll as growth on the landing page | absent | present |
   | small circles in the shared garden | absent | present |
   | a door from the personal garden to the shared one | absent | present |
   | Enter goes to the next card | absent | present |
   | everything else | identical | identical |
+
+  **SCROLL AS GROWTH CAME OFF THIS TABLE**, on the author's instruction, in
+  the same pass that took out the 22 scroll reveals. It was a row here; it
+  is absent from BOTH copies now, so the experiment differs by one feature
+  fewer and this table is still true. `garden-growth.js` is intact on disk
+  and unlinked, so putting the row back is one script tag and one div.
 
 - **THE LETTER WAS TAKEN BACK OUT OF THE ROOT, and it is a SPLIT rather than a
   deletion.** It was written before the two versions existed, so it had landed
@@ -311,7 +316,66 @@ of the two bottoms out at **2.44**. So the letters carry their own edge.
   picture while the DOM plainly held the right values: measure, and force a
   paint with a wait before believing a screenshot.
 
-## SCROLL AS GROWTH (`v2/garden-growth.js`), LANDING PAGE ONLY
+## THE DESIGN PASS, AND WHAT THE BRIEF REFUSED TO GIVE UP
+
+Run with the `frontend-design` skill against the whole of v2. The skill's own
+rule is that **the brief's words win**, and on this project the brief pins
+almost everything worth pinning, so the useful half of the pass was finding
+where v2 had spent the freedom it DID have on defaults.
+
+- **THE PALETTE AND THE TYPE WERE NEVER IN QUESTION.** Three night palettes
+  were rejected in one session for drifting off it, and every ground and ink
+  carries a measured ratio. Worth recording that v2 **just misses the skill's
+  first calibration trap**: cream plus a high contrast serif plus a terracotta
+  near `#D97757` is the generated-page cluster, and the only thing standing
+  between this page and that description is that its accent is TEAL. That is
+  luck turned into a reason to keep it.
+- **COUNTED IN THE CODE RATHER THAN GUESSED**: 22 fade-and-slide-up reveals,
+  7 tracked all-caps eyebrows, 6 headlines carrying one italic accent word, 2
+  middle-dot meta strings, 1 trailing arrow.
+- **THE EYEBROWS ARE GONE, all six**, including the hero's "YOUR DAILY
+  GRATITUDE PRACTICE" and the band's "Today". A tracked all-caps label over
+  every heading is named template chrome, and the band's own note arguing for
+  one was an argument from CONSISTENCY WITH ITSELF rather than from anything
+  the section needed. The headings stand alone.
+- **THE TWO MIDDLE-DOT CHIPS ARE COMMAS NOW**: "Private, on every device" and
+  "Open to all, one a day". `A · B` is named in the skill as chrome that turns
+  up whatever the subject.
+- **"Swipe to see more" LOST ITS ARROW.** "Swipe" already says direction.
+- **THE ITALIC ACCENT WORD STAYS, AND IT IS THE ONE PLACE THE SKILL LOSES.**
+  It is the skill's first named tell and it is also load bearing here: the
+  wiggle is a SELECTOR, `[data-wiggle], .section-title em`, so the em IS the
+  emphasis and removing it would delete the wiggle from five words. The skill
+  asks for a distinctive page; the em is what five of those words animate off.
+  **Do not take the `<em>` out of a section title without rewiring the wiggle
+  first.**
+- **THE CARD BADGES (REFLECT, SHARE) ARE STILL ALL CAPS** and were left out of
+  the sweep on purpose: they are pills with icons inside the cards rather than
+  eyebrows over headings, their contrast is measured per card, and the verbs
+  are the theme reading down the row. They are the one named default still
+  standing, and that is on the record rather than overlooked.
+
+## SCROLL AS GROWTH, UNLINKED (`v2/garden-growth.js`)
+
+**IT IS OFF THE PAGE. `garden-growth.js` is intact and nothing loads it**,
+which is how this project retires things: the script tag and the
+`#growth-rail` div were removed from `v2/index.html` and nothing else
+changed, so it comes back in one revert. Everything below still describes
+how it worked.
+
+**WHY IT WENT.** The frontend-design pass found 22 fade-and-slide-up
+reveals, which is the commonest generated-page tell there is, and argued
+that the vine was the page's one orchestrated scroll moment and the reveals
+were competing with it. The author's answer was to take out BOTH, so a
+scroll on this page now moves the page and nothing else. That quiet is a
+decision rather than an omission.
+
+**ONE THING IT LEFT BEHIND THAT MUST STAY.** `window._ringSpecies` was added
+FOR this vine, and `garden-loader.js` now picks its random species from it.
+Removing that export with the vine would have left the loader drawing its
+generic bloom on every page.
+
+## HOW IT WORKED, WHILE IT WAS ON
 
 **One stem down the whole page, grown by the scroll**, from the top of the
 section under the hero to the footer, putting out a leaf every 235px of itself
@@ -506,6 +570,39 @@ reach it.**
 - **Verified by scrolling**: a node at 0.63 of its window is a bud with no
   bloom, at 0.92 the bloom is at 0.915 while the bud is down to 0.104, and
   past its window it is a full flower.
+
+## THE SHARED GARDEN ANSWERS THE POINTER, AND HAD NO RESIZE HANDLER
+
+The personal garden's parting, lift and tap sparkle, ported. Same gaussian
+derivative, same damped spring, same `LIFT_MAX` into the stem through
+`stemOf`. **Edit one and edit the other**, like the growth sequence.
+
+- **Measured here**: a pointer 70 to the left leans the bloom **+9.74**, 70
+  to the right **-9.74**, directly over it **0** because the shape is odd in
+  u and smoothly zero at the middle, and it settles to 0 when the pointer
+  leaves. The lift runs 0 to 7 and back.
+- **FIVE PLACES ADD THE SWAY TO A FLOWER'S X AND ALL FIVE TAKE THE LEAN, AND
+  TWO OF THEM ARE HIT TESTS.** `findFlowerAt` and the hover box, not just the
+  draws. That is the half that would have broken silently: a leaning bloom
+  whose hit test did not lean answers taps where it used to be.
+
+**AND THE OLDER BUG UNDER IT: THIS PAGE HAD NO `windowResized`.** The
+function is the personal garden's almost character for character and was
+called **`resizeGardenCanvas`, which is a name p5 never calls**; it ran once,
+from `setup`. So the shared garden has never responded to a window resize in
+its life: drag the window and the canvas kept its old size with the meadow
+laid out for a width that no longer existed, and a phone turned on its side
+kept its portrait layout.
+
+- **IT IS ALSO WHY A BLANK GARDEN HERE COULD NEVER RECOVER.** The note under
+  "A STARTED SKETCH CAN STILL COME UP BLANK" says a 0 by 0 canvas gets no
+  resize to correct it. On the personal garden one DOES arrive, because its
+  handler is named what p5 looks for. Found exactly that way, with `width`
+  and `height` both 0 while `viewW()` returned 1024 and `frameCount` climbed
+  past 700.
+- **THE STANDING RULE PAYING OUT AGAIN**: a bug found in one hand ported
+  sketch is a thing to go and look for in the other. Both were ported from
+  each other and only one got the p5 lifecycle name.
 
 ## THE TWO GARDENS HAVE A DOOR BETWEEN THEM (v2)
 
