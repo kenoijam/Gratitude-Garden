@@ -3377,21 +3377,48 @@ function buildUI() {
      "Write first" describe what the very next screen will be, which is the
      only question actually being asked here. The second line on each says
      what follows, so the pair can be told apart without reading the sub. */
-  function forkBtn(label, under, fn) {
+/* ═══════════ AN ICON ON EACH FORK CHOICE, IN THE PROJECT'S OWN LANGUAGE
+   The two choices were words alone, and a fork is the one screen where the
+   eye should be able to tell the options apart before reading either. The
+   icons are STROKED at 1.5 on a 24 box in `currentColor`, which is what the
+   four corner controls already draw in, rather than the solid fills the
+   twelve species use: these are interface, not flowers. `currentColor` is
+   what lets one drawing sit on a teal button here and anywhere else later.
+
+   The bloom is five petals and a centre, which is the flower this project
+   draws everywhere from the cursor to the letter, rather than a new one. */
+  const ICO_FLOWER =
+    '<svg width="19" height="19" viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false">' +
+    '<g stroke="currentColor" stroke-width="1.5">' +
+    '<ellipse cx="12" cy="7.4" rx="2.7" ry="4"/>' +
+    '<ellipse cx="12" cy="7.4" rx="2.7" ry="4" transform="rotate(72 12 12)"/>' +
+    '<ellipse cx="12" cy="7.4" rx="2.7" ry="4" transform="rotate(144 12 12)"/>' +
+    '<ellipse cx="12" cy="7.4" rx="2.7" ry="4" transform="rotate(216 12 12)"/>' +
+    '<ellipse cx="12" cy="7.4" rx="2.7" ry="4" transform="rotate(288 12 12)"/>' +
+    '<circle cx="12" cy="12" r="1.9"/></g></svg>';
+  const ICO_WRITE =
+    '<svg width="19" height="19" viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false">' +
+    '<g stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">' +
+    '<path d="M4.6 19.4l.9-3.4L15.6 5.9a1.8 1.8 0 0 1 2.5 0l1.1 1.1a1.8 1.8 0 0 1 0 2.5L8.9 19.1l-3.4.9z"/>' +
+    '<path d="M14.3 7.2l2.5 2.5"/></g></svg>';
+
+  function forkBtn(label, under, icon, fn) {
     const b = gbtn(cardFork, label, true);
-    b.html(label + "<span style=\"display:block;font-weight:400;font-size:12.5px;" +
-           "opacity:0.85;margin-top:3px\">" + under + "</span>");
+    b.html('<span style="display:flex;align-items:center;justify-content:center;gap:9px">' +
+           (icon || "") + '<span>' + label + '</span></span>' +
+           '<span style="display:block;font-weight:400;font-size:12.5px;' +
+           'opacity:0.85;margin-top:3px">' + under + '</span>');
     b.style("padding", "11px 12px");
     b.style("line-height", "1.25");
     b.mousePressed(fn);
     return b;
   }
 
-  forkBtn("Flower first", "Pick a bloom, then say why", () => {
+  forkBtn("Flower first", "Pick a bloom, then say why", ICO_FLOWER, () => {
     pickedBySelf = true;
     showStep("pick");
   });
-  forkBtn("Write first", "Two questions, and your day picks one", () => {
+  forkBtn("Write first", "Two questions, and your day picks one", ICO_WRITE, () => {
     pickedBySelf = false;
     showStep("prompt1");
   });

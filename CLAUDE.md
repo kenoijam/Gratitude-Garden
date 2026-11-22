@@ -81,6 +81,89 @@ one. That needs both online at the same time, so:
   `.section-dust` canvases, and the personal garden's sign in gate with the
   same twelve scripts.
 
+## A PHONE HAD MORE GUTTER THAN A LAPTOP, AND TWO CARDS TOOK A ROW EACH (v2)
+
+Measured rather than looked at, at 375, 390, 820 and 1440. Four faults, and
+the two that mattered were both one number in the wrong place.
+
+- **THE GUTTER WAS `3.6rem`, WHICH IS 61px A SIDE AT A 17px ROOT.** So a 375
+  phone lost **122px of 375** to side padding and every line, card and tile
+  ran inside 253px, while a 1000px laptop takes 2.5rem. **A phone had more
+  side padding than a laptop.** It is `1.4rem`, 24px, the ordinary phone
+  gutter, and the content went 253 to 328, a third wider.
+  - **IT IS ONE NUMBER AND FOUR PLACES PULL AGAINST IT.** `.meadow-scene`
+    cancels it with negative margins to go full bleed, and `.cta` and the
+    footer write their own padding shorthand. Change one without the other
+    three and the hero overflows sideways. The 480 block takes the same
+    1.4rem for that reason rather than a tighter value of its own.
+- **BETWEEN 769 AND 1100 THE TWO GARDEN CARDS TOOK A ROW EACH.** The 1100
+  block set `.gardens-grid { 1fr }`, so at 820 each card was a **735px slab**
+  and that section measured **1857px, 2.06 screens for two cards**. Two across
+  is 355 each, which is the width the desktop gives them at about 1200, so
+  nothing inside a card had to change: **1857 to 1089**.
+- **AND THE FLOWER GUIDE WAS TWO ACROSS THERE, at 360px a tile**, wider than
+  the desktop ever draws one, putting eight tiles on four rows: 1531px. Four
+  across is 176 each: **1531 to 666**.
+- **THE TILE ITSELF KEPT ITS DESKTOP SHAPE FROM 769 TO 1100**, measured at 820
+  as **168 wide by 320 tall**, a 1 to 1.9 box round a round thing, which is
+  the exact fault the phone's `aspect-ratio: 1` rule was written for. That
+  rule MOVED to a `@media (max-width: 1100px)` block of its own rather than
+  being copied: the column count still differs by width and stays in each
+  block, the tile does not.
+- **`.flower-svg-wrap` WENT 86 TO 110 WITH IT.** The wider gutter made the
+  phone tile 157 square rather than 119, so a fixed 86px picture left 50px of
+  air under the bloom. `renderFlowerCanvas` takes its radius from
+  `min(W*0.30, H*0.28)` and the HEIGHT binds in a square tile, so filling that
+  air is **29 percent more flower in the same box**, radius 31 against 24.
+- **THREE SMALLER ONES, ALL THE SAME SHAPE: a gap stacked on a gap.**
+  `.today-inner` carried 51px of its own padding inside a 96px-padded section,
+  so the band's real headroom was **107px against About's 32** and it held one
+  sentence, a 150px Hortus and a title in 0.81 of a screen; `.flowers-grid`
+  put 1.8rem under a header that already ends with its own margin; and
+  `.cta-buttons` added 1.5rem under a paragraph already carrying 2rem, so 60px
+  sat between one line of copy and the first button. The band is **658 to
+  444**, and all six curved sections now clear their curve by 32, the figure
+  four of them already used.
+- **THE HERO WAS LEFT ALONE ON PURPOSE.** It is `min-height: 100dvh`, so the
+  air inside it is the auto margins dividing slack and shortening anything
+  there moves the copy without shortening the page. The air is sky with clouds
+  in it, which is the picture. Its own `1.5rem` of side padding went, since
+  the section's gutter is the margin now and 1.5rem on top of it made the
+  headline's column 49px narrower a side than everything under it.
+- **Measured after.** 390: document 4549 to 4249, every section 0.38 to 1.15
+  screens, no sideways scroll, the meadow still full bleed at 390. 820:
+  document **6695 to 5062**, every section 0.52 to 1.21. 1440 unchanged:
+  gardens two across, flowers four, the ring on, no sideways scroll.
+
+## FOUR SMALL THINGS IN THE SAME PASS (v2)
+
+- **THE HEART IS MEASURED OFF THE FIGURE, NOT OFF A FIXED CORNER OFFSET.** It
+  was `right: 38px; bottom: 92px; width: 26px` with four more overrides, and
+  **every one was tuned when the figure was 92px.** It is 140 on the landing
+  page, 90 on a phone, 84 in a garden, 150 in the band and 210 on the tour's
+  stage, so the heart had drifted below the head and read as the wrong size.
+  `HEART_OF` 0.20 of the width is 28px at 140, which is the 26 those offsets
+  were written for, and `HEART_AT` 0.30 of the height puts its lower edge just
+  above the crown, so it still leaves the top of the head and never the face.
+  **The placement is written INLINE, which is what beats all five stylesheet
+  rules without needing `!important`.**
+- **THE HERO'S DAY INK IS BACK TO THE PAGE'S OWN COLOURS**, under
+  `html[data-ink="dark"]` only: the title and the mark `--darkteal`, the
+  subtitle `--ink`, the ems `--teal`. Night keeps cream and the gardens keep
+  `#0f3b40`. **The cost is on the record**: the hero's worst flat ratio over
+  the day goes 2.36 to 1.87, both of them inside the minutes the halo carries,
+  and noon goes 9.97 to 5.59.
+- **BOTH FORKS CARRY AN ICON ON EACH CHOICE.** A flower and a pencil in the
+  personal garden, a meadow and a ring in the shared one, stroked at 1.5 on a
+  24 box in `currentColor`, which is the four corner controls' own language
+  rather than the solid fills the twelve species use. `forkBtn` and `whereBtn`
+  take it, so neither call site builds a button by hand.
+- **HORTUS HAD NOTHING TO SAY ON THE SHARED GARDEN'S TWO NEW STEPS.** `where`
+  and `circles` are the first two screens there now, and an unknown step
+  hushes rather than throwing, so the shared garden met you in silence while
+  the personal fork said hello. Neither new line explains its card, which says
+  what it is itself.
+
 ## THE MEADOW ANSWERS THE POINTER (v2 ONLY)
 
 Three things, all in `v2/index.html`'s hero script block and the rules at the

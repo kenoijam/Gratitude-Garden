@@ -4180,10 +4180,32 @@ whereSub.style("margin-bottom", "18px");
 /* The same two line button the personal garden's fork uses. The under line
    is what a visitor is actually choosing between, since "circle" on its own
    is a word from another app and could mean almost anything. */
-function whereBtn(label, under, fn) {
+/* ═══════════ AN ICON ON EACH CHOICE, THE SAME LANGUAGE AS THE PERSONAL
+   GARDEN'S FORK. Stroked at 1.5 on a 24 box in `currentColor`, which is what
+   the four corner controls draw in, rather than the solid fills the species
+   use: these are interface, not flowers. A MEADOW of three stems for the
+   open garden, because what that choice buys is other people's flowers
+   standing beside yours; a RING of three for a circle, because that is the
+   only picture of "a few people you chose" that needs no label. */
+const ICO_MEADOW =
+  '<svg width="19" height="19" viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false">' +
+  '<g stroke="currentColor" stroke-width="1.6" stroke-linecap="round">' +
+  '<path d="M6 20.2v-5.1M12 20.2v-7.9M18 20.2v-6"/>' +
+  '<circle cx="6" cy="13" r="2.1"/><circle cx="12" cy="10.2" r="2.4"/>' +
+  '<circle cx="18" cy="12.1" r="2.1"/></g></svg>';
+const ICO_CIRCLE =
+  '<svg width="19" height="19" viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false">' +
+  '<circle cx="12" cy="12" r="7.1" stroke="currentColor" stroke-width="1.5"/>' +
+  '<g fill="currentColor">' +
+  '<circle cx="12" cy="4.9" r="2.1"/><circle cx="18.2" cy="15.6" r="2.1"/>' +
+  '<circle cx="5.8" cy="15.6" r="2.1"/></g></svg>';
+
+function whereBtn(label, under, icon, fn) {
   const b = createButton("").parent(whereCard);
   b.addClass("gg-hov");
-  b.html(label + '<span style="display:block;font-weight:400;font-size:12.5px;' +
+  b.html('<span style="display:flex;align-items:center;justify-content:center;gap:9px">' +
+         (icon || "") + '<span>' + label + '</span></span>' +
+         '<span style="display:block;font-weight:400;font-size:12.5px;' +
          'opacity:0.88;margin-top:3px">' + under + '</span>');
   b.style("background", "#26a69a");
   b.style("color", "#fff");
@@ -4201,9 +4223,9 @@ function whereBtn(label, under, fn) {
   return b;
 }
 whereBtn("Today's open garden", "Anyone who opens it today can read it",
-         () => showStep("landing"));
+         ICO_MEADOW, () => showStep("landing"));
 whereBtn("A circle", "Only the people you give the code to",
-         () => showStep("circles"));
+         ICO_CIRCLE, () => showStep("circles"));
 
 const wherePeek = createButton("Or look at today's garden first").parent(whereCard);
 wherePeek.style("display", "block");

@@ -1375,18 +1375,55 @@ section { padding: 3.5rem 2.5rem; }
      content and this block starts at 1100. */
   .about-right { grid-template-columns: 1fr 1fr; }
 .about-right { margin-top: 0; padding-top: 0; }
-.gardens-grid { grid-template-columns: 1fr; }
-.flowers-grid { grid-template-columns: repeat(2,1fr); }
+/* TWO ACROSS, NOT STACKED, AND THE ONE COLUMN WAS THE WORST DEAD SPACE ON THE
+   SITE. With `1fr` the two garden cards took a row each at the full content
+   width, so at 820 each card was a 735px slab and `#gardens` measured 1857px,
+   2.06 screens for two cards. Two across is 355 each, which is the width the
+   desktop gives them at about 1200, so nothing inside a card has to change. */
+.gardens-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+/* FOUR ACROSS. Two gave 360px tiles for a flower and a name, which is wider
+   than the desktop ever draws one, and put the eight guide tiles on four rows:
+   `#flowers` measured 1531px, 1.7 screens. Four is 176 each, between the
+   desktop's 280 and the phone's 157. */
+.flowers-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 .tips-grid { grid-template-columns: 1fr 1fr; }
 .meadow-scene { margin-left: -2.5rem; margin-right: -2.5rem; }
 footer { padding: 140px 2.5rem 2rem; }   /* 100px clear, matching the sections, which keep their desktop padding down to 768 */
+}
+
+/* THE FLOWER GUIDE'S TILE, FROM 1100 DOWN, AND IT USED TO BE A PHONE RULE ONLY.
+   Between 769 and 1100 the tile kept its desktop shape: measured at 820 it was
+   168 wide by 320 TALL, a 1 to 1.9 box round a round thing, which is the exact
+   fault the phone rule was written for. The column count still differs by
+   width, so that stays in each block; this is only the tile. */
+@media (max-width: 1100px) {
+  /* SQUARE. The mood line and the chip go, so a tile is a flower and a name
+     and nothing else; left to size itself it came out 130 wide by 209 tall.
+     `justify-content: center` is what stops the pair sitting at the top of the
+     box once the height is no longer theirs. */
+  .flower-tile { padding: 0.45rem 0.35rem; aspect-ratio: 1; justify-content: center; }
+  /* 110, up from 86. `renderFlowerCanvas` takes its radius from
+     `min(W*0.30, H*0.28)` and the HEIGHT is what binds in a square tile, so
+     filling the air under the bloom is 29 percent more flower in the same box:
+     radius 31 against 24, measured. */
+  .flower-svg-wrap { height: 110px; margin-bottom: 0.2rem; }
+  .flower-name { font-size: 0.9rem; }
+  .flower-mood { display: none; }
+  .flower-tile > .flower-chip { display: none; }
 }
 
 /* ── Mobile (max 768px), SINGLE CONSOLIDATED BLOCK ── */
 @media (max-width: 768px) {
 
   /* Section spacing */
-  section { padding: 2.8rem 3.6rem; }
+  /* THE GUTTER IS 1.4rem, AND 3.6rem WAS A BUG RATHER THAN A CHOICE. At a 17px
+     root that was 61px a side, so a 375 phone lost 122px of 375 to gutter and
+     every line, card and tile ran inside 253px, while a 1000px laptop takes
+     2.5rem. A phone had MORE side padding than a laptop. 1.4rem is 24px, the
+     ordinary phone gutter, and it hands the content back 75px: 253 to 328.
+     `.meadow-scene`, `.cta` and the footer all pull against this number, so
+     all four move together or the hero overflows sideways. */
+  section { padding: 2.8rem 1.4rem; }
 
   /* The side nav is hidden on a phone: see the note beside its own rule. */
 
@@ -1403,12 +1440,15 @@ footer { padding: 140px 2.5rem 2rem; }   /* 100px clear, matching the sections, 
      a skein of birds at 8 to 30 pass straight through the headline. Starting
      the copy below that band is the only thing that separates them, since
      both are painted on canvases behind it. */
-  .hero-text-block { padding: 3.4rem 1.5rem 0; max-width: 100%; margin-bottom: 2.5rem; }
+  /* No side padding of its own: the section's own 1.4rem gutter is the margin
+     now, and 1.5rem on top of it made the headline's column 49px narrower a
+     side than everything under it. */
+  .hero-text-block { padding: 2.2rem 0 0; max-width: 100%; margin-bottom: 1.6rem; }
   /* The hero has to stay ahead of the section titles above, which are now 9vw
      themselves. */
   .hero-title { font-size: clamp(2.3rem, 10.5vw, 3.4rem); line-height: 1.06; }
   .hero-subtitle { font-size: 0.9rem; max-width: 100%; }
-  .meadow-scene { margin-left: -3.6rem; margin-right: -3.6rem; }
+  .meadow-scene { margin-left: -1.4rem; margin-right: -1.4rem; }
 
   /* About: horizontal scroll cards */
   .about { grid-template-columns: 1fr; grid-template-areas: "title" "body" "cards"; gap: 1.8rem; }
@@ -1473,9 +1513,16 @@ footer { padding: 140px 2.5rem 2rem; }   /* 100px clear, matching the sections, 
      on a phone with more room below its copy than above. */
   .about { padding-top: 72px; padding-bottom: 29px; }
   .gardens, .catalogue { padding-top: 72px; }
-  .wisdom { padding-top: 96px; padding-bottom: 56px; }
+  /* 72, NOT 96, AND `.today-inner`'S OWN 51px GOES WITH IT. The curve dips
+     40px in, so 96 of padding plus 51 of inner padding was 107px of headroom
+     on the band against About's 32, measured. The band held one sentence, a
+     150px Hortus and a title in 658px, which is 0.81 of a phone screen for
+     three things. All six curved sections clear their curve by 32 now, which
+     is the figure four of them already used. */
+  .wisdom { padding-top: 72px; padding-bottom: 40px; }
+  .today-inner { padding: 0; }
   .cta { padding-top: 72px; padding-bottom: 56px; }
-  footer { padding-top: 96px; }
+  footer { padding-top: 72px; }
 
   .gardens-grid { grid-template-columns: 1fr; gap: 1.4rem; grid-auto-rows: auto; }
   .garden-card-inner { padding: 2rem 1.6rem 1.8rem; }
@@ -1487,23 +1534,11 @@ footer { padding: 140px 2.5rem 2rem; }   /* 100px clear, matching the sections, 
     grid-template-columns: 1fr 1fr;
     gap: 0.8rem;
     position: relative;
-    padding-top: 1.8rem;
+    /* 0, not 1.8rem: `.catalogue-header` already ends with its own margin, so
+       this was a second gap stacked under the first. */
+    padding-top: 0;
   }
 
-  /* SQUARE on a phone. The mood line and the chip are already hidden here, so
-     a tile is a flower and a name and nothing else, and left to size itself it
-     came out 130 wide by 209 tall: a tall box round a round thing. A square
-     reads as a card of one flower, and two of them side by side fill the width
-     without a ragged edge below. `justify-content: center` is what stops the
-     pair sitting at the top of the box once the height is no longer theirs. */
-  .flower-tile { padding: 0.45rem 0.35rem; aspect-ratio: 1; justify-content: center; }
-  /* 86, not 68. `renderFlowerCanvas` takes its radius from `min(W*.30, H*.28)`
-     and in a square tile the HEIGHT is what binds, so a short picture box made
-     every bloom small: the tulip filled a fifth of its tile. */
-  .flower-svg-wrap { height: 86px; margin-bottom: 0.2rem; }
-  .flower-name { font-size: 0.9rem; }
-  .flower-mood { display: none; }
-  .flower-tile > .flower-chip { display: none; }
   .catalogue::after { display: none; }
 
   /* Wisdom tips: horizontal scroll */
@@ -1531,9 +1566,11 @@ footer { padding: 140px 2.5rem 2rem; }   /* 100px clear, matching the sections, 
   .tip-text { font-size: 0.82rem; }
 
   /* CTA */
-  .cta { padding: 72px 3.6rem 56px; }   /* top matches the headroom rule above */
+  .cta { padding: 72px 1.4rem 56px; }   /* top matches the headroom rule above */
   .cta-inner { padding: 2rem 1.2rem 2.2rem; }
-  .cta-buttons { flex-direction: column; align-items: center; gap: 0.6rem; margin-top: 1.5rem; }
+  /* 0, not 1.5rem: `.section-desc` above it already carries 2rem, so the two
+     together put 60px between one line of copy and the first button. */
+  .cta-buttons { flex-direction: column; align-items: center; gap: 0.6rem; margin-top: 0; }
   /* SMALLER THAN FULL WIDTH, and shorter. At 320px wide with 1rem type and
      0.9rem of padding, three stacked pills stood taller than the heading they
      belong to and read as the section rather than as its actions: the title
@@ -1546,7 +1583,7 @@ footer { padding: 140px 2.5rem 2rem; }   /* 100px clear, matching the sections, 
   }
 
   /* Footer */
-  footer { padding: 96px 3.6rem 1.5rem; }   /* top matches the headroom rule above */
+  footer { padding: 72px 1.4rem 1.5rem; }   /* top matches the headroom rule above */
   /* Stacked, and each fold takes the WHOLE width. As flex items they were
      shrink to fit, so the summary was only as wide as its own heading and the
      chevron sat against the text instead of out at the right edge where a
@@ -1588,7 +1625,10 @@ footer { padding: 140px 2.5rem 2rem; }   /* 100px clear, matching the sections, 
 
 /* ── Small mobile (≤480px) ── */
 @media (max-width: 480px) {
-section { padding: 2.2rem 3.4rem; }
+/* The gutter stays the 1.4rem the 768 block sets. It is ONE number on a phone,
+   because `.meadow-scene`, `.cta` and the footer all pull against it and a
+   second value here would have to be tracked in all three. */
+section { padding: 2.2rem 1.4rem; }
 
 .about-right { grid-template-columns: 1fr; }
 .flowers-grid { grid-template-columns: 1fr 1fr; }
@@ -2495,6 +2535,36 @@ html[data-ink] :is(.hero-subtitle, .hero-eyebrow) {
 }
 html[data-ink] .hero-title em,
 html[data-ink] .hero-mark em { color: var(--dl-sky-accent, #429288); }
+
+/* ═══════ THE HERO'S DAY INK GOES BACK TO WHAT IT ALWAYS WAS
+   The measured ink `#0f3b40` was adopted for every piece of text standing on
+   the sky, and on the hero's own headline the author's verdict was simply
+   that it is too dark. It is `--darkteal` again by day, which is the colour
+   this headline has had for the whole life of the page.
+
+   NIGHT IS UNTOUCHED, which is the point of scoping this to `data-ink="dark"`
+   rather than reverting the module: at the light polarity these rules do not
+   match and the headline is still cream, so the 1.27 to one dawn failure the
+   measured ink was introduced to fix stays fixed. The GARDENS keep `#0f3b40`
+   too, and they are where it was actually earning its keep: the Garden Tips
+   card was under AA for 63 percent of the day at `#1d6466`.
+
+   WHAT IT COSTS, PLAINLY: on the hero's own stops the worst case over the day
+   goes from 2.36 to 1.87, both already under AA and both already carried by
+   the halo, and `--dl-halo-k` firms up at exactly those hours. At noon it is
+   5.59 against 9.97, so the day this is read in is comfortably clear.
+
+   THE SUBTITLE AND THE MARK COME BACK WITH IT, and they have to: left on the
+   darker ink the subtitle would have been DARKER than the title above it,
+   which inverts the hierarchy and is worse than either colour on its own.
+   The em returns to `--teal`, which fails AA as body copy and passes as LARGE
+   text at 3:1, and the hero title is 35 to 64px, so that is the one place in
+   the project where that colour is legitimate. */
+html[data-ink="dark"] .hero-title { color: var(--darkteal); }
+html[data-ink="dark"] .hero-subtitle { color: var(--ink, #2f6260); }
+html[data-ink="dark"] .hero-mark { color: var(--darkteal); }
+html[data-ink="dark"] .hero-title em,
+html[data-ink="dark"] .hero-mark em { color: var(--teal); }
 /* The wiggling letters are spans inside the title and inherit both the
    colour and the shadow, so they need no rule. */
 

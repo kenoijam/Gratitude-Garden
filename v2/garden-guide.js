@@ -251,6 +251,13 @@
       garden:        { pose: "welcome", line: null, silent: true }
     },
     shared: {
+      /* THE FORK AND THE CIRCLES CARD ARE THE FIRST TWO SCREENS NOW, and
+         without a line of their own an unknown step hushes, so the shared
+         garden met you in silence while the personal one said hello. Neither
+         line explains the cards, which say what they are themselves; they say
+         the thing a card cannot say about itself. */
+      where:         { pose: "welcome", line: "Either is fine. Nobody is counting." },
+      circles:       { pose: "listen",  line: "A code is just a word you hand to a friend." },
       landing:       { pose: "welcome", line: "Everybody here planted one today." },
       username:      { pose: "listen",  line: "Any name you like." },
       select:        { pose: "welcome", line: "Which one feels like today?" },
@@ -638,12 +645,63 @@
     }, 1100);
   }
 
+  /* ═════ THE HEART IS ANCHORED TO THE FIGURE'S CROWN, NOT TO THE COLUMN
+     It used to be placed from the COLUMN's foot, `right: 38px; bottom: 92px`,
+     with four more rules overriding that for the left side, the tour stage,
+     a host, and a phone. Every one of those numbers was tuned against a
+     92px figure, and the figure has been **140px** since; the mascot also
+     comes in 90 on a phone, 84 in a garden, 150 on the band and 210 on the
+     stage. Five fixed offsets against five sizes is five chances to be
+     wrong, and what it looked like when it was wrong is a heart sitting
+     somewhere down the body rather than leaving the top of the head, and
+     looking oversized next to it.
+
+     So it is measured off whatever figure it belongs to, every time. The
+     mascot's crown sits at about 0.30 of its own box, so the heart's lower
+     edge goes there and it rises from the head whatever size that head is.
+     Its WIDTH is a fraction of the figure rather than a constant, which is
+     the half that fixes "big": 26px beside a 92px figure is a third of it,
+     and the same 26px is what you still got beside a 150px one.
+
+     The inline values beat all five stylesheet rules without `!important`,
+     so none of them had to be unpicked; they stay as the fallback for a
+     browser that somehow reports no box. */
+  /* THE HEART IS MEASURED OFF THE FIGURE NOW, NOT OFF A FIXED CORNER OFFSET.
+     It was `right: 38px; bottom: 92px; width: 26px` with four more overrides,
+     every one of them tuned when the figure was 92px. The figure is 140 on the
+     landing page, 90 on a phone, 84 in a garden, 150 in the band and 210 on
+     the tour's stage, so the heart had drifted BELOW the head and read as the
+     wrong size. 0.20 of the width is 28px at 140, which is the 26 those
+     offsets were written for; 0.30 of the height puts its lower edge just
+     above the crown, so it still leaves the top of the head and never the
+     face, which is where the flowers are. The placement is written inline, so
+     it beats all five stylesheet rules without needing `!important`. */
+  var HEART_AT = 0.30;    /* of the figure's height: just above the crown */
+  var HEART_OF = 0.20;    /* of the figure's width: the old 26 at 140px */
+
   function heart(host, here) {
     var h = document.createElement("div");
     h.className = "gg-g-heart" + (here ? " is-here" : "");
     h.innerHTML =
       "<svg viewBox='0 0 24 24' aria-hidden='true'><path d='M12 21s-8-5.1-8-10.2A4.8 4.8 0 0 1 12 7a4.8 4.8 0 0 1 8 3.8C20 15.9 12 21 12 21z' fill='#f4a0ad'/></svg>";
-    (host || root).appendChild(h);
+    var parent = host || root;
+    parent.appendChild(h);
+    try {
+      var fig = host || root.querySelector(".gg-g-me");
+      if (fig) {
+        var pr = parent.getBoundingClientRect();
+        var fr = fig.getBoundingClientRect();
+        if (fr.width > 0 && fr.height > 0) {
+          var size = Math.max(12, Math.round(fr.width * HEART_OF));
+          h.style.width = size + "px";
+          h.style.height = size + "px";
+          h.style.right = "auto";
+          h.style.bottom = "auto";
+          h.style.left = Math.round(fr.left - pr.left + fr.width / 2 - size / 2) + "px";
+          h.style.top = Math.round(fr.top - pr.top + fr.height * HEART_AT - size) + "px";
+        }
+      }
+    } catch (e) {}
     /* A forced reflow before the class, or the browser coalesces the two and
        it simply appears at the end of its own path. */
     void h.offsetWidth;
