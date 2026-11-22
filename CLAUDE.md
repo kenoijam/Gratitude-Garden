@@ -81,6 +81,74 @@ one. That needs both online at the same time, so:
   `.section-dust` canvases, and the personal garden's sign in gate with the
   same twelve scripts.
 
+## LIGHT, DARK AND AUTO (`v2/garden-theme.js`), v2 ONLY
+
+**ONE MODULE AT THE v2 ROOT, loaded by the landing page and both gardens**,
+like `garden-music.js` and `garden-daylight.js`.
+
+- **IT OWNS NO COLOUR, AND THAT IS THE WHOLE DESIGN.** Dark is not a theme
+  bolted onto the daylight module: it is that module's keyframe at **one in
+  the morning**, with its own navy sky, its moon, its stars, its dark teal
+  section grounds and its cream ink, every one of them already measured. So
+  the button sets an HOUR and nothing downstream has to know it exists: the
+  gardens' `draw()` asks the clock every frame, the CSS variables are written
+  on every recompute, and `data-dark` and `data-ink` flip on their own. **A
+  real second palette was the alternative and this project has already
+  rejected three invented night palettes for landing outside the teal
+  family.**
+- **LIGHT IS 13 AND DARK IS 1, because both sit well inside a FLAT stretch of
+  the curve**: `day` runs 12 to 16.4 and `night` 21 to 4.6, so neither is
+  interpolating toward a neighbour and a picked mode cannot drift.
+- **`?clock=` STILL WINS over the button**, and the order matters: the query
+  string is the demo override, so an interview link pinning an hour must not
+  be undone by whatever the last person pressed on that laptop.
+- **THE CACHE NEEDED A THIRD BRANCH.** `now()` short circuits for 12 seconds,
+  and separately for a pinned `?clock=`; a pinned MODE is just as still, so
+  without its own branch it recomputed the whole curve every 12 seconds for
+  an hour that cannot move.
+- **`onChange` EXISTS FOR ONE CALLER AND IT IS NOT A TIDINESS.** Everything
+  that paints off the clock does it per frame except **the hero's sun, which
+  is a canvas on a 10 second poll**, and 10 seconds is a long time to sit on
+  the wrong sun. It fires immediately with the current mode, so it is the
+  button's first paint as well as its subscription.
+- **THE STATE IS SHARED ACROSS ALL FOUR PAGES**, `gg_theme` in
+  `localStorage`, for the same reason `gg_music_on` is: they are one origin,
+  and a preference that reset on every navigation is not a preference.
+- **THE ICON CARRIES THE STATE, because the hover label does not exist on a
+  phone.** `data-tip` is removed under `(hover: none)`, so a three state cycle
+  with no visible state is a button you press blind. Sun, moon, and for auto
+  one disc that is sun on the left and crescent on the right. Stroked at 1.5
+  on a 24 box in `currentColor`, the corner row's own language.
+- **IT TURNS OVER ON A DARK SKY ITSELF**, off `html[data-dark="1"]`, which is
+  the page's own flag, so the button cannot disagree with the grounds about
+  what time it is.
+- **SLOT 3, `right: 108`, THE SAME SLOT ON EVERY PAGE, and two controls moved
+  to make room.** The row is now **music 16, account 62, theme 108, history
+  154, camera 200** (phone 12, 54, 96, 138, 180, ending at 214 of 375). That
+  is **five edits in four files**: `#gj-btn`'s two rules in
+  `garden-journal.js`, and `#save-btn` in BOTH gardens' stylesheet AND both
+  sketches, because the sketch writes that one inline and the phone rule
+  carries `!important`.
+- **A CACHED HTML COST A ROUND.** The pane served the garden page without the
+  new script tag through a reload, so `GardenTheme` was undefined and it
+  looked exactly like the module failing its own guard. `fetch(url,
+  {cache:"reload"})` then a reload. **Fourth time in this project, and the
+  first on an HTML file rather than a script or a stylesheet.**
+
+## ABOUT'S LEDE IS GONE, AND IT IS THE SECOND ONE CUT FOR THE SAME FAULT
+
+"One you keep, one you share" was the section title directly above it said
+once more in different words, and the two garden cards in the very next
+section say it a third time with pictures and a button each. A heading, a
+lede and a card row all making one claim is the heading doing no work. The
+account paragraph is the whole of the copy now, and it is the one thing on
+that page nothing else says.
+
+**ITS OWN PREDECESSOR WENT FOR THE SAME REASON**: the lede before it was "One
+practice, two ways, grown from the same eight flowers", which was also the
+title. **A new lede there has to say something the title does not**, or it
+will be cut a third time.
+
 ## A PHONE HAD MORE GUTTER THAN A LAPTOP, AND TWO CARDS TOOK A ROW EACH (v2)
 
 Measured rather than looked at, at 375, 390, 820 and 1440. Four faults, and

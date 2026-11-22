@@ -221,7 +221,7 @@
        account at 62, this at 108, Save PNG at 154. It used to be a labelled
        pill in the BOTTOM LEFT, which is where the Garden Tips card lives, so
        it sat straight on top of it. */
-    '#gj-btn{position:fixed;top:20px;right:108px;z-index:261;' +
+    '#gj-btn{position:fixed;top:20px;right:154px;z-index:261;'   /* slot 4: garden-theme.js took 108 */ +
       'width:38px;height:38px;border-radius:50%;padding:0;' +
       'display:flex;align-items:center;justify-content:center;' +
       'border:1.5px solid #b7e4e7;background:rgba(255,249,227,0.92);color:#1d6466;' +
@@ -230,7 +230,7 @@
     '#gj-btn:hover{background:#e1f7f7;transform:translateY(-1px);}' +
     '#gj-btn:focus-visible{outline:2px solid #1d6466;outline-offset:2px;}' +
     '#gj-btn svg{width:18px;height:18px;display:block;}' +
-    '@media (max-width:768px){#gj-btn{top:16px;right:96px;width:34px;height:34px;}' +
+    '@media (max-width:768px){#gj-btn{top:16px;right:138px;width:34px;height:34px;}' +
       '#gj-btn svg{width:16px;height:16px;}}' +
 
     /* A BOOK IN THE MIDDLE, not a sheet down the side.

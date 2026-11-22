@@ -302,7 +302,7 @@ input[type="text"]:focus {
      cannot resurface with the old labelled-pill look. */
   position: fixed;
   top: 20px;
-  right: 154px;
+  right: 200px;   /* slot 5: garden-theme.js took 108 and the history moved to 154 */
   width: 38px;
   height: 38px;
   padding: 0;
@@ -325,7 +325,7 @@ input[type="text"]:focus {
      its desktop 20/154 while the other three moved to 16 and their own
      phone slots, so it sat four pixels low and sixteen to the left of a
      row it is supposed to be part of. The slots are 12, 54, 96, 138. */
-  #save-btn { top: 16px !important; right: 138px !important;
+  #save-btn { top: 16px !important; right: 180px !important;
               width: 34px !important; height: 34px !important; }
   #save-btn svg { width: 16px; height: 16px; }
 }

@@ -5217,7 +5217,7 @@ saveBtn.style("display", "none");
 saveBtn.style("pointer-events", "auto");
 saveBtn.style("position", "fixed");
 saveBtn.style("top", "20px");
-saveBtn.style("right", "154px");
+saveBtn.style("right", "200px");
 saveBtn.style("width", "38px");
 saveBtn.style("height", "38px");
 saveBtn.style("padding", "0");

@@ -430,8 +430,47 @@
     if (q !== null && q !== "" && isFinite(parseFloat(q))) forced = parseFloat(q);
   } catch (e) {}
 
+  /* ─────────────────────────── LIGHT, DARK AND AUTO, AS AN HOUR RATHER THAN
+     AS A SECOND PALETTE. Dark is not a theme this module had to be given: it
+     is the keyframe at one in the morning, which every colour, every contrast
+     ratio and the moon and the stars are already built around. So the whole
+     switch is which HOUR the garden is told it is, and nothing downstream
+     needs to know a toggle exists. A real second palette was the alternative
+     and this project has already rejected three invented night palettes for
+     landing outside the teal family.
+
+     LIGHT IS 13 AND DARK IS 1 because both sit well inside a FLAT stretch of
+     the curve: `day` runs 12 to 16.4 and `night` 21 to 4.6, so neither is
+     interpolating toward a neighbour and the picked mode cannot drift.
+
+     `?clock=` STILL WINS, and that order matters: the query string is the
+     demo override, so an interview link pinning an hour must not be undone by
+     whatever the last person pressed on that laptop. */
+  var LIGHT_H = 13, DARK_H = 1;
+  var MODES = { auto: 1, light: 1, dark: 1 };
+  var mode = "auto";
+  try {
+    var m = localStorage.getItem("gg_theme");
+    if (m && MODES[m]) mode = m;
+  } catch (e) {}
+
+  var watchers = [];
+  function fire() { for (var i = 0; i < watchers.length; i++) { try { watchers[i](mode); } catch (e) {} } }
+
+  function setMode(m) {
+    if (!MODES[m]) m = "auto";
+    mode = m;
+    try { localStorage.setItem("gg_theme", m); } catch (e) {}
+    cache = null;            /* or the next `now()` hands back the old hour */
+    var o = now();
+    fire();
+    return o;
+  }
+
   function hourNow() {
     if (forced !== null) return forced;
+    if (mode === "light") return LIGHT_H;
+    if (mode === "dark")  return DARK_H;
     var d = new Date();
     return d.getHours() + d.getMinutes() / 60 + d.getSeconds() / 3600;
   }
@@ -445,6 +484,9 @@
     var t = Date.now();
     if (cache && t - cacheAt < 12000 && forced === null) return cache;
     if (cache && forced !== null && cache.hour === forced) return cache;
+    /* A pinned mode is as still as a pinned clock, so it takes the same
+       short circuit rather than recomputing the whole curve every 12s. */
+    if (cache && forced === null && mode !== "auto" && cache.hour === hourNow()) return cache;
     cache = at(hourNow());
     cacheAt = t;
     flagPhase(cache.phase, cache.night, cache.inkLight);
@@ -526,6 +568,13 @@
     at: at,
     hour: hourNow,
     override: function (h) { forced = (h === null || h === undefined) ? null : +h; cache = null; return now(); },
+    /* "auto", "light" or "dark". `garden-theme.js` is the button on it. */
+    mode: function () { return mode; },
+    setMode: setMode,
+    /* There is no event for this, so anything that paints off the clock on a
+       timer rather than per frame subscribes instead. The hero's sun canvas
+       polls every 10 seconds, which is a long time to sit on the wrong sun. */
+    onChange: function (fn) { if (typeof fn === "function") { watchers.push(fn); fn(mode); } },
     /* Exposed so a sketch can ask without forcing a recompute. */
     phase: function () { return now().phase; }
   };
