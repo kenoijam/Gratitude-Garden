@@ -525,12 +525,13 @@ const t = frameCount * 0.01 + f.phase * 0.001;
 
 const swayNoise = swayOn
 ? map(noise(t), 0, 1, -1, 1) * 4
-: 0;
+: 0
+const swayLean = swayNoise + partLean(f);
 
-const totalSway = swayNoise;
+const totalSway = swayLean;
 
 const flowerX = f.x + totalSway;
-const flowerY = f.baseY - f.stemLen;
+const flowerY = f.baseY - f.stemLen - liftOf(f);
 
 const d = dist(px, py, flowerX, flowerY);
 if (d < f.size * 1.5 && d < bestDist) {
@@ -554,6 +555,13 @@ const tapped = findFlowerAt(px, py);
    everything, so by paint order they should win; but they move and a flower
    does not, and the flower is the point of the garden. */
 if (!tapped && window.GardenLife && GardenLife.startle(px, py)) return;
+
+/* THE SPARKLE FIRES ON ANY TAP THAT LANDS ON A FLOWER, before the card
+   decides whether to open or close: the burst answers the finger, and
+   whether the card is coming or going is a separate question. */
+if (tapped) fireBurst(tapped.x + partLean(tapped),
+                      tapped.baseY - tapped.stemLen - liftOf(tapped),
+                      tapped.hue);
 
 /* A SECOND PRESS ON THE SAME FLOWER PUTS THE CARD AWAY. It used to re-open it
    on the same bloom, so the only way to dismiss one was to find bare ground.
@@ -606,7 +614,7 @@ if (!window.GardenSocial || !f) return;
 const sp = speciesList.find(x => x.id === f.species);
 const rect = canvas.elt.getBoundingClientRect();
 const sx = rect.width / width, sy = rect.height / height;
-const headY = f.baseY - f.stemLen;
+const headY = f.baseY - f.stemLen - liftOf(f);
 const anchor = {
   x: rect.left + f.x * sx,
   top: rect.top + (headY - f.size * 1.3) * sy,
@@ -662,12 +670,13 @@ const t = frameCount * 0.01 + f.phase * 0.001;
 
 const swayNoise = swayOn
 ? map(noise(t), 0, 1, -1, 1) * 4
-: 0;
+: 0
+const swayLean = swayNoise + partLean(f);
 
-const totalSway = swayNoise;
+const totalSway = swayLean;
 
 const fx = f.x + totalSway;
-const fy = f.baseY - f.stemLen;
+const fy = f.baseY - f.stemLen - liftOf(f);
 
 const d = dist(px, py, fx, fy);
 if (d < f.size * 1.5 && d < bestDist) {
@@ -2132,20 +2141,21 @@ const t = frameCount * 0.01 + f.phase * 0.001;
 
 const swayNoise = swayOn
 ? map(noise(t), 0, 1, -1, 1) * 4
-: 0;
+: 0
+const swayLean = swayNoise + partLean(f);
 
-const totalSway = swayNoise;
+const totalSway = swayLean;
 
 stroke(40, 120, 90);
 strokeWeight(max(2, (f.size / 40) * 3) * scaleFactor);
 noFill();
 
 const c1x = 10;
-const c1y = -f.stemLen * 0.4;
+const c1y = -stemOf(f) * 0.4;
 const c2x = -6;
-const c2y = -f.stemLen * 0.7;
+const c2y = -stemOf(f) * 0.7;
 const x3  = totalSway;
-const y3  = -f.stemLen;
+const y3  = -stemOf(f);
 
 bezier(0, 0, c1x, c1y, c2x, c2y, x3, y3);
 drawLeavesOnStem(0, 0, c1x, c1y, c2x, c2y, x3, y3);
@@ -2156,12 +2166,13 @@ const t = frameCount * 0.01 + f.phase * 0.001;
 
 const swayNoise = swayOn
 ? map(noise(t), 0, 1, -1, 1) * 4
-: 0;
+: 0
+const swayLean = swayNoise + partLean(f);
 
-const totalSway = swayNoise;
+const totalSway = swayLean;
 
 push();
-translate(totalSway, -f.stemLen);
+translate(totalSway, -stemOf(f));
 drawBloom(f);
 pop();
 }
@@ -2395,8 +2406,8 @@ const alpha = 1;
 
 const t = frameCount * 0.01 + myFlower.phase * 0.001;
 const swayNoise = swayOn ? map(noise(t), 0, 1, -1, 1) * 4 : 0;
-const cx = myFlower.x + swayNoise;
-const baseCy = myFlower.baseY - myFlower.stemLen;
+const cx = myFlower.x + swayNoise + partLean(myFlower);
+const baseCy = myFlower.baseY - myFlower.stemLen - liftOf(myFlower);
 
 let cyOffset, orbitW, orbitH;
 if (myFlower.species === "lavender") {
@@ -2516,11 +2527,12 @@ if (window.GardenSocial && GardenSocial.peekOpen && GardenSocial.peekOpen()) ret
 const t = frameCount * 0.01 + hoveredFlower.phase * 0.001;
 const swayNoise = swayOn
 ? map(noise(t), 0, 1, -1, 1) * 4
-: 0;
-const totalSway = swayNoise;
+: 0
+const swayLean = swayNoise + partLean(hoveredFlower);
+const totalSway = swayLean;
 
 const flowerX = hoveredFlower.x + totalSway;
-const flowerY = hoveredFlower.baseY - hoveredFlower.stemLen;
+const flowerY = hoveredFlower.baseY - hoveredFlower.stemLen - liftOf(hoveredFlower);
 
 push();
 textSize(14);
@@ -3257,7 +3269,27 @@ pop();
 function viewW() { return window.innerWidth  || document.documentElement.clientWidth  || windowWidth  || 0; }
 function viewH() { return window.innerHeight || document.documentElement.clientHeight || windowHeight || 0; }
 
-function resizeGardenCanvas() {
+/* ═══════════════ THE SHARED GARDEN HAD NO RESIZE HANDLER AT ALL
+   This function is the personal garden's `windowResized` almost character
+   for character, and it was called `resizeGardenCanvas`, **which is a name
+   p5 never calls.** It ran ONCE, from `setup`, so this page has never
+   responded to a window resize in its life: drag the window and the canvas
+   kept its old size with the meadow laid out for a width that no longer
+   existed, and a phone turned on its side kept the portrait layout.
+
+   IT IS ALSO WHY A BLANK GARDEN HERE COULD NEVER RECOVER. The note under
+   "A STARTED SKETCH CAN STILL COME UP BLANK" says a tab in the background
+   reports 0 for its width when p5 is parsed, `createCanvas(0, 0)` makes a
+   dead canvas, "and no resize ever follows to correct it". On the personal
+   garden a resize DOES follow, because its handler is named what p5 looks
+   for. Here nothing did, so a 0 by 0 canvas stayed 0 by 0 for the life of
+   the page. Found exactly that way: `width` and `height` both 0 with
+   `viewW()` returning 1024 and `frameCount` climbing past 700.
+
+   THIS IS THE STANDING RULE PAYING OUT AGAIN: a bug found in one hand
+   ported sketch is a thing to go and look for in the other. The two were
+   ported from each other and one of them got the p5 lifecycle name. */
+function windowResized() {
 resizeCanvas(viewW(), viewH());
 
 groundLevel = height * 0.76;
@@ -3299,7 +3331,7 @@ return false;
 angleMode(DEGREES);
 noiseSeed(9999);
 
-resizeGardenCanvas();
+windowResized();
 
 initDailyGarden();
 /* Already planted today: straight into the garden. Asking somebody what they
@@ -3379,7 +3411,119 @@ function anonAlias(sp, rng) {
   return list[Math.floor(r * list.length)] + " " + noun;
 }
 
+/* ═══════════════════════════════════════════════════════════════════════════
+   THE POINTER PARTS THE GARDEN, A FLOWER LIFTS, AND A TAP SPARKLES
+
+   The personal garden's copy of this, ported, which is this project's standing
+   arrangement for anything both gardens do: the same maths written out twice
+   rather than shared, and **edited together**. The reasoning is recorded in
+   full beside the personal garden's copy and in the hero's; what matters here
+   is the parts that would be wrong if they drifted.
+
+   THE SHAPE IS `u * exp(-(u^2 + v^2))`, A GAUSSIAN DERIVATIVE, and the stem
+   the pointer sits directly over is why. `sign(dx) * falloff` is
+   DISCONTINUOUS there: the flower snaps from full lean one way to full lean
+   the other as the cursor crosses it. This one is odd in u and smoothly zero
+   at the middle, so a bloom is pushed ahead of the pointer, passes through
+   upright as it goes by, and is pushed the other way behind it.
+
+   IT PEAKS AT u = 0.707, WHERE `u * exp(-u^2)` IS 0.429, so the 2.33 scales
+   that peak to `LEAN_MAX` exactly. Change one and the other is wrong.
+
+   A DAMPED SPRING, NOT AN EASE, so a stem overshoots a little and settles
+   rather than arriving and stopping.
+
+   IT RIDES THE SWAY'S OWN PATH. Five places in this file compute a noise sway
+   and add it to a flower's x; the lean is added to the same number in the
+   same five, so nothing new has to know where a flower is. Two of those are
+   HIT TESTS rather than draws (`findFlowerAt` and the hover), and that is the
+   half that would break silently if it were missed: a leaning bloom whose hit
+   test did not lean would answer taps at the place it used to be.
+
+   OFF FOR TOUCH AND FOR REDUCED MOTION. A finger is not a hover, and somebody
+   who asked for less movement did not ask for a still garden, only a still
+   one: the flowers stay exactly where they are planted. */
+const LEAN_MAX = 13, LEAN_R = 190, SPRING_K = 0.18, SPRING_D = 0.76;
+const LIFT_MAX = 7, LIFT_K = 0.18;
+let leanX = [], leanV = [], liftK = [];
+let partOff = false;
+try {
+  partOff = !!(window.matchMedia &&
+    (window.matchMedia("(prefers-reduced-motion: reduce)").matches ||
+     window.matchMedia("(hover: none)").matches));
+} catch (e) {}
+
+function updateParting() {
+  const n = flowers.length;
+  if (leanX.length !== n) {
+    leanX = new Array(n).fill(0); leanV = new Array(n).fill(0);
+    liftK = new Array(n).fill(0);
+  }
+  const live = !partOff && step === "garden" && !isSaving &&
+               mouseX > 0 && mouseY > 0 && mouseX < width && mouseY < height;
+  for (let i = 0; i < n; i++) {
+    const f = flowers[i];
+    let target = 0;
+    if (live) {
+      const u = (f.x - mouseX) / LEAN_R;
+      const v = ((f.baseY - f.stemLen - liftOf(f)) - mouseY) / LEAN_R;
+      target = 2.33 * LEAN_MAX * u * Math.exp(-(u * u + v * v));
+    }
+    leanV[i] = (leanV[i] + (target - leanX[i]) * SPRING_K) * SPRING_D;
+    leanX[i] += leanV[i];
+    const want = (!partOff && hoveredFlower === f) ? LIFT_MAX : 0;
+    liftK[i] += (want - liftK[i]) * LIFT_K;
+  }
+}
+/* THE INDEX IS LOOKED UP RATHER THAN STORED. `flowers` is re-copied out of
+   the shared room whenever it changes, so a field written onto a flower would
+   be thrown away on the next diff; an index is read fresh every call. It is
+   O(n) against a meadow of a few dozen, which is nothing. */
+function partLean(f) { const i = flowers.indexOf(f); return i < 0 ? 0 : (leanX[i] || 0); }
+function liftOf(f)   { const i = flowers.indexOf(f); return i < 0 ? 0 : (liftK[i] || 0); }
+/* THE LIFT IS PART OF THE STEM, NOT AN OFFSET ON THE HEAD, so the stem grows
+   with it and the bloom does not float off its own tip. The GROWING path is
+   deliberately left alone: a flower still coming out of the ground is not
+   something anybody is hovering, and lifting it would fight the growth. */
+function stemOf(f)   { return f.stemLen + liftOf(f); }
+
+/* ─────────────────────────── A TAP THROWS THE GARDEN'S OWN SPARKLE
+   The four pointed star `drawNewestSparkles` already uses, inner corners at
+   0.35 of the radius, so a tapped flower and a newly planted one speak the
+   same language. The loop only runs while a burst is alive. */
+let bursts = [];
+function fireBurst(x, y, hue) { bursts.push({ x: x, y: y, hue: hue, t: millis() }); }
+function drawBursts() {
+  if (!bursts.length) return;
+  const now = millis();
+  bursts = bursts.filter(b => now - b.t < 900);
+  push();
+  colorMode(HSL, 360, 100, 100, 1);
+  noStroke();
+  for (const b of bursts) {
+    const k = (now - b.t) / 900;
+    const out = 14 + 42 * (1 - Math.pow(1 - k, 3));
+    const a = 1 - k;
+    for (let i = 0; i < 9; i++) {
+      const ang = i * 40 + k * 18;
+      const sx = b.x + cos(ang) * out;
+      const sy = b.y + sin(ang) * out;
+      const r = 5.5 * (1 - k * 0.55);
+      fill(b.hue, 70, 82, a * 0.9);
+      beginShape();
+      for (let q = 0; q < 8; q++) {
+        const rr = q % 2 ? r * 0.35 : r;
+        vertex(sx + cos(q * 45) * rr, sy + sin(q * 45) * rr);
+      }
+      endShape(CLOSE);
+    }
+  }
+  pop();
+  colorMode(RGB);
+}
+
 function draw() {
+updateParting();
 /* The room has answered and there is a frame on the canvas, so the loader
    has something real to hand over to. `showing()` keeps this to one call
    rather than one a frame. */
@@ -3661,6 +3805,7 @@ maybeSnapshot();
 if (window.GardenLife) GardenLife.meadow(drawingContext, width, height, { horizon: height * 0.56 });
 
 drawNewestSparkles();
+drawBursts();
 
 if (isSaving) {
 drawSavedMessageBox();
