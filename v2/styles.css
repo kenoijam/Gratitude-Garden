@@ -2603,7 +2603,13 @@ html[data-ink] :is(.hero-title, .hero-subtitle, .hero-eyebrow, .hero-mark) {
 /* The subtitle and the eyebrow are small, so their halo is tighter: a 12px
    blur around 11px uppercase closes the letters up and the line reads as
    glowing rather than as lifted. */
-html[data-ink] :is(.hero-subtitle, .hero-eyebrow) {
+/* THE LINK AND THE RULES LINE JOIN THE SMALL HALO, and they were simply
+   never in a list. Both are small text standing directly on the sky, which
+   is the exact case the halo was built for; they were left out when it was
+   built because at the time the hero carried no small text below its
+   subtitle. `--dl-halo-k` is 0 for most of the day, so noon is unchanged and
+   only the dusk and dawn minutes firm up. */
+html[data-ink] :is(.hero-subtitle, .hero-eyebrow, .hero-link, .hero-meta-rule) {
   text-shadow:
     0 0 1px rgba(var(--dl-sky-halo-rgb, 255, 249, 227), calc(0.55 + 0.40 * var(--dl-halo-k, 1))),
     0 0 3px rgba(var(--dl-sky-halo-rgb, 255, 249, 227), calc(0.33 + 0.52 * var(--dl-halo-k, 1))),
@@ -2781,10 +2787,12 @@ html[data-daylight] .wisdom :is(.section-title, .section-label, .today-line, .to
 .hero { min-height: 100dvh; }
 body { overflow-x: hidden; }
 
-/* THE SIDE RAIL IS HIDDEN AT EVERY WIDTH, not deleted. It was a jump
-   between six sections of one scrolling page, and there is no scrolling
-   page. Its markup, its icons and its scroll spy are all still here. */
-.side-nav { display: none !important; }
+/* THE SIDE RAIL IS BACK, and this is where it was hidden. The one-screen
+   pass carried `.side-nav { display: none !important }` here on the grounds
+   that a jump between six sections is pointless on a page that does not
+   scroll. The page scrolls again, so the rail does its original job and the
+   line is deleted rather than commented out. Its own rule further up still
+   hides it under 1100, which is where the copy moves into its lane. */
 
 /* ── the hamburger ──────────────────────────────────────────────────── */
 .gg-menu-btn {
@@ -2873,16 +2881,38 @@ html[data-more-open] #gg-menu-btn,
 html[data-more-open] #gg-guide { display: none !important; }
 
 /* ── the hero's control column ──────────────────────────────────────── */
+/* THE HEADLINE'S BREAK IS WRITTEN. Left to the wrap it broke after "one",
+   so line one measured 625 and line two 390 at 1440: a ratio of 1.6 to 1,
+   every line centred and the block reading lopsided because all the mass
+   sat in the first. The comma is where the sentence already pauses and the
+   two halves are 20 characters each. It is OFF under 768, where the
+   headline wraps to three lines on its own and a forced break would make
+   it four. */
+.hero-br { display: inline; }
+@media (max-width: 768px) { .hero-br { display: none; } }
+
+/* THE GAP ABOVE THIS IS THE ONE PIECE OF REST ON THE SCREEN, and it is what
+   the hero was missing rather than anything it was carrying. Measured before:
+   seven tiers from the headline at 52 to the chips at 538, 486px of a 900
+   window, with gaps of 8, 12, 17, 18, 19 and 28, so nothing was grouped with
+   anything. krillion's first screen holds ELEVEN controls, more than this one
+   ever did; what it does is sort them into four weights and leave about 110px
+   of empty sky in the middle. 3.2rem here is that sky: it is larger than every
+   gap inside this column, so the headline and the controls read as two blocks
+   rather than as one list. */
 .hero-actions {
   position: relative; z-index: 5; width: 100%; max-width: 440px;
-  margin: 1.6rem auto 0; display: flex; flex-direction: column; gap: 0.7rem;
+  margin: 3.2rem auto 0; display: flex; flex-direction: column; gap: 0.7rem;
   text-align: center; animation: fadeUp 1s ease both; animation-delay: .12s;
 }
 /* THE DAY'S LINE, AND IT IS THE FERTILIZER RATHER THAN A RULES STRING.
    krillion puts its rules here; the thing that earns this slot on this site
    is the one line that changes daily, and it was behind a scroll. */
+/* 0.9rem under it against the column's own 0.7rem gap, so the day's line
+   belongs to the headline above it rather than to the button below it. It is
+   something to read; the button is something to press. */
 .hero-today {
-  margin: 0 0 0.3rem; display: flex; flex-direction: column; align-items: center; gap: 0.3rem;
+  margin: 0 0 0.9rem; display: flex; flex-direction: column; align-items: center; gap: 0.3rem;
 }
 .hero-today-tag {
   font-family: Arial, Helvetica, sans-serif; font-size: 0.62rem;
@@ -2926,14 +2956,33 @@ html[data-dark="1"] .hero-btn-quiet { background: rgba(15,59,64,0.5); color: var
 html[data-dark="1"] .hero-btn-loud { background: var(--cream, #fff9e3); color: #0f3b40; border-color: var(--cream, #fff9e3); }
 
 .hero-meta {
-  display: flex; flex-direction: column; align-items: center; gap: 0.45rem;
-  margin-top: 0.35rem;
+  display: flex; flex-direction: column; align-items: center; gap: 0.5rem;
+  margin: 0.55rem 0 0;
 }
+/* THE SHARED GARDEN, AS A LINK RATHER THAN A SECOND BUTTON. It takes the
+   ink's full strength and an underline, because it is still a control and the
+   rules line under it is not; what makes it quiet is that it is not a box. */
+.hero-link {
+  font-family: Arial, Helvetica, sans-serif; font-size: 0.88rem;
+  letter-spacing: 0.02em; color: var(--ink, #2f6260);
+  text-decoration: underline; text-decoration-thickness: 1px;
+  text-underline-offset: 4px; text-decoration-color: currentColor;
+  transition: color .2s ease;
+}
+.hero-link:hover { color: var(--darkteal, #1d6466); }
+@media (hover: none) { .hero-link:hover { color: var(--ink, #2f6260); } }
 .hero-meta-rule {
   font-family: Arial, Helvetica, sans-serif; font-size: 0.76rem;
   letter-spacing: 0.06em; color: var(--ink, #2f6260); opacity: 0.9;
 }
-html[data-ink] .hero-meta-rule { color: var(--dl-sky-ink, #0f3b40); }
+/* 0.9 IS THE MEASURED ALPHA AND IT STAYS. It was taken to 0.78 to put the
+   rules line under the link above it, and that is a contrast change made for
+   a hierarchy the TYPE already gives: 0.76rem plain under 0.88rem underlined
+   is the step, and it costs nothing to read. */
+/* BOTH TAKE THE SKY'S MEASURED INK, the contract every other piece of hero
+   copy uses, so neither has to carry a second night colour of its own. */
+html[data-ink] .hero-meta-rule, html[data-ink] .hero-link { color: var(--dl-sky-ink, #0f3b40); }
+html[data-ink] .hero-link:hover { color: var(--dl-sky-ink, #0f3b40); }
 .hero-meta-links { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.3rem; }
 .hero-ghost {
   appearance: none; cursor: pointer;
@@ -2948,23 +2997,27 @@ html[data-dark="1"] .hero-ghost { background: rgba(15,59,64,0.45); color: var(--
 
 @media (max-width: 768px) {
   .gg-menu-btn { top: 16px; left: 12px; width: 34px; height: 34px; }
-  .hero-actions { max-width: 100%; margin-top: 1.1rem; gap: 0.6rem; }
+  /* THE BUTTONS RAN EDGE TO EDGE ON A PHONE, and it was this line. `.hero`
+     gave up its own 1.5rem of side padding when the section's gutter became
+     the margin, so a `max-width: 100%` column inside it touched both screen
+     edges: measured at 375, the button was 375 wide at left 0. 1.4rem is this
+     project's phone gutter, the same number `section`, `.meadow-scene`, `.cta`
+     and the footer all take. */
+  .hero-actions {
+    max-width: 100%; margin-top: 2.2rem; gap: 0.6rem;
+    padding: 0 1.4rem; box-sizing: border-box;
+  }
   .hero-btn { padding: 0.85rem 1rem; }
   .hero-btn-label { font-size: 0.98rem; }
   .hero-today-line { font-size: 0.98rem; }
   .gg-sheet-panel { width: 88vw; padding: 70px 1.5rem 1.5rem; }
 }
 
-/* ONE SCREEN ON A PHONE TOO, AND IT HAS TO BE PINNED RATHER THAN TUNED.
-   The phone rule gives `.hero` `height: auto` with a `min-height`, so the
-   column is as tall as its content: measured at 390 by 844 the document came
-   to 867, a 23px scroll on a page whose whole point is that it does not
-   scroll. Shaving a margin would fix it at one width and break at the next,
-   since the headline wraps differently on every phone. Pinning the height
-   crops the BOTTOM OF THE MEADOW, which is flat ground colour, and the
-   meadow's `margin-top: auto` means the copy and the buttons never move.
-   Scoped away from the `?hero=` drafts, which set their own overflow so
-   their objects can stand outside the section. */
-@media (max-width: 768px) {
-  html:not([data-hero]) .hero { height: 100dvh; overflow: hidden; }
-}
+/* THE PHONE HERO IS A `min-height` AGAIN, and the pin is deleted. It read
+   `html:not([data-hero]) .hero { height: 100dvh; overflow: hidden }`, which
+   existed only to hold a scrolling document to exactly one screen: measured
+   at 390 by 844 the column came to 867 and that 23px of scroll was the one
+   thing the layout could not have. The page is allowed to scroll now, so a
+   hero that is a little taller than the window is correct rather than a
+   fault, and cropping the bottom of the meadow is a cost with nothing left
+   to buy. */

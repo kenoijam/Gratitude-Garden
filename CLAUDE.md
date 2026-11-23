@@ -32,8 +32,16 @@ one. That needs both online at the same time, so:
   | small circles in the shared garden | absent | present |
   | a door from the personal garden to the shared one | absent | present |
   | Enter goes to the next card | absent | present |
-  | the landing page | six sections, scrolled | **ONE SCREEN, with a menu** |
   | everything else | identical | identical |
+
+  **THE ONE-SCREEN LANDING PAGE CAME OFF THIS TABLE TOO**, on the author's
+  instruction, and the table is back to nine rows. It was added as a tenth
+  (`six sections, scrolled` against `ONE SCREEN, with a menu`) and has been
+  taken off again: the page scrolls and the rail is back, so the two copies
+  differ by their features rather than by their shape. The CUTTING that pass
+  forced is what was kept, and it changed no row here, because every one of
+  those cuts was made to BOTH the thing and its duplicate rather than to one
+  version of the site.
 
   **SCROLL AS GROWTH CAME OFF THIS TABLE**, on the author's instruction, in
   the same pass that took out the 22 scroll reveals. It was a row here; it
@@ -82,77 +90,132 @@ one. That needs both online at the same time, so:
   `.section-dust` canvases, and the personal garden's sign in gate with the
   same twelve scripts.
 
-## THE LANDING PAGE IS ONE SCREEN (v2), AFTER krillion.app
+## THE ONE-SCREEN LANDING PAGE IS REVERSED, AND THE CUTS SURVIVED IT
 
-**Its whole site is one screen**: a scene, a wordmark, one line, a quiet
-second button, a loud first one, and a small row of everything else. Nothing
-scrolls, and a hamburger holds the rest. What was taken is that SHAPE and not
-its words, on the author's instruction.
+**The page scrolls again and the side rail is back.** The one-screen pass
+after krillion put the five sections and the footer inside `#page-more` and
+opened them from a hamburger sheet; the author's instruction was to keep the
+rail and the scroll and get rid of what was genuinely redundant instead. So
+the SHAPE went back and the SUBTRACTION stayed, which is the half of that
+pass that was worth anything.
 
-- **THIS IS A NEW ROW ON THE EXPERIMENT'S OWN TABLE, and that was raised
-  before it was built.** The before and the after were defined as differing by
-  nine named features with everything else identical; the shape of the landing
-  page is now a tenth. The author's call, made knowing it.
-- **NOTHING IS DELETED, AND THAT IS THE WHOLE IMPLEMENTATION.** The five
-  sections and the footer are unchanged inside `#page-more`: same markup, same
-  ids, same classes, same stylesheet, same scripts. All that is new is a
-  wrapper, a `hidden`, and a sheet that opens it scrolled to one section. **The
-  scrolling page comes back by deleting two lines.**
-- **`#page-more[hidden]{display:none !important}` IS LOAD BEARING.** `hidden`
-  loses to any author rule and this element sets its own `display`. **Ninth
-  time in this project.**
-- **THE SHEET SCROLLS, NOT THE WINDOW**, since the sections live inside a
-  fixed overlay over the hero. That is what keeps `body` at exactly one screen
-  and keeps the meadow from ever being scrolled off.
-  - **AND IT IS A RECT DELTA, NOT `offsetTop`.** `el.offsetTop` is measured
-    from the nearest POSITIONED ancestor, which differs by section, and the
-    flower guide landed short because of it. The difference of two
-    `getBoundingClientRect().top` values cannot be wrong about that. Measured
-    after: the band, About and the gardens land at 0 and the guide at 14,
-    which is the sheet's own scroll bottom rather than an error.
-- **THE ONE LINE ON THE HERO IS THE DAY'S FERTILIZER, NOT A RULES STRING.**
-  krillion's slot there holds its rules; the thing that earns it here is the
-  one line on this site that changes daily, and it was behind a scroll.
-  **That makes the feature the after version is being tested for unmissable
-  for the first time**: it was a bubble that could be dismissed, then a band
-  somebody had to scroll to, and it is now on the screen everybody lands on.
-  The rules went to the meta row instead, where they need no data.
-  - **IT ASKS `GardenGuide.fertilizer()`, NEVER A SECOND COPY**, so the hero
-    and the band inside the sheet can never show different days. It is POLLED,
-    since that module has no event and builds after its own boot, and the row
-    is `hidden` until there is a line, so a page that fails to load the guide
-    shows no empty slot.
-- **TWO BUTTONS, AND THE ORDER IS THE ARGUMENT.** Private first and public by
-  choice is the order this project makes everywhere else, so the personal
-  garden is the filled one and the shared garden is the quiet one above it,
-  carrying the "OPEN TO ALL" chip that is already its small print.
-- **THE OLD RULE THAT THE HERO CARRIES NO BUTTON IS SPENT, and it carried its
-  own exception.** It read: a button that only scrolls further down the same
-  page is doing what a scroll and the side nav already do. These go to ANOTHER
-  PAGE, which is the case that note names as fine, and there is no longer a
-  page to scroll down.
-- **THE SIDE RAIL IS HIDDEN AT EVERY WIDTH, NOT DELETED.** It was a jump
-  between six sections of one scrolling page. Its markup, its icons and its
-  scroll spy are all still here.
-- **THE CORNER CONTROLS HIDE WHILE THE SHEET IS OPEN**, off
-  `html[data-more-open]`. Over somebody else's content they are three buttons
-  floating on a page that already carries its own way out.
-- **ONE SCREEN ON A PHONE HAD TO BE PINNED RATHER THAN TUNED.** The phone rule
-  gives `.hero` `height: auto` with a `min-height`, so the column is as tall
-  as its content: measured at 390 by 844 the document came to **867**, a 23px
-  scroll on a page whose whole point is that it does not scroll. Shaving a
-  margin fixes one width and breaks the next, since the headline wraps
-  differently on every phone. `height: 100dvh` with `overflow: hidden` crops
-  the BOTTOM OF THE MEADOW, which is flat ground colour, and the meadow's
-  `margin-top: auto` means the copy and the buttons never move. Scoped
-  `html:not([data-hero])`, since the `?hero=` drafts set their own overflow.
-- **WHAT THIS COSTS, SAID PLAINLY:** the five sections are no longer walked
-  past, so anything in them is now FOUND rather than met. That is the trade
-  the layout makes, and it is the reason the fertilizer moved to the hero.
-- **Verified**: 1440 by 900 and 390 by 844 both report a document exactly one
-  screen tall and no sideways scroll; the sheet opens from five rows and three
-  ghost buttons, closes on its own button and on Escape, and the corner
-  controls come back when it does.
+- **WHAT WAS DELETED, and it is all of the machinery.** `#gg-menu-btn`, the
+  whole `#gg-sheet` panel and its five rows, the `#page-more` wrapper, its
+  close button, the inline script that drove all three, the
+  `html[data-more-open]` rules and the phone's `height: 100dvh` pin on the
+  hero. `.gg-menu-btn`, `.gg-sheet*`, `.page-more-close` and `.hero-today*`
+  are all still in the stylesheet, unused, the way every `.cta` rule is.
+- **THREE WAYS TO FIVE SECTIONS WAS THE REDUNDANCY.** With the rail and the
+  scroll both back, a hamburger holding the same five rows is a third route
+  to places you walk past anyway, and its rows duplicated the rail one for
+  one. **A menu earns its place when there is no other way through, which is
+  exactly the case the one-screen page created and then solved.**
+
+### WHAT krillion ACTUALLY TEACHES, measured rather than admired
+
+**Its first screen carries ELEVEN controls**, which is MORE than this page
+ever did: a hamburger, three corner icons, "how to play", Privacy, a Puffer
+Party promo, the main button and three footer links. So the lesson is not
+that it holds less.
+
+- **IT SORTS ITS ELEVEN INTO FOUR WEIGHTS WITH A PIECE OF REST IN THE
+  MIDDLE.** Identity at the top (wordmark, tagline, one rules line, each
+  smaller than the last), about 110px of empty sky with a boat in it, then
+  the controls at the bottom, with the chrome pinned to the edges. The
+  waterline does the organising for free.
+- **OURS HAD SEVEN TIERS AND NO STEPS BETWEEN THEM.** Measured at 1440 by
+  900 before this pass: headline 52, subtitle 191, TODAY line 288, quiet
+  button 349, loud button 416, rules 489, chips 511, so **486px of a 900
+  window as one unbroken column with gaps of 8, 12, 17, 18, 19 and 28.**
+  Nothing was grouped with anything. That, rather than any one item, is what
+  "weird and too much information" was.
+- **THE FIX IS A GAP, NOT A DELETION, and it is `3.2rem` on `.hero-actions`
+  (2.2 on a phone).** It is larger than every gap inside that column, so the
+  headline and the controls read as two blocks. Measured after at 1440: the
+  rest gap is 73 against internal gaps of 27, 21 and 8, which is 2.7 times
+  the largest of them.
+
+### FOUR THINGS CUT FROM THE HERO, AND EACH ONE WAS SAID TWICE
+
+- **THE SUBTITLE DESCRIBED THE BUTTONS UNDER IT.** "A gentle digital space
+  for your thoughts. Reflect by yourself, or share what you noticed in a
+  meadow everybody plants in" is the personal garden and then the shared
+  garden, named in prose directly above the two controls that ARE those two
+  places. The phone version restated the headline instead. **A new subtitle
+  there has to say something neither the headline nor the buttons do**, or it
+  will be cut a second time.
+- **THE THREE GHOST CHIPS WERE THREE OF THE MENU'S FIVE ROWS.** The eight,
+  How it works and Why this exists, offered on the hero and again one tap
+  away. The menu has gone and the chips did not come back: the sections are
+  scrolled to now, and the letter is still on the footer's own button.
+- **TWO TRACKED ALL-CAPS LABELS HAD COME BACK.** "TODAY" over the day's line
+  and "OPEN TO ALL" on the quiet button. **The design pass deleted six of
+  those from this page as template chrome and these two arrived afterwards**,
+  which is the pattern to watch: a named default removed in one pass returns
+  in the next unless somebody is counting.
+- **THE HERO'S FERTILIZER LINE WENT TO THE BAND, AND THE PAT IS THE WHOLE
+  ARGUMENT.** Both printed the same sentence from the same
+  `GardenGuide.fertilizer()` call, about a screen apart once the page
+  scrolled. They were not equal copies: the band's is one you UNCOVER, by
+  patting Hortus, with the heart leaving his crown and the line arriving
+  260ms later, remembered for the day under `gg_fert_seen`; the hero's was
+  that sentence sitting there as a label. **The copy carrying the small
+  event is the one that was kept**, and the band is then the only place that
+  line exists rather than a second printing of the top of the page.
+
+### ONE BUTTON AND A LINK, AND THE LABELS NAME THE GARDEN
+
+- **"Plant today's flower" WAS AMBIGUOUS AND THE AUTHOR CAUGHT IT.** Both
+  gardens plant a flower, so the label said nothing about which one you were
+  about to land in. It is **"Plant in your own garden"** with **"or plant in
+  the shared garden"** under it: one verb, one construction, and the only
+  word that changes between the two is the one that actually differs, which
+  is who reads it afterwards. **"Visit" was weighed and refused**: it says
+  nothing about what happens there, and both gardens are visited.
+- **THE WEIGHT IS THE ARGUMENT, NOT THE ORDER.** They were two buttons of
+  the same width and the same height, which is a pair of equals however they
+  are coloured, so the hero asked for a decision before anything had been
+  read. Private first and public BY CHOICE is now said in weight rather than
+  in position. The "OPEN TO ALL" chip went with the second button; the
+  shared garden's own card still carries that small print.
+
+### THE HEADLINE'S BREAK IS WRITTEN, AND THE SPACE BEFORE IT IS LOAD BEARING
+
+Left to the wrap it broke after "one", stranding a short word at the end of
+a long first line: measured at 1440, **625px against 390px, a ratio of 1.6 to
+1**. Every line was geometrically centred and the block still read lopsided,
+because all the mass sat in line one. That is what "the text does not feel
+centred" was. Broken at the comma, where the sentence already pauses, the two
+halves are 20 characters each and measure **574 and 533**.
+
+- **`.hero-br` IS OFF UNDER 768**, where the headline wraps to three lines on
+  its own and a forced break would make it four.
+- **AND IT NEEDS A SPACE IN FRONT OF IT.** Written `</em><br>one` the break
+  carries the word gap, so the moment the rule hides it on a phone there is
+  nothing between "Gratitude," and "one": they weld into one unbreakable
+  token and the line measured **387 of a 390 screen**, running under the
+  right edge. With the space kept, it collapses at a line end on a laptop and
+  the phone still has somewhere to wrap. Measured after at 390: three lines,
+  the widest 296, with 47px of margin a side.
+
+### THE BUTTONS RAN EDGE TO EDGE ON A PHONE, AND IT WAS ONE LINE
+
+`.hero-actions { max-width: 100% }` in the 768 block, inside a `.hero` that
+gave up its own 1.5rem of side padding when the section's gutter became the
+margin. So the column touched both screen edges: measured at 375, the button
+was 375 wide at left 0. It carries `padding: 0 1.4rem` with `box-sizing:
+border-box` now, 1.4rem being this project's phone gutter, the same number
+`section`, `.meadow-scene`, `.cta` and the footer all take. Measured after at
+390: left 24, right 366.
+
+### THE BAND SAID THE SAME FACT THREE TIMES IN FOUR LINES
+
+The title is "Fertilizer of the DAY", the closed state read "Pat Hortus for
+TODAY'S", and the note under it is "A new one EVERY DAY". Three claims of one
+fact is the fact making no impression, and the author's own wish was that the
+band say the line is new each day. The closed state is **"Pat Hortus to see
+it."** now, so each line does one job: the title what it is, the invitation
+what to do, the note that it changes.
 
 ## THE PAGE IS FIVE SECTIONS NOW, AND THE TYPE AND THE SPACING WERE REDRAWN
 
@@ -1635,12 +1698,31 @@ sketches and is deliberately NOT a line for line transcription of them.
 - **ONE BODY, FIVE FACES.** `POSES` holds welcome, listen, hard, planted and
   bye, and only the face and the wing scale change between them. Five whole
   drawings is how five expressions drift into five characters.
-- **DEPTH BY LIGHTNESS NEEDS A STEP PER PART, which the feet proved.** Drawn
-  in `bodyLow` they were the same colour as the body's own bottom shading and
-  disappeared into it. They are a third step, `#e7bf43`. **Two parts on the
-  same step are one part.**
-- **THE FEET HAVE TO CLEAR THE BODY.** Its lowest pixel is 117+49=166, so feet
-  centred at 161 showed two pixels of themselves. They are at 168.
+- **DEPTH BY LIGHTNESS NEEDS A STEP PER PART, which the feet proved TWICE.**
+  Drawn in `bodyLow` they were the body's own bottom shading exactly and
+  disappeared into it, so they went to a third step, `#e7bf43`. That step
+  separates on a 360px inspection render and does NOT at the sizes he is
+  drawn, 140 on the landing page and 90 on a phone, where the belly dome and
+  the feet read as one gold mass with two bumps on it. They are a FOURTH
+  step, `#d9ab2f`. **Two parts on the same step are one part, and a step is
+  only real at the size the thing is DRAWN rather than the size it is
+  inspected at.**
+- **THE FEET HAVE TO CLEAR THE BODY.** Its lowest pixel is 117+49=166 as an
+  ellipse and 167 as an egg, so feet centred at 161 showed two pixels of
+  themselves. They are at 172.
+- **HE HAS NO LEGS, SO THE STANCE IS THE ONLY THING THAT CAN SAY FEET.** They
+  were `rx 12` at cx 85 and 115, which is 30 apart on a body 92 wide with a
+  SIX UNIT GAP between them, both tucked well inside the silhouette: a pigeon
+  stance, and two lozenges almost touching under a round belly read as a
+  pedestal rather than as feet. They are `rx 10, ry 6.5` at **78 and 122**,
+  44 apart, which puts each one under the body's own widest point, each
+  turned **12 degrees OUTWARD**, which is what makes a flat oval read as a
+  foot seen from the front rather than a shoe seen from above. Toes turned IN
+  read as shy.
+  - **NO LEGS WERE ADDED, and a stub was drawn and refused.** It reads as a
+    doll's joint, and the two hands are the same lozenge with nothing holding
+    them on either, so a leg on the feet alone would leave the hands as the
+    odd pair. The lightness step above is what separates all four.
 - **IT IS A BUTTERFLY, NOT A BEE, AND THE WINGS ARE THE ONLY THING THAT SAYS
   SO.** This was got wrong twice and both failures are worth keeping.
   - **ELLIPSES MADE A BEE.** Four of them at `cy 98` and `cy 137`, with the

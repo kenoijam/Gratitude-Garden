@@ -37,11 +37,16 @@
     bodyLow:  "#f3d45f",  /* the same butter darker: the project's only depth trick */
     nose:     "#eda08f",  /* a soft coral, warmer than the cheek and darker than
                              both, so it is the one warm mark on the face */
-    foot:     "#e7bf43",  /* a THIRD step down. At bodyLow the feet were the same
-                             colour as the body's own bottom shading and vanished
-                             into it, which is the whole risk of depth by lightness:
-                             two parts a step apart separate, two parts on the same
-                             step are one part. */
+    foot:     "#d9ab2f",  /* a FOURTH step down, and the third was not enough.
+                             At bodyLow the feet were the body's own bottom
+                             shading exactly and vanished; at #e7bf43 they were
+                             one step under the belly dome, which separates on
+                             a 360px render and does not at the sizes he is
+                             actually drawn, 140 on the landing page and 90 on
+                             a phone, where the dome and the feet read as one
+                             gold mass with two bumps on it. Measure a depth
+                             step at the size the thing is DRAWN, never at the
+                             size it is inspected. */
     wing:     "#b7e4e7",  /* sky */
     wingLit:  "#dcf4f5",
     /* THE EDGE AND THE SPOT ARE BORROWED FROM `garden-life.js`, which is the
@@ -282,9 +287,28 @@
     /* LOW ENOUGH TO BE SEEN, AND THE EGG MOVED THEM. The body's lowest pixel
        was 166 as an ellipse and is 167 as an egg, so the feet went 168 to
        171: at 168 they would show four pixels of themselves, at 171 they
-       clear it by about eleven, which is a foot rather than a bump. */
-    s += '<ellipse cx="85" cy="171" rx="12" ry="7.5" fill="' + C.foot + '"/>';
-    s += '<ellipse cx="115" cy="171" rx="12" ry="7.5" fill="' + C.foot + '"/>';
+       clear it by about eleven, which is a foot rather than a bump.
+
+       SMALLER, WIDER AND TURNED OUT, because he has no legs and the stance
+       is therefore the only thing that can say these are feet. They were
+       `rx 12` at cx 85 and 115, which is 30 units apart on a body 92 wide
+       with a SIX UNIT GAP between them, both tucked well inside the
+       silhouette: a pigeon stance, and at that size two lozenges almost
+       touching under a round belly read as a pedestal. 78 and 122 is 44
+       apart, which puts each foot under the body's own widest point rather
+       than under its middle, and the 12 degree turn is what makes a flat
+       oval read as a foot seen from the front rather than as a shoe seen
+       from above. The toes point OUT: turned in, a figure reads as shy.
+
+       THEY STAY TWO OVALS AND HE GAINS NO LEGS. A stub between the belly
+       and the foot was drawn and refused: it reads as a doll's joint, and
+       the hands beside it are the same lozenge with nothing holding them
+       on either, so a leg on the feet alone would make the hands the odd
+       pair. What separates the four now is the LIGHTNESS STEP above. */
+    s += '<ellipse cx="78" cy="172" rx="10" ry="6.5" fill="' + C.foot +
+         '" transform="rotate(-12 78 172)"/>';
+    s += '<ellipse cx="122" cy="172" rx="10" ry="6.5" fill="' + C.foot +
+         '" transform="rotate(12 122 172)"/>';
 
     /* ─────────────────────────────────────────────────── THE BODY IS AN EGG
        IT WAS A TRUE ELLIPSE AND THE SKETCH IS NOT. What the author drew is
