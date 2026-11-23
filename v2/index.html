@@ -184,6 +184,39 @@
   </ul>
 </nav>
 
+<!-- ══════════ EVERYTHING THAT IS NOT THE ONE SCREEN LIVES IN HERE
+     The side rail below is HIDDEN now and kept rather than deleted: it was a
+     jump between six sections on one scrolling page, and there is no longer a
+     scrolling page to jump around. Its own stylesheet rule already hides it
+     under 1100; one line in `styles.css` hides it at every width.
+
+     THE SHEET DOES NOT HOLD THE SECTIONS, IT OPENS THEM. Each row reveals
+     `#page-more`, which is the five sections and the footer exactly as they
+     were written, and scrolls to one of them. So nothing was rewritten to do
+     this and nothing is unreachable: the page simply stopped making everybody
+     scroll past all of it to find the one thing they came for. -->
+<button type="button" id="gg-menu-btn" class="gg-menu-btn" aria-label="Open the menu" aria-expanded="false">
+  <span></span><span></span><span></span>
+</button>
+
+<div id="gg-sheet" class="gg-sheet" hidden>
+  <div class="gg-sheet-panel" role="dialog" aria-modal="true" aria-label="Menu">
+    <button type="button" class="gg-sheet-close" aria-label="Close the menu">&#215;</button>
+    <p class="gg-sheet-head">Gratitude Garden</p>
+    <nav class="gg-sheet-nav">
+      <button type="button" data-more="wisdom">Today&#8217;s fertilizer</button>
+      <button type="button" data-more="about">How it works</button>
+      <button type="button" data-more="gardens">The two gardens</button>
+      <button type="button" data-more="flowers">The eight flowers</button>
+      <button type="button" data-letter>Why this exists</button>
+    </nav>
+    <p class="gg-sheet-foot">
+      <a href="personal-garden/personal-garden-index.html">Personal Garden</a>
+      <a href="shared-garden/shared-garden-index.html">Shared Garden</a>
+    </p>
+  </div>
+</div>
+
 <!-- FIX 7: Floating side nav with section icons -->
 <nav class="side-nav" id="sideNav" aria-label="Section navigation">
   <a href="#home" class="side-nav-item active" data-section="home" data-label="Hero">
@@ -286,6 +319,53 @@
       <span class="wide-only">A gentle digital space for your thoughts. Reflect by yourself, or share what you noticed in a meadow everybody plants in.</span>
       <span class="phone-only">A gentle space for your thoughts.</span>
     </p>
+  </div>
+
+  <!-- ══════════ THE HERO IS THE PAGE, AND IT HAS SOMETHING TO PRESS
+       After krillion.app, whose whole site is one screen: a scene, a
+       wordmark, one line, a quiet second button, a loud first one, and a
+       small row of everything else. Nothing scrolls.
+
+       WHAT WAS TAKEN IS THE SHAPE, NOT THE WORDS. Its line is a rules
+       string ("7 prompts, 25 seconds each"); ours is the day's fertilizer,
+       which is the one thing on this site that changes daily and the
+       feature the after version is being tested for. Putting it here is
+       what finally makes it unmissable: it was a band somebody had to
+       scroll to, after being a bubble that could be dismissed.
+
+       THE OLD RULE THAT THE HERO CARRIES NO BUTTON IS SPENT, and it had its
+       own exception written into it: a button that only scrolls further
+       down the same page is doing what a scroll already does, and these go
+       to ANOTHER PAGE, which is the case that note names as fine.
+
+       TWO BUTTONS, NOT THREE, AND THE ORDER IS THE ARGUMENT. Private first
+       and public by choice is the order this project makes everywhere else,
+       so the personal garden is the filled one and the shared garden is the
+       quiet one above it. ══════════════════════════════════════════════ -->
+  <div class="hero-actions">
+
+    <p class="hero-today" id="heroToday" hidden>
+      <span class="hero-today-tag">TODAY</span>
+      <span class="hero-today-line"></span>
+    </p>
+
+    <a class="hero-btn hero-btn-quiet" href="shared-garden/shared-garden-index.html" target="_self" rel="noopener">
+      <span class="hero-btn-tag">OPEN TO ALL</span>
+      <span class="hero-btn-label">The Shared Garden</span>
+    </a>
+
+    <a class="hero-btn hero-btn-loud" href="personal-garden/personal-garden-index.html" target="_self" rel="noopener">
+      <span class="hero-btn-label">Plant today's flower</span>
+    </a>
+
+    <div class="hero-meta">
+      <span class="hero-meta-rule">One a day &middot; about two minutes &middot; no streaks</span>
+      <span class="hero-meta-links">
+        <button type="button" class="hero-ghost" data-more="flowers">The eight</button>
+        <button type="button" class="hero-ghost" data-more="about">How it works</button>
+        <button type="button" class="hero-ghost" data-letter>Why this exists</button>
+      </span>
+    </div>
   </div>
 
 
@@ -1327,6 +1407,22 @@
      the stylesheet all name it, and renaming a section in this project means
      four edits that have to agree. The LABEL changed; the id did not.
      ═══════════════════════════════════════════════════════════════════ -->
+<!-- ══════════ EVERYTHING BELOW THE ONE SCREEN, BEHIND THE MENU
+     The five sections and the footer are UNCHANGED inside here: same markup,
+     same ids, same classes, same stylesheet. All that is new is this wrapper
+     and the `hidden` on it, so putting the scrolling page back is deleting
+     two lines.
+
+     IT IS `hidden` RATHER THAN `display:none` IN A RULE, and it needs
+     `#page-more[hidden]{display:none !important}` beside it: `hidden` loses
+     to any author rule, and this element sets its own `display`. NINTH time
+     in this project.
+
+     The flower modal is inside it on purpose. It is `position: fixed`, so a
+     hidden ancestor hides it too, and the only two things that open it, the
+     guide's tiles and the ring, are in here with it. ═══════════════════ -->
+<div id="page-more" hidden>
+<button type="button" id="page-more-close" class="page-more-close" aria-label="Back to the top">&#215; Close</button>
 <section class="wisdom" id="wisdom">
   <div class="wisdom-inner today-inner">
     <!-- A REAL `section-title` WITH AN `em`, and that is not decoration. The
@@ -1720,6 +1816,7 @@
     </a>
   </div>
 </footer>
+</div>
 
 <!-- ═══════════════════════════════════════════════════════════════════════
      SCROLL AS GROWTH: ONE STEM DOWN THE WHOLE PAGE (v2 ONLY)
@@ -4046,6 +4143,103 @@
   window.addEventListener("resize", paint);
   setInterval(paint, 10000);
   window._paintHeroSun = paint;     /* so a probe can force it */
+})();
+</script>
+
+<!-- ══════════════════════════════════════════════════════════════════════
+     THE ONE SCREEN AND ITS MENU
+
+     Three jobs and nothing else: open and close the sheet, open and close
+     `#page-more` on a named section, and put the day's fertilizer on the
+     hero.
+
+     `GardenGuide.fertilizer()` IS ASKED, NEVER COPIED. The band inside
+     `#page-more` reads the same function, so the hero and the band can never
+     show different days: that is the rule the band was built under and it is
+     the reason this line is three characters rather than a second list.
+     The hero's line is hidden until there is one, so a page that fails to
+     load `garden-guide.js` shows no empty row.
+
+     SCROLLING IS THE OVERLAY'S, NOT THE BODY'S. `#page-more` is a fixed,
+     scrollable sheet over the hero rather than content below it, so the
+     meadow is never scrolled off and `body` never grows past one screen.
+     ══════════════════════════════════════════════════════════════════ -->
+<script>
+(function () {
+  var sheet = document.getElementById('gg-sheet');
+  var sheetBtn = document.getElementById('gg-menu-btn');
+  var more = document.getElementById('page-more');
+  var moreClose = document.getElementById('page-more-close');
+  if (!sheet || !sheetBtn || !more) return;
+
+  function openSheet(on) {
+    sheet.hidden = !on;
+    sheetBtn.setAttribute('aria-expanded', on ? 'true' : 'false');
+    if (on) { var f = sheet.querySelector('.gg-sheet-close'); if (f) f.focus(); }
+  }
+
+  function openMore(id) {
+    openSheet(false);
+    more.hidden = false;
+    document.documentElement.setAttribute('data-more-open', '1');
+    var el = id && document.getElementById(id);
+    /* THE SHEET SCROLLS, NOT THE WINDOW: the sections live inside a fixed
+       overlay, so the window has nothing to scroll.
+       AND IT IS A RECT DELTA RATHER THAN `offsetTop`, which landed the
+       flower guide short: `offsetTop` is measured from the nearest POSITIONED
+       ancestor, and which element that is depends on what the section happens
+       to sit inside. The difference of two `getBoundingClientRect().top`
+       values cannot be wrong about that. Measured: the guide now lands within
+       a pixel of the sheet's own top. */
+    more.scrollTop = 0;
+    if (el) more.scrollTop += el.getBoundingClientRect().top - more.getBoundingClientRect().top;
+    if (moreClose) moreClose.focus();
+  }
+
+  function closeMore() {
+    more.hidden = true;
+    document.documentElement.removeAttribute('data-more-open');
+    sheetBtn.focus();
+  }
+
+  sheetBtn.addEventListener('click', function () { openSheet(sheet.hidden); });
+  var sx = sheet.querySelector('.gg-sheet-close');
+  if (sx) sx.addEventListener('click', function () { openSheet(false); });
+  sheet.addEventListener('click', function (e) { if (e.target === sheet) openSheet(false); });
+  if (moreClose) moreClose.addEventListener('click', closeMore);
+
+  document.addEventListener('click', function (e) {
+    var m = e.target.closest && e.target.closest('[data-more]');
+    if (m) { e.preventDefault(); openMore(m.getAttribute('data-more')); return; }
+    var l = e.target.closest && e.target.closest('[data-letter]');
+    if (l) {
+      e.preventDefault(); openSheet(false);
+      try { if (window.GardenLetter) GardenLetter.open(); } catch (err) {}
+    }
+  });
+
+  document.addEventListener('keydown', function (e) {
+    if (e.key !== 'Escape') return;
+    if (!more.hidden) { closeMore(); return; }
+    if (!sheet.hidden) openSheet(false);
+  });
+
+  /* The day's line on the hero. Polled rather than waited on, since
+     `garden-guide.js` has no event and builds after its own boot. */
+  var row = document.getElementById('heroToday');
+  if (row) {
+    var tries = 0;
+    var tick = setInterval(function () {
+      tries++;
+      var line = '';
+      try { line = (window.GardenGuide && GardenGuide.fertilizer && GardenGuide.fertilizer()) || ''; } catch (err) {}
+      if (line) {
+        row.querySelector('.hero-today-line').textContent = line;
+        row.hidden = false;
+        clearInterval(tick);
+      } else if (tries > 40) { clearInterval(tick); }
+    }, 150);
+  }
 })();
 </script>
 </body>

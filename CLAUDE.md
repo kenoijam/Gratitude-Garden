@@ -32,6 +32,7 @@ one. That needs both online at the same time, so:
   | small circles in the shared garden | absent | present |
   | a door from the personal garden to the shared one | absent | present |
   | Enter goes to the next card | absent | present |
+  | the landing page | six sections, scrolled | **ONE SCREEN, with a menu** |
   | everything else | identical | identical |
 
   **SCROLL AS GROWTH CAME OFF THIS TABLE**, on the author's instruction, in
@@ -80,6 +81,78 @@ one. That needs both online at the same time, so:
   wide, the ground pixel at `#8fcfbe` and the back hill at `#a9d9cf`, six
   `.section-dust` canvases, and the personal garden's sign in gate with the
   same twelve scripts.
+
+## THE LANDING PAGE IS ONE SCREEN (v2), AFTER krillion.app
+
+**Its whole site is one screen**: a scene, a wordmark, one line, a quiet
+second button, a loud first one, and a small row of everything else. Nothing
+scrolls, and a hamburger holds the rest. What was taken is that SHAPE and not
+its words, on the author's instruction.
+
+- **THIS IS A NEW ROW ON THE EXPERIMENT'S OWN TABLE, and that was raised
+  before it was built.** The before and the after were defined as differing by
+  nine named features with everything else identical; the shape of the landing
+  page is now a tenth. The author's call, made knowing it.
+- **NOTHING IS DELETED, AND THAT IS THE WHOLE IMPLEMENTATION.** The five
+  sections and the footer are unchanged inside `#page-more`: same markup, same
+  ids, same classes, same stylesheet, same scripts. All that is new is a
+  wrapper, a `hidden`, and a sheet that opens it scrolled to one section. **The
+  scrolling page comes back by deleting two lines.**
+- **`#page-more[hidden]{display:none !important}` IS LOAD BEARING.** `hidden`
+  loses to any author rule and this element sets its own `display`. **Ninth
+  time in this project.**
+- **THE SHEET SCROLLS, NOT THE WINDOW**, since the sections live inside a
+  fixed overlay over the hero. That is what keeps `body` at exactly one screen
+  and keeps the meadow from ever being scrolled off.
+  - **AND IT IS A RECT DELTA, NOT `offsetTop`.** `el.offsetTop` is measured
+    from the nearest POSITIONED ancestor, which differs by section, and the
+    flower guide landed short because of it. The difference of two
+    `getBoundingClientRect().top` values cannot be wrong about that. Measured
+    after: the band, About and the gardens land at 0 and the guide at 14,
+    which is the sheet's own scroll bottom rather than an error.
+- **THE ONE LINE ON THE HERO IS THE DAY'S FERTILIZER, NOT A RULES STRING.**
+  krillion's slot there holds its rules; the thing that earns it here is the
+  one line on this site that changes daily, and it was behind a scroll.
+  **That makes the feature the after version is being tested for unmissable
+  for the first time**: it was a bubble that could be dismissed, then a band
+  somebody had to scroll to, and it is now on the screen everybody lands on.
+  The rules went to the meta row instead, where they need no data.
+  - **IT ASKS `GardenGuide.fertilizer()`, NEVER A SECOND COPY**, so the hero
+    and the band inside the sheet can never show different days. It is POLLED,
+    since that module has no event and builds after its own boot, and the row
+    is `hidden` until there is a line, so a page that fails to load the guide
+    shows no empty slot.
+- **TWO BUTTONS, AND THE ORDER IS THE ARGUMENT.** Private first and public by
+  choice is the order this project makes everywhere else, so the personal
+  garden is the filled one and the shared garden is the quiet one above it,
+  carrying the "OPEN TO ALL" chip that is already its small print.
+- **THE OLD RULE THAT THE HERO CARRIES NO BUTTON IS SPENT, and it carried its
+  own exception.** It read: a button that only scrolls further down the same
+  page is doing what a scroll and the side nav already do. These go to ANOTHER
+  PAGE, which is the case that note names as fine, and there is no longer a
+  page to scroll down.
+- **THE SIDE RAIL IS HIDDEN AT EVERY WIDTH, NOT DELETED.** It was a jump
+  between six sections of one scrolling page. Its markup, its icons and its
+  scroll spy are all still here.
+- **THE CORNER CONTROLS HIDE WHILE THE SHEET IS OPEN**, off
+  `html[data-more-open]`. Over somebody else's content they are three buttons
+  floating on a page that already carries its own way out.
+- **ONE SCREEN ON A PHONE HAD TO BE PINNED RATHER THAN TUNED.** The phone rule
+  gives `.hero` `height: auto` with a `min-height`, so the column is as tall
+  as its content: measured at 390 by 844 the document came to **867**, a 23px
+  scroll on a page whose whole point is that it does not scroll. Shaving a
+  margin fixes one width and breaks the next, since the headline wraps
+  differently on every phone. `height: 100dvh` with `overflow: hidden` crops
+  the BOTTOM OF THE MEADOW, which is flat ground colour, and the meadow's
+  `margin-top: auto` means the copy and the buttons never move. Scoped
+  `html:not([data-hero])`, since the `?hero=` drafts set their own overflow.
+- **WHAT THIS COSTS, SAID PLAINLY:** the five sections are no longer walked
+  past, so anything in them is now FOUND rather than met. That is the trade
+  the layout makes, and it is the reason the fertilizer moved to the hero.
+- **Verified**: 1440 by 900 and 390 by 844 both report a document exactly one
+  screen tall and no sideways scroll; the sheet opens from five rows and three
+  ghost buttons, closes on its own button and on Escape, and the corner
+  controls come back when it does.
 
 ## THE PAGE IS FIVE SECTIONS NOW, AND THE TYPE AND THE SPACING WERE REDRAWN
 
