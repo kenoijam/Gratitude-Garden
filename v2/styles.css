@@ -204,13 +204,20 @@ body { padding-left: 0 !important; }
 .hero-text-block { text-align: center; position: relative; z-index: 5; padding: 0 1.5rem; margin-top: auto; margin-bottom: 0; max-width: 740px; width: 100%; animation: fadeUp 0.9s ease both; }
 .hero-eyebrow { font-family: Arial,Helvetica,sans-serif; font-size: 0.72rem; letter-spacing: 0.22em; text-transform: uppercase; color: var(--teal); display: block; margin-bottom: 0.8rem; }
 .hero-title {
-  font-variation-settings: 'SOFT' 50, 'WONK' 0; font-family: 'Fraunces','Georgia',serif; font-size: clamp(2.2rem,4.5vw,4rem); line-height: 1.05; color: var(--darkteal); margin-bottom: 1rem; }
+  font-variation-settings: 'SOFT' 50, 'WONK' 0; font-family: 'Fraunces','Georgia',serif; font-size: clamp(2.1rem,3.9vw,3.5rem); line-height: 1.07; color: var(--darkteal); margin-bottom: 1.1rem; }
 .hero-title em { font-family: 'Fraunces','Georgia',serif; font-style: italic; color: var(--teal); }
 /* Solid, never translucent. At `opacity: 0.76` this measured 3.50 against the
    hero sky at 17.85px, the same bug .section-desc carried and for the same
    reason: an opacity mixes the text with whatever is behind it. #2f6260 is the
    body copy floor this page already uses. */
-.hero-subtitle { font-family: Arial,Helvetica,sans-serif; font-size: 1.05rem; color: var(--ink, #2f6260); max-width: 600px; margin: 0 auto; line-height: 1.75; }
+/* THE PAIR WAS 64.8 OVER 17.85 AT 1440, A RATIO OF 3.63, and both ends of that
+   were wrong: the headline was the loudest thing on a page about slowing down,
+   and the one line under it was set smaller than the body copy in every
+   section below. It is 56.2 over 20.4 now, a ratio of 2.75, which is the
+   interval `.gg-title` and `.gg-sub` already run at in both gardens. The
+   subtitle is the page's one line of lede and it may not be the smallest type
+   on the screen. */
+.hero-subtitle { font-family: Arial,Helvetica,sans-serif; font-size: 1.2rem; color: var(--ink, #2f6260); max-width: 620px; margin: 0 auto; line-height: 1.7; }
 /* The 1.8rem that used to sit under the subtitle is gone for the same reason
    the 2.5rem under the block is: it separated the copy from the buttons. Left
    in, it was 30px of dead space inside the block and the auto margins centred
@@ -479,7 +486,14 @@ section { padding: 5rem 5rem; }
    this project's floor for copy and reads 6.56, 6.21 and 6.92. */
 .section-label { font-family: Arial,Helvetica,sans-serif; font-size: 0.72rem; letter-spacing: 0.22em; text-transform: uppercase; color: var(--ink); display: block; margin-bottom: 0.5rem; }
 .section-title {
-  font-variation-settings: 'SOFT' 50, 'WONK' 0; font-family: 'Fraunces','Georgia',serif; font-size: clamp(2.2rem,3.8vw,3.4rem); line-height: 1.1; color: var(--darkteal); margin-bottom: 1rem; }
+  /* 3.3vw, DOWN FROM 3.8, AND IT MOVED BECAUSE THE HERO MOVED. The headline
+     came down from 64.8 to 56.2 and these were 54.7, so the two were within
+     three percent of each other and the hero stopped being the biggest thing
+     on the page. 47.5 at 1440 puts a clear step between them, 1.18, and a
+     second step down to the 20.4px line under each title. The PHONE size is
+     set separately in the 768 block and did not move: 9vw there was chosen to
+     clear the 34px control in the corner. */
+  font-variation-settings: 'SOFT' 50, 'WONK' 0; font-family: 'Fraunces','Georgia',serif; font-size: clamp(2rem,3.3vw,3rem); line-height: 1.12; color: var(--darkteal); margin-bottom: 1rem; }
 .section-title em { font-family: 'Fraunces','Georgia',serif; font-style: italic; color: var(--teal); }
 /* Solid, not 80 percent of dark teal: at 0.8 the colour was mixed with whatever
    was behind it, so on a section that faded the text changed value down the
@@ -506,8 +520,14 @@ section { padding: 5rem 5rem; }
    a 1.23 cards section, and read as a strip rather than a stop. */
 .about {
   background: var(--paper);
-  padding-top: 116px;   /* 100px clear of the curve, see the headroom note */
-  padding-bottom: 124px;  /* 100px below the copy, matching the 100 above it */
+  /* 140, NOT 116, AND THE OLD COMMENT WAS STALE. It claimed 100px of clearance
+     on the reasoning that About carried 24px of its own margin under the
+     padding; that margin went when the section became one centred column, so
+     the real clearance measured 76 against .wisdom's 100 and the footer's 100.
+     The curve dips 40px in, so 140 is 100 clear, and every curved section
+     takes the same two numbers now. */
+  padding-top: 140px;
+  padding-bottom: 100px;
   position: relative;
   overflow: hidden;
   display: grid;
@@ -531,10 +551,20 @@ section { padding: 5rem 5rem; }
      two column grid, the declaration was thrown away, and the four cards
      landed on top of the heading and the copy. The computed value read
      `none`, which is the tell. */
+  /* NO `cards` ROW. The four card row is cut, and an empty named area still
+     costs its own `row-gap`: About measured 93px of bottom clearance against
+     56 everywhere else. Putting the row back means putting this line back
+     with it. */
   grid-template-areas:
     "title"
-    "body"
-    "cards";
+    "body";
+  /* THE ROWS ARE DECLARED, and that is a fix rather than tidiness. With the
+     areas alone an implicit THIRD track of 0px still appeared, and the
+     row-gap in front of it is paid whether the track has anything in it or
+     not: 30.6px of dead ground under the paragraph on a phone, measured as
+     87px of bottom clearance against 56 everywhere else. Pinning the two
+     tracks brings it to exactly 56. */
+  grid-template-rows: auto auto;
   column-gap: 4rem;
   row-gap: 1rem;
   align-items: start;
@@ -630,7 +660,8 @@ section { padding: 5rem 5rem; }
    do not read the padding. */
 .gardens {
   background: var(--paper-cool);
-  padding-top: 116px;
+  padding-top: 140px;
+  padding-bottom: 100px;
   position: relative;
   overflow: hidden;
 }
@@ -951,7 +982,8 @@ section { padding: 5rem 5rem; }
    and a z-index or the curve paints over it. */
 .catalogue {
   background: var(--paper);
-  padding-top: 116px;
+  padding-top: 140px;
+  padding-bottom: 100px;
   position: relative;
   overflow: hidden;
 }
@@ -960,7 +992,14 @@ section { padding: 5rem 5rem; }
   width: 110%; height: 100px; background: var(--paper-cool); border-radius: 0 0 50% 50%;
 }
 .catalogue-header, .flowers-grid { position: relative; z-index: 1; }
-.catalogue-header { margin-bottom: 2.5rem; }
+/* CENTRED IN THE BASE RULE, AND IT USED TO BE CENTRED ONLY BY THE RING.
+   `text-align: center` sat inside the `min-width: 881px` block that turns the
+   ring on, so below 881 this heading fell back to the section's own `start`
+   and the flower guide was the ONE section on the page whose title was not
+   centred. Measured at 390: `text-align` computed `start` here against
+   `center` on the other four. */
+.catalogue-header { margin: 0 auto 2.5rem; text-align: center; max-width: 620px; }
+.catalogue-header .section-desc { margin-left: auto; margin-right: auto; }
 .flowers-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 1.2rem; width: 100%; min-width: 0; }
 
 .flower-tile { background: var(--white); border-radius: 18px; padding: 1.4rem 1rem; text-align: center; border: 1.5px solid var(--sky); transition: transform 0.2s,box-shadow 0.2s,border-color 0.2s; display: flex; flex-direction: column; align-items: center; gap: 0.3rem; min-width: 0; overflow: hidden; }
@@ -1152,8 +1191,12 @@ footer {
 }
 footer::before {
   content: ''; position: absolute; top: -60px; left: 50%; transform: translateX(-50%);
-  /* The closing section's colour, not cream. See the note on `.cta`. */
-  width: 110%; height: 100px; background: var(--paper-cool); border-radius: 0 0 50% 50%;
+  /* CREAM, AND IT MOVED WITH THE CLOSING SECTION. Every curve is painted in
+     the colour of the section ABOVE it; `#start` was pale blue, so this was
+     pale blue. With that section gone the flower guide is what the footer
+     follows, and the flower guide is cream. Get this one wrong and the footer
+     wears a roll in a colour that appears nowhere near it. */
+  width: 110%; height: 100px; background: var(--paper); border-radius: 0 0 50% 50%;
 }
 .footer-top, .footer-bottom { position: relative; z-index: 1; }
 
@@ -1370,7 +1413,7 @@ footer { padding-left: calc((100vw - 1400px)/2); padding-right: calc((100vw - 14
 /* ── Tablet (≤1100px) ── */
 @media (max-width: 1100px) {
 section { padding: 3.5rem 2.5rem; }
-.about { grid-template-columns: 1fr; grid-template-areas: "title" "body" "cards"; gap: 1.5rem; }
+.about { grid-template-columns: 1fr; grid-template-areas: "title" "body"; grid-template-rows: auto auto; gap: 1.5rem; }
   /* TWO ACROSS once the section narrows: four cards of 280 need about 1180 of
      content and this block starts at 1100. */
   .about-right { grid-template-columns: 1fr 1fr; }
@@ -1401,7 +1444,17 @@ footer { padding: 140px 2.5rem 2rem; }   /* 100px clear, matching the sections, 
      and nothing else; left to size itself it came out 130 wide by 209 tall.
      `justify-content: center` is what stops the pair sitting at the top of the
      box once the height is no longer theirs. */
-  .flower-tile { padding: 0.45rem 0.35rem; aspect-ratio: 1; justify-content: center; }
+  /* NO CARD UNDER THE FLOWER. A white box with a 1.5px sky border and an 18px
+     corner is the shape a tile needs when it is carrying a name, a mood line
+     and a chip; here the mood and the chip are hidden, so the box was drawn
+     round a flower and a word and nothing else. The ring above 1100 sets its
+     eight blooms straight on the open cream with no panel at all, for exactly
+     that reason, and these are the same eight flowers. The tap target is the
+     padding, which is unchanged. */
+  .flower-tile {
+    padding: 0.45rem 0.35rem; aspect-ratio: 1; justify-content: center;
+    background: transparent; border: none; box-shadow: none;
+  }
   /* 110, up from 86. `renderFlowerCanvas` takes its radius from
      `min(W*0.30, H*0.28)` and the HEIGHT is what binds in a square tile, so
      filling the air under the bloom is 29 percent more flower in the same box:
@@ -1446,12 +1499,16 @@ footer { padding: 140px 2.5rem 2rem; }   /* 100px clear, matching the sections, 
   .hero-text-block { padding: 2.2rem 0 0; max-width: 100%; margin-bottom: 1.6rem; }
   /* The hero has to stay ahead of the section titles above, which are now 9vw
      themselves. */
-  .hero-title { font-size: clamp(2.3rem, 10.5vw, 3.4rem); line-height: 1.06; }
-  .hero-subtitle { font-size: 0.9rem; max-width: 100%; }
+  /* 2.05rem is the binding end on a phone, not the 10.5vw: at 390 the clamp
+     was returning its MINIMUM, so lowering the vw did nothing and lowering the
+     floor is the whole adjustment. 39.1 to 37.4, which still clears the 35.1
+     a section title takes here. */
+  .hero-title { font-size: clamp(2.05rem, 9.8vw, 3rem); line-height: 1.08; }
+  .hero-subtitle { font-size: 1.02rem; max-width: 100%; }
   .meadow-scene { margin-left: -1.4rem; margin-right: -1.4rem; }
 
   /* About: horizontal scroll cards */
-  .about { grid-template-columns: 1fr; grid-template-areas: "title" "body" "cards"; gap: 1.8rem; }
+  .about { grid-template-columns: 1fr; grid-template-areas: "title" "body"; grid-template-rows: auto auto; gap: 1.8rem; }
   .about-right {
     display: flex;
     flex-direction: row;
@@ -1511,18 +1568,24 @@ footer { padding: 140px 2.5rem 2rem; }   /* 100px clear, matching the sections, 
   /* 29 below, not 72: about carries 27px of its own margin down there, so 29
      of padding is the 56px of clearance the top has. It was the only section
      on a phone with more room below its copy than above. */
-  .about { padding-top: 72px; padding-bottom: 29px; }
-  .gardens, .catalogue { padding-top: 72px; }
+  /* 96, NOT 72, AND IT IS ONE NUMBER FOR ALL SIX. The curve dips 40px in, so
+     72 of padding is 32px of headroom, which is what "too close" was: a 35px
+     section title starting 32px under a roll reads as crowded whatever the
+     section. 96 is 56 clear, which is this file's own recorded phone figure,
+     and the bottoms match it so a section is not tighter at one end than the
+     other. Measured before: tops uniform at 32, bottoms 40, 80, 37, 37, 56. */
+  .about { padding-top: 96px; padding-bottom: 56px; }
+  .gardens, .catalogue { padding-top: 96px; padding-bottom: 56px; }
   /* 72, NOT 96, AND `.today-inner`'S OWN 51px GOES WITH IT. The curve dips
      40px in, so 96 of padding plus 51 of inner padding was 107px of headroom
      on the band against About's 32, measured. The band held one sentence, a
      150px Hortus and a title in 658px, which is 0.81 of a phone screen for
      three things. All six curved sections clear their curve by 32 now, which
      is the figure four of them already used. */
-  .wisdom { padding-top: 72px; padding-bottom: 40px; }
+  .wisdom { padding-top: 96px; padding-bottom: 56px; }
   .today-inner { padding: 0; }
-  .cta { padding-top: 72px; padding-bottom: 56px; }
-  footer { padding-top: 72px; }
+  .cta { padding-top: 96px; padding-bottom: 56px; }
+  footer { padding-top: 96px; }
 
   .gardens-grid { grid-template-columns: 1fr; gap: 1.4rem; grid-auto-rows: auto; }
   .garden-card-inner { padding: 2rem 1.6rem 1.8rem; }
@@ -1566,7 +1629,7 @@ footer { padding: 140px 2.5rem 2rem; }   /* 100px clear, matching the sections, 
   .tip-text { font-size: 0.82rem; }
 
   /* CTA */
-  .cta { padding: 72px 1.4rem 56px; }   /* top matches the headroom rule above */
+  .cta { padding: 96px 1.4rem 56px; }   /* top matches the headroom rule above */
   .cta-inner { padding: 2rem 1.2rem 2.2rem; }
   /* 0, not 1.5rem: `.section-desc` above it already carries 2rem, so the two
      together put 60px between one line of copy and the first button. */
@@ -1583,7 +1646,7 @@ footer { padding: 140px 2.5rem 2rem; }   /* 100px clear, matching the sections, 
   }
 
   /* Footer */
-  footer { padding: 72px 1.4rem 1.5rem; }   /* top matches the headroom rule above */
+  footer { padding: 96px 1.4rem 1.5rem; }   /* top matches the headroom rule above */
   /* Stacked, and each fold takes the WHOLE width. As flex items they were
      shrink to fit, so the summary was only as wide as its own heading and the
      chevron sat against the text instead of out at the right edge where a
@@ -1600,16 +1663,23 @@ footer { padding: 140px 2.5rem 2rem; }   /* 100px clear, matching the sections, 
 
   /* Scroll hints */
   .about-right::before { display: none; }
-  .about::after {
-    content: 'Swipe to see more';
-    display: block;
-    font-family: Arial, Helvetica, sans-serif;
-    font-size: 0.72rem;
-    color: var(--teal);
-    opacity: 0.6;
-    text-align: right;
-    padding-top: 0.4rem;
-  }
+  /* THE SWIPE HINT IS GONE WITH THE ROW IT POINTED AT. `.about-right` was a
+     horizontal scroller of four cards on a phone and this said so honestly,
+     measured at 899 of scroll width against 274 of client width. With the row
+     cut there is nothing to swipe to, and a hint promising something that is
+     not there is the exact fault the band's own copy of this line was deleted
+     for. CHECK THAT THE THING ACTUALLY SCROLLS BEFORE WRITING A HINT SAYING
+     IT DOES. */
+  /* `.about::after` IS DELETED, NOT EMPTIED, AND THE DIFFERENCE IS 37px.
+     It carried the phone's "Swipe to see more" hint for `.about-right`, which
+     was a horizontal scroller of four cards; the row is cut, so the hint
+     promised something that is not there and had to go. Emptying its
+     `content` was not enough: `.about` is a GRID, so the pseudo element is a
+     GRID ITEM, and an empty one still took a third row of 6.8px plus the
+     30.6px row-gap in front of it. About measured 93px of bottom clearance
+     against 56 everywhere else until the whole rule went.
+     CHECK THAT THE THING ACTUALLY SCROLLS BEFORE WRITING A HINT SAYING IT
+     DOES, and delete a pseudo element on a grid rather than blanking it. */
   .tips-grid::after { content: ''; }
   /* THE BAND'S "Swipe to see more" IS GONE, AND IT WAS A LIE RATHER THAN
      CLUTTER. It was written for `.tips-grid`, which on a phone was a
@@ -1633,7 +1703,13 @@ section { padding: 2.2rem 1.4rem; }
 .about-right { grid-template-columns: 1fr; }
 .flowers-grid { grid-template-columns: 1fr 1fr; }
 .tips-grid { grid-template-columns: 1fr; }
-.hero-title { font-size: clamp(1.7rem, 10vw, 2.6rem); }
+/* THIS IS THE RULE THAT SIZES THE HEADLINE ON A PHONE, NOT THE ONE IN THE 768
+   BLOCK. Both are bare `.hero-title`, this one is further down the file, and a
+   later rule wins at equal specificity, so an edit made up there changed
+   nothing at 390 and the measurement still read 39px. The two carry the same
+   clamp now so they cannot disagree again. EIGHTH time this project has been
+   caught by a rule written above the one it was meant to beat. */
+.hero-title { font-size: clamp(2.05rem, 9.8vw, 2.9rem); }
 .garden-card-inner { padding: 1.5rem 1.2rem; }
 }
 

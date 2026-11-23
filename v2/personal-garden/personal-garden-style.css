@@ -536,14 +536,41 @@ button {
 .gg-overlay {
   position: fixed; inset: 0; z-index: 400;
   display: flex; align-items: center; justify-content: center; padding: 24px;
+  /* ══ IT FOLLOWS THE CLOCK NOW, AND IT WAS A FIXED NOON GARDEN ══
+     This is the ONE place in the project that paints a garden in CSS rather
+     than on a canvas, because the sketch is not loaded yet when the gate
+     appears, so it cannot ask the canvas what hour it is. Every colour was
+     therefore the `day` keyframe written out by hand, and somebody who had
+     chosen Dark met a pale blue sky and a yellow sun on the very first screen
+     of the garden: measured with `data-dark` reading 1.
+
+     THE HILLS ARE THREE CSS ELLIPSES NOW, NOT AN SVG DATA URI, and that swap
+     is what made this possible at all: a custom property cannot reach inside
+     a `url("data:image/svg+xml…")`, so the three fills in there could never
+     move. An ellipse gradient is a coarser curve than the noise based hills
+     the sketch draws, which is already true of the SVG it replaces; this is a
+     backdrop behind a card rather than the garden itself.
+
+     EVERY VALUE FALLS BACK TO THE DAY KEYFRAME, so a page that fails to load
+     `garden-daylight.js` gets exactly the gate it had before. Same contract
+     `.hero` uses for its own sky. */
   background:
-    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='none'><path d='M0,58 C15,52 32,60 50,56 C68,52 86,60 100,55 L100,100 L0,100 Z' fill='%23a9d9cf'/><path d='M0,66 C20,62 36,68 55,64 C74,60 88,67 100,64 L100,100 L0,100 Z' fill='%238fcfbe'/><path d='M0,76 C25,73 45,78 65,75 C80,73 92,77 100,75 L100,100 L0,100 Z' fill='%237ec4b4'/></svg>")
-      center / 100% 100% no-repeat,
+    radial-gradient(ellipse 120% 46% at 50% 100%, var(--dl-fore, #7ec4b4) 0 99.5%, transparent 100%)
+      0 76% / 100% 24% no-repeat,
+    radial-gradient(ellipse 120% 52% at 50% 100%, var(--dl-front, #8fcfbe) 0 99.5%, transparent 100%)
+      0 64% / 100% 36% no-repeat,
+    radial-gradient(ellipse 130% 58% at 50% 100%, var(--dl-back, #a9d9cf) 0 99.5%, transparent 100%)
+      0 55% / 100% 45% no-repeat,
     /* sized in pixels, not a percentage: a percentage radius grows with the
-       window and turned the sun into a wash over most of the sky. The
-       sketch's own sun is a soft disc of about this radius. */
-    radial-gradient(circle 190px at 85% 18%, rgba(251,228,132,0.9) 0%, rgba(251,228,132,0.42) 34%, rgba(251,228,132,0) 100%),
-    linear-gradient(180deg, #cfeef0 0%, #f9ffff 100%);
+       window and turned the sun into a wash over most of the sky. The radius
+       rides the keyframe's own `sunR`, so the moon is the small disc the
+       canvas draws rather than a dimmed sun. */
+    radial-gradient(circle var(--dl-sun-r, 186px) at 85% 18%,
+      rgba(var(--dl-sun-rgb, 251,228,132), calc(0.9 * var(--dl-sun-a, 1))) 0%,
+      rgba(var(--dl-sun-rgb, 251,228,132), calc(0.42 * var(--dl-sun-a, 1))) 34%,
+      rgba(var(--dl-sun-rgb, 251,228,132), 0) 100%),
+    linear-gradient(180deg, var(--dl-sky-top, #cfeef0) 0%, var(--dl-sky-bot, #f9ffff) 100%);
+  transition: background-color 1.2s linear;
 }
 /* The same card the rest of the garden uses: snow, 1px #e6efed, radius 16 and
    the project's own shadow, rather than a heavier one of its own. */

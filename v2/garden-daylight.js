@@ -518,6 +518,28 @@
       st.setProperty("--dl-band", o.band);
       st.setProperty("--dl-foot", o.foot);
       st.setProperty("--dl-grass", o.grass);
+      /* THE SKY, THE THREE HILLS AND THE SUN GO OUT TOO, for the one thing on
+         this project that paints a garden in CSS rather than on a canvas:
+         `.gg-overlay`, the sign in gate and the two screens beside it. That
+         backdrop is CSS precisely because the sketch is not loaded yet when
+         the gate appears, so it cannot ask the canvas what time it is, and
+         without these it was a fixed NOON garden on a page whose every other
+         surface had gone dark. Measured: `data-dark` read 1 with the gate
+         plainly showing a pale blue sky and a yellow sun.
+         `--dl-sun` is `sunCore` with `sunAlpha` folded in, since the moon is
+         dimmer as well as whiter and the gate draws one soft disc either way. */
+      st.setProperty("--dl-sky-top", o.skyTop);
+      st.setProperty("--dl-sky-bot", o.skyBot);
+      st.setProperty("--dl-back", o.back);
+      st.setProperty("--dl-front", o.front);
+      st.setProperty("--dl-fore", o.fore);
+      /* A TRIPLE, NOT A COLOUR, which is the same device `--dl-sky-halo-rgb`
+         already uses: CSS cannot put an alpha onto a hex held in a variable,
+         so the gate writes `rgba(var(--dl-sun-rgb), 0.9)` itself. */
+      st.setProperty("--dl-sun-rgb", Math.round(o.sunCore[0]) + "," +
+        Math.round(o.sunCore[1]) + "," + Math.round(o.sunCore[2]));
+      st.setProperty("--dl-sun-a", String(Math.round(o.sunAlpha * 100) / 100));
+      st.setProperty("--dl-sun-r", Math.round(o.sunR * 3.1) + "px");
       /* THE INK AND ITS HALO GO OUT AS VARIABLES so the two garden
          stylesheets and the landing page all read ONE decision. The halo
          also goes out as a bare "r, g, b" triple, because the halo is used

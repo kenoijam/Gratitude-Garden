@@ -51,11 +51,17 @@
     dark:
       '<path d="M20.2 14.4A8.4 8.4 0 0 1 9.6 3.8a8.4 8.4 0 1 0 10.6 10.6z"/>' +
       '<path d="M17.4 4.1l.5 1.5 1.5.5-1.5.5-.5 1.5-.5-1.5-1.5-.5 1.5-.5z"/>',
+    /* ONE DISC, HALF OF IT FILLED, and three earlier shapes are why it is this
+       plain. A sun with a crescent bitten out of one side came out as a
+       lopsided blob at 18px; rays on one half and a crescent on the other was
+       two ideas in a 24 unit box and read as a smudge. A circle whose right
+       half is solid is the glyph every interface already uses for "follows
+       the system", it is ONE shape rather than two, and at 18px the eye reads
+       the straight edge down the middle before anything else. No rays: they
+       would make it a sun, which is the LIGHT icon sitting next to it. */
     auto:
-      /* one disc: rays on the left half, a crescent bitten out of the right */
-      '<circle cx="12" cy="12" r="4.6"/>' +
-      '<path d="M12 7.4a4.6 4.6 0 0 0 0 9.2 5.6 5.6 0 0 1 0-9.2z" fill="currentColor" stroke="none"/>' +
-      '<path d="M12 2.8v2.2M4.4 12H2.4M6.2 6.2L4.7 4.7M6.2 17.8l-1.5 1.5M12 19v2.2"/>'
+      '<circle cx="12" cy="12" r="8.4"/>' +
+      '<path d="M12 3.6a8.4 8.4 0 0 1 0 16.8z" fill="currentColor" stroke="none"/>'
   };
 
   function svg(mode) {

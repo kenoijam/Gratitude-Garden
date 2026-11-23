@@ -81,6 +81,115 @@ one. That needs both online at the same time, so:
   `.section-dust` canvases, and the personal garden's sign in gate with the
   same twelve scripts.
 
+## THE PAGE IS FIVE SECTIONS NOW, AND THE TYPE AND THE SPACING WERE REDRAWN
+
+Seven things in one pass, all of them measured at 390 and 1440 before and
+after. **`home, wisdom, about, gardens, flowers`**, and the footer.
+
+- **THE CLOSING SECTION IS CUT.** `#start` held one heading, one line and two
+  outline buttons to the Personal Garden and the Shared Garden, which is
+  exactly what `#gardens` already offers as two full cards with a picture, a
+  paragraph, a small print line and a button EACH. The page's last word was
+  its own middle with the pictures taken off. 553px at 1440.
+  - **THE FIVE EDITS, AND THE FIFTH IS THE ONE THAT BITES.** The markup, the
+    `.side-nav-item`, `sectionIds`, the `SECTIONS` sparkle list, and
+    **`footer::before`, which had to go from pale blue to CREAM**: every curve
+    is painted in the colour of the section ABOVE it, and the footer now
+    follows the flower guide rather than the closing section. Verified by
+    reading both back: the curve and `#flowers`' own ground are the same
+    string at noon and the same string at night.
+  - Every `.cta` rule is still in the stylesheet, unused.
+- **ABOUT'S FOUR CARD ROW IS CUT, and two of the four failed a test nobody
+  had applied.** The rule for that grid was that a card must be true of BOTH
+  gardens, and all four were; what none of them was checked against is
+  whether the page ALREADY said it. "The same eight" is the flower guide one
+  section down, and "One a day" is in the shared card's own small print. That
+  left two claims in four boxes. About is a heading and one paragraph now,
+  and that paragraph is still the one place on the page that says what an
+  account buys and that you can skip it.
+  - **AN EMPTY GRID AREA IS NOT FREE, and it cost 37px.** `.about` is a grid,
+    so taking the row out of the markup left `"title" "body" "cards"` with
+    nothing in `cards`: an implicit track of 0px, and **the `row-gap` in front
+    of it is paid whether the track holds anything or not.** About measured 93
+    of bottom clearance against 56 everywhere else. Dropping `cards` from the
+    areas was not enough either, since an implicit third track still appeared;
+    `grid-template-rows: auto auto` is what pins it, in all three places the
+    areas are declared.
+  - **`.about::after` IS DELETED, NOT EMPTIED, FOR THE SAME REASON.** It
+    carried the phone's "Swipe to see more" hint for a scroller that no longer
+    exists, and a pseudo element on a grid is a GRID ITEM: blanking its
+    `content` still left a track and a gap.
+- **EVERY CURVED SECTION CLEARS ITS CURVE BY ONE NUMBER, and it had drifted.**
+  `.about`, `.gardens` and `.catalogue` carried `padding-top: 116px` under a
+  comment claiming 100px of clearance, on the reasoning that each had 24px of
+  its own margin below the padding. That margin went when About became one
+  centred column, so the real figure measured **76 against `.wisdom`'s and the
+  footer's 100**. It is **140 on desktop and 96 on a phone**, which is 100 and
+  56 clear of the 40px the curve dips in, and the bottoms match the tops.
+  Measured after: 100/100 on all five at 1440, 56/56 at 390.
+- **THE PHONE'S 32px OF HEADROOM WAS THE "too close".** The previous pass took
+  every section to `padding-top: 72px`, which is 32 clear, and a 35px section
+  title starting 32px under a roll reads as crowded. 96 is this file's own
+  recorded phone figure.
+- **THE HERO PAIR WAS 64.8 OVER 17.85, A RATIO OF 3.63**, and both ends were
+  wrong: the headline was the loudest thing on a page about slowing down, and
+  the one line under it was set SMALLER than the body copy in every section
+  below. It is **56.2 over 20.4, a ratio of 2.75**, which is the interval
+  `.gg-title` and `.gg-sub` already run at in both gardens.
+  - **THE SECTION TITLES HAD TO COME DOWN WITH IT.** At 3.8vw they were 54.7
+    against the hero's new 56.2, three percent apart, so the hero stopped
+    being the biggest thing on the page. 3.3vw is 47.5, a step of 1.18.
+  - **THE PHONE HEADLINE IS SET BY THE 480 BLOCK, NOT THE 768 ONE.** Both are
+    a bare `.hero-title`, the 480 rule is further down the file, and a later
+    rule wins at equal specificity: an edit made in the 768 block changed
+    nothing at 390 and the measurement still read 39px. The two carry the same
+    clamp now. **Eighth time this project has been caught by a rule written
+    above the one it was meant to beat.**
+- **THE GUIDE'S TILE LOSES ITS CARD FROM 1100 DOWN.** A white box with a
+  1.5px sky border and an 18px corner is the shape a tile needs while it
+  carries a name, a mood line and a chip; the mood and the chip are already
+  hidden at that width, so the box was drawn round a flower and a word. The
+  RING above 1100 sets its eight blooms straight on the open cream with no
+  panel at all, and these are the same eight flowers. The tap target is the
+  padding and is unchanged.
+- **THE GUIDE'S HEADING WAS THE ONE TITLE NOT CENTRED, and only below 881.**
+  `text-align: center` sat inside the `min-width: 881px` block that turns the
+  ring on, so under it the heading fell back to the section's own `start`.
+  Measured at 390: `text-align` computed `start` here against `center` on the
+  other four. It is in the base rule now.
+- **Measured after**: 390 document 4249 to 3609, every section 0.41 to 1.20
+  screens, no sideways scroll. 1440 document 5493 to 4642.
+
+## THE SIGN IN GATE WAS A FIXED NOON GARDEN
+
+**`.gg-overlay` is the one place in this project that paints a garden in CSS
+rather than on a canvas**, and that is not a style choice: the sketch is
+injected only once there is a garden to draw, so when the gate appears there
+is no canvas to ask what hour it is. Every colour in it was therefore the
+`day` keyframe written out by hand, and somebody who had chosen Dark met a
+pale blue sky and a yellow sun on the very first screen of the garden, with
+`data-dark` reading 1 behind it.
+
+- **`garden-daylight.js` PUBLISHES THE SKY, THE THREE HILLS AND THE SUN NOW**,
+  as `--dl-sky-top`, `--dl-sky-bot`, `--dl-back`, `--dl-front`, `--dl-fore`,
+  `--dl-sun-rgb`, `--dl-sun-a` and `--dl-sun-r`. That is the contract `.hero`
+  already uses for its own CSS sky, so nothing new was invented and no second
+  copy of the night palette exists.
+- **THE HILLS ARE THREE CSS ELLIPSES, AND THAT SWAP IS WHAT MADE IT
+  POSSIBLE.** They were one `url("data:image/svg+xml…")` with three fills
+  written inside it, and **a custom property cannot reach inside a data URI**,
+  so those three could never move whatever the module published.
+- **`--dl-sun-rgb` IS A TRIPLE, NOT A COLOUR**, the same device
+  `--dl-sky-halo-rgb` already uses: CSS cannot put an alpha onto a hex held in
+  a variable, so the gate writes `rgba(var(--dl-sun-rgb), 0.9)` itself. The
+  radius rides `sunR`, so the moon is the small disc the canvas draws rather
+  than a dimmed sun.
+- **EVERY VALUE FALLS BACK TO THE DAY KEYFRAME**, so a page that fails to load
+  the module gets exactly the gate it had before.
+- Verified at both ends on a phone: at hour 1 the sky is `#13293f` to
+  `#25495f` with a near white moon over dark teal hills, and at hour 13 it is
+  the pale blue and yellow gate it has always been.
+
 ## LIGHT, DARK AND AUTO (`v2/garden-theme.js`), v2 ONLY
 
 **ONE MODULE AT THE v2 ROOT, loaded by the landing page and both gardens**,
