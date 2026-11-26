@@ -3470,7 +3470,19 @@ function buildUI() {
     pickedBySelf = true;
     showStep("pick");
   });
-  forkBtn("Write first", "Answer two questions, I will choose", ICO_WRITE, () => {
+  /* "Words first", NOT "Write first" OR "Reflect first". It has to pair
+     with "Flower first", and the pairing is what carries the meaning: both
+     are nouns, both read as "X comes first", and the ONLY thing that
+     differs between the two labels is which comes first, which is the only
+     thing that differs between the paths. "Words" also covers the chip
+     questions as well as the writing, which "Write" did not.
+
+     "Reflect first" WAS ASKED FOR AND REFUSED, with the author's
+     agreement. This card sits under a page headed **Daily Reflection**, so
+     it would be the page title said again, which is the fault that has now
+     cut two ledes from About; and BOTH paths are reflection, so it names
+     nothing that differs. A verb beside a noun also breaks the pair. */
+  forkBtn("Words first", "Answer two questions, I will choose", ICO_WRITE, () => {
     pickedBySelf = false;
     showStep("prompt1");
   });

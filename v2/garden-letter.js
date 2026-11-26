@@ -65,9 +65,24 @@
      paragraph; what it is FOR is the other. */
   var LETTER = {
     hello: "Hello there!",
+    /* TWO PARAGRAPHS, AND IT HAS NOW BEEN CUT THREE TIMES. The one that went
+       here read "That's why I made Gratitude Garden: a personal little garden
+       to record your days, and a shared one to see what other people are
+       grateful for", and it was the one that DESCRIBED THE SITE: the two
+       gardens are the section below with a picture, a paragraph and a button
+       each, and the hero's own two controls. The page says it better than a
+       letter can, and a letter that explains the product stops being somebody
+       talking.
+
+       WHAT STAYS IS THE PART ONLY SHE CAN SAY. The comparison story with its
+       concrete list, and the closing line. Both have never been touched.
+
+       CUT, NEVER REWRITTEN. Every shortening of this letter has removed whole
+       sentences of the author's and left the rest exactly as she wrote it,
+       which is the only way to shorten a thing whose whole argument is that
+       it is in her voice. **Do not rewrite a line here to save room.** */
     lines: [
       "I used to compare my situations with others all the time, wanting the things I didn't have. But one day I realized I have many things to appreciate in my own life! From the fact that I get to wake up everyday, eat good food, and meet amazing people, it's changed how I see the world.",
-      "That's why I made Gratitude Garden: a personal little garden to record your days, and a shared one to see what other people are grateful for.",
       "Gratitude gets you a long way, and whatever you noticed today is enough!"
     ],
     sign: "Kenisha",

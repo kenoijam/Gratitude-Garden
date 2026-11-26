@@ -49,6 +49,17 @@ one. That needs both online at the same time, so:
   fewer and this table is still true. `garden-growth.js` is intact on disk
   and unlinked, so putting the row back is one script tag and one div.
 
+- **THE LETTER IS TWO PARAGRAPHS AND HAS NOW BEEN CUT THREE TIMES.** The
+  third cut took the middle one, "That's why I made Gratitude Garden: a
+  personal little garden to record your days, and a shared one to see what
+  other people are grateful for", because it DESCRIBED THE SITE: the two
+  gardens are the section below with a picture, a paragraph and a button
+  each, and the hero's own two controls. **A letter that explains the product
+  stops being somebody talking.** What stays is the part only she can say,
+  the comparison story with its concrete list and the closing line, neither
+  ever touched. Measured: the card is 462px where three paragraphs made 549
+  and four made 584. **Every shortening has removed whole sentences and left
+  the rest exactly as written; do not rewrite a line here to save room.**
 - **THE LETTER WAS TAKEN BACK OUT OF THE ROOT, and it is a SPLIT rather than a
   deletion.** It was written before the two versions existed, so it had landed
   in the root and then been copied into v2, which left the before carrying one
@@ -3884,6 +3895,20 @@ top now.
   `scroll-behavior: smooth`: an unqualified `scrollTo` animates the whole
   document height while the ambient companion is deciding which section it is
   over, and the observer then fires for every section on the way past.
+
+## THE FORK IS "Flower first" AND "Words first", SIDE BY SIDE
+
+- **"Words first", NOT "Write first" OR "Reflect first".** The labels have to
+  PAIR, and the pairing is what carries the meaning: both are nouns, both read
+  as "X comes first", and the only thing that differs between them is which
+  comes first, which is the only thing that differs between the paths.
+  "Words" also covers the chip questions as well as the writing, which
+  "Write" did not.
+- **"Reflect first" WAS ASKED FOR AND REFUSED, with the author's agreement.**
+  This card sits under a page headed **Daily Reflection**, so it would be the
+  page title said again, which is the fault that has now cut two ledes from
+  About; BOTH paths are reflection, so it names nothing that differs; and a
+  verb beside a noun breaks the pair.
 
 ## THE FORK IS TWO CHOICES SIDE BY SIDE
 
