@@ -60,7 +60,7 @@
    is in palette by construction.
    `.about::before`, the roll out of the band, is painted from this token and
    follows it without a line. */
---band:       var(--dl-band, #dff0e8);
+--band:       var(--dl-band, var(--sky));
 /* The band's three inks, which have to turn over with it: dark on the pale
    green by day, cream on the deep teal at night. 5.79, 3.12 at 49px (large
    text needs 3.0) and 4.21 by day; 9.4, 7.81 and 8.24 at night. */
@@ -70,7 +70,12 @@
    and clears it with room: 3.68. */
 --band-em:    #3b857c;
 /* 4.21 was under the 4.5 a 15.6px line needs; this is 4.76. */
---band-soft:  #36716c;
+/* DARKENED WITH THE GROUND, AND MEASURED. On the old pale green this was
+   4.76; on `--sky` it falls to 4.08 and FAILS the 4.5 a 12px note needs.
+   `#326764` is hsl(176, 35%, 30%) and measures 4.68 there. It stays at
+   L30 against `--band-ink`'s L26, so the note is still a step lighter
+   than the title rather than collapsing into it. */
+--band-soft:  #326764;
 /* THE FOOTER IS ITS OWN TOKEN AND STAYS DARK. A dark foot is where a page
    ENDS, and it is the one place a dark block interrupts nothing, since there
    is nothing after it. It shared `--band` until the band went light, which

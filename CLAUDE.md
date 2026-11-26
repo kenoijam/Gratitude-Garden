@@ -3768,6 +3768,74 @@ below is still the right answer for any `details` this project adds later.
 
 **The footer's two blocks WERE `<details open>` that CLOSE on a phone.** The `open` attribute is in the markup on purpose: a details element with no `open` arrives shut before any stylesheet can say otherwise, which would hide the page's only navigation at the foot of a desktop view. A small script closes everything carrying `data-fold-phone` under 768 and reopens it above, and **stops doing either the moment somebody opens or closes one by hand**, so a rotation cannot undo a reader's choice. They also need `width: 100%` there, since as flex items they were shrink to fit and the chevron sat against the heading instead of out at the edge.
 
+## THE FERTILIZER BAND WAS THE ONE GROUND OUT OF PALETTE
+
+**It was the only section ground written as a literal rather than as a named
+token**, and that was the tell before any colour was measured:
+
+| token | value |
+|---|---|
+| `--paper` | `var(--cream)` |
+| `--paper-cool` | `var(--lightsky)` |
+| `--foot` | `var(--darkteal)` |
+| `--band` | **`#dff0e8`, a hex** |
+
+- **IT WAS A GREEN IN A FAMILY OF TEALS.** `#dff0e8` is hsl(**152**, 36%,
+  91%). The whole cool palette runs **166 to 184**: grass 166, teal 173,
+  lightsky 180, darkteal 182, sky 184. It sat 14 degrees below the coolest
+  member, and **the NIGHT band was already at 184**, so the band disagreed
+  with itself about its own hue between day and night.
+- **IT HAD TO MOVE IN LIGHTNESS, NOT ONLY HUE, and that was the part worth
+  measuring.** What made the old one read as a STOP was its 28 degrees of hue
+  against the pale blue below it, not its lightness: it is only **1.06** from
+  `--lightsky`. Corrected to 184 at the same lightness (`#dfeff0`) it came out
+  1.06 from its own neighbour and stopped being a stop at all.
+- **IT IS `--sky` NOW**, hsl(184, 50%, 81%), which is **1.24** from
+  `--lightsky` and a real step, and is a token rather than a fourth pale hex.
+  The run reads grass, sky, lightsky, cream, lightsky, darkteal, with no two
+  neighbours alike.
+- **`--band-soft` HAD TO DARKEN WITH IT, and it was the only ink that broke.**
+  Measured on `--sky`: `--band-ink` 4.98 and `--band-em` 3.16 both still pass
+  their large-text 3.0, but the note is 12px BODY text needing 4.5 and fell
+  from 4.76 to **4.08**. It is `#326764`, hsl(176, 35%, 30%), measuring 4.68.
+  **L30 against `--band-ink`'s L26**, so the note stays a step lighter than
+  the title rather than collapsing into it.
+- A lighter in-family value was found and refused: `#cdecee` satisfies
+  everything but leaves the note at **4.51**, a pass with nothing in hand.
+
+### THE GARDENS AND THE LANDING PAGE ARE IN DIFFERENT HUE FAMILIES
+
+Measured, not guessed, and **not fixed**: this is recorded so the next person
+knows the size of it before starting.
+
+| | hue | where |
+|---|---|---|
+| garden card (`snow` `#fffafa`) | 0, a PINK white | every `.gg-card` |
+| garden tile | neutral `#ffffff` | the picker tiles |
+| garden field | 49, a CREAM white | every `textarea` |
+| garden border `#bde0d6` | **163** | tiles and fields |
+| garden primary (`mediumturquoise`) | 178 at 60% sat | `.gg-btn` |
+| landing `--sky` | **184** | everything |
+| landing `--teal` | 173 at 38% sat | the accent |
+
+- **THREE DIFFERENT WHITES SIT IN ONE GARDEN CARD**: the card at hue 0, the
+  tiles neutral, the fields at hue 49.
+- **FOUR STOCK CSS KEYWORDS ARE DOING PALETTE WORK**, counted across v2:
+  `snow` 25, `powderblue` 14, `mediumturquoise` 11, plus `lightseagreen`,
+  `whitesmoke` and `gainsboro` twice each. **This is the `powderblue` fault
+  this file already records as fixed, and it is not fixed**: `#B0E0E6` is
+  hsl(187, 52%, 80%) against `--sky`'s hsl(184, 50%, 81%), which is a colour
+  three degrees off a token, used fourteen times.
+- **THE SAME ACTION IS TWO COLOURS ACROSS THE SITE.** The landing page's
+  primary button is `--darkteal`; the gardens' is `mediumturquoise`,
+  hsl(178, 60%, 55%), which is 18 points more saturated and 13 lighter than
+  anything in the palette.
+- **WHY IT IS NOT FIXED: THESE COLOURS ARE THE SAME IN v1.** v2 is a copy, so
+  recolouring the gardens makes the before and the after differ in colour on
+  every garden screen, which is not one of the nine features the test is
+  measuring. **That is an experiment decision, not a design one**, and it
+  belongs to the author.
+
 ## THE CORNER ROW'S SKIN IS DEFINED ONCE (`garden-cursor.js`)
 
 Five round buttons sit in the top right of every page and they were built by

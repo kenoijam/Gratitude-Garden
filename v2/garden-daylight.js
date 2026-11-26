@@ -377,7 +377,22 @@
     var nightOn = out.dark >= 0.45;
     out.paper     = nightOn ? "#1d6466" : "#fff9e3";
     out.paperCool = nightOn ? "#17565a" : "#e1f7f7";
-    out.band      = nightOn ? "#134a4e" : "#dff0e8";
+    /* THE DAY BAND IS `--sky` NOW, AND IT WAS THE ONE GROUND OUT OF
+       PALETTE. `#dff0e8` is hsl(152, 36%, 91%), a GREEN, where the whole
+       cool family runs 166 to 184: grass 166, teal 173, lightsky 180,
+       darkteal 182, sky 184. It sat 14 degrees below the coolest member
+       and was the only section ground written as a literal rather than
+       as a named token. **The NIGHT band was already at 184**, so day
+       and night disagreed about the band's own hue.
+
+       IT HAD TO MOVE IN LIGHTNESS, NOT JUST HUE. What made the old one
+       read as a stop was its 28 degrees of hue against the pale blue
+       below it, not its lightness: measured, it is only 1.06 from
+       `--lightsky`. Corrected to 184 at the same lightness it became
+       1.06 from its own neighbour and stopped being a stop. `--sky` at
+       hsl(184, 50%, 81%) is 1.24 from it, which is a real step, and it
+       is a token rather than a fourth pale hex. */
+    out.band      = nightOn ? "#134a4e" : "#b7e4e7";
     out.foot      = nightOn ? "#0f3b40" : "#1d6466";
     out.night     = nightOn;
 
