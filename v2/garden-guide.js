@@ -1547,10 +1547,15 @@
         '<div class="gmeet-card" role="dialog" aria-modal="true" aria-label="Meet ' + NAME + '">' +
           '<button type="button" class="gmeet-x" aria-label="Close">&#215;</button>' +
           '<div class="gmeet-fig" role="button" tabindex="0" aria-label="Pat ' + NAME + '"></div>' +
-          '<p class="gmeet-name">' + NAME + '</p>' +
-          '<p class="gmeet-body">My name is Latin for garden, so I am the garden ' +
-          'come to say hello. I bring one line of encouragement a day, and I keep ' +
-          'you company in both gardens. Go on, pat me.</p>' +
+          /* THE GREETING IS THE HEADING, AND THE NAME IS SAID ONCE. It was a
+             heading reading "Hortus" over a body opening "My name is Latin for
+             garden", which is the heading said again in different words: the
+             exact fault that cut About's lede twice. The author's own wording
+             is plainer than the Latin was. */
+          '<p class="gmeet-name">Hi, I am ' + NAME + '</p>' +
+          '<p class="gmeet-body">Your Gratitude Garden companion. I bring one line ' +
+          'of encouragement a day, and I keep you company in both gardens. ' +
+          'Go on, pat me.</p>' +
           '<button type="button" class="gmeet-go">Nice to meet you</button>' +
         '</div>';
       document.body.appendChild(meetEl);

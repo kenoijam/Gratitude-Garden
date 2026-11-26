@@ -3768,6 +3768,55 @@ below is still the right answer for any `details` this project adds later.
 
 **The footer's two blocks WERE `<details open>` that CLOSE on a phone.** The `open` attribute is in the markup on purpose: a details element with no `open` arrives shut before any stylesheet can say otherwise, which would hide the page's only navigation at the foot of a desktop view. A small script closes everything carrying `data-fold-phone` under 768 and reopens it above, and **stops doing either the moment somebody opens or closes one by hand**, so a rotation cannot undo a reader's choice. They also need `width: 100%` there, since as flex items they were shrink to fit and the chevron sat against the heading instead of out at the edge.
 
+## THE CORNER ROW'S SKIN IS DEFINED ONCE (`garden-cursor.js`)
+
+Five round buttons sit in the top right of every page and they were built by
+FOUR modules plus both garden sketches, each writing the same four colours out
+by hand. They drifted, and the drift showed where this project's drift always
+shows: at night.
+
+- **MEASURED: at `clock=1` the theme button was dark teal with a cream rim and
+  cream ink while music and the account were still cream with a sky rim and
+  dark teal ink.** Three buttons 46px apart and the middle one inverted
+  relative to its neighbours. **The theme button was the one that was RIGHT**,
+  since the project turns every ground and ink over at night and a cream disc
+  on a navy sky is a bright blob; it was simply the only one doing it. That
+  button is mine, added earlier in the same session, so this was my own
+  inconsistency.
+- **IT IS VARIABLES, NOT A SHARED RULE, AND THAT IS THE POINT.** A rule here
+  would have to beat four modules whose stylesheets append AFTER this one, so
+  every declaration would need `!important`, which is the fight every other
+  control in this project has already lost once. `--gg-ctl-bg`,
+  `--gg-ctl-bg-hover`, `--gg-ctl-line`, `--gg-ctl-ink`, `--gg-ctl-shadow` and
+  `--gg-ctl-shadow-hover` on `:root`, with an `html[data-dark='1']` override.
+  Each module keeps its own selector and only the VALUES are shared, which is
+  the device `garden-daylight.js` already uses for `--dl-*`.
+- **DAY VALUES ARE MUSIC'S AND THE ACCOUNT'S, being the majority; NIGHT VALUES
+  ARE THE THEME BUTTON'S, being the ones that were correct.** The theme
+  button's own `html[data-dark="1"]` rule is deleted, since the tokens carry
+  the turnover for the whole row.
+- **THE HOVER IS NOW ONE GESTURE.** Four buttons lifted 1px and the theme
+  button alone grew by `scale(1.06)`. All five lift, and all five deepen the
+  shadow, which is the page's own idiom (`.hero-btn`, `.gg-hov`, the flower
+  tiles).
+- **STILL TO DO: THE CAMERA.** `#save-btn` is set INLINE by both sketches
+  (`saveBtn.style("background", ...)`), so it is the one button a stylesheet
+  cannot reach. **An inline value is allowed to BE a `var()`**, so the fix is
+  to change those four inline colours in each sketch to the tokens rather than
+  to fight with `!important`. Until that is done the gardens' row has four
+  buttons turning over at night and one staying cream.
+- **Verified at `clock=1`**: music, account and theme all report
+  `rgba(15,59,64,0.88)`, `rgba(255,249,227,0.34)` and `rgb(255,249,227)`.
+
+### HORTUS SAYS HELLO IN PLAIN WORDS
+
+The card's heading read "Hortus" over a body opening "My name is Latin for
+garden, so I am the garden come to say hello", which is **the heading said
+again in different words: the exact fault that cut About's lede twice.** The
+greeting is the heading now, "Hi, I am Hortus", and the body opens "Your
+Gratitude Garden companion", which is the author's own wording and plainer
+than the Latin was. The name is said once.
+
 ## The controls all live in one corner
 
 **Every page's controls are one row of round icons in the top right**, 38px each with an 8px gap, so the slots are `right: 16, 62, 108, 154`.

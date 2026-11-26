@@ -93,16 +93,20 @@
   function style() {
     var css =
       '#gg-theme{position:fixed;top:20px;right:108px;z-index:261;width:38px;height:38px;' +
-      'border-radius:50%;border:1.5px solid var(--sky,#bde0d6);background:rgba(255,249,227,0.92);' +
-      'color:var(--darkteal,#1d6466);display:flex;align-items:center;justify-content:center;' +
-      'padding:0;cursor:pointer;box-shadow:0 2px 10px rgba(29,100,102,0.12);' +
+      'border-radius:50%;border:1.5px solid var(--gg-ctl-line);background:var(--gg-ctl-bg);' +
+      'color:var(--gg-ctl-ink);display:flex;align-items:center;justify-content:center;' +
+      'padding:0;cursor:pointer;box-shadow:var(--gg-ctl-shadow);' +
       'transition:transform .18s ease,box-shadow .18s ease,background .3s ease,color .3s ease;}' +
       /* ON A DARK SKY THE BUTTON TURNS OVER WITH EVERYTHING ELSE. `data-dark`
          is the page's own flag, set by `garden-daylight.js` on `<html>`, so
          this cannot disagree with the grounds about what time it is. */
-      'html[data-dark="1"] #gg-theme{background:rgba(15,59,64,0.88);' +
-      'border-color:rgba(255,249,227,0.34);color:var(--cream,#fff9e3);}' +
-      '#gg-theme:hover{transform:scale(1.06);box-shadow:0 4px 14px rgba(29,100,102,0.2);}' +
+      /* ITS OWN DARK RULE IS GONE: `--gg-ctl-*` carries the turnover for the
+         whole row now, and this button was the only one that had it. */
+      ''+
+      /* THE ROW'S OWN HOVER, a 1px lift and a deeper shadow, not a scale.
+         This button alone grew by 1.06 where the other four lift. */
+      '#gg-theme:hover{background:var(--gg-ctl-bg-hover);transform:translateY(-1px);' +
+      'box-shadow:var(--gg-ctl-shadow-hover);}' +
       '#gg-theme:active{transform:scale(0.96);}' +
       /* A hover lift on a touch screen costs the FIRST TAP: Safari applies the
          hover rule instead of activating. Same rule the four stylesheets carry. */

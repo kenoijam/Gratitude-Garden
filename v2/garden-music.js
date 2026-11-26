@@ -474,11 +474,12 @@
     '#gg-music{position:fixed;top:20px;right:16px;z-index:260;' +
       'font-family:Arial,Helvetica,sans-serif;}' +
     '#gg-music-btn{width:38px;height:38px;border-radius:50%;' +
-      'background:rgba(255,249,227,0.92);border:1.5px solid #b7e4e7;color:#1d6466;' +
-      'box-shadow:0 2px 10px rgba(29,100,102,0.14);cursor:pointer;padding:0;' +
+      'background:var(--gg-ctl-bg);border:1.5px solid var(--gg-ctl-line);color:var(--gg-ctl-ink);' +
+      'box-shadow:var(--gg-ctl-shadow);cursor:pointer;padding:0;' +
       'display:flex;align-items:center;justify-content:center;' +
       'transition:background 0.2s,transform 0.15s,border-color 0.2s;}' +
-    '#gg-music-btn:hover{background:#e1f7f7;transform:translateY(-1px);}' +
+    '#gg-music-btn:hover{background:var(--gg-ctl-bg-hover);transform:translateY(-1px);' +
+      'box-shadow:var(--gg-ctl-shadow-hover);}' +
     '#gg-music-btn:focus-visible{outline:2px solid #1d6466;outline-offset:2px;}' +
     '#gg-music-btn svg{width:18px;height:18px;display:block;}' +
     '#gg-music-btn .off-mark{display:none;}' +
@@ -508,8 +509,8 @@
     '#gg-music:hover #gg-music-vol,#gg-music:focus-within #gg-music-vol{' +
       'opacity:1;visibility:visible;transform:none;' +
       'transition:opacity 0.18s ease 0s,transform 0.18s ease 0s,visibility 0s linear 0s;}' +
-    '#gg-music-vol .pill{background:rgba(255,249,227,0.96);border:1.5px solid #b7e4e7;' +
-      'border-radius:50px;box-shadow:0 2px 10px rgba(29,100,102,0.14);padding:7px 12px;}' +
+    '#gg-music-vol .pill{background:var(--gg-ctl-bg);border:1.5px solid var(--gg-ctl-line);' +
+      'border-radius:50px;box-shadow:var(--gg-ctl-shadow);padding:7px 12px;}' +
     /* The input is 16px tall against a 4px track, so the grab area is the
        whole height of the pill's inside rather than the hairline you can see.
        A 4px input is accurate to about a pixel, which is not a thing anyone

@@ -224,10 +224,11 @@
     '#gj-btn{position:fixed;top:20px;right:154px;z-index:261;'   /* slot 4: garden-theme.js took 108 */ +
       'width:38px;height:38px;border-radius:50%;padding:0;' +
       'display:flex;align-items:center;justify-content:center;' +
-      'border:1.5px solid #b7e4e7;background:rgba(255,249,227,0.92);color:#1d6466;' +
-      'cursor:pointer;box-shadow:0 2px 10px rgba(29,100,102,0.14);' +
+      'border:1.5px solid var(--gg-ctl-line);background:var(--gg-ctl-bg);color:var(--gg-ctl-ink);' +
+      'cursor:pointer;box-shadow:var(--gg-ctl-shadow);' +
       'transition:background .2s,transform .15s;}' +
-    '#gj-btn:hover{background:#e1f7f7;transform:translateY(-1px);}' +
+    '#gj-btn:hover{background:var(--gg-ctl-bg-hover);transform:translateY(-1px);' +
+      'box-shadow:var(--gg-ctl-shadow-hover);}' +
     '#gj-btn:focus-visible{outline:2px solid #1d6466;outline-offset:2px;}' +
     '#gj-btn svg{width:18px;height:18px;display:block;}' +
     '@media (max-width:768px){#gj-btn{top:16px;right:138px;width:34px;height:34px;}' +

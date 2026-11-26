@@ -497,6 +497,55 @@
      the flower planted most recently; leaving it fixed and tinting only the
      little sparkle would have put the personal touch on the half nobody
      studies. */
+  /* ═══════════════════════════════ THE CORNER ROW'S SKIN, DEFINED ONCE
+     Five round buttons sit in the top right of every page: music, account,
+     theme, history and the camera. They are built by FOUR different modules
+     plus both garden sketches, and every one of them wrote the same four
+     colours out by hand. So they drifted, and the drift showed exactly where
+     this project's drift always shows, at night.
+
+     MEASURED BEFORE: at `clock=1` with `data-dark` reading 1, the theme
+     button was dark teal with a cream rim and cream ink while music and the
+     account were still cream with a sky rim and dark teal ink. **Three
+     buttons 46px apart and the middle one inverted relative to its
+     neighbours.** The theme button was the one that was RIGHT: the project
+     turns every ground and ink over at night, and a cream disc on a navy sky
+     is a bright blob. It was simply the only one that did it.
+
+     THIS IS VARIABLES, NOT A RULE, AND THAT IS THE WHOLE POINT. A shared
+     rule here would have to beat four modules that append their stylesheets
+     AFTER this one, so it would need `!important` on every declaration, which
+     is the fight every other control in this project has already lost once.
+     Custom properties have no such problem: each module keeps its own
+     selector and only the VALUES are shared. It is the device
+     `garden-daylight.js` already uses for `--dl-*`.
+
+     THE CAMERA CONSUMES THEM FROM ITS INLINE STYLE, which is why this works
+     everywhere. Both sketches set `saveBtn`'s background with p5.dom, and
+     inline beats any stylesheet short of `!important`; an inline value is
+     allowed to BE a `var()`, so the one button nothing could reach now
+     follows the same tokens as the four beside it.
+
+     Day values are music's and the account's, being the majority; night
+     values are the theme button's, being the ones that were correct. */
+  var CTL = ":root{" +
+      "--gg-ctl-bg:rgba(255,249,227,0.92);" +
+      "--gg-ctl-bg-hover:#e1f7f7;" +
+      "--gg-ctl-line:#b7e4e7;" +
+      "--gg-ctl-ink:#1d6466;" +
+      "--gg-ctl-shadow:0 2px 10px rgba(29,100,102,0.14);" +
+      "--gg-ctl-shadow-hover:0 4px 14px rgba(29,100,102,0.2);}" +
+    /* `data-dark` is `garden-daylight.js`'s own flag on `<html>`, one
+       threshold for the whole page, so the corner row cannot disagree with
+       the grounds about what time it is. */
+    "html[data-dark='1']{" +
+      "--gg-ctl-bg:rgba(15,59,64,0.88);" +
+      "--gg-ctl-bg-hover:rgba(15,59,64,0.98);" +
+      "--gg-ctl-line:rgba(255,249,227,0.34);" +
+      "--gg-ctl-ink:#fff9e3;" +
+      "--gg-ctl-shadow:0 2px 10px rgba(0,0,0,0.30);" +
+      "--gg-ctl-shadow-hover:0 4px 14px rgba(0,0,0,0.38);}";
+
   function apply(hue) {
     if (!tag) {
       tag = document.getElementById(STYLE_ID);
@@ -506,7 +555,7 @@
         (document.head || document.documentElement).appendChild(tag);
       }
     }
-    tag.textContent = css(hue) + TIP + SCROLL_HIDE + TIPS + HOME;
+    tag.textContent = CTL + css(hue) + TIP + SCROLL_HIDE + TIPS + HOME;
   }
 
   apply(DEFAULT_HUE);
