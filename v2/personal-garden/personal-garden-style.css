@@ -465,10 +465,13 @@ input[type="text"]:focus {
 /* MOBILE */
 @media (max-width: 768px) {
 
-  .gg-tile {
-    padding: 6px 6px 8px;
-    min-height: 110px;
-  }
+  /* THE `.gg-tile` RULE THAT STOOD HERE HAD NEVER ONCE APPLIED, and it is
+     deleted rather than left to mislead. It set `padding: 6px 6px 8px` and
+     `min-height: 110px` with no `!important`, so it lost to the inline
+     padding `buildUI` writes; and further down this same phone block a
+     SECOND `.gg-tile` rule sets 12/8/14 and 150 WITH `!important`, which
+     beat it on both counts. **Two rules for one selector in one media block,
+     and the earlier one was dead on arrival.** */
 
   .preview-holder {
     width: 95px;
@@ -736,6 +739,12 @@ button {
      the things inside it. */
   .gg-card {
     padding: 22px 18px 20px !important;
+    /* `box-sizing` is what makes the 94vw below mean the PAINTED width. Left at
+       the default content-box the 36px of padding and the 2px of border are
+       added on top, so at a 390 screen the card painted 390 and ran edge to
+       edge with no gutter at all: the 3% a side the 94vw was buying went
+       entirely to padding. Measured after: 366 wide at left 12. */
+    box-sizing: border-box !important;
     width: min(94vw, 460px) !important;
     max-width: 94vw !important;
     border-radius: var(--gg-r-card) !important;
@@ -767,6 +776,15 @@ button {
   /* The picker. Two columns of a real size rather than four cramped ones. */
   .gg-grid { grid-template-columns: 1fr 1fr !important; gap: 12px !important; }
   .gg-tile { padding: 12px 8px 14px !important; min-height: 150px !important; }
+  /* THE PERSONAL PICKER'S TILES ARE NOT THOSE TILES. 150px was written when a
+     tile carried a flower, a NAME, a MOOD LINE and a CHIP; this picker shows
+     a 56px bloom and a 12.5px name, which is 97px of content including its
+     padding. Measured on a phone before this: each tile 76 **by 180**, a box
+     1 to 2.4 around a round thing with 83px of dead air in it, and the grid
+     row matched the tallest so all eight paid for it. `min-height: 0` lets
+     them size to what they hold. The other `.gg-tile` screens, which really
+     do carry four things, keep the 150. */
+  #pick-wrap .gg-tile { padding: 10px 6px 10px !important; min-height: 0 !important; }
   .gg-tile p { font-size: 14px !important; line-height: 1.35 !important; }
   .preview-holder { width: 120px !important; height: 86px !important; }
 

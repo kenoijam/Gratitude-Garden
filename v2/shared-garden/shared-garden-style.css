@@ -523,6 +523,12 @@ input[type="text"]:focus {
      the things inside it. */
   .gg-card {
     padding: 22px 18px 20px !important;
+    /* `box-sizing` is what makes the 94vw below mean the PAINTED width. Left at
+       the default content-box the 36px of padding and the 2px of border are
+       added on top, so at a 390 screen the card painted 390 and ran edge to
+       edge with no gutter at all: the 3% a side the 94vw was buying went
+       entirely to padding. Measured after: 366 wide at left 12. */
+    box-sizing: border-box !important;
     width: min(94vw, 460px) !important;
     max-width: 94vw !important;
     border-radius: var(--gg-r-card) !important;

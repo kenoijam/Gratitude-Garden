@@ -3392,8 +3392,17 @@ function buildUI() {
   function gbtn(card, label, primary) {
     const b = createButton(label).parent(card);
     b.addClass("gg-hov");
-    b.style("background", primary ? "#26a69a" : "#e0e0e0");
-    b.style("color", primary ? "#fff" : "#666");
+    /* THE PROJECT'S ONE PRIMARY, AND THIS HELPER IS WHY THE EARLIER FIX
+       MISSED. `.gg-btn` in the stylesheet was moved to `#1d6466` and these
+       buttons did not follow, because `gbtn` writes the background INLINE
+       and inline beats a stylesheet. Every forward button this helper builds,
+       the fork's two, the picker's Continue and every Back, was `#26a69a`
+       with white at **3.00** against the 4.5 a button label needs.
+
+       THE SECONDARY WAS MARGINAL TOO: `#666` on `#e0e0e0` is **4.34**, under
+       4.5 at its 14px. `#555` is 5.82 on the same ground. */
+    b.style("background", primary ? "#1d6466" : "#e0e0e0");
+    b.style("color", primary ? "#fff9e3" : "#555");
     b.style("border", "none");
     b.style("border-radius", "var(--gg-r-ctl)");
     b.style("padding", "12px");
@@ -3775,19 +3784,18 @@ function buildUI() {
   if (window.GardenEnter) GardenEnter.on(whyBox, whyNext);
   gbtn(cardWhy, "Back").mousePressed(() => showStep("pick"));
 
-  /* ONE WORDING NOW, AND THE SECOND ONE IS DELETED RATHER THAN LEFT IN.
+  /* ONE WORDING NOW, AND `__tuneWhy` IS DELETED WITH THE SECOND ONE.
      There was a write-first variant reading "What do you make of it?" over
      "Your day chose this flower", and it asked about a flower that had been
      CHOSEN but not yet SHOWN: on that path the species is decided after
      prompt2 and does not appear until the preview three cards later. The
-     card is skipped on that path now, so the variant has nothing to say and
-     keeping it would be a branch waiting to be reached by accident. */
-  window.__tuneWhy = function () {
-    whyHead.html("Why that one?");
-    whySub.html("A word or two is plenty.");
-    whyBox.attribute("placeholder", "Because...");
-    whyLabel();
-  };
+     card is skipped on that path now, so the variant has nothing to say.
+     What was left re-set the sub and the placeholder to the values they
+     already carried, called a label function the field already drives, and
+     wrote to `whyHead`, which went when the step's question became the page
+     title: so it THREW on every visit to this card, inside `showStep`, and
+     took the rest of that function with it. A tuner with one wording to
+     choose from is a function that can only ever go stale. */
 
   prompt1Wrap = createDiv().id("prompt1-wrap").parent(root).addClass("gg-wrap");
   prompt1Wrap.style("display", "flex");
@@ -4809,7 +4817,6 @@ function showStep(s) {
   if (forkWrap) forkWrap.elt.style.display = showFork ? "flex" : "none";
   if (pickWrap) pickWrap.elt.style.display = showPick ? "flex" : "none";
   if (whyWrap)  whyWrap.elt.style.display  = showWhy  ? "flex" : "none";
-  if (showWhy && window.__tuneWhy) window.__tuneWhy();
 
   const showPrompt1 = s === "prompt1";
   const showPrompt2 = s === "prompt2";

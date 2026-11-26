@@ -595,6 +595,74 @@ else in this block still holds.
 - **Measured after**: 390 document 4249 to 3609, every section 0.41 to 1.20
   screens, no sideways scroll. 1440 document 5493 to 4642.
 
+## THE PHONE PASS, AND THE CARD HAD NO GUTTER FOR ITS WHOLE LIFE
+
+Four faults, measured at 390 by 844 in both gardens, and the first of them is
+the one everything else sat inside.
+
+- **`.gg-card` HAS NEVER CARRIED `box-sizing`, IN EITHER GARDEN, AND THE PHONE
+  BLOCK'S `width: min(94vw, 460px)` IS PLAINLY MEANT AS THE PAINTED WIDTH.**
+  94vw buys 3 percent of gutter a side; left at the default `content-box` the
+  card's 36px of padding and 2px of border are added ON TOP, so at a 390 screen
+  it painted **390 and ran edge to edge with nothing either side**. The gutter
+  the rule was written to buy went entirely to its own padding. Measured after:
+  **367 wide at left 12**, in both gardens, at every step.
+  - **IT IS SCOPED TO THE PHONE BLOCK, beside the width it fixes**, not added
+    to the base rule. That rule has no width at all, so on a laptop
+    `box-sizing` would change nothing it was asked to change and would quietly
+    narrow the content of any card `buildUI()` sizes inline.
+  - **CLAUDE.md ALREADY RECORDED THIS EXACT TRAP ONE CARD OVER.** The note
+    under the sign in gate says `personal-garden-style.css` had no
+    `box-sizing` anywhere and that `.gg-auth-card` needed a scoped one because
+    its fields hung 26px over both edges. **The same missing rule was under
+    every other card on the page and nobody had measured one.**
+- **`window.__tuneWhy` THREW ON EVERY VISIT TO THE WHY CARD, INSIDE
+  `showStep`, AND IT WAS MY OWN.** It wrote to `whyHead`, the card's heading,
+  which went when the step's question became the page title. **An uncaught
+  throw inside `showStep` takes the rest of that function with it**, which is
+  the same shape of fault as the tour's dead `about` step: nothing crashes
+  visibly, the step shows, and whatever `showStep` had left to do silently
+  does not happen.
+  - **IT IS DELETED RATHER THAN REPOINTED AT THE TITLE.** Its own comment
+    says only one wording is left: what it still did was set the sub and the
+    placeholder to the values they already carried and call a label function
+    the field already drives. **A tuner with one wording to choose from is a
+    function that can only ever go stale**, and this one had.
+  - **FOUND BY READING THE CONSOLE, not by looking at the card**, which
+    rendered perfectly. The browser pane's console buffer SURVIVES
+    NAVIGATION, so a fixed error goes on being reported: it was confirmed
+    gone by reading `typeof window.__tuneWhy` off the running page and
+    walking the card again, never by the buffer going quiet.
+  - **Swept for the rest**: every identifier in both sketches ending Head,
+    Title or Heading was checked against its own declaration, and this was
+    the only undeclared one.
+- **THE PICKER'S PHONE RULE HAD NEVER APPLIED, and a second rule below it
+  had.** One `.gg-tile` rule in the 768 block set a smaller padding with no
+  `!important` and lost to the inline padding `buildUI()` writes; a second,
+  later in the same block, set `min-height: 150px` WITH `!important` and won.
+  So the tile was **76 by 180** and the picker card 569 tall. It is
+  `#pick-wrap .gg-tile` at `padding: 10px 6px` and `min-height: 0`, both
+  forced: **74 by 103, and the card 414**. Eighth control in this project
+  caught by the inline-versus-stylesheet rule, and the first caught by two
+  rules in the same block disagreeing.
+- **THE GARDENS' SECONDARY BUTTONS AND THE FORK FAILED AA, and they were the
+  last ones left.** `gbtn`'s primary was `#26a69a` with white at **3.00** and
+  its secondary `#e0e0e0` with `#666` at 4.07; the shared garden's own card
+  buttons were the same `#26a69a`. All of them take `#1d6466` with `#fff9e3`
+  at **6.49** now, which is the landing page's `.btn-primary` and the figure
+  every other forward button in the project already carries, and the
+  secondary's label went to `#555` for 5.45. **Five teals were doing the work
+  of one before this pass and there is one.**
+- **Walked both gardens end to end at 390 rather than sampled**: the fork,
+  the picker, why, what shaped your day, moments, the gratitude card and the
+  preview all land at 12..378 with nothing overflowing the card and no
+  sideways scroll, and the shared garden's first screen reads the same.
+- **TABLETS WERE MEASURED AND NEED NOTHING.** At 820 by 1180 the 768 block
+  does not match, so a tablet takes the desktop layout: card 520 of 820,
+  tiles 108 by 97, title 34, corner icons clear, no sideways scroll. **That
+  is the right answer rather than a gap** - a tablet has the width a laptop
+  has and the phone rules exist to recover width a phone does not have.
+
 ## THE SIGN IN GATE WAS A FIXED NOON GARDEN
 
 **`.gg-overlay` is the one place in this project that paints a garden in CSS

@@ -4308,8 +4308,8 @@ function whereBtn(label, under, icon, fn) {
          (icon || "") + '<span>' + label + '</span></span>' +
          '<span style="display:block;font-weight:400;font-size:12.5px;' +
          'opacity:0.88;margin-top:3px">' + under + '</span>');
-  b.style("background", "#26a69a");
-  b.style("color", "#fff");
+  b.style("background", "#1d6466");
+  b.style("color", "#fff9e3");
   b.style("border", "none");
   b.style("border-radius", "var(--gg-r-ctl)");
   b.style("padding", "11px 12px");
