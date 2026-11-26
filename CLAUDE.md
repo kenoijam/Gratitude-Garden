@@ -257,6 +257,71 @@ Four things, and three of them were the same fault: a thing offered twice.
   page, the links in a row, the letter still opens from its button, and at
   390 the row wraps to two lines inside the gutter with no sideways scroll.
 
+### "Meet Hortus" IS A CARD, AND HE HAD NO WAY BACK EITHER
+
+**The tour runs once (`gg_tour_done`) and the introduction rides once on the
+front of the day's fertilizer (`gg_met_hortus`), so everything that says who
+he is could only ever be seen once, by one person, on one machine.** That is
+the argument this file already makes about the LETTER, in its own words: a
+thing that can only be seen once cannot be read twice, shown to anybody, or
+demonstrated. It was just as true of him and nothing fixed it.
+
+- **A CARD RATHER THAN A TOUR REPLAY, on the author's instruction.** The tour
+  walks the page and needs the page under it; a card answers one question in
+  one place and can be opened from anywhere. `GardenGuide.meet()`.
+- **IT DOES NOT BREAK "IT SAYS ITS NAME ONCE, EVER".** That rule is about him
+  introducing HIMSELF, unprompted, on arrival. This is somebody pressing a
+  link that says Meet Hortus, which is a request rather than a greeting, and
+  `gg_met_hortus` is neither read nor written here.
+- **THE FIGURE IS PATABLE AND THAT IS WHY IT IS SHOWN AT 150.** `patHost` is
+  the same pat the band and the companion give, exported rather than written
+  a third time. This is the one place where patting him IS the demonstration.
+- **THE COLUMN HUSHES WHILE THE CARD IS OPEN, which is the band's own lesson
+  arriving a third time.** The band carries its own Hortus and with the
+  floating one up there were TWO of the same character on screen at once;
+  `quiet: true` fixed it there. The card had the identical fault, **caught by
+  looking at the render rather than by any measurement**. It is `data-hushed`
+  and NOT `putAway`: putting him away is the visitor's decision and survives
+  the visit, so the previous value is remembered and handed back on close
+  rather than guessed.
+- **IT BUILDS ITS OWN STYLE TAG** rather than adding to `CSS`, because `CSS`
+  is injected by `build()` and `build()` does not run when the companion is
+  off (`gg_guide_off`) or on a page with no `#home`. The card has to work on a
+  page where the column never appeared.
+- **z-index 9500 IS THE LETTER'S**, measured against this page: the side nav
+  is 9000, the tour's veil 9400 and its column 9450, so anything lower lets
+  the rail stand on top of a card meant to be the only thing on screen.
+- **FOUR WAYS OUT, the letter's own four**: the button, the corner cross, the
+  surround and Escape.
+- **A CACHED SCRIPT COST A ROUND, AGAIN.** `GardenGuide.meet` read
+  `undefined` while the file on disk plainly exported it. What settled it in
+  one line was reading the RUNNING object's keys and comparing them to the
+  file fetched with `{cache:"reload"}`: `say,step,mode,patHost,rubToPat,
+  putAway,fertilizer,name,reset` with no `meet`. **Check the running exports
+  against the file before believing an export is missing.**
+- **Verified**: the card builds and shows at 9500, the heading and figure
+  draw, the pat redraws him and throws the heart, the companion goes hushed
+  while it is open and un-hushed after, and at 390 the card is 358 by 413 at
+  left 16, wholly inside the viewport with no sideways scroll.
+
+### THE TOUR LOST ITS DEAD STEP, AND A PRONOUN WENT WITH IT
+
+- **THE `about` STEP IS CUT AND ITS LINE WAS FOLDED IN, NOT DELETED.** It read
+  "The whole idea: notice one small thing, and plant it", and the step after
+  it says "Here are the two places to plant IT": deleting the step left the
+  next one's pronoun pointing at nothing. The gardens step carries both now
+  and the tour is **five steps for five sections**. Verified by clearing
+  `gg_tour_done` and walking it: 1 of 5 at scrollY 0, then 878, 1634, 2784,
+  3829, so every step moves the page to a distinct place. Before the fix step
+  3 showed at step 2's position.
+- **`SAYS.gardens` HAD THE SAME ORPHANED PRONOUN.** "Two places to do it" was
+  leaning on About's own ambient line one section above. It is "Two places to
+  plant what you noticed" now. **An ambient line is read on its own, never as
+  the next in a sequence**, since somebody can arrive straight at any section.
+- **`SAYS.about` IS RETIRED, NOT DELETED**, the way every `.cta` rule was
+  while that section was cut. The observer only watches sections that exist,
+  so it is unreachable rather than broken.
+
 ### THE FOOTER CARRIES THE REAL LOGO, AND IT IS A SWAP
 
 `.footer-brand-logo` set the name in Fraunces at 1.4rem in the palette's
@@ -289,7 +354,22 @@ one place the page still states it, since the hero's wordmark is off.
   leave a sticker. **The mark is the butterfly as a monogram and Hortus is the
   butterfly as somebody**, which is a better relationship than one drawing.
 
-### "Make an account" IS A PLAIN LINK, AND ITS NOTE IS GONE
+### "Make an account" HAS SINCE LEFT THE FOOTER ALTOGETHER
+
+**The corner already had it.** `garden-account.js` loads with
+`data-chip="top"` on this page, so the account icon in the top right row
+opens the very same sign in card: the footer link was a second route to one
+thing. The row is **Meet Hortus, The Personal Garden, The Shared Garden, Why
+I made this**.
+
+**THE COST, STATED ONCE AND NOT BURIED: nothing in WORDS on this page now says
+an account exists or that it is optional.** The corner chip is an unlabelled
+icon carrying it in an `aria-label`. About said it until three commits ago,
+the footer's note until two, and this link until now; all three were cut on
+instruction knowing it. **If a line about accounts is ever wanted back, the
+two garden cards are where it costs least.**
+
+### "Make an account" WAS A PLAIN LINK, AND ITS NOTE WENT FIRST
 
 A bordered 44px pill beside three plain links read as one button with some
 text round it. It is the fourth `button.footer-as-link` in the row now, which
@@ -368,6 +448,10 @@ for a section that ACTS.
     deleted six tracked all-caps eyebrows from this page and two of them have
     already crept back once since.
   - Its rail item is **v1's own**, icon and label unchanged.
+- **IT WAS SIX EDITS AND I DID FIVE.** The sixth is `garden-guide.js`, whose
+  `TOUR` and `SAYS` both key on section ids, and missing it left the tour with
+  a dead `about` step for two commits. See the fix below and the amended rule
+  under the section order.
 - **THE FIVE EDITS, TWICE OVER, AND BOTH TIMES THE CURVES WERE THE ONES THAT
   BITE.** Markup, the `.side-nav-item`, `sectionIds`, the `SECTIONS` sparkle
   list, and the curve colours, since every curve is painted in the colour of
@@ -2222,6 +2306,16 @@ gardens, driven by the STEP the sketch is on.
 BEFORE reflecting, so it sits straight after the hero rather than fifth, and
 somebody who only reads the top of the page still gets it. It is also what a
 dark teal band is best at: one short stop between two long cream ones.
+
+**MOVING OR CUTTING A SECTION IS SIX EDITS THAT MUST ALL AGREE, AND THE SIXTH
+WAS FOUND THE HARD WAY.** `garden-guide.js` keys BOTH `TOUR` and `SAYS` on
+section ids, so a section that goes leaves a tour step pointing at nothing and
+an ambient line that can never fire. **`tourGo` guards its scroll with
+`if (sec && i > 0)`, so it does not throw**: the step shows its line while the
+page sits still at the PREVIOUS step's section, which is worse than a crash
+because only walking the whole tour finds it. It sat that way for two commits
+after About was cut. The five below are still the five; this is the one that
+is easy to forget because it is in another file.
 
 **MOVING A SECTION IS FIVE EDITS THAT MUST ALL AGREE**, and the old note said
 four. The fifth is the sparkle list.

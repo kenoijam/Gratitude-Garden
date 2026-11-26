@@ -1816,26 +1816,30 @@
            width="1320" height="475" decoding="async"/>
 
       <ul class="footer-links">
-        <!-- THE SIGN UP MAKES AN ACCOUNT, not a mailing list, and that is
-             still the whole reason it is here rather than a newsletter field:
-             a box asking for an email with nothing behind it would be the one
-             control on an otherwise honest page that does not do what it
-             says. It is a BUTTON, not a link with an `href`, because it opens
-             the account module's own card rather than going anywhere.
+        <!-- "Make an account" IS GONE FROM HERE, AND THE CORNER ALREADY HAD
+             IT. `garden-account.js` loads with `data-chip="top"` on this
+             page, so the account icon in the top right row opens the very
+             same sign in card: the footer link was a second route to one
+             thing. Its own note, "One name across both gardens. They work
+             without one", went a commit earlier.
 
-             IT IS A PLAIN LINK NOW, NOT A PILL, on the author's instruction:
-             a bordered 44px control beside three plain links made the footer
-             read as one button with some text round it. The `<span>` inside
-             it is load bearing, since the handler writes into it when
-             accounts are not configured.
-
-             ITS NOTE IS GONE, AND THE COST IS ON THE RECORD. It read "One
-             name across both gardens. They work without one", and that was
-             the LAST place on the page saying an account is optional: About
-             was cut two commits ago partly because this note already said it.
-             Cut on the author's instruction, knowing that. **Any new line
-             here should say that before it says anything else.** -->
-        <li><button type="button" class="footer-as-link" id="footerJoin"><span>Make an account</span></button></li>
+             THE COST, STATED ONCE AND NOT BURIED: nothing in WORDS on this
+             page now says an account exists or that it is optional. The
+             corner chip is an unlabelled icon with that in its `aria-label`.
+             About said it until three commits ago, this footer said it until
+             two, and both were cut on instruction knowing it. **If a line
+             about accounts is ever wanted back, the two garden cards are
+             where it costs least.** `.footer-join` and its note's rule are
+             still in the stylesheet, unused. -->
+        <!-- MEET HORTUS, AND HE HAD NO WAY BACK. The tour runs once on a
+             first visit and the introduction rides once on the front of the
+             day's fertilizer, so everything that says who he is could only
+             ever be seen once, by one person, on one machine. That is the
+             argument `garden-letter.js` already makes about the letter, and
+             it was just as true of him. `GardenGuide.meet()` opens a card
+             with a patable Hortus in it; the whole of it lives in
+             `garden-guide.js`, where the name, the poses and the pat are. -->
+        <li><button type="button" class="footer-as-link" id="footerMeet">Meet Hortus</button></li>
         <li><a href="personal-garden/personal-garden-index.html" target="_self" rel="noopener">The Personal Garden</a></li>
         <li><a href="shared-garden/shared-garden-index.html" target="_self" rel="noopener">The Shared Garden</a></li>
         <!-- THE LETTER'S WAY BACK, and it is not a nicety: the letter shows
@@ -1881,23 +1885,14 @@
      every window size but one. -->
 
 <script>
-  /* THE FOOTER'S SIGN UP OPENS THE PROJECT'S OWN ACCOUNT CARD. `openSignIn`
-     is what `garden-account.js` already exports and what the chip in the
-     corner already opens, so there is one sign in on this page rather than
-     two. If accounts are not configured the module is inert and the button
-     says so rather than opening nothing. */
+  /* THE "Meet Hortus" LINK. `garden-guide.js` owns the card, the name and
+     the pat, so this knows none of them. Guarded, because the guide can be
+     absent: a page with `gg_guide_off` set still has this link. */
   (function () {
-    var b = document.getElementById('footerJoin');
+    var b = document.getElementById('footerMeet');
     if (!b) return;
     b.addEventListener('click', function () {
-      var A = window.GardenAccount;
-      if (A && A.isLive && A.isLive() && A.openSignIn) {
-        if (A.user && A.user()) { A.openFriends(); return; }
-        A.openSignIn();
-        return;
-      }
-      b.querySelector('span').textContent = 'Accounts are not switched on yet';
-      b.disabled = true;
+      if (window.GardenGuide && GardenGuide.meet) GardenGuide.meet();
     });
   })();
 

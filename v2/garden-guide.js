@@ -65,8 +65,23 @@
   var TOUR = [
     { to: "home",    line: "Hi, I am Hortus! Give me a moment and I will show you round." },
     { to: "wisdom",  line: "I bring one line of encouragement a day. Pat me on this band to read today's." },
-    { to: "about",   line: "The whole idea: notice one small thing, and plant it. That is all there is to do here." },
-    { to: "gardens", line: "Here are the two places to plant it. One is yours alone, one is shared with everybody." },
+    /* THE `about` STEP IS CUT WITH THE SECTION, AND IT WAS A SILENT DEAD
+       STEP FOR TWO COMMITS. `tourGo` guards its scroll with
+       `if (sec && i > 0)`, so a step whose section no longer exists does not
+       throw: it shows its line while the page sits still at the PREVIOUS
+       step's section, which is worse than a crash because only walking the
+       tour finds it.
+
+       ITS LINE HAD TO BE FOLDED IN RATHER THAN DELETED. It read "The whole
+       idea: notice one small thing, and plant it", and the step after it
+       says "Here are the two places to plant IT": deleting it left the next
+       step's pronoun pointing at nothing. The gardens step carries both now.
+
+       **CUTTING OR MOVING A SECTION IS SIX EDITS, NOT FIVE.** The markup, the
+       `.side-nav-item`, `sectionIds`, the `SECTIONS` sparkle list, the curve
+       colours, AND THIS FILE: `TOUR` and `SAYS` both key on section ids. The
+       five-edit note elsewhere predates the tour. */
+    { to: "gardens", line: "The whole idea: notice one small thing, and plant it. Here are the two places to do that, one yours alone and one shared with everybody." },
     { to: "flowers", line: "Every flower stands for something, and the same eight grow in both gardens." },
     { to: "start",   line: "That is everything! Whatever you noticed today is enough. I will be here as you go." }
   ];
@@ -170,9 +185,20 @@
     home:    { pose: "welcome",
                line: "So glad you came! Wander wherever you like, and I will keep you company.",
                spot: ["right", 150] },
+    /* RETIRED WITH THE SECTION, kept rather than deleted the way every
+       `.cta` rule was while that section was cut. The observer only watches
+       sections that exist, so this is unreachable rather than broken, and if
+       About ever comes back its line is already written. */
     about:   { pose: "listen",  line: "One small thing a day. That is the whole of it.",
                spot: ["left", 40] },
-    gardens: { pose: "welcome", line: "Two places to do it. Pick whichever suits today.",
+    /* "Two places to do IT" IS NOW "to plant it in", AND THE PRONOUN IS WHY.
+       About's own line, "One small thing a day. That is the whole of it", was
+       what "it" leaned on while that section sat directly above this one.
+       With About cut the pronoun pointed at nothing for anybody scrolling
+       past, and at nothing at all for somebody arriving straight here, which
+       these lines have always had to survive: **an ambient line is read on
+       its own, never as the next in a sequence.** */
+    gardens: { pose: "welcome", line: "Two places to plant what you noticed. Pick whichever suits today.",
                spot: ["right", 260] },
     flowers: { pose: "planted", line: "Every flower here stands for something. Yours is chosen for you.",
                spot: ["left", 90] },
@@ -1416,8 +1442,160 @@
     document.head.appendChild(gs);
   }
 
+  /* ═══════════════════════════════════════════════ MEET HORTUS, FROM THE FOOTER
+     A card that introduces him, opened by the footer's "Meet Hortus" link.
+
+     WHY IT EXISTS: HE HAD NO WAY BACK. The tour runs once on a first visit,
+     `gg_tour_done` in `localStorage`, and the introduction rides once on the
+     front of the day's fertilizer under `gg_met_hortus`. So everything that
+     says who he is could only ever be seen once, by one person, on one
+     machine. This file already argues the point about the LETTER, in its own
+     words: a thing that can only be seen once cannot be read twice, shown to
+     anybody, or demonstrated. That was true of Hortus too and nothing fixed
+     it.
+
+     IT IS A CARD RATHER THAN A TOUR REPLAY, on the author's instruction. The
+     tour walks the page and needs the page under it; this answers one
+     question in one place and can be opened from anywhere.
+
+     IT DOES NOT BREAK "IT SAYS ITS NAME ONCE, EVER". That rule is about him
+     introducing HIMSELF, unprompted, on arrival. This is somebody pressing a
+     link that says Meet Hortus, which is a request rather than a greeting,
+     and `gg_met_hortus` is neither read nor written here.
+
+     THE FIGURE IS PATABLE AND THAT IS THE POINT OF SHOWING HIM AT 150.
+     `patHost` is the same pat the band and the companion give, exported
+     rather than written a third time, so the wink and the heart are his own.
+     This is the one place where patting him is the whole demonstration.
+
+     IT BUILDS ITS OWN STYLE TAG rather than adding to `CSS`, because `CSS` is
+     injected by `build()` and `build()` does not run when the companion is
+     off (`gg_guide_off`) or on a page with no `#home`. The card has to work
+     on a page where the column never appeared.
+
+     z-index 9500 IS THE LETTER'S, and that is measured against this page: the
+     side nav is 9000, the tour's veil 9400 and its column 9450, so anything
+     lower would let the rail stand on top of a card that is meant to be the
+     only thing on screen. The two cards cannot collide, since the footer is
+     unreachable while either is open. */
+  var meetEl = null;
+
+  function meetCss() {
+    if (document.getElementById("gg-meet-css")) return;
+    var st = document.createElement("style");
+    st.id = "gg-meet-css";
+    st.textContent =
+      "#gg-meet{position:fixed;inset:0;z-index:9500;display:flex;align-items:center;" +
+      "justify-content:center;padding:24px 16px;overflow-y:auto;" +
+      "background:rgba(20,73,75,0.34);opacity:0;transition:opacity .42s ease;}" +
+      "#gg-meet[data-show='1']{opacity:1;}" +
+      "#gg-meet[hidden]{display:none !important;}" +
+      ".gmeet-card{position:relative;width:min(92vw,430px);background:#fffdf7;" +
+      "border-radius:18px;padding:22px 40px 24px;margin:auto;" +
+      "box-shadow:0 18px 48px rgba(29,100,102,0.22);text-align:center;" +
+      "transform:translateY(16px);transition:transform .52s cubic-bezier(.22,.9,.3,1);}" +
+      "#gg-meet[data-show='1'] .gmeet-card{transform:none;}" +
+      ".gmeet-fig{width:150px;height:150px;margin:0 auto 6px;cursor:pointer;}" +
+      ".gmeet-name{font-family:'Fraunces',Georgia,serif;font-weight:600;" +
+      "font-variation-settings:'SOFT' 50,'WONK' 0;font-size:26px;color:#1d6466;" +
+      "margin:0 0 12px;}" +
+      ".gmeet-body{font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.72;" +
+      "color:#2f6260;margin:0 0 20px;}" +
+      ".gmeet-go{font-family:Arial,Helvetica,sans-serif;font-size:14px;font-weight:700;" +
+      "border:none;border-radius:50px;padding:11px 22px;min-height:44px;" +
+      "background:#1d6466;color:#fff9e3;cursor:pointer;}" +
+      ".gmeet-x{position:absolute;top:10px;right:12px;width:30px;height:30px;" +
+      "border:none;background:none;color:#7aa6a2;font-size:20px;line-height:1;" +
+      "cursor:pointer;border-radius:50%;}" +
+      "@media (prefers-reduced-motion:reduce){#gg-meet,.gmeet-card{transition:none;}}";
+    document.head.appendChild(st);
+  }
+
+  /* THE COLUMN HUSHES WHILE THE CARD IS OPEN, AND THAT IS THE BAND'S OWN
+     LESSON. The Fertilizer band carries its own Hortus, and with the floating
+     one up there were TWO of the same character on screen at once a few
+     hundred pixels apart saying different things; `quiet: true` on that
+     section's entry hides the column and shows it again on the next. This
+     card is a third place he appears and it had exactly the same fault,
+     caught by looking at it rather than by measuring.
+
+     IT IS `data-hushed`, NOT `putAway`. Putting him away is the VISITOR's
+     decision and survives the visit; this is the guide getting out of its own
+     way, so the previous value is remembered and handed back on close rather
+     than guessed. */
+  var meetWasHushed = null;
+
+  function meetClose() {
+    if (!meetEl) return;
+    meetEl.removeAttribute("data-show");
+    if (root && meetWasHushed !== null) {
+      if (meetWasHushed) root.setAttribute("data-hushed", "1");
+      else root.removeAttribute("data-hushed");
+      meetWasHushed = null;
+    }
+    setTimeout(function () { if (meetEl) meetEl.hidden = true; }, 420);
+  }
+
+  function meet() {
+    if (!window.GardenMascot) return;
+    meetCss();
+    if (!meetEl) {
+      meetEl = document.createElement("div");
+      meetEl.id = "gg-meet";
+      meetEl.hidden = true;
+      meetEl.innerHTML =
+        '<div class="gmeet-card" role="dialog" aria-modal="true" aria-label="Meet ' + NAME + '">' +
+          '<button type="button" class="gmeet-x" aria-label="Close">&#215;</button>' +
+          '<div class="gmeet-fig" role="button" tabindex="0" aria-label="Pat ' + NAME + '"></div>' +
+          '<p class="gmeet-name">' + NAME + '</p>' +
+          '<p class="gmeet-body">My name is Latin for garden, so I am the garden ' +
+          'come to say hello. I bring one line of encouragement a day, and I keep ' +
+          'you company in both gardens. Go on, pat me.</p>' +
+          '<button type="button" class="gmeet-go">Nice to meet you</button>' +
+        '</div>';
+      document.body.appendChild(meetEl);
+
+      var fig = meetEl.querySelector(".gmeet-fig");
+      fig.innerHTML = window.GardenMascot.svg("welcome", 150);
+      function pat() { patHost(fig, 150, "welcome"); }
+      fig.addEventListener("click", pat);
+      fig.addEventListener("keydown", function (e) {
+        if (e.key === "Enter" || e.key === " ") { e.preventDefault(); pat(); }
+      });
+      /* THE RUB IS THE COMPANION'S OWN TEST, three direction changes, exported
+         rather than written again. */
+      if (typeof rubToPat === "function") rubToPat(fig, pat);
+
+      meetEl.querySelector(".gmeet-x").addEventListener("click", meetClose);
+      meetEl.querySelector(".gmeet-go").addEventListener("click", meetClose);
+      /* FOUR WAYS OUT, the letter's own four: the button, the cross, the
+         surround and Escape. The button is an invitation and the cross is a
+         dismissal, and somebody who wants the second should not have to
+         accept the first. */
+      meetEl.addEventListener("click", function (e) { if (e.target === meetEl) meetClose(); });
+      document.addEventListener("keydown", function (e) {
+        if (e.key === "Escape" && meetEl && !meetEl.hidden) meetClose();
+      });
+    }
+    if (root) {
+      meetWasHushed = root.hasAttribute("data-hushed") ? 1 : 0;
+      root.setAttribute("data-hushed", "1");
+    }
+    meetEl.hidden = false;
+    /* A FORCED REFLOW BETWEEN SHOWING IT AND ASKING FOR THE TRANSITION, or the
+       browser coalesces the two and the card simply appears. The letter needs
+       the identical trick. */
+    void meetEl.offsetWidth;
+    meetEl.setAttribute("data-show", "1");
+    var go = meetEl.querySelector(".gmeet-go");
+    if (go) go.focus();
+  }
+
   window.GardenGuide = {
     say: say,
+    /* THE FOOTER'S "Meet Hortus" LINK. See the block above for why a
+       character with a once-only introduction needed a way back. */
+    meet: meet,
     /* WHAT A GARDEN SKETCH CALLS, from its own `showStep`. An unknown step
        name hushes rather than throwing, so a step added to a sketch later
        simply gets no line until somebody writes one. */
