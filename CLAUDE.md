@@ -257,6 +257,56 @@ Four things, and three of them were the same fault: a thing offered twice.
   page, the links in a row, the letter still opens from its button, and at
   390 the row wraps to two lines inside the gutter with no sideways scroll.
 
+### THE FOOTER CARRIES THE REAL LOGO, AND IT IS A SWAP
+
+`.footer-brand-logo` set the name in Fraunces at 1.4rem in the palette's
+yellow, which is the name drawn in a face the logo does not use.
+`gratitude-garden-logo.png` is the author's own lockup, a script wordmark and
+a butterfly mark in the palette's mint with a pink centre, 1320 by 475, drawn
+at 200 wide. **A swap rather than an addition**, and it keeps the name in the
+one place the page still states it, since the hero's wordmark is off.
+
+- **THE CONTRAST IS A REAL STEP DOWN AND IT IS ON THE RECORD.** Measured by
+  reading the file's own pixels back against the footer's `#1d6466`: the mint
+  at `rgb(168,216,200)` is 66.5 percent of the mark at **4.34:1**, a paler
+  mint 31.5 percent at 4.52, and the pink centre 2 percent at 3.73. All three
+  clear the **3:1** that non-text graphics and large text need, and the
+  typeset yellow it replaced ran at roughly 9:1. The name survives for a
+  screen reader in the `alt`.
+- **`width` AND `height` ARE ON THE ELEMENT AS WELL AS IN THE RULE**, which
+  reserves the box before the image arrives so the footer does not jump as it
+  loads. `max-width: 100%` keeps it inside the phone's gutter; measured at
+  390, 200 by 72 at left 24.
+- **`LOGO-01.png` IS A DIFFERENT ASSET AND THE TWO MUST NOT BE CONFUSED.** It
+  is the author's own personal mark, two pale sweeping curves, and it is what
+  the footer's bottom right wraps in the Linktree link. It is also what both
+  garden sketches 404 on, which is the known breakage recorded below.
+- **THE MARK IS A BUTTERFLY AND SO IS HORTUS, and using it AS Hortus was
+  refused.** He carries five faces, a pat that winks and sends a heart off his
+  crown, a gaze that follows the pointer, a breath and a wing flap, all driven
+  by `gm-wings` and `gm-eyes` in his SVG; this has no face and no parts to
+  drive, so the swap would not restyle the character, it would delete it and
+  leave a sticker. **The mark is the butterfly as a monogram and Hortus is the
+  butterfly as somebody**, which is a better relationship than one drawing.
+
+### "Make an account" IS A PLAIN LINK, AND ITS NOTE IS GONE
+
+A bordered 44px pill beside three plain links read as one button with some
+text round it. It is the fourth `button.footer-as-link` in the row now, which
+is what the letter's link already was.
+
+- **THE `<span>` INSIDE IT IS LOAD BEARING.** The handler writes "Accounts are
+  not switched on yet" into `b.querySelector('span')` and sets `disabled` when
+  no project is configured, so the span cannot be flattened away.
+  `.footer-col ul button.footer-as-link[disabled]` carries the dim that
+  `.footer-join[disabled]` used to, or a dead control reads as a live one.
+- **ITS NOTE IS CUT AND THE COST IS REAL.** "One name across both gardens.
+  They work without one" was **the last place on the page saying an account is
+  optional**, and About was cut two commits earlier partly on the grounds that
+  this note already said it. Cut on the author's instruction, knowing that.
+  **Any new line in this footer should say that before it says anything
+  else**, and the garden cards are the other place it could go.
+
 ### THE CLOSING SECTION TAKES THE HERO'S PAIR, NOT THE PAIR THAT WAS CUT
 
 On the author's instruction it now ends with the same button and link the
@@ -1378,10 +1428,22 @@ machine output from a mix of English and Indonesian; quote it by timecode.
   disclaimer** (16:51 to 17:46). Asked for explicitly to be left out. Her
   call; it is recorded here so nobody adds it back by accident, and so it is
   on file that the expert recommended it.
-- **STILL OPEN from that interview**: small circles, a garden shared with
-  chosen friends (48:14), which she argued for and which `FRIENDS_OFF` in
-  `garden-account.js` already has the machinery for; and the 14 day pre and
-  post gratitude measure she wants instead of a single session (56:03).
+- **SMALL CIRCLES ARE BUILT AND THIS NOTE USED TO SAY THEY WERE NOT.** It
+  read "STILL OPEN: small circles, a garden shared with chosen friends
+  (48:14)", which was written before they were built and was never updated,
+  so this file carried a whole section describing the feature AND a line
+  saying it was outstanding. **Checked in the running page rather than
+  resolved on paper**: opening `?circle=quiet-fern-moth` gives
+  `roomKey = garden-2026-11-26-quiet-fern-moth`, `circleCode` set, the code
+  remembered in `gg_circles`, and the card titled with the code over "A
+  circle. Only the people with this link plant here" with Copy the link,
+  Today's open garden and Name this circle under it. See the small circles
+  section above.
+- **STILL OPEN from that interview**, and it is now one thing: the 14 day pre
+  and post gratitude measure she wants instead of a single session (56:03).
+  **`FRIENDS_OFF` is NOT that**, and it is worth separating: the friends
+  system is real membership and is still behind that flag, while circles
+  deliberately have no membership table at all.
 
 ## ENTER GOES ON (`v2/garden-enter.js`), v2 ONLY
 

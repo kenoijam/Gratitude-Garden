@@ -1337,9 +1337,18 @@ footer::before {
    has to give each its own column rather than push them to the edges. */
 .footer-top { display: grid; grid-template-columns: 1fr; gap: 0;
   align-items: start; margin-bottom: 2rem; }
-/* IT IS A PLAIN `<p>` NOW rather than a `<summary>`'s only child, so it
-   carries its own margin again: `.footer-fold > summary > .footer-brand-logo`
-   used to wipe it to 0 and the summary held the space instead. */
+/* THE LOCKUP, AND IT IS SIZED BY WIDTH WITH THE HEIGHT LEFT TO THE RATIO.
+   The file is 1320 by 475, so 200px wide draws 72 tall. `width` and `height`
+   are on the element as well, which is what reserves the box before the image
+   arrives so the footer does not jump as it loads; the rule overrides both.
+   `max-width: 100%` is what keeps it inside the phone's gutter. */
+.footer-logo-mark {
+  display: block; width: 200px; height: auto; max-width: 100%;
+  margin: 0 0 0.2rem;
+}
+/* `.footer-brand-logo` IS RETIRED, NOT DELETED: it set the name in Fraunces
+   where the logo now sits, and the garden pages' own chrome does not use it.
+   Kept unused, the way every `.cta` rule was while that section was cut. */
 .footer-brand-logo {
   font-variation-settings: 'SOFT' 50, 'WONK' 0; font-family: 'Fraunces','Georgia',serif; font-size: 1.4rem; color: var(--yellow); margin: 0 0 0.2rem; display: block; text-decoration: none; }
 /* `.footer-desc` IS GONE, not merely unused: it held the whole project
@@ -1403,6 +1412,11 @@ footer::before {
    its border and its left alignment) has to be taken off by hand. */
 .footer-col ul button.footer-as-link { font-family: Arial,Helvetica,sans-serif; color: rgba(255,249,227,0.55); font-size: 0.88rem; background: none; border: none; padding: 0; text-align: left; transition: color 0.3s; }
 .footer-col ul button.footer-as-link:hover { color: var(--yellow); }
+/* THE ACCOUNT LINK CAN DISABLE ITSELF. Its handler writes "Accounts are not
+   switched on yet" into the span and sets `disabled` when no project is
+   configured, which `.footer-join[disabled]` used to dim. As a plain link it
+   needs the same, or a dead control reads exactly like a live one. */
+.footer-col ul button.footer-as-link[disabled] { opacity: .6; cursor: default; }
 .footer-bottom { border-top: 1px solid rgba(255,255,255,0.1);
   /* 1.8rem, not 2.5: the row centres its credit in what is left, which adds
      about 12px on top of the padding, so the gap UNDER the divider reads 43
