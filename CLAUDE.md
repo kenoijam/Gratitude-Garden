@@ -15,7 +15,19 @@ one. That needs both online at the same time, so:
 
 | | | |
 |---|---|---|
-| `/` | the BEFORE | **frozen. Do not change it.** |
+| `/` | the BEFORE | **frozen. Do not change it**, except as below. |
+
+**THE FREEZE HAS EXACTLY ONE APPROVED EXCEPTION, and the test for any
+other is in the exception itself.** The five DEMO flowers were ported
+into the root's shared garden on the author's instruction. The freeze
+exists so the before does not drift TOWARD the after; this went the
+other way. v2 had those five and the root had none, so on a quiet day
+the before's shared garden was a field of grass while the after's looked
+busy, which is a difference the experiment never meant to test and which
+flatters the after on exactly the feature that garden is about.
+**A change to the root is allowed only when it REMOVES a difference the
+table below does not list. Anything that adds one is the drift the
+freeze is for.**
 | `/v2/` | the AFTER | every new feature goes here |
 
 - **WHAT ACTUALLY DIFFERS, which is the thing the testing measures.** Keep
@@ -89,12 +101,17 @@ one. That needs both online at the same time, so:
     to be added to Supabase's **Site URL and Redirect URLs** or password
     recovery sends people to the root copy. That is step 5 of
     `SUPABASE-SETUP.md`.
-  - p5.party: `partyConnect(..., "gratitude_garden")` and the date room key are
-    identical, so **a flower planted in the v2 shared garden appears in the
-    root one and the other way round.** For an A/B test that may be wrong, and
-    changing it is one string in `v2/shared-garden/shared-garden-sketch.js`.
-    It is deliberately NOT changed yet: an empty meadow is a bad first
-    impression in a demo, and which matters more is the author's call.
+  - p5.party: **THEY NO LONGER SHARE A ROOM.** The app name is still
+    `gratitude_garden` on the same server, but v2's key is
+    `garden-v2-<date>` against the root's `garden-<date>`, so the two
+    conditions are independent. They DID share one, and it was wrong three
+    ways: a participant's flower from one condition stood in the other, the
+    second condition's meadow was populated by the first, and because this
+    garden allows one flower per name per day, somebody who planted as "ani"
+    in the before was REFUSED when they tried to plant as "ani" in the after.
+    **The root is not the copy that moved**, deliberately: it is the frozen
+    one, and any link or screenshot of it still points at the room it always
+    did.
 - **VERIFIED IDENTICAL AFTER THE COPY, by measurement rather than by looking**:
   `/` and `/v2/` both report `CSS1Compat`, a 2560 by 552 meadow canvas at 1280
   wide, the ground pixel at `#8fcfbe` and the back hill at `#a9d9cf`, six
@@ -4359,23 +4376,71 @@ the account module, so it runs before anything reads storage.
   garden. That is in a live room on somebody else's server, not in this
   browser.
 
-### THREE THINGS TO DECIDE BEFORE THE FIRST SESSION
+### THE SHARED GARDEN IS SETTLED NOW, AND ONE THING IS STILL OPEN
 
-- **BOTH VERSIONS SHARE ONE SHARED-GARDEN ROOM, AND THAT IS A CONFOUND.**
-  `partyConnect("wss://demoserver.p5party.org", "gratitude_garden")` and
-  `roomKey = "garden-" + todayStr()` are **identical in `/` and `/v2/`**, so
-  a flower planted by a BEFORE participant appears in the AFTER participant's
-  garden and the other way round. The two conditions are not independent in
-  the one feature that is about other people. Changing it is one string in
-  `v2/shared-garden/shared-garden-sketch.js`.
-- **IT IS A PUBLIC DEMO SERVER.** Anyone else in the world running an app
-  named `gratitude_garden` on `demoserver.p5party.org` shares that room, so
-  a stranger's flower can appear mid-session and a participant's gratitude is
-  readable by them.
-- **`DEMO_COUNT` IS 5.** Five invented flowers with invented names and
-  sentences appear in the shared garden. **A participant who reads them will
-  believe five strangers planted today**, which is a claim the study would be
-  making without saying so. Say it in the briefing or set it to 0.
+Two of the three decisions below were taken on the author's instruction. The
+third cannot be fixed in code.
+
+- **(SETTLED) THE TWO CONDITIONS NO LONGER SHARE A ROOM.** v2's key is
+  `garden-v2-<date>` against the root's `garden-<date>`. They were identical,
+  which meant a participant's flower from one condition stood in the other,
+  the second condition's meadow was populated by the first, and **a
+  participant who planted as "ani" in the before was REFUSED in the after**,
+  since this garden allows one flower per name per day.
+- **(SETTLED) BOTH COPIES NOW HAVE THE FIVE DEMO FLOWERS.** `DEMO_COUNT` was
+  5 in v2 and the root had none, so the after's meadow always looked busier
+  than the before's. See the ported block in `shared-garden-sketch.js` and
+  the note on the freeze at the top of this file.
+  - **THE RESIDUAL DIFFERENCE, RECORDED RATHER THAN HIDDEN:** v2's demos use
+    `anonAlias` and `typeLike`, so about a third of them are anonymous with
+    an alliterative alias and the names are styled as five different people
+    typing. The root has neither function and all five of its demos are
+    plainly named. The root's `flowerLabel` returns a flat "Someone" for
+    every anonymous flower, so porting the anonymity without the aliases
+    would have put two identical labels in one meadow, which is the exact
+    fault the aliases were written to fix.
+  - **STILL SAY SO IN THE BRIEFING.** A participant who reads them will
+    believe five strangers planted today, in BOTH conditions now, which is a
+    claim the study would otherwise be making without saying so. Set
+    `DEMO_COUNT` to 0 in both and they go away.
+- **(STILL OPEN) IT IS A PUBLIC DEMO SERVER.** Anyone else in the world
+  running an app named `gratitude_garden` on `demoserver.p5party.org` shares
+  that room, so a stranger's flower can appear mid-session and a
+  participant's gratitude is readable by them. Separate room keys do not
+  help: the app name is what is public.
+
+### WHAT THE PORT HAD TO GET RIGHT, AND HOW IT WAS CHECKED
+
+Both of the bugs v2 recorded against this block were avoided, and both were
+verified by running rather than by reading.
+
+- **THE DIFF HAD TO LEARN ABOUT THEM, TWICE OVER.**
+  `flowers.length !== shared.flowers.length` fires on EVERY frame once five
+  extras are appended, re-copying the whole room sixty times a second;
+  counting only the real ones fixes that and **breaks the empty case**, where
+  `0 !== 0` is false so the block never runs and the demos never appear.
+  Tested by marking the ARRAY (not its objects, which survive a re-copy
+  because `demoCache` hands back the same references) and stepping six
+  frames: the mark survives on an empty room and again with a real flower in
+  it.
+- **A REAL FLOWER ARRIVING WAS TESTED WITHOUT TOUCHING THE LIVE ROOM**, by
+  swapping `shared` for a plain stub object, stepping frames, then restoring
+  it. 1 real plus 5 demo, `growthStage` set, stable afterwards, and the room
+  back at 0. **Never plant a test flower into the real room to check this.**
+- **`sharedPlantedToday` NEEDED NO CHANGE AND THAT WAS CHECKED, NOT ASSUMED.**
+  It reads `shared.flowers`, the ROOM, and demos are never written there, so
+  a demo cannot refuse anybody their flower. Verified by calling it with
+  three of the five demo names: none is blocked.
+- **`demoFlowers` IS AT MODULE SCOPE.** v2 recorded the trap: its whole demo
+  block lives inside `draw()`, so a function declared beside `DEMO_COUNT`
+  there is declared inside the draw loop and is invisible to everything else.
+- **The root's canvas is created once and never resized** (its
+  `windowResized` is still named `resizeGardenCanvas`, which p5 never calls;
+  that was fixed in v2 only). So measuring the demos' rows in a pane that was
+  resized after load reports all five in the front row, which is the narrow
+  screen rebalance acting on a stale canvas rather than a fault in the port.
+  **Load the page at the width you mean to measure.** At 1280 the five land
+  back, mid, front, mid, front across x 135 to 1191.
 
 ## THE DESIGN SYSTEM IS IN ONE PLACE NOW (`garden-cursor.js`)
 

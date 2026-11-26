@@ -397,7 +397,19 @@ circleCode = circleFromUrl();
 /* THE DATE IS STILL IN IT, so a circle's garden empties at midnight exactly
    like the public one. A circle that accumulated for ever would be a feed,
    and the one thing this project has never been is a feed. */
-roomKey = "garden-" + todayStr() + (circleCode ? "-" + circleCode : "");
+/* ═══════════ THIS COPY HAS ITS OWN ROOM, AND IT IS FOR THE USER TEST
+   It was `garden-<date>`, the same string the frozen root uses, on the same
+   server under the same app name, so the two copies planted into ONE live
+   meadow. For a before/after test that is wrong three ways: a participant's
+   flower from one condition stands in the other, the second condition's
+   meadow is populated by the first, and because this garden allows one
+   flower per name per day, somebody who planted as "ani" in the before was
+   REFUSED when they tried to plant as "ani" in the after. The prefix makes
+   the two independent.
+   THE ROOT IS NOT THE ONE THAT MOVED, deliberately: it is the frozen copy,
+   and any link or screenshot anybody already has of it still points at the
+   room it always did. */
+roomKey = "garden-v2-" + todayStr() + (circleCode ? "-" + circleCode : "");
 partyConnect("wss://demoserver.p5party.org", "gratitude_garden");
 shared = partyLoadShared(roomKey);
 }

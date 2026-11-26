@@ -2976,6 +2976,127 @@ showStep("garden");
 }
 }
 
+/* ═══════════════════════ FIVE FLOWERS ARE ALWAYS ALREADY HERE (DEMO)
+   ╔═══════════════════════════════════════════════════════════════════════╗
+   ║  KENISHA: THESE ARE NOT REAL PEOPLE. Set DEMO_COUNT to 0 and they go  ║
+   ║  away. SAY SO IN A USER TEST, or a participant will believe five      ║
+   ║  strangers planted today.                                             ║
+   ╚═══════════════════════════════════════════════════════════════════════╝
+
+   PORTED FROM v2 ON THE AUTHOR'S INSTRUCTION, AND IT IS THE ONE DELIBERATE
+   EXCEPTION TO THIS COPY BEING FROZEN. The freeze exists so the BEFORE does
+   not drift toward the AFTER; this does the opposite. v2 had these five and
+   this copy had none, so on a quiet day the before's shared garden was a
+   field of grass while the after's looked busy, which is a difference the
+   experiment never meant to test and which flatters the after on exactly the
+   feature the shared garden is about. Porting them REMOVES a difference.
+
+   NOTHING WRITES THEM TO THE ROOM. `shared.flowers` is a PUBLIC p5.party
+   object, so five invented flowers pushed into it would appear in
+   everybody's garden on that date, strangers' included, and could not be
+   taken back out. They live in the local `flowers` array, are rebuilt per
+   page load, and are invisible to `sharedPlantedToday`, which reads the ROOM
+   and not this array, so a demo can never refuse somebody their own flower.
+
+   SEEDED BY `todayStr()`, so the five are the same all day for everybody and
+   a different five tomorrow, which is the rule the room key already follows.
+
+   TWO THINGS v2 HAS THAT THIS DELIBERATELY DOES NOT, because this copy has
+   neither and porting them would be the drift the freeze is for:
+   `anonAlias`, so none of these five is anonymous (this copy's `flowerLabel`
+   returns a flat "Someone" for every anonymous flower, so two anonymous
+   demos would carry the same label, which is the exact fault the aliases
+   were written to fix); and `typeLike`, so the names are the plain strings
+   rather than being styled as five different people typing. */
+const DEMO_COUNT = 5;
+
+/* CHINESE INDONESIAN GIVEN NAMES, which is who this is actually for. A
+   meadow whose five strangers are plausibly the participant's own classmates
+   is a very different first impression from one whose five could be
+   anybody. */
+const DEMO_NAMES = ["jessica", "kevin", "vivian", "felicia", "andre",
+                    "michelle", "brandon", "clarissa", "nicholas",
+                    "angeline", "steven", "natasha"];
+
+/* Small on purpose. The whole argument of the project is that the thing you
+   noticed can be tiny, and five grand gratitudes in the meadow would quietly
+   say the opposite to everybody who reads them. */
+const DEMO_WORDS = [
+  "the bus came straight away",
+  "my mum called for no reason",
+  "cold water after a hot walk",
+  "someone held the lift",
+  "finished a thing I kept putting off",
+  "the cat sat on me",
+  "a good orange",
+  "rain on the window while I worked",
+  "my friend texted first",
+  "warm laundry",
+  "found a song I forgot about",
+  "nobody needed anything from me today"
+];
+
+let demoCache = null;
+/* IT IS AT MODULE SCOPE AND THAT IS NOT A STYLE CHOICE. v2 recorded this the
+   hard way: the whole demo block lives INSIDE `draw()`, so a function
+   declared beside `DEMO_COUNT` there is declared inside the draw loop and is
+   invisible to everything else. Declared out here it can be called from
+   either. */
+function demoFlowers() {
+  if (DEMO_COUNT <= 0) return [];
+  if (demoCache) return demoCache;
+  /* One seeded generator, so the five are stable within a day and the SAME
+     five for everybody looking at that date. */
+  const key = todayStr();
+  let h = 2166136261;
+  for (let i = 0; i < key.length; i++) { h ^= key.charCodeAt(i); h = Math.imul(h, 16777619); }
+  const rnd = () => { h = Math.imul(h ^ (h >>> 15), 2246822507); h ^= h >>> 13; return ((h >>> 0) % 100000) / 100000; };
+
+  const layers = ["back", "mid", "front", "mid", "front"];
+  /* `addFlower`'s own ranges, so a demo stands exactly as tall as a real
+     flower planted into that row would. Further back is taller. */
+  const DEMO_STEM = { front: [0.16, 0.22], mid: [0.26, 0.32], back: [0.33, 0.39] };
+  /* DRAWN WITHOUT REPLACEMENT. Picking independently from each list gave two
+     flowers with the same name and two people grateful for the same thing in
+     one meadow, which reads as a bug rather than as five people. */
+  const take = (arr) => arr.splice(Math.floor(rnd() * arr.length), 1)[0];
+  const names = DEMO_NAMES.slice();
+  const words = DEMO_WORDS.slice();
+  const out = [];
+  for (let i = 0; i < DEMO_COUNT; i++) {
+    const sp = speciesList[Math.floor(rnd() * speciesList.length)].id;
+    out.push({
+      word: take(names),
+      gratitude: take(words),
+      look: null,
+      anon: false,
+      demo: true,
+      species: sp,
+      layer: layers[i],
+      /* Spread across the width in five bands with a little jitter, so they
+         never stack and never line up either. */
+      xNorm: (i + 0.5) / DEMO_COUNT + (rnd() - 0.5) * 0.09,
+      baseY: 0, x: 0, stemLen: 0, size: 0,
+      stemNorm: DEMO_STEM[layers[i]][0] +
+                rnd() * (DEMO_STEM[layers[i]][1] - DEMO_STEM[layers[i]][0]),
+      sizeNorm: 0.034 + rnd() * 0.006,
+      phase: rnd() * 360,
+      petals: speciesPetalCount(sp),
+      hue: Math.round(rnd() * 360),
+      sat: defaultSat(sp),
+      light: defaultLight(sp),
+      /* WELL ABOVE ANY REAL INDEX, so a demo can never be mistaken for a
+         planted flower by anything matching on `createdIndex`. */
+      createdIndex: 900000 + i,
+      growthStage: GROWTH_STAGES.BLOOM,
+      growthStartTime: 0,
+      isOld: true
+    });
+  }
+  demoCache = out;
+  return out;
+}
+
 function draw() {
 /* The room has answered and there is a frame on the canvas, so the loader
    has something real to hand over to. `showing()` keeps this to one call
@@ -2983,7 +3104,18 @@ function draw() {
 if (window.GardenLoader && GardenLoader.showing() && shared && frameCount > 1) {
 GardenLoader.done();
 }
-if (shared && shared.flowers && flowers.length !== shared.flowers.length) {
+/* THE DIFF HAD TO LEARN ABOUT THEM, TWICE OVER, and v2 recorded both
+   mistakes. `flowers.length !== shared.flowers.length` fires on EVERY frame
+   once five extras are appended, re-copying the whole room sixty times a
+   second; counting only the REAL ones fixes that and breaks the empty case,
+   where `0 !== 0` is false so the block never runs and the demos never
+   appear at all. It has to test the real count AND whether the demos are
+   missing. */
+const realCount = flowers.reduce((n, f) => n + (f.demo ? 0 : 1), 0);
+const demoWant  = demoFlowers().length;
+const demoHave  = flowers.length - realCount;
+if (shared && shared.flowers &&
+    (realCount !== shared.flowers.length || demoHave !== demoWant)) {
 const oldMyFlower = (myLocalFlowerIndex >= 0 && myLocalFlowerIndex < flowers.length)
 ? flowers[myLocalFlowerIndex] : null;
 
@@ -3009,6 +3141,8 @@ break;
 }
 }
 }
+
+flowers = flowers.concat(demoFlowers());
 
 updateResponsiveFlowerLayout();
 }
