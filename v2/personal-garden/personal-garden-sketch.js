@@ -3427,8 +3427,19 @@ function buildUI() {
   const cardFork = gcard(forkWrap);
   /* THE TWO ARE NAMED BY WHAT THEY DO, not by which is the default. Neither is
      recommended: picking is faster and choosing is the thing this garden has
-     always done, and which suits a given day is the planter's business. */
-  gsub(cardFork, "Both end in the same place. Only the order changes.");
+     always done, and which suits a given day is the planter's business.
+
+     THE SUB IS GONE AND HORTUS SAYS IT, on the author's instruction. It read
+     "Both end in the same place. Only the order changes.", which is pure
+     REASSURANCE: it describes no control on the card and nothing the visitor
+     has to know to press either button. That is the one thing a card cannot
+     say about itself without sounding anxious, and it is exactly what this
+     project already built a companion to say. The card is a title and two
+     labelled choices now.
+     THE COST, STATED RATHER THAN BURIED: somebody who has dismissed Hortus
+     (`gg_guide_off`) is never told the two paths end the same. The two
+     labels and their own sub lines still describe both paths, so what is
+     lost is the reassurance rather than the information. */
 
   /* THE LABELS NAME THE ORDER, not the mechanism. "I'll pick one" and "Let
      today choose" described HOW the flower is decided, which is a thing
@@ -3490,7 +3501,14 @@ function buildUI() {
            (icon || "") + '</span>' +
            '<span style="display:block">' + label + '</span>' +
            '<span style="display:block;font-weight:400;font-size:12.5px;' +
-           'opacity:0.85;margin-top:5px">' + under + '</span>');
+           'opacity:0.85;margin-top:auto;padding-top:5px">' + under + '</span>');
+    /* A FLEX COLUMN WITH THE SUB PUSHED DOWN, which is the shared garden's
+       own `whereBtn` to the declaration. Both labels here are one line so it
+       changes nothing today; it is what makes the two cards one object
+       rather than two that happen to match, and it is what stops a longer
+       label ever breaking the pair. */
+    b.style("display", "flex");
+    b.style("flex-direction", "column");
     b.style("padding", "16px 12px 15px");
     b.style("line-height", "1.3");
     b.style("width", "100%");

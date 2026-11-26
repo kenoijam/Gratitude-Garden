@@ -4301,25 +4301,71 @@ const ICO_CIRCLE =
   '<circle cx="12" cy="4.9" r="2.1"/><circle cx="18.2" cy="15.6" r="2.1"/>' +
   '<circle cx="5.8" cy="15.6" r="2.1"/></g></svg>';
 
+/* ══════════════════ TWO CHOICES SIDE BY SIDE, THE ICON ON TOP
+   THE PERSONAL GARDEN'S FORK, TO THE NUMBER, on the author's instruction.
+   These two were stacked full width with the icon inline beside the label,
+   which is the shape the personal fork was rebuilt AWAY from and for the
+   reason that applies here too: stacked full width, the one screen that
+   offers a CHOICE reads as a list of two things to do in order. Side by side
+   is what says either, not both.
+
+   The two gardens' first screens ask the same KIND of question, so they are
+   the same object: a two column grid at a 10px gap, a 30px icon on its own
+   line, the label, then the sub at 12.5px and 0.85. The old card differed on
+   five numbers at once (icon 19 inline, padding 11px 12px, line-height 1.25,
+   sub margin 3px, sub opacity 0.88), none of which was a decision: they were
+   simply written at a different time.
+
+   THE CARD KEEPS ITS SUB WHERE THE FORK'S WAS CUT, and that is not an
+   inconsistency. The fork's said "both end in the same place", which is pure
+   reassurance and is Hortus's to say; this one says "only who can read it
+   changes", which is the CONSEQUENCE of the choice and the one fact this
+   project will not let a card leave out. */
+const whereRow = createDiv().parent(whereCard);
+whereRow.style("display", "grid");
+whereRow.style("grid-template-columns", "1fr 1fr");
+whereRow.style("gap", "10px");
+whereRow.style("margin-top", "4px");
+
 function whereBtn(label, under, icon, fn) {
-  const b = createButton("").parent(whereCard);
+  const b = createButton("").parent(whereRow);
   b.addClass("gg-hov");
-  b.html('<span style="display:flex;align-items:center;justify-content:center;gap:9px">' +
-         (icon || "") + '<span>' + label + '</span></span>' +
+  b.html('<span style="display:block;margin:0 auto 7px;width:30px;height:30px">' +
+         (icon || "") + '</span>' +
+         '<span style="display:block">' + label + '</span>' +
          '<span style="display:block;font-weight:400;font-size:12.5px;' +
-         'opacity:0.88;margin-top:3px">' + under + '</span>');
+         'opacity:0.85;margin-top:auto;padding-top:5px">' + under + '</span>');
+  /* THE SUB SITS AT THE BOTTOM, `margin-top:auto` INSIDE A FLEX COLUMN, and
+     that is what keeps the pair level. "Today's open garden" wraps to two
+     lines where "A circle" takes one, so with the sub following the label
+     the two sub lines started at different heights and the pair read as
+     uneven. The grid already stretches both buttons to one height, so
+     pushing the sub down aligns the icons at the top AND the subs at the
+     bottom with only the label block differing. The landing page's own cards
+     solve the same fault by RESERVING two lines, which needs a measured
+     number and leaves dead space at any width where both labels fit on one;
+     this needs neither. */
+  b.style("display", "flex");
+  b.style("flex-direction", "column");
   b.style("background", "#1d6466");
   b.style("color", "#fff9e3");
   b.style("border", "none");
   b.style("border-radius", "var(--gg-r-ctl)");
-  b.style("padding", "11px 12px");
+  b.style("padding", "16px 12px 15px");
   b.style("font-size", "16px");
   b.style("font-weight", "700");
-  b.style("line-height", "1.25");
+  b.style("line-height", "1.3");
   b.style("width", "100%");
   b.style("cursor", "pointer");
-  b.style("margin-bottom", "8px");
+  b.style("margin-bottom", "0");
   b.style("pointer-events", "auto");
+  /* THE ICONS ARE STROKED AT 1.5 ON A 24 BOX, so they have to be told to
+     fill the 30px slot rather than keeping their own 19px width. */
+  b.elt.querySelectorAll("svg").forEach(function (sv) {
+    sv.setAttribute("width", "30");
+    sv.setAttribute("height", "30");
+    sv.style.display = "block";
+  });
   b.mousePressed(fn);
   return b;
 }
@@ -4331,7 +4377,7 @@ whereBtn("A circle", "Only the people you give the code to",
 const wherePeek = createButton("Or look at today's garden first").parent(whereCard);
 wherePeek.style("display", "block");
 wherePeek.style("width", "100%");
-wherePeek.style("margin", "4px 0 0");
+wherePeek.style("margin", "12px 0 0");
 wherePeek.style("padding", "8px 4px");
 wherePeek.style("background", "none");
 wherePeek.style("border", "none");

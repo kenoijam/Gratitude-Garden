@@ -595,6 +595,61 @@ else in this block still holds.
 - **Measured after**: 390 document 4249 to 3609, every section 0.41 to 1.20
   screens, no sideways scroll. 1440 document 5493 to 4642.
 
+## THE TWO FIRST SCREENS ARE ONE OBJECT NOW, AND HORTUS TOOK A LINE
+
+Both gardens open on the same KIND of question, two choices with nothing
+between them, and they were built months apart and differed on five numbers
+at once. On the author's instruction they are the same object.
+
+- **THE FORK'S SUB IS CUT AND HORTUS SAYS IT.** It read "Both end in the same
+  place. Only the order changes.", which describes no control on that card
+  and tells nobody anything they need in order to press either button: it is
+  pure REASSURANCE, and that is the one thing this file already says a card
+  cannot give itself without sounding anxious. It is the author's sentence
+  moved **verbatim** into `GARDEN_SAYS.personal.fork`, not a rewrite, and it
+  replaces "Two ways in. Either is fine.", which was the same idea said
+  weaker. It passes his own tone test: a fact about the two paths, asking the
+  visitor to do nothing.
+  - **THE COST, ON THE RECORD:** somebody who has dismissed him
+    (`gg_guide_off`) never reads it. The two labels and their own sub lines
+    still describe both paths, so what is lost is the reassurance rather than
+    the information, and the card is a title and two labelled choices now at
+    **174px against 233**.
+  - **THE SHARED CARD KEEPS ITS SUB, AND THAT IS NOT AN INCONSISTENCY.** "One
+    flower either way. Only who can read it changes" is the CONSEQUENCE of
+    the choice, which is the one fact this project refuses to let a card
+    leave out. One is reassurance and one is a privacy fact; they have
+    different owners.
+- **THE SHARED GARDEN'S TWO CHOICES WERE STACKED FULL WIDTH**, with the icon
+  inline beside the label at 19px. That is the shape the personal fork was
+  rebuilt AWAY from, for a reason that was just as true here: stacked full
+  width, the one screen that offers a CHOICE reads as a list of two things to
+  do in order. They are the fork's grid now, two columns at a 10px gap with a
+  30px icon on its own line.
+- **FIVE NUMBERS DIFFERED AND NONE OF THEM WAS A DECISION**: icon 19 inline
+  against 30 on top, padding `11px 12px` against `16px 12px 15px`,
+  line-height 1.25 against 1.3, sub margin 3px against 5px, sub opacity 0.88
+  against 0.85. They were written at different times, which is the whole of
+  what "uniform them" was asking about.
+- **THE SUB IS PUSHED TO THE BOTTOM, `margin-top:auto` IN A FLEX COLUMN, and
+  that is the one thing neither card had.** "Today's open garden" wraps to
+  two lines where "A circle" takes one, so with the sub simply following the
+  label the two sub lines started at different heights and the pair read as
+  uneven. The grid already stretches both buttons to one height, so pushing
+  the sub down aligns the icons at the top AND the subs at the bottom with
+  only the label block differing.
+  - **THE LANDING PAGE SOLVES THE SAME FAULT BY RESERVING TWO LINES** on
+    `.garden-card-title`, and that was weighed and refused here: a reservation
+    needs a measured number and leaves dead space at every width where both
+    labels do fit on one line, which at 1440 is both of them.
+  - **IT IS APPLIED TO THE PERSONAL FORK TOO, where it changes nothing
+    today**, because both labels there are one line. That is the point: the
+    two are one object rather than two that happen to match, and a longer
+    label can never break the pair later.
+- **Measured at 390 and 1440, both gardens**: every button reports
+  `icon-top 16` and `sub-top 74`, the pair is level, and neither page
+  scrolls sideways. The shared card went 319 to 337 tall on a phone.
+
 ## A TABLET'S HEADLINE WAS SMALLER THAN A PHONE'S, AND IT IS TWO FLOORS
 
 The type scale is built out of `vw` clamps, and **a clamp's FLOOR governs a

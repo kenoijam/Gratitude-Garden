@@ -262,7 +262,13 @@
      would make anybody close it. */
   var GARDEN_SAYS = {
     personal: {
-      fork:          { pose: "welcome", line: "Two ways in. Either is fine." },
+      /* THE FORK CARD'S OWN SUB SAID THIS AND IT IS HIS NOW, on the
+         author's instruction. It is the author's sentence moved
+         verbatim, not a rewrite of it. It passes his own tone test:
+         it states a fact about the two paths rather than asking the
+         visitor to do anything, so the choice reads as low stakes
+         without anybody being told it is. */
+      fork:          { pose: "welcome", line: "Both end in the same place. Only the order changes." },
       pick:          { pose: "welcome", line: "Which one feels like today?" },
       why:           { pose: "listen",  line: "No wrong answer here." },
       prompt1:       { pose: "listen",  line: "However it was, it counts." },
