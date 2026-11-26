@@ -4327,6 +4327,26 @@ press Back into the reset. `garden-cursor.js` owns it because that file is
 loaded from the HEAD on all four pages, ahead of the letter, the guide and
 the account module, so it runs before anything reads storage.
 
+- **BOTH COPIES SHARE ONE `localStorage`, AND THAT IS THE BIGGEST FACT IN
+  THIS SECTION.** It is scoped to the ORIGIN, not the path, so `/` and
+  `/v2/` are one store. **Verified by measurement**: a garden planted at `/`
+  reads back in full at `/v2/`, and `/v2/?reset=1` empties it for both.
+  - **SO A PARTICIPANT WHO DOES THE BEFORE AND THEN THE AFTER NEVER SEES THE
+    AFTER'S REFLECTION FLOW.** `gratitude_last_planted` is already set to
+    today and the garden already holds today's flower, so the after's own
+    `hasPlantedToday()` is satisfied and sends them straight to the meadow.
+    **The reset has to run between the two CONDITIONS, not only between
+    participants.**
+  - **`?reset=1&to=before` IS THE ONE CLICK FOR THAT.** The reset can only
+    live in v2 because the root is frozen, so reaching a clean BEFORE used to
+    mean resetting in v2 and then navigating by hand. This clears and lands
+    on the parent of `/v2/`. It takes **no URL** and cannot be an open
+    redirect: the destination is COMPUTED from the page's own path, which
+    also keeps it right on the Pages URL, where the root is
+    `/Gratitude-Garden/` rather than `/`.
+  - Three forms, all verified: `/v2/?reset=1` lands clean on the after,
+    `/v2/?reset=1&to=before` lands clean on the before, and `?reset=1` on any
+    sub-page clears and stays on that page.
 - **INCOGNITO WORKS, WITH ONE TRAP THAT IS INVISIBLE AFTERWARDS.** Every
   incognito window shares ONE session until the LAST one is closed. Opening a
   second incognito window for the next participant resets nothing, and

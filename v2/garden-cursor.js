@@ -98,10 +98,41 @@
       /* THE PARAM HAS TO GO OR EVERY RELOAD RESETS AGAIN, and a participant
          who refreshes would lose their own garden mid-session. `replace`
          rather than `assign` so the reset URL is not left in the history for
-         them to press Back into. */
-      var clean = location.pathname +
-        location.search.replace(/[?&]reset=1\b/, "").replace(/^&/, "?") +
-        location.hash;
+         them to press Back into.
+
+         ═══════════ `&to=before` LANDS ON THE FROZEN COPY, ALREADY CLEAN
+         BOTH COPIES SHARE ONE `localStorage`, because it is scoped to the
+         ORIGIN and not to the path, so a reset run from anywhere clears the
+         keys of both. Verified: a garden planted at `/` reads back in full
+         at `/v2/`, and `/v2/?reset=1` empties it for both.
+
+         THAT CUTS BOTH WAYS AND IT IS WHY THIS EXISTS. A participant who
+         does the BEFORE and then the AFTER arrives at the after with
+         `gratitude_last_planted` already set to today, so the after sends
+         them straight to the garden and they never see the reflection flow
+         at all. The reset has to run between the two CONDITIONS, not only
+         between participants.
+
+         The reset itself can only live in v2, since the root is frozen, so
+         reaching a clean BEFORE meant resetting here and then navigating by
+         hand. This makes it one bookmark: it clears, then goes to the parent
+         of `/v2/`.
+
+         IT TAKES NO URL AND CANNOT BE AN OPEN REDIRECT. The destination is
+         COMPUTED from this page's own path rather than read out of the query
+         string, so there is nothing for anybody to point elsewhere.
+         Computing it also keeps it right on both localhost and the Pages
+         URL, where the root is `/Gratitude-Garden/` rather than `/`. */
+      var clean;
+      if (/[?&]to=before\b/.test(location.search)) {
+        clean = location.pathname.replace(/\/v2\/[^/]*$/, "/");
+      } else {
+        clean = location.pathname +
+          location.search.replace(/[?&]reset=1\b/, "")
+                         .replace(/[?&]to=before\b/, "")
+                         .replace(/^&/, "?") +
+          location.hash;
+      }
       location.replace(clean);
     } catch (e) {}
   })();
