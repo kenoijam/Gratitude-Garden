@@ -109,7 +109,12 @@ input[type="text"]:focus {
    presence from the RATIO instead. The hero runs about 3.4; these were 1.73 and
    2.22, which is why they read flat. */
   font-family: 'Fraunces', 'Georgia', serif;
-  font-size: 42px;
+  /* 34, DOWN FROM 42. This slot held "Daily Reflection", two words, and it
+     now holds each step's own QUESTION, which is a sentence. Measured, the
+     longest ("How did today feel, on the whole?") is 663px at 42 and 537 at
+     34, so 34 keeps it on one line on a laptop. The garden's own name uses
+     this slot too and `fitTitle` shrinks that to fit, so it is unaffected. */
+  font-size: 34px;
   /* 600, a real semibold. This was the weight originally wanted and it was
      not available while Georgia was the fallback, since Georgia renders
      600 identically to 700. Fraunces has a variable axis, so it is now a
@@ -248,6 +253,15 @@ input[type="text"]:focus {
   position: fixed;
   inset: 0;
   display: flex;
+  /* COLUMN, AND IT WAS MISSING. This rule set `display:flex` and no direction,
+     so every wrap defaulted to ROW. That was invisible while each wrap held a
+     single `.gg-card`, since one child centres the same either way, and only
+     `prompt1Wrap` set `column` for itself. The moment every step gained a
+     title ABOVE its card, the wraps that had never been told put the title
+     BESIDE the card instead: "Your Flower" sat to the left of its own panel.
+     **A flex container with one child hides its own direction**, so the
+     default was never tested until a second child arrived. */
+  flex-direction: column;
   justify-content: center;
   align-items: center;
   z-index: 100;   /* above #garden-wrap's z-index: 0 */

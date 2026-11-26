@@ -3896,6 +3896,53 @@ top now.
   document height while the ambient companion is deciding which section it is
   over, and the observer then fires for every section on the way past.
 
+## "Daily Reflection" IS GONE: THE STEP'S QUESTION IS THE PAGE TITLE
+
+Every step's card had a heading AND a 42px `.gg-title` above it. The title
+said "Daily Reflection" on every screen while the heading was the thing that
+changed, so **the loudest element on the page carried the least information
+on it**, which is the frontend-design rule about structure encoding content
+rather than decorating it, read backwards.
+
+- **AND IT ONLY APPEARED ON TWO OF THE EIGHT STEPS.** `forkWrap` and
+  `prompt1Wrap` built one; pick, why, prompt2, prompt3, prompt4 and the
+  preview had none. So the flow had a page title that came and went, which
+  nobody had noticed because no two steps were ever on screen together.
+- **THE SLOT WAS ALREADY PER-STEP AND NOBODY WAS USING IT.** On the garden
+  step this same `.gg-title` holds the garden's own NAME. It is a title, not
+  a banner, and five of its six uses spent the biggest type on the page
+  repeating one phrase.
+- **EIGHT CARDS HAD FOUR HEADING TREATMENTS.** 21px via `ghead`, 23px
+  hard-coded on three cards, 26px on the preview, with margins of 16, 16, 4
+  and **2**. Only three of the eight went through the helper, so the helper
+  was never the single place it looked like.
+- **34px, NOT 42.** The questions are sentences where "Daily Reflection" was
+  two words: measured, the longest ("How did today feel, on the whole?") is
+  663px at 42 and 537 at 34, so 34 keeps it on one line on a laptop and holds
+  a 2.4 ratio to the card's own 14px line.
+- **THE SUB STAYS IN THE CARD.** It introduces the controls under it, and the
+  sky is where this project measures contrast hardest, so one piece of type
+  standing on it is enough.
+
+### TWO TRAPS, AND BOTH WERE OLD FRIENDS
+
+- **`gtitle(prompt4Wrap, GLAD.title)` THREW AND TOOK THE SKETCH DOWN.**
+  `GLAD` is a `const` declared forty lines further on, so reading it there
+  raised **"Cannot access 'GLAD' before initialization"** and the garden came
+  up with no canvas. Third temporal-dead-zone fault in this file after
+  `nameRowEl` and `card4`. The element still has to be CREATED there, since
+  the wrap lays out in DOM order and a title appended after the card sits
+  under it, so it is built empty and `gladTitle.html(GLAD.title)` fills it
+  once `GLAD` exists.
+- **`.gg-wrap` SET `display:flex` AND NO DIRECTION**, so every wrap defaulted
+  to ROW. That was invisible while each held a single `.gg-card`, because one
+  child centres the same either way, and only `prompt1Wrap` set `column` for
+  itself. The moment every step gained a second child the untold wraps put
+  the title BESIDE the card: "Your Flower" sat to the left of its own panel.
+  **A flex container with one child hides its own direction**, so the default
+  was never tested until a second child arrived. It is `column` on the rule
+  now rather than on one wrap.
+
 ## THE FORK IS "Flower first" AND "Words first", SIDE BY SIDE
 
 - **"Words first", NOT "Write first" OR "Reflect first".** The labels have to

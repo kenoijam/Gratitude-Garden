@@ -3339,6 +3339,38 @@ function buildUI() {
      heading's size, the usual relation between a heading and what it
      introduces, and `gsub`'s own 18 below still separates the pair from the
      control under it. */
+  /* ═══════════════ THE STEP'S QUESTION IS THE PAGE TITLE, AND THE CARD HAS NONE
+     "Daily Reflection" stood here at 42px, and it was the loudest thing on
+     the screen carrying the least information on it: identical on every step
+     while the question underneath it was the thing that changed. **And it
+     only appeared on TWO of the eight steps**, the fork and the first mood
+     card, so the flow had a page title that came and went.
+
+     THE SLOT WAS ALREADY PER-STEP AND NOBODY WAS USING IT. On the garden
+     step this same `.gg-title` holds the garden's own NAME. So it is a title,
+     not a banner, and five of its six uses spent the biggest type on the page
+     repeating one phrase.
+
+     SO THE QUESTION GOES UP AND THE CARD LOSES ITS HEADING. One heading per
+     screen instead of two, the loud slot carries the thing that changes, and
+     every step now has a title where before two did. The SUB stays in the
+     card: it introduces the controls under it, and the sky is where this
+     project measures contrast hardest, so one piece of type on it is enough.
+
+     34px, NOT 42. The questions are sentences where "Daily Reflection" was
+     two words: measured, the longest ("How did today feel, on the whole?")
+     is 663px at 42 and 537 at 34, so 34 keeps it on one line on a laptop and
+     holds a 2.4 ratio to the card's own 14px line, which is inside the range
+     `.gg-title` and `.gg-sub` already run at. */
+  function gtitle(wrap, text) {
+    const d = createDiv().parent(wrap);
+    d.style("text-align", "center");
+    d.style("pointer-events", "none");
+    d.style("margin-bottom", "14px");
+    d.style("margin-top", "-110px");
+    return createElement("h1", text).addClass("gg-title").parent(d);
+  }
+
   function ghead(card, text) {
     return createElement("h3", text).style("text-align", "center")
       .style("color", "#0f5132").style("font-size", "21px")
@@ -3379,12 +3411,11 @@ function buildUI() {
   const forkTitle = createDiv().parent(forkWrap);
   forkTitle.style("text-align", "center");
   forkTitle.style("pointer-events", "none");
-  forkTitle.style("margin-bottom", "10px");
+  forkTitle.style("margin-bottom", "14px");
   forkTitle.style("margin-top", "-110px");
-  createElement("h1", "Daily Reflection").addClass("gg-title").parent(forkTitle);
+  createElement("h1", "Which way today?").addClass("gg-title").parent(forkTitle);
 
   const cardFork = gcard(forkWrap);
-  ghead(cardFork, "Which way today?");
   /* THE TWO ARE NAMED BY WHAT THEY DO, not by which is the default. Neither is
      recommended: picking is faster and choosing is the thing this garden has
      always done, and which suits a given day is the planter's business. */
@@ -3489,8 +3520,8 @@ function buildUI() {
 
   /* -------------------------------------------------------------- the picker */
   pickWrap = gwrap("pick-wrap");
+  gtitle(pickWrap, "Choose your flower");
   const cardPick = gcard(pickWrap, true);
-  ghead(cardPick, "Choose your flower");
   /* NO MEANINGS ON THIS SCREEN, AND THE SUB LINE SAYS WHY. Picking the
      flower first is picking by SHAPE: you are choosing the bloom you want,
      not reading eight definitions and matching one to your day. The meanings
@@ -3700,8 +3731,8 @@ function buildUI() {
 
   /* ----------------------------------------------------------------- the why */
   whyWrap = gwrap("why-wrap");
+  gtitle(whyWrap, "Why that one?");
   const cardWhy = gcard(whyWrap);
-  const whyHead = ghead(cardWhy, "Why that one?");
   const whySub = gsub(cardWhy, "A word or two is plenty.");
 
   const whyBox = createElement("textarea").parent(cardWhy);
@@ -3770,9 +3801,9 @@ function buildUI() {
   const titleDiv = createDiv().parent(prompt1Wrap);
   titleDiv.style("text-align", "center");
   titleDiv.style("pointer-events", "none");
-  titleDiv.style("margin-bottom", "10px");
+  titleDiv.style("margin-bottom", "14px");
   titleDiv.style("margin-top", "-110px");
-  createElement("h1", "Daily Reflection").addClass("gg-title").parent(titleDiv);
+  createElement("h1", "How did today feel, on the whole?").addClass("gg-title").parent(titleDiv);
 
   const card1 = createDiv().addClass("gg-card").parent(prompt1Wrap);
   card1.style("max-width", "460px");
@@ -3783,7 +3814,6 @@ function buildUI() {
      Viola names at 26:05 to 27:49: a day is not bad, it is a day with some
      bad moments in it. "On the whole" is small and it is the difference
      between asking for a verdict and asking for a summary. */
-  createElement("h3", "How did today feel, on the whole?").style("text-align", "center").style("color", "#0f5132").style("font-size", "23px").style("font-weight", "600").style("margin", "0 0 16px 0").parent(card1);
 
   const btnGrid1 = createDiv().parent(card1);
   btnGrid1.style("display", "grid");
@@ -3916,12 +3946,12 @@ function buildUI() {
   prompt2Wrap.style("z-index", "100");
   prompt2Wrap.style("pointer-events", "auto");
 
+  gtitle(prompt2Wrap, "What shaped your day?");
   const card2 = createDiv().addClass("gg-card").parent(prompt2Wrap);
   card2.style("max-width", "460px");
   card2.style("width", "min(460px, 92vw)");
   card2.style("box-sizing", "border-box");
   card2.style("padding", "24px 28px 20px 28px");
-  createElement("h3", "What shaped your day?").style("text-align", "center").style("color", "#0f5132").style("font-size", "23px").style("font-weight", "600").style("margin", "0 0 16px 0").parent(card2);
   
   const btnGrid2 = createDiv().parent(card2);
   btnGrid2.style("display", "grid");
@@ -4000,6 +4030,7 @@ function buildUI() {
   prompt3Wrap.style("z-index", "100");
   prompt3Wrap.style("pointer-events", "auto");
 
+  gtitle(prompt3Wrap, "Any moments from today?");
   const card3 = createDiv().addClass("gg-card").parent(prompt3Wrap);
   card3.style("max-width", "460");
   card3.style("width", "min(460px, 92vw)");
@@ -4013,7 +4044,6 @@ function buildUI() {
      summary, because a summary is the easiest thing to write; asking for
      MOMENTS asks for the particular, which is the thing that can be looked
      at. It costs one heading, one line and one placeholder. */
-  createElement("h3", "Any moments from today?").style("text-align", "center").style("color", "#0f5132").style("font-size", "23px").style("font-weight", "600").style("margin", "0 0 2px 0").parent(card3);
   createP("Optional. One or two that stuck, good or not.").addClass("gg-sub").style("font-size", "13px").style("margin", "0 0 12px 0").style("text-align", "center").style("color", "#5a9e8e").parent(card3);
 
   journalField = createElement("textarea").parent(card3);
@@ -4176,6 +4206,16 @@ function buildUI() {
   prompt4Wrap.style("z-index", "100");
   prompt4Wrap.style("pointer-events", "auto");
 
+  /* BUILT EMPTY AND FILLED BELOW, because `GLAD` is a `const` declared forty
+     lines further down and this runs first: reading it here throws
+     **"Cannot access 'GLAD' before initialization"**, which took the whole
+     sketch down and left a garden with no canvas. It is the temporal dead
+     zone again, the third time in this file after `nameRowEl` and `card4`.
+
+     THE ELEMENT STILL HAS TO BE CREATED HERE. The wrap lays its children out
+     in DOM order, so a title appended after `cardGlad` would sit UNDER the
+     card. Creating it empty keeps the order and moves only the text. */
+  const gladTitle = gtitle(prompt4Wrap, "");
   const cardGlad = createDiv().addClass("gg-card").parent(prompt4Wrap);
   cardGlad.style("max-width", "460");
   cardGlad.style("width", "min(460px, 92vw)");
@@ -4221,11 +4261,8 @@ function buildUI() {
   }
   const GLAD = gladAskToday();
   gladAsk = GLAD.ask;
+  gladTitle.html(GLAD.title);     /* see the note where it was created */
 
-  createElement("h3", GLAD.title)
-    .style("text-align", "center").style("color", "#0f5132")
-    .style("font-size", "23px").style("font-weight", "600")
-    .style("margin", "0 0 2px 0").parent(cardGlad);
   /* IT STAYS OPTIONAL AND IS NOW ENCOURAGED, which is the middle of the two
      things that were on the table. Requiring it was asked for and refused
      on the reasoning already on file: gratitude produced on demand to get
@@ -4317,12 +4354,12 @@ function buildUI() {
   flowerPreviewWrap.style("z-index", "100");
   flowerPreviewWrap.style("pointer-events", "auto");
 
+  gtitle(flowerPreviewWrap, "Your Flower");
   const card4 = createDiv().addClass("gg-card").parent(flowerPreviewWrap);
   card4.style("max-width", "460px");
   card4.style("width", "min(460px, 92vw)");
   card4.style("box-sizing", "border-box");
   card4.style("padding", "24px 28px 20px 28px");
-  createElement("h2", "Your Flower").style("text-align", "center").style("color", "#0f5132").style("font-size", "26px").style("font-weight", "600").style("margin", "0 0 4px 0").parent(card4);
   
   const flowerNameDiv = createDiv().id("flower-name").parent(card4);
   flowerNameDiv.style("text-align", "center");
