@@ -1257,6 +1257,30 @@
     stage(false);
     root.removeAttribute("data-tour");
     bubble.removeAttribute("data-on");
+    /* IT ENDS WHERE IT STARTED. The last step stands at `#start`, which is
+       the foot of the page, so finishing the tour left somebody parked at
+       the bottom looking at the footer with the whole site behind them: a
+       tour that shows you round and then abandons you in the back room.
+       Going home is what a tour does at the end.
+
+       IT IS SKIPPED ON A SKIP. Somebody who presses Skip has said they want
+       out, and hauling the page back to the top is one more thing happening
+       to them after they asked for nothing to happen; they stay where they
+       are. The corner cross does not come through here at all, which is the
+       same decision by a different route.
+
+       `scrollBehavior` IS SET AND RESTORED. The page's own `html` carries
+       `scroll-behavior: smooth`, so an unqualified `scrollTo` here animates
+       the whole height of the document while the ambient companion is
+       already deciding which section it is over, and the observer then fires
+       for every section on the way past. */
+    if (!skipped) {
+      var el = document.documentElement;
+      var prev = el.style.scrollBehavior;
+      el.style.scrollBehavior = "auto";
+      window.scrollTo(0, 0);
+      el.style.scrollBehavior = prev;
+    }
     /* The ambient companion takes over from here, starting with whichever
        section is actually on screen rather than with the one the tour
        happened to stop on. */

@@ -3330,10 +3330,19 @@ function buildUI() {
     c.style("padding", "24px 28px 20px 28px");
     return c;
   }
+  /* 21px AND 16 UNDER IT, AND BOTH NUMBERS WERE OFF. 23 is not on a scale
+     with the 14px line beneath it; from 14 the classic steps are 17.5, 21,
+     26, so 21 is the one that belongs and 23 was simply a number. And 10px
+     under a 23px heading is under half its own size, which is why the pair
+     read as one block with no air in it: the heading and its line had no
+     interval, so neither could lead. 16 is about three quarters of the
+     heading's size, the usual relation between a heading and what it
+     introduces, and `gsub`'s own 18 below still separates the pair from the
+     control under it. */
   function ghead(card, text) {
     return createElement("h3", text).style("text-align", "center")
-      .style("color", "#0f5132").style("font-size", "23px")
-      .style("font-weight", "600").style("margin", "0 0 10px 0").parent(card);
+      .style("color", "#0f5132").style("font-size", "21px")
+      .style("font-weight", "600").style("margin", "0 0 16px 0").parent(card);
   }
   function gsub(card, text) {
     return createElement("p", text).style("text-align", "center")
@@ -3862,9 +3871,21 @@ function buildUI() {
     });
   }
 
+  /* THE ONE PRIMARY, AND TWO OF THESE HAD NO BACKGROUND AT ALL. `continueBtn1`
+     and `continueBtn2` set `color: white` and never set a background, so they
+     fell through to the browser's own `#efefef`: **white on #efefef is
+     1.15:1**, which is a live button whose label cannot be read, on the two
+     cards that open the whole flow. `continueBtn3`, `continueBtn4` and the
+     Plant button used `#4db6ac` with white at **2.44**, which also fails the
+     4.5 a button label needs. Measured, all five.
+
+     They take `#1d6466` with `#fff9e3` now, which is the landing page's
+     `.btn-primary` and the gardens' `.gg-btn`: **6.49**. Five buttons that
+     all say "go on" now look like one control rather than three. */
   continueBtn1 = createButton("Continue").parent(card1);
   continueBtn1.style("display", "none");
-  continueBtn1.style("color", "white");
+  continueBtn1.style("background", "#1d6466");
+  continueBtn1.style("color", "#fff9e3");
   continueBtn1.style("border", "none");
   continueBtn1.style("border-radius", "12px");
   continueBtn1.style("padding", "14px");
@@ -3934,7 +3955,8 @@ function buildUI() {
 
   continueBtn2 = createButton("Continue").parent(card2);
   continueBtn2.style("display", "none");
-  continueBtn2.style("color", "white");
+  continueBtn2.style("background", "#1d6466");
+  continueBtn2.style("color", "#fff9e3");
   continueBtn2.style("border", "none");
   continueBtn2.style("border-radius", "12px");
   continueBtn2.style("padding", "14px");
@@ -4094,8 +4116,8 @@ function buildUI() {
   });
 
   continueBtn3 = createButton("Continue").parent(card3);
-  continueBtn3.style("background", "#4db6ac");
-  continueBtn3.style("color", "white");
+  continueBtn3.style("background", "#1d6466");
+  continueBtn3.style("color", "#fff9e3");
   continueBtn3.style("border", "none");
   continueBtn3.style("border-radius", "12px");
   continueBtn3.style("padding", "14px");
@@ -4228,8 +4250,8 @@ function buildUI() {
 
   const continueBtn4 = createButton("See Your Flower anyway").parent(cardGlad);
   gladBtn = continueBtn4;
-  continueBtn4.style("background", "#4db6ac");
-  continueBtn4.style("color", "white");
+  continueBtn4.style("background", "#1d6466");
+  continueBtn4.style("color", "#fff9e3");
   continueBtn4.style("border", "none");
   continueBtn4.style("border-radius", "12px");
   continueBtn4.style("padding", "14px");
@@ -4324,8 +4346,8 @@ function buildUI() {
      flower and a random hue is part of that. */
 
   plantBtn = createButton("Plant in Garden").parent(card4);
-  plantBtn.style("background", "#4db6ac");
-  plantBtn.style("color", "white");
+  plantBtn.style("background", "#1d6466");
+  plantBtn.style("color", "#fff9e3");
   plantBtn.style("border", "none");
   plantBtn.style("border-radius", "12px");
   plantBtn.style("padding", "14px");

@@ -3833,6 +3833,58 @@ navigated. The account-free design works exactly as written.
 - **NOT YET FIXED.** The replacement is the project's own card, the idiom
   `.gmeet-card` and `.ga-card` already share.
 
+## EVERY FORWARD BUTTON IN THE PERSONAL GARDEN FAILED AA
+
+Reported as "the continue buttons are still gray after picking". They were,
+and the label on two of them could not be read at all.
+
+| button | background | label | contrast |
+|---|---|---|---|
+| Continue (mood) | **none set** | white | **1.15** |
+| Continue (shaper) | **none set** | white | **1.15** |
+| Continue (moments) | `#4db6ac` | white | 2.44 |
+| See Your Flower | `#4db6ac` | white | 2.44 |
+| Plant | `#4db6ac` | white | 2.44 |
+
+- **TWO OF THEM NEVER SET A BACKGROUND.** `continueBtn1` and `continueBtn2`
+  set `color: white` and nothing else, so they fell through to the browser's
+  own `#efefef`. **White on #efefef is 1.15:1**: a live button, `disabled`
+  false, whose label is invisible, on the two cards that open the whole flow.
+  That is why it read as "still grey after picking" rather than as broken.
+- **`#4db6ac` IS A FOURTH OFF-PALETTE TEAL**, after `mediumturquoise`,
+  `#26a69a` and `--teal`. All five buttons take `#1d6466` with `#fff9e3`
+  now, the landing page's `.btn-primary` and the gardens' `.gg-btn`: **6.49**.
+  Five buttons that all mean "go on" look like one control.
+- **A MISSING DECLARATION IS NOT A VISIBLE BUG, which is why this lasted.**
+  Nothing throws, nothing logs, and the button is in the right place at the
+  right size doing the right thing. **Read a control's COMPUTED background,
+  not the lines that build it**: the fault is in what was never written.
+
+### THE CARD HEADING WAS 23px WITH 10px UNDER IT
+
+- **23 is not on a scale with the 14px line beneath it.** From 14 the classic
+  steps are 17.5, 21, 26, so 21 is the one that belongs and 23 was a number.
+- **10px under a 23px heading is under half its own size**, so the heading and
+  its line had no interval and read as one block with no air. 16 is about
+  three quarters of the heading's size, and `gsub`'s own 18 below still
+  separates the pair from the control under it.
+
+### THE TOUR ENDED AT THE FOOT OF THE PAGE
+
+Its last step stands at `#start`, so finishing left somebody parked at the
+bottom looking at the footer with the whole site behind them: a tour that
+shows you round and abandons you in the back room. `endTour` returns to the
+top now.
+
+- **NOT ON A SKIP.** Somebody who presses Skip has asked for nothing more to
+  happen, and hauling the page back is one more thing happening to them. The
+  corner cross does not come through `endTour` at all, which is the same
+  decision reached by a different route.
+- **`scrollBehavior` IS SET TO `auto` AND RESTORED**, because `html` carries
+  `scroll-behavior: smooth`: an unqualified `scrollTo` animates the whole
+  document height while the ambient companion is deciding which section it is
+  over, and the observer then fires for every section on the way past.
+
 ## THE FORK IS TWO CHOICES SIDE BY SIDE
 
 - **STACKED FULL WIDTH READ AS A LIST, NOT A CHOICE.** The one screen that
