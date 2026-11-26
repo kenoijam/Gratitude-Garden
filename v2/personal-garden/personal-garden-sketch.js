@@ -1925,7 +1925,17 @@ function drawPreviewFlower(pg, species, hue) {
   const sat = defaultSat(species);
   const light = defaultLight(species);
 
-  pg.translate(pg.width / 2, pg.height / 2 + 10);
+  /* CENTRED, AND THE `+ 10` IS WHY THE SUNFLOWER WAS CUT OFF. Every bloom
+     was drawn ten units BELOW the buffer's middle. Most species have the
+     headroom to absorb that; the sunflower is the largest in the set at
+     **1.33 R**, so at R 40 it reaches 53 units each way in a buffer with
+     60 to give, and 53 + 10 ran it 3 units past the bottom. Measured in
+     the 150px preview before the fix: painted rows 64 to 479 of 480, so
+     **64px of air above and a bottom margin of ZERO**, flat against the
+     edge. The buffer's middle is what the buffer is for, and the two
+     species that genuinely grow upward out of their origin carry their
+     own named nudges directly below this. */
+  pg.translate(pg.width / 2, pg.height / 2);
 
   if (species === "lotus") {
     pg.translate(0, R * 0.8);
@@ -4498,7 +4508,15 @@ saveBtn.mousePressed(() => {
     /* the note keeps the 0.58 ratio it was given, and the two stay 5px apart */
     const notePx = Math.max(10, Math.round(titlePx * 0.46));
     dailyNote.style("font-size", notePx + "px");
-    dailyNote.style("top", (18 + Math.round(titlePx * 1.38) + 5) + "px");
+    /* 1.58 AND 12, AND BOTH NUMBERS WERE WRONG. `1.38` is the title's
+       LINE HEIGHT, but the name is an `<input>` carrying 2px of padding
+       top and bottom, so the row is taller than its own text: measured at
+       `titlePx` 26 the row is 41 rather than 36, a ratio of 1.58. The `+5`
+       was then the whole gap, and the real one came out at **4px**, so
+       hovering the name, which is an editable field and grows a visible
+       edge, ran it into the line below. 1.58 measures the row honestly and
+       12 is a gap you can see. */
+    dailyNote.style("top", (18 + Math.round(titlePx * 1.58) + 12) + "px");
   };
   nameField.elt.addEventListener("input", () => fitTitle());
 

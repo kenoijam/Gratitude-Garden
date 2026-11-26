@@ -3768,6 +3768,75 @@ below is still the right answer for any `details` this project adds later.
 
 **The footer's two blocks WERE `<details open>` that CLOSE on a phone.** The `open` attribute is in the markup on purpose: a details element with no `open` arrives shut before any stylesheet can say otherwise, which would hide the page's only navigation at the foot of a desktop view. A small script closes everything carrying `data-fold-phone` under 768 and reopens it above, and **stops doing either the moment somebody opens or closes one by hand**, so a rotation cannot undo a reader's choice. They also need `width: 100%` there, since as flex items they were shrink to fit and the chevron sat against the heading instead of out at the edge.
 
+## HORTUS'S TONE, OUT OF THE THESIS'S OWN SOURCES
+
+The author asked what tone he needs and said "Go on, pat me" felt bad. Three
+sources in `FYP/SOURCES` decide it, and they agree.
+
+- **NEFF, self-compassion.** Its three components are self-kindness rather
+  than harsh self-criticism, **common humanity** (an experience as part of
+  the larger human one rather than isolating), and mindfulness. The paper's
+  own words for the construct are **"non-evaluative and interconnected"**,
+  and it counters downward social comparison. So: no praise, no
+  disappointment, no comparison. Hortus's existing "Everybody here planted
+  one today" is common humanity exactly, and is the model for the rest.
+- **DECI, KOESTNER AND RYAN, the 1999 meta-analysis of 128 studies.**
+  Engagement-, completion- and performance-contingent rewards all
+  **significantly UNDERMINE** intrinsic motivation (d = -0.40, -0.36, -0.28),
+  while **plain verbal positive feedback ENHANCES** free-choice behaviour
+  (d = +0.33) and interest (+0.31). That is the evidence behind "no streaks,
+  no scores" AND the evidence for what Hortus should do instead: say
+  something kind that is contingent on nothing.
+- **NITTONO, the power of kawaii.** Viewing cute images **narrows attentional
+  focus and promotes careful, systematic behaviour** (a 44 percent and a 16
+  percent improvement on two attention tasks). So Hortus being cute is not
+  decoration: cuteness primes exactly the slow, careful attention a
+  reflective practice wants, which is an argument for him being PRESENT at
+  the moments that ask for care rather than parked in a corner.
+
+### WHY "Go on, pat me" WAS WRONG, AND IT BROKE A RULE ALREADY WRITTEN HERE
+
+It is an IMPERATIVE, and it asks the visitor to perform for the COMPANION'S
+benefit. That is controlling language in Deci's sense and evaluative framing
+in Neff's, and it also broke this file's own rule for his lines: **"THE LINES
+ARE NOT INSTRUCTIONS."** It is "I like being patted" now, a statement about
+himself that says the affordance is there and leaves the choice where it
+belongs. **The test for any new line: could it be read as asking the visitor
+to earn something, or to do something for Hortus? Then it is the wrong line.**
+
+## FOUR FAULTS FOUND BY WALKING THE GARDENS
+
+- **THE SUNFLOWER WAS CLIPPED BY A `+ 10`.** `drawPreviewFlower` ran
+  `pg.translate(pg.width / 2, pg.height / 2 + 10)`, so every bloom was drawn
+  ten units BELOW the buffer's middle. Most species have headroom to absorb
+  it; the sunflower is the largest in the set at **1.33 R**, so at R 40 it
+  reaches 53 units each way in a buffer with 60 to give, and 53 + 10 ran it
+  past the bottom. Measured in the 150px preview: painted rows **64 to 479 of
+  480**, so 64px of air above and a bottom margin of **zero**. Centred, it is
+  **24 above and 24 below**. The two species that genuinely grow upward out
+  of their origin keep their own named nudges.
+- **THE GARDEN'S NAME AND ITS NOTE WERE 4px APART.** The note is placed at
+  `18 + titlePx * 1.38 + 5`, where **1.38 is the title's LINE HEIGHT and the
+  name is an `<input>` carrying 2px of padding**: measured at `titlePx` 26 the
+  row is 41 rather than 36, a ratio of 1.58. So the `+5` was the whole gap and
+  the real one was 4px, and hovering the name, which is an editable field,
+  ran it into the line below. It is `1.58` and `+ 12`.
+- **`.gg-hov` WAS NEVER DEFINED IN THE SHARED GARDEN.** `whereBtn` and every
+  `gbtn` there call `addClass("gg-hov")`, and that stylesheet only MENTIONED
+  the class in a comment: the three rules live in `personal-garden-style.css`
+  and were never ported. **"Today's open garden" and "A circle", the first two
+  buttons anybody meets in that garden, have had a class and no rule behind it
+  for their whole life.** The standing rule paying out again: a thing found in
+  one hand-ported file is a thing to go and look for in the other, which has
+  now caught `windowResized`, `viewW` and a stylesheet rule.
+- **THE GRATITUDE CARD IS NOT MISSING ON THE FLOWER PATH, and that was
+  checked by walking it rather than by reading.** Pressed through: `pick ->
+  why -> prompt2 -> prompt3 -> prompt4 -> flowerPreview`, and prompt4 is the
+  gratitude card, its button reading "See Your Flower anyway" on an empty box.
+  **What is probably true is that it does not REGISTER**: prompt3 and prompt4
+  are two free-text boxes back to back, so on the flower path somebody answers
+  "why that one", then a chip card, then two writing boxes in a row.
+
 ## THE FERTILIZER BAND WAS THE ONE GROUND OUT OF PALETTE
 
 **It was the only section ground written as a literal rather than as a named

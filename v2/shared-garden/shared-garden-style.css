@@ -137,6 +137,26 @@ input[type="text"]:focus {
   color: #2c7a7b;
   margin: 0 0 26px;
 }
+/* `.gg-hov` IS DEFINED HERE NOW, AND IT NEVER WAS. `whereBtn` and every
+   `gbtn` in this sketch call `addClass("gg-hov")`, and this stylesheet only
+   MENTIONED the class in a comment: the rules live in
+   `personal-garden-style.css` and were never ported with the rest. So
+   "Today's open garden" and "A circle", the two first buttons anybody meets
+   in this garden, have had a class applied to them and no rule behind it for
+   their whole life, and simply did not answer a pointer.
+
+   **The standing rule paying out again**: a thing found in one hand-ported
+   file is a thing to go and look for in the other. It has caught
+   `windowResized`, `viewW` and now a stylesheet rule.
+
+   `transform` and `filter` are deliberate: `buildUI` writes `background`
+   inline on these buttons, so a hover that changed the colour would lose,
+   and these two are properties the JS never writes. */
+.gg-hov { transition: transform .15s, filter .15s; }
+.gg-hov:hover { transform: scale(1.03); filter: brightness(1.07); }
+.gg-hov:active { transform: scale(0.99); }
+@media (hover: none) { .gg-hov:hover { transform: none; filter: none; } }
+
 /* Buttons */
 /* THE PRIMARY IS THE PALETTE'S DARK TEAL, AND THE OLD ONE FAILED AA BADLY.
    It was `mediumturquoise` with a `snow` label, two stock CSS keywords doing

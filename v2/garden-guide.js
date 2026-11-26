@@ -1571,9 +1571,20 @@
              exact fault that cut About's lede twice. The author's own wording
              is plainer than the Latin was. */
           '<p class="gmeet-name">Hi, I am ' + NAME + '</p>' +
+          /* "I like being patted" RATHER THAN "Go on, pat me", AND THE SOURCES
+             DECIDE THIS. Neff's self-compassion is non-evaluative by
+             definition, self-kindness rather than direction; Deci, Koestner
+             and Ryan found completion-contingent rewards UNDERMINE intrinsic
+             motivation (d = -0.36) while plain verbal positive feedback
+             enhances it (d = +0.33). An imperative issued for the
+             COMPANION'S benefit is neither: it asks the visitor to perform
+             for him. It also broke this file's own rule, written three
+             screens up, that **the lines are not instructions**. A statement
+             about himself says the affordance is there and leaves the choice
+             where it belongs. */
           '<p class="gmeet-body">Your Gratitude Garden companion. I bring one line ' +
           'of encouragement a day, and I keep you company in both gardens. ' +
-          'Go on, pat me.</p>' +
+          'I like being patted.</p>' +
           '<button type="button" class="gmeet-go">Nice to meet you</button>' +
         '</div>';
       document.body.appendChild(meetEl);
