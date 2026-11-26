@@ -138,9 +138,17 @@ input[type="text"]:focus {
   margin: 0 0 26px;
 }
 /* Buttons */
+/* THE PRIMARY IS THE PALETTE'S DARK TEAL, AND THE OLD ONE FAILED AA BADLY.
+   It was `mediumturquoise` with a `snow` label, two stock CSS keywords doing
+   palette work, and measured the label at **1.80 against the 4.5 a 16px
+   button needs**: the most important action in this garden had a label that
+   barely read. As a shape on its own card it was 1.80 too, so the button
+   hardly separated from the thing it sat on. `#1d6466` with `#fff9e3` is the
+   landing page's own `.btn-primary`, and it measures **6.49** for the label
+   and 6.62 as a shape. The same action is now one colour across the site. */
 .gg-btn {
-  background: mediumturquoise;
-  color: snow;
+  background: #1d6466;
+  color: #fff9e3;
   padding: 14px 18px;
   border-radius: 12px;
   font-size: 18px;
@@ -154,9 +162,12 @@ input[type="text"]:focus {
   transition: transform .15s;
   pointer-events: auto;
 }
+/* `turquoise` WAS THE HOVER, brighter than the button it lifted from.
+   #257e78 is hsl(176,55%,32%), a visible step up from #1d6466's L26 that
+   keeps the cream label at 4.59, where cream on `turquoise` was 1.53. */
 .gg-btn:hover {
   transform: scale(1.03);
-  background: turquoise;
+  background: #257e78;
 }
 .gg-back {
   background: #e5e7eb;

@@ -479,7 +479,12 @@ body { padding-left: 0 !important; }
 
 /* ── BUTTONS ── */
 .btn-primary { background: var(--darkteal); color: var(--cream); padding: 0.9rem 2.4rem; border-radius: 50px; font-family: Arial,Helvetica,sans-serif; font-size: 1rem; font-weight: 700; text-decoration: none; border: none; cursor: pointer; transition: background 0.3s,transform 0.2s,box-shadow 0.3s; box-shadow: 0 4px 16px rgba(29,100,102,0.28); display: inline-flex; align-items: center; justify-content: center; }
-.btn-primary:hover { background: var(--teal); transform: translateY(-2px); color: var(--cream); }
+/* THE HOVER WAS `--teal` AND IT FAILED AA. Cream on `#429288` measures
+   3.49 against the 4.5 a 16px button label needs, so this page's ONE filled
+   button became unreadable the moment a pointer touched it. `#257e78` is a
+   visible lift from `--darkteal` and measures 4.59. Found while fixing the
+   gardens' primary, which had the same fault far worse at 1.80. */
+.btn-primary:hover { background: #257e78; transform: translateY(-2px); color: var(--cream); }
 .btn-outline { background: transparent; color: var(--darkteal); padding: 0.9rem 2.4rem; border-radius: 50px; font-family: Arial,Helvetica,sans-serif; font-size: 1rem; font-weight: 700; text-decoration: none; border: 2.5px solid var(--darkteal); cursor: pointer; transition: all 0.3s; display: inline-flex; align-items: center; justify-content: center; }
 .btn-outline:hover { background: var(--darkteal); color: var(--cream); transform: translateY(-2px); }
 

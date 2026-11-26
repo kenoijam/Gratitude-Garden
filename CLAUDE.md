@@ -3803,6 +3803,50 @@ token**, and that was the tell before any colour was measured:
 - A lighter in-family value was found and refused: `#cdecee` satisfies
   everything but leaves the note at **4.51**, a pass with nothing in hand.
 
+### THE GARDENS' PRIMARY BUTTON FAILED AA AT 1.80, AND IT IS FIXED
+
+Taken on its own, on the author's instruction, out of the audit below.
+
+- **`mediumturquoise` WITH A `snow` LABEL MEASURED 1.80 against the 4.5 a
+  16px button label needs.** The most important action in both gardens,
+  Continue and Plant and Sign in, had a label that barely read. As a SHAPE on
+  its own `snow` card it was also 1.80, so the button hardly separated from
+  the thing it sat on. Nobody had measured it because it is bright, and
+  bright reads as visible.
+- **Its hover was `turquoise`, brighter still**, taking cream to 1.53. A
+  hover that makes a label LESS readable is the opposite of a hover.
+- **It is `#1d6466` with `#fff9e3` now, which is the landing page's own
+  `.btn-primary`**: 6.49 for the label, 6.62 as a shape. The same action is
+  one colour across the site for the first time.
+- **THE HOVER IS `#257e78`**, hsl(176, 55%, 32%), a visible lift from
+  `--darkteal`'s L26 that keeps the cream label at **4.59**.
+- **THE LANDING PAGE'S OWN PRIMARY HOVER HAD THE SAME FAULT, found on the way
+  past.** `.btn-primary:hover` went to `--teal`, where cream measures
+  **3.49**: this page's one filled button became unreadable the moment a
+  pointer touched it. It takes `#257e78` too.
+- **Six places, and they are not all stylesheets**: `.gg-btn` in both garden
+  stylesheets, `.gg-auth-btn`, `.ga-btn` and `.ga-mini[data-kind="go"]` in
+  `garden-account.js`, and `.gs-btn` in `shared-garden-social.js`.
+- **STILL FAILING AND DELIBERATELY NOT TOUCHED: the personal garden's FORK
+  buttons.** "Flower first" and "Write first" are built inline by `forkBtn`
+  at `#26a69a` with white, measuring **3.00**, and each carries a SUBTITLE,
+  which is small text needing 4.5. That is a different colour from the one
+  the author approved changing, so it is recorded rather than swept in.
+
+### THE FOOTER IS TWO LINKS, AND THEY ARE WHAT NOTHING ELSE OFFERS
+
+"The Personal Garden" and "The Shared Garden" are cut from it. **The closing
+section sits directly above the footer and offers both**, one as a filled
+button and one as a link, about a hundred pixels up. That is the fault that
+got the closing section itself cut the first time, a section repeating what
+the section beside it already says, and it does not stop being the fault when
+the repeat is a footer.
+
+What is left opens a card each and neither exists anywhere else on the page:
+**Why I made this**, the letter, which shows itself once on a first visit,
+and **Meet Hortus**, whose tour runs once and whose introduction is marked
+once. The footer holds what nothing else holds.
+
 ### THE GARDENS AND THE LANDING PAGE ARE IN DIFFERENT HUE FAMILIES
 
 Measured, not guessed, and **not fixed**: this is recorded so the next person

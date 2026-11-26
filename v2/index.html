@@ -1815,41 +1815,25 @@
       <img src="gratitude-garden-logo.png" alt="Gratitude Garden" class="footer-logo-mark"
            width="1320" height="475" decoding="async"/>
 
-      <ul class="footer-links">
-        <!-- "Make an account" IS GONE FROM HERE, AND THE CORNER ALREADY HAD
-             IT. `garden-account.js` loads with `data-chip="top"` on this
-             page, so the account icon in the top right row opens the very
-             same sign in card: the footer link was a second route to one
-             thing. Its own note, "One name across both gardens. They work
-             without one", went a commit earlier.
+      <!-- TWO LINKS, AND THEY ARE THE TWO THINGS NOTHING ELSE OFFERS.
+           "The Personal Garden" and "The Shared Garden" were here and are
+           cut: the closing section sits DIRECTLY ABOVE this footer and offers
+           both, one as a filled button and one as a link, about a hundred
+           pixels up. **That is the fault that got the closing section itself
+           cut the first time**, a section repeating what the section beside
+           it already says, and it does not stop being the fault when the
+           repeat is a footer.
 
-             THE COST, STATED ONCE AND NOT BURIED: nothing in WORDS on this
-             page now says an account exists or that it is optional. The
-             corner chip is an unlabelled icon with that in its `aria-label`.
-             About said it until three commits ago, this footer said it until
-             two, and both were cut on instruction knowing it. **If a line
-             about accounts is ever wanted back, the two garden cards are
-             where it costs least.** `.footer-join` and its note's rule are
-             still in the stylesheet, unused. -->
-        <!-- MEET HORTUS, AND HE HAD NO WAY BACK. The tour runs once on a
-             first visit and the introduction rides once on the front of the
-             day's fertilizer, so everything that says who he is could only
-             ever be seen once, by one person, on one machine. That is the
-             argument `garden-letter.js` already makes about the letter, and
-             it was just as true of him. `GardenGuide.meet()` opens a card
-             with a patable Hortus in it; the whole of it lives in
-             `garden-guide.js`, where the name, the poses and the pat are. -->
-        <li><button type="button" class="footer-as-link" id="footerMeet">Meet Hortus</button></li>
-        <li><a href="personal-garden/personal-garden-index.html" target="_self" rel="noopener">The Personal Garden</a></li>
-        <li><a href="shared-garden/shared-garden-index.html" target="_self" rel="noopener">The Shared Garden</a></li>
-        <!-- THE LETTER'S WAY BACK, and it is not a nicety: the letter shows
-             itself once, on a first visit, so without this it could never be
-             read twice, shown to anybody, or demonstrated in an interview.
-             It is a BUTTON dressed as a link, because it opens a card rather
-             than going anywhere and an `href` to nowhere is the first thing a
-             keyboard finds. "Why I made this" is the author's own wording:
-             first person, which is what the letter is. -->
+           What is left opens a card each, and neither exists anywhere else
+           on the page: the letter, which shows itself once on a first visit,
+           and Hortus, whose tour runs once and whose introduction is marked
+           once. **The footer holds what nothing else holds.**
+
+           "Why I made this" comes first because the letter is the older and
+           the weightier of the two. -->
+      <ul class="footer-links">
         <li><button type="button" class="footer-as-link" id="footerLetter">Why I made this</button></li>
+        <li><button type="button" class="footer-as-link" id="footerMeet">Meet Hortus</button></li>
       </ul>
     </div>
   </div>

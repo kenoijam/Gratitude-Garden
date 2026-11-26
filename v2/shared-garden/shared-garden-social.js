@@ -101,9 +101,9 @@
       'color:#1d6466;background:#fdfefe;}' +
     '#gs-foot input:focus{outline:none;border-color:#7fcdcd;}' +
     '.gs-btn{width:100%;margin-top:10px;padding:12px 16px;border:none;border-radius:12px;' +
-      'background:mediumturquoise;color:snow;font-size:16px;font-weight:700;' +
+      'background:#1d6466;color:#fff9e3;font-size:16px;font-weight:700;' +
       'font-family:inherit;cursor:pointer;transition:transform .15s,background .15s;}' +
-    '.gs-btn:hover:not(:disabled){transform:scale(1.02);background:turquoise;}' +
+    '.gs-btn:hover:not(:disabled){transform:scale(1.02);background:#257e78;}' +
     '.gs-btn:disabled{opacity:.6;cursor:not-allowed;transform:none;}' +
     '.gs-link{display:block;width:100%;margin-top:9px;background:none;border:none;' +
       'color:#2c7a7b;font-family:inherit;font-size:13px;text-decoration:underline;' +

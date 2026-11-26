@@ -80,9 +80,12 @@
       'color:#1d6466;background:#fdfefe;}' +
     '.ga-card input:focus{outline:none;border-color:#7fcdcd;}' +
     '.ga-btn{width:100%;box-sizing:border-box;margin-top:16px;padding:14px 18px;border:none;' +
-      'border-radius:12px;background:mediumturquoise;color:snow;font-size:18px;font-weight:700;' +
+      /* THE PALETTE'S DARK TEAL. `mediumturquoise` with a `snow` label measured
+         1.80 against the 4.5 a button label needs; this is the landing page's
+         own primary and measures 6.49. */
+      'border-radius:12px;background:#1d6466;color:#fff9e3;font-size:18px;font-weight:700;' +
       'font-family:inherit;cursor:pointer;transition:transform .15s,background .15s;}' +
-    '.ga-btn:hover:not(:disabled){transform:scale(1.03);background:turquoise;}' +
+    '.ga-btn:hover:not(:disabled){transform:scale(1.03);background:#257e78;}' +
     '.ga-btn:disabled{opacity:.55;cursor:not-allowed;transform:none;}' +
     '.ga-msg{font-size:13px;line-height:1.5;margin:9px 0 0;min-height:1.5em;}' +
     '.ga-msg[data-tone="bad"]{color:#b3261e;}' +
@@ -185,8 +188,8 @@
       'font-weight:700;cursor:pointer;transition:background .18s;}' +
     '.ga-mini:hover:not(:disabled){background:#e1f7f7;}' +
     '.ga-mini:disabled{opacity:.55;cursor:not-allowed;}' +
-    '.ga-mini[data-kind="go"]{background:mediumturquoise;border-color:mediumturquoise;color:snow;}' +
-    '.ga-mini[data-kind="go"]:hover:not(:disabled){background:turquoise;border-color:turquoise;}' +
+    '.ga-mini[data-kind="go"]{background:#1d6466;border-color:#1d6466;color:#fff9e3;}' +
+    '.ga-mini[data-kind="go"]:hover:not(:disabled){background:#257e78;border-color:#257e78;}' +
     '.ga-mini[data-kind="quiet"]{background:none;border-color:#e6efed;color:#8aa9a7;}' +
     '.ga-none{font-size:13.5px;color:#8aa9a7;line-height:1.6;margin:0;}' +
     '.ga-link{display:block;width:100%;margin-top:9px;background:none;border:none;' +
