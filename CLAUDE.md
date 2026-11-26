@@ -217,6 +217,70 @@ band say the line is new each day. The closed state is **"Pat Hortus to see
 it."** now, so each line does one job: the title what it is, the invitation
 what to do, the note that it changes.
 
+## THE FOOTER IS ONE FLAT COLUMN, AND THE LOGO IS THE ONLY WAY OUT
+
+Four things, and three of them were the same fault: a thing offered twice.
+
+- **THE FOLDS WENT.** Two `<details>` columns closing on a phone, which was
+  right when this footer also carried a paragraph describing the project and
+  a three line account note. It holds a heading, a button, a line and three
+  links, so hiding that costs more than it saves. The script that closed them
+  is deleted with them; About's fold had gone earlier, so it had nothing left
+  to act on.
+- **"Explore" WENT, AND "Gratitude Garden" STAYED.** "Explore" labelled a list
+  of three, which is a heading doing no work, and nesting three links under a
+  category is a filing system for a thing that fits on one row. The brand
+  heading stays because **with the hero's wordmark deliberately off, this is
+  the only place on the landing page that names the site to a reader at
+  all**; the tab title does not count. That was raised and decided before the
+  cut rather than noticed after it.
+- **THE SOCIAL ICON ROW WENT, AND THE REASON IS TEN LINES BELOW IT.** It held
+  Instagram and a Linktree icon, and `.footer-logo-link` at the foot of the
+  same footer has ALWAYS wrapped `LOGO-01.png` in a link to that same
+  Linktree. So one of the two icons duplicated a link in the same element,
+  and a Linktree carries Instagram by definition. **The author's instruction
+  was "the Linktree in my logo only", and the logo already was it.**
+- **THE LETTER'S LINK IS "Why I made this" NOW**, the author's own wording.
+  First person is what the letter is, and it reads as a person rather than as
+  a page section. It is still a `<button>` dressed as a link, since it opens
+  a card rather than going anywhere.
+- **`.footer-col` IS KEPT ON THE WRAPPER ALTHOUGH THERE IS ONE COLUMN**, and
+  that is not laziness: `.footer-col ul a` and `.footer-col ul
+  button.footer-as-link` are where every link colour and hover in here lives.
+  **`.footer-links` HAS TO BE SCOPED `.footer-col ul.footer-links`** for the
+  same reason `.footer-social` was: `.footer-col ul` sets
+  `flex-direction: column` and one class cannot out-specify a class plus an
+  element, so a bare `.footer-links` would lose and the three links would
+  stack. Three on one row is the whole point of taking them out from under a
+  heading.
+- **Verified**: no `details` left in the footer, no `[data-fold-phone]` on the
+  page, the links in a row, the letter still opens from its button, and at
+  390 the row wraps to two lines inside the gutter with no sideways scroll.
+
+### THE CLOSING SECTION TAKES THE HERO'S PAIR, NOT THE PAIR THAT WAS CUT
+
+On the author's instruction it now ends with the same button and link the
+hero opens with. **That is not the pairing this section was cut for**: that
+was two OUTLINE buttons of equal weight, a choice between two things the page
+had already explained. One loud button and one quiet link is a hierarchy, and
+ending on the pair the page opened with is what makes it a last word rather
+than a new question.
+
+- **IT IS `.cta-link`, NOT `.hero-link`, AND REUSING THAT CLASS WOULD BE A
+  BUG.** `.hero-link` takes `--dl-sky-ink` under `html[data-ink]`, which is
+  the ink MEASURED AGAINST THE SKY. This one stands on the closing card's
+  white, so it would be handed a colour chosen for a different ground and
+  would go cream on a pale card after dark.
+- **`display: block`, NOT `inline-block`.** The button beside it is inline, so
+  as an inline-block it sat on the SAME ROW and the two read as controls side
+  by side, which is the equal pairing the hero was rebuilt to remove. A block
+  puts it on its own line and `.cta`'s own `text-align: center` centres it.
+- **THE GUIDE'S SWEEP WAS RE-RUN, because the footer's links moved.** The
+  standing rule is to re-run `document.elementFromPoint` over Hortus's box if
+  anything under him moves, and those links went from a right hand column to
+  a left hand row. Swept every 8px over the whole 260 by 212 box at the
+  `start` spot at 1440 by 900: nothing clickable underneath.
+
 ## ABOUT IS CUT AND THE CLOSING SECTION IS BACK: `home, wisdom, gardens, flowers, start`
 
 Still five sections and the footer, and the trade is a section that REPEATED
@@ -1557,6 +1621,11 @@ block, and a pill carries its own background at every hour.
 `pointer-events:none` so it cannot swallow a tap meant for a flower.
 
 ## THE FOOTER HEADINGS HAD NO AIR, AND `margin: 0` WAS WHY
+
+**HISTORY: the folds are gone and so is the rule this describes.** It is kept
+for the mechanism, which recurs: a rule that tightens a `summary` around its
+own word wipes the margin its child was carrying, so the space has to move
+onto the summary.
 
 `.footer-col h4` sets `margin-bottom: 0.9rem` and `.footer-brand-logo` sets
 `0.2rem`, and `.footer-fold > summary > h4, .footer-fold > summary >
@@ -3209,11 +3278,23 @@ footer   dark teal   <- cream curve
 
 - **It is a BUTTON, not a field.** An input would promise that typing in it is the thing that signs you up, and the real form has two fields and lives in `garden-account.js`.
 - **It opens `GardenAccount.openSignIn()`**, which is what the chip in the corner already opens, so there is one sign in on the page rather than two. Signed in it opens the friends panel instead, and with accounts not configured it says so on the button rather than opening nothing.
-- **Instagram is `gratitudegarden.id`**, beside the existing Linktree, as inline SVG rather than an image file: this repo ships three images in total and draws everything else in code.
+- **THE SOCIAL ICON ROW IS GONE, Instagram with it.** It held Instagram at
+  `gratitudegarden.id` and a Linktree icon, both as inline SVG. **The logo at
+  the foot of this same footer has always linked to that same Linktree**, so
+  one of the two was a duplicate of a link ten lines below it, and a Linktree
+  carries Instagram, which is what a Linktree is for. The logo is the one way
+  out now. `.footer-social` and its `a` rules are still in the stylesheet,
+  unused, and the Instagram handle is recorded here so it is not lost.
 - **`.footer-col ul` ALREADY SETS `flex-direction: column`** and outranks a bare class, so the social row has to be scoped `.footer-col ul.footer-social` or the two icons stack.
 - Explore gained Build your gardener, so all four pages are named there.
 
-**THE FOOTER IS TWO COLUMNS, NOT TWO EDGES.** `.footer-top` was `justify-content: space-between` on a 939px row carrying 403px of content, which left a **535px gulf** between Gratitude Garden and Explore, and the links were `align-items: flex-end` so they were ragged down their left side against the page edge. It is an even two column grid with a 3rem gap now, both columns left aligned, and the brand description can run to 340px rather than 260 since it has half the row. Measured after: the gap between the columns is 51px.
+**HISTORY, AND THE GULF IS THE LIVE PART: THE FOOTER IS ONE COLUMN NOW.**
+With "Explore" cut there is nothing to put in a second column, so
+`.footer-top` is a `1fr` grid. **Anything that ever puts two things back in
+this row has to give each its own column rather than push them to the
+edges**, which is what the rest of this note is about.
+
+**THE FOOTER WAS TWO COLUMNS, NOT TWO EDGES.** `.footer-top` was `justify-content: space-between` on a 939px row carrying 403px of content, which left a **535px gulf** between Gratitude Garden and Explore, and the links were `align-items: flex-end` so they were ragged down their left side against the page edge. It is an even two column grid with a 3rem gap now, both columns left aligned, and the brand description can run to 340px rather than 260 since it has half the row. Measured after: the gap between the columns is 51px.
 
 - **The vertical pair is even, and it had to be measured rather than set.** The gap above the divider is the 2.5rem margin under `.footer-top`, which reads 43px. `.footer-bottom` centres its credit in whatever is left after its padding, which adds about 12px on top, so 1.5rem read 38 and 2.5rem read 55. At **1.8rem** the gap under the divider reads 43 and matches the one above it exactly.
 - **The phone block stacks a GRID now.** It set `flex-direction: column`, which does nothing to a grid, so it also needs `grid-template-columns: 1fr` or the two columns stay side by side on a phone.
@@ -3523,7 +3604,13 @@ Note that `html` sets `scroll-behavior: smooth`, so anything that scrolls the pa
 - **The bar asks whether the reveal is VISIBLE, not what the step is called.** Testing the name alone was not enough: a received bouquet and `renderFinal` both put the reveal on screen without going through `goToStep`, which left the letter step's Back and "Reveal my bouquet" stuck across the bottom of a finished bouquet, on top of the share buttons that share that space. `renderFinal` hides the bar itself for the same reason.
 - **Those overrides live at the END of `bouquet-style.css`, and they have to.** `.bq-preview-col` and `.bq-nav` are both declared after the 780px block that used to hold them, and at equal specificity the later rule wins: written in the earlier block they were quietly undone a hundred lines later.
 
-**The footer's two blocks are `<details open>` that CLOSE on a phone.** The `open` attribute is in the markup on purpose: a details element with no `open` arrives shut before any stylesheet can say otherwise, which would hide the page's only navigation at the foot of a desktop view. A small script closes everything carrying `data-fold-phone` under 768 and reopens it above, and **stops doing either the moment somebody opens or closes one by hand**, so a rotation cannot undo a reader's choice. They also need `width: 100%` there, since as flex items they were shrink to fit and the chevron sat against the heading instead of out at the edge.
+**HISTORY: BOTH FOLDS AND THE SCRIPT ARE DELETED.** The footer carries a
+heading, a button, a line and three links now, and a control that hides that
+costs more than it saves; About's fold went earlier for the same reason, so
+the script had nothing left to act on. The `open`-in-the-markup reasoning
+below is still the right answer for any `details` this project adds later.
+
+**The footer's two blocks WERE `<details open>` that CLOSE on a phone.** The `open` attribute is in the markup on purpose: a details element with no `open` arrives shut before any stylesheet can say otherwise, which would hide the page's only navigation at the foot of a desktop view. A small script closes everything carrying `data-fold-phone` under 768 and reopens it above, and **stops doing either the moment somebody opens or closes one by hand**, so a rotation cannot undo a reader's choice. They also need `width: 100%` there, since as flex items they were shrink to fit and the chevron sat against the heading instead of out at the edge.
 
 ## The controls all live in one corner
 

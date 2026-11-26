@@ -1728,6 +1728,20 @@
   <div class="cta-inner reveal">
     <h2 class="section-title">Whatever you noticed today is <em>enough</em></h2>
     <a href="personal-garden/personal-garden-index.html" target="_self" rel="noopener" class="btn-primary">Plant in your own garden</a>
+    <!-- THE HERO'S OWN PAIR, AND IT IS NOT THE PAIR THAT WAS CUT. What was
+         cut here was two OUTLINE buttons of equal weight, which made the
+         page's last word a choice between two things it had already
+         explained. This is one loud button and one quiet link, which is the
+         hierarchy the hero carries: private first and public by choice, said
+         in weight rather than in position. Ending on the same pair the page
+         opened with is what makes it a last word rather than a new question.
+
+         IT IS `.cta-link`, NOT `.hero-link`, AND REUSING THAT CLASS WOULD BE
+         A BUG. `.hero-link` takes `--dl-sky-ink` under `html[data-ink]`,
+         which is the ink MEASURED AGAINST THE SKY. This link stands on the
+         closing card's pale blue, so it would be handed a colour chosen for
+         a different ground and would go cream on a pale card at night. -->
+    <a href="shared-garden/shared-garden-index.html" target="_self" rel="noopener" class="cta-link">or plant in the shared garden</a>
   </div>
 </section>
 
@@ -1745,9 +1759,41 @@
        them: a details element with no `open` would arrive shut on a wide
        screen too, before any CSS could say otherwise, and there the two sit
        side by side with room to spare. -->
-  <div class="footer-top" style="align-items:flex-start;">
-    <details class="footer-col footer-fold" data-fold-phone open>
-      <summary><span class="footer-brand-logo">Gratitude Garden</span></summary>
+  <!-- ══════════ ONE COLUMN, NO FOLDS, NO SUBCATEGORIES
+       It was two `<details>` columns, "Gratitude Garden" and "Explore", each
+       collapsing on a phone, with the links nested under their headings. Three
+       things went and each for its own reason.
+
+       THE FOLDS. They existed because the footer is a screen of stacked text
+       at the end of everything else, which was true when it also carried a
+       paragraph describing the project and a three line account note. It
+       carries a button, a line and three links now, so a control hiding that
+       costs more than it saves. The script that closed them on a phone is
+       deleted with them.
+
+       THE HEADINGS AS CATEGORIES. "Explore" labelled a list of three, which is
+       a heading doing no work, and nesting a three item list under a category
+       is a filing system for a thing that fits on one row. The links are
+       directly here. **"Gratitude Garden" STAYS as a plain heading**, because
+       with the hero's wordmark deliberately off this is the only place on the
+       landing page that names the site to a reader at all.
+
+       THE SOCIAL ICON ROW. Instagram and a Linktree icon, and **the logo at
+       the foot of this very footer has ALWAYS linked to the same Linktree**,
+       so one of the two was a duplicate of a link ten lines below it. The
+       Linktree carries Instagram, which is what a Linktree is for, so the row
+       goes and the logo is the one way out. `.footer-social` and its `a`
+       rules are still in the stylesheet, unused.
+
+       `.footer-col` IS KEPT ON THE WRAPPER ALTHOUGH THERE IS ONE COLUMN, and
+       that is not laziness: `.footer-col ul a` and `.footer-col ul
+       button.footer-as-link` are where every link colour and hover in here
+       lives, and dropping the class would mean restating all of it.
+       ══════════════════════════════════════════════════════════════════ -->
+  <div class="footer-top">
+    <div class="footer-col">
+      <p class="footer-brand-logo">Gratitude Garden</p>
+
       <!-- THE SIGN UP MAKES AN ACCOUNT, not a mailing list, and that is the
            whole reason it is here rather than a newsletter field. This project
            HAS accounts: `garden-account.js` is already loaded on this page and
@@ -1765,40 +1811,20 @@
         </svg>
       </button>
       <p class="footer-join-note">One name across both gardens. They work without one.</p>
-      <!-- WHERE ELSE THIS LIVES. The footer had no way out to anywhere, which
-           on a project with an account and a page of its own is the one place
-           somebody looks for it. -->
-      <ul class="footer-social" aria-label="Elsewhere">
-        <li><a href="https://www.instagram.com/gratitudegarden.id/" target="_blank" rel="noopener" aria-label="Gratitude Garden on Instagram">
-          <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor"
-               stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <rect x="3.2" y="3.2" width="17.6" height="17.6" rx="5"/>
-            <circle cx="12" cy="12" r="4"/>
-            <circle cx="17.1" cy="6.9" r="1.1" fill="currentColor" stroke="none"/>
-          </svg>
-        </a></li>
-        <li><a href="https://linktr.ee/kenoijam" target="_blank" rel="noopener" aria-label="Kenisha's other links">
-          <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor"
-               stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="M10.4 13.6a4 4 0 0 0 5.7 0l2.8-2.8a4 4 0 0 0-5.7-5.7l-1.2 1.2"/>
-            <path d="M13.6 10.4a4 4 0 0 0-5.7 0l-2.8 2.8a4 4 0 0 0 5.7 5.7l1.2-1.2"/>
-          </svg>
-        </a></li>
-      </ul>
-    </details>
-    <details class="footer-col footer-fold" data-fold-phone open>
-      <summary><h4>Explore</h4></summary>
-      <ul>
+
+      <ul class="footer-links">
         <li><a href="personal-garden/personal-garden-index.html" target="_self" rel="noopener">The Personal Garden</a></li>
         <li><a href="shared-garden/shared-garden-index.html" target="_self" rel="noopener">The Shared Garden</a></li>
-        <!-- THE LETTER'S WAY BACK. It shows itself once, on a first visit,
-             and without this there is no second time: it could never be read
-             twice, shown to anybody, or demonstrated. The Explore column is
-             where somebody looks for the rest of the site, so it is where
-             the one piece of writing belongs too. -->
-        <li><button type="button" class="footer-as-link" id="footerLetter">Why this exists</button></li>
+        <!-- THE LETTER'S WAY BACK, and it is not a nicety: the letter shows
+             itself once, on a first visit, so without this it could never be
+             read twice, shown to anybody, or demonstrated in an interview.
+             It is a BUTTON dressed as a link, because it opens a card rather
+             than going anywhere and an `href` to nowhere is the first thing a
+             keyboard finds. "Why I made this" is the author's own wording:
+             first person, which is what the letter is. -->
+        <li><button type="button" class="footer-as-link" id="footerLetter">Why I made this</button></li>
       </ul>
-    </details>
+    </div>
   </div>
   <div class="footer-bottom">
     <div class="footer-credit">
@@ -4049,31 +4075,12 @@
   })();
   </script>
 
-  <!-- Everything carrying `data-fold-phone` arrives OPEN, which is right on a
-       wide screen and wrong on a phone: the footer is a screen of stacked text
-       after everything else, and About is the longest run of prose on the page.
-       CSS cannot close a `details`, so this does, and it reopens them if the
-       window grows back. -->
-  <script>
-  (function () {
-    var folds = document.querySelectorAll('[data-fold-phone]');
-    if (!folds.length) return;
-    var phone = window.matchMedia('(max-width: 768px)');
-    /* Whether the reader has taken them over. Once somebody opens or closes
-       one by hand, a resize must not undo it under them. */
-    var touched = false;
-    [].forEach.call(folds, function (f) {
-      f.addEventListener('toggle', function () { touched = true; });
-    });
-    function apply() {
-      if (touched) return;
-      [].forEach.call(folds, function (f) { f.open = !phone.matches; });
-    }
-    apply();
-    (phone.addEventListener ? phone.addEventListener.bind(phone, 'change')
-                            : phone.addListener.bind(phone))(apply);
-  })();
-  </script>
+  <!-- THE PHONE FOLD SCRIPT IS DELETED WITH THE FOLDS IT SERVED. It closed
+       everything carrying `data-fold-phone` under 768 and reopened it above,
+       and stopped doing either once a reader opened one by hand. About's fold
+       went first and the footer's two have now gone, so it had nothing left
+       to act on. `data-fold-phone`, `.footer-fold` and `.about-more` are all
+       still in the stylesheet, unused. -->
 
   <script src="garden-music.js" data-mood="whimsy"></script>
 <script>

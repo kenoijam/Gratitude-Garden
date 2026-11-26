@@ -1174,6 +1174,25 @@ canvas.flower-canvas { position: absolute; top: 0; left: 0; width: 100%; height:
   width: 110%; height: 100px; background: var(--paper); border-radius: 0 0 50% 50%;
 }
 .cta-inner { position: relative; z-index: 1; }
+/* THE QUIET HALF OF THE CLOSING PAIR. It takes the page's body ink on the
+   white card rather than the hero's sky ink, which is measured against a sky
+   this link never stands on. Full strength with an underline, because it is
+   still a control; what makes it quiet is that it is not a box. */
+/* `block`, NOT `inline-block`. The button beside it is inline, so as an
+   inline-block this sat on the SAME ROW as it and the pair read as two
+   controls side by side, which is the equal pairing the hero was rebuilt to
+   get rid of. A block puts it on its own line and `.cta`'s own
+   `text-align: center` centres the text in it. */
+.cta-link {
+  display: block; margin-top: 0.95rem;
+  font-family: Arial, Helvetica, sans-serif; font-size: 0.88rem;
+  letter-spacing: 0.02em; color: var(--ink, #2f6260);
+  text-decoration: underline; text-decoration-thickness: 1px;
+  text-underline-offset: 4px; text-decoration-color: currentColor;
+  transition: color .2s ease;
+}
+.cta-link:hover { color: var(--darkteal, #1d6466); }
+@media (hover: none) { .cta-link:hover { color: var(--ink, #2f6260); } }
 /* The border does more work now than it did on cream. White on pale blue is
    1.14:1, so the card's own fill cannot draw its edge; `--sky` against that
    ground is 1.14 as well and drew nothing. This is the hairline the bouquet
@@ -1309,15 +1328,20 @@ footer::before {
      sitting on copy rather than beside it, bubble and all. */
   .perch, .perch-say { display: none; }
 }
-/* TWO COLUMNS, NOT TWO EDGES. `space-between` on a 939px row holding 403px
-   of content left a 535px gulf between Gratitude Garden and Explore, so the
-   footer read as two things that had drifted apart rather than as a row.
-   An even two column grid gives each half a column and a real gap, and it is
-   what lets the links be left aligned below. */
-.footer-top { display: grid; grid-template-columns: 1fr 1fr; gap: 0 3rem;
+/* ONE COLUMN NOW, AND THE TWO COLUMN NOTE IS KEPT BECAUSE ITS FAULT IS NOT.
+   It read: `space-between` on a 939px row holding 403px of content left a
+   535px gulf between Gratitude Garden and Explore, so an even two column grid
+   gave each half a column and a real gap. That was the right fix for two
+   columns; with "Explore" cut there is one, and a 1fr grid is a block. **The
+   gulf is the live lesson**: anything that puts two things back in this row
+   has to give each its own column rather than push them to the edges. */
+.footer-top { display: grid; grid-template-columns: 1fr; gap: 0;
   align-items: start; margin-bottom: 2rem; }
+/* IT IS A PLAIN `<p>` NOW rather than a `<summary>`'s only child, so it
+   carries its own margin again: `.footer-fold > summary > .footer-brand-logo`
+   used to wipe it to 0 and the summary held the space instead. */
 .footer-brand-logo {
-  font-variation-settings: 'SOFT' 50, 'WONK' 0; font-family: 'Fraunces','Georgia',serif; font-size: 1.4rem; color: var(--yellow); margin-bottom: 0.2rem; display: block; text-decoration: none; }
+  font-variation-settings: 'SOFT' 50, 'WONK' 0; font-family: 'Fraunces','Georgia',serif; font-size: 1.4rem; color: var(--yellow); margin: 0 0 0.2rem; display: block; text-decoration: none; }
 /* `.footer-desc` IS GONE, not merely unused: it held the whole project
    described again at the foot of the page that describes it. If a paragraph
    is ever wanted back here, it belongs in About instead. */
@@ -1338,8 +1362,17 @@ footer::before {
   font-family: Arial, Helvetica, sans-serif; font-size: .78rem;
   line-height: 1.6; color: rgba(255,249,227,0.55); max-width: 340px; margin: 0;
 }
-/* `.footer-col ul` ALREADY SETS `flex-direction: column` and outranks a bare
-   class, so this has to be scoped the same way or the two icons stack. */
+/* A ROW, NOT A COLUMN, AND IT HAS TO BE SCOPED THE SAME WAY `.footer-social`
+   IS: `.footer-col ul` sets `flex-direction: column` and one class cannot
+   out-specify a class plus an element, so a bare `.footer-links` would lose
+   and the three links would stack. Three links on one row is the whole point
+   of taking them out from under a heading. */
+.footer-col ul.footer-links {
+  list-style: none; display: flex; flex-direction: row; flex-wrap: wrap;
+  gap: 0.5rem 1.6rem; margin: 1.5rem 0 0; padding: 0; align-items: center;
+}
+/* `.footer-social` is kept, unused: the icon row went when the logo at the
+   foot of the footer turned out to link to the same Linktree. */
 .footer-col ul.footer-social {
   list-style: none; display: flex; flex-direction: row; gap: .55rem;
   margin: .85rem 0 0; padding: 0; align-items: center;
@@ -1657,10 +1690,11 @@ footer { padding: 140px 2.5rem 2rem; }   /* 100px clear, matching the sections, 
      chevron sat against the text instead of out at the right edge where a
      control belongs. `gap` goes because each fold carries its own rule and
      padding now, and the two together left a hole under the closed one. */
-  .footer-top { grid-template-columns: 1fr; flex-direction: column; gap: 0; align-items: stretch;
-    /* 2.5rem left a hole between the last fold's own rule and the divider
-       above the credit. The folds carry their own spacing now. */
-    margin-bottom: 1.1rem; }
+  /* THE FOLDS ARE GONE, so the 1.1rem that compensated for the spacing they
+     carried themselves goes with them: there is one block here now and it
+     needs the ordinary gap above the divider. */
+  .footer-top { grid-template-columns: 1fr; gap: 0; align-items: stretch;
+    margin-bottom: 2rem; }
   .footer-col h4 { text-align: left; }
   .footer-col ul { align-items: flex-start; }
   .footer-bottom { flex-direction: row; justify-content: space-between; align-items: center; gap: 0; text-align: left; }
