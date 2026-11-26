@@ -3412,23 +3412,56 @@ function buildUI() {
     '<path d="M4.6 19.4l.9-3.4L15.6 5.9a1.8 1.8 0 0 1 2.5 0l1.1 1.1a1.8 1.8 0 0 1 0 2.5L8.9 19.1l-3.4.9z"/>' +
     '<path d="M14.3 7.2l2.5 2.5"/></g></svg>';
 
+  /* ══════════════════ TWO CHOICES SIDE BY SIDE, THE ICON ON TOP
+     They were stacked full width with the icon inline beside the title, so
+     the one screen that offers a CHOICE read as a list of two things to do
+     in order. Side by side is what says "either, not both", and it is the
+     shape the shared garden's own `whereBtn` pair wants too.
+
+     THE ICON GOES TO 30px AND ON TOP. Inline at 15 it was punctuation beside
+     a word; on its own line at 30 it is the thing you read first, which is
+     what lets somebody choose before reading either label.
+
+     THE TWO SUBTEXTS ARE PARALLEL NOW, AND THAT WAS THEIR REAL FAULT. They
+     read "Pick a bloom, then say why" and "Two questions, and your day picks
+     one": the first describes what YOU do and the second describes what the
+     SYSTEM does, so the pair could not be compared. Both describe what you
+     do now, in the same construction, and the only thing that differs
+     between the two lines is **who chooses the flower**, which is the only
+     thing that actually differs between the two paths. */
+  const forkRow = createDiv().parent(cardFork);
+  forkRow.style("display", "grid");
+  forkRow.style("grid-template-columns", "1fr 1fr");
+  forkRow.style("gap", "10px");
+  forkRow.style("margin-top", "4px");
+
   function forkBtn(label, under, icon, fn) {
-    const b = gbtn(cardFork, label, true);
-    b.html('<span style="display:flex;align-items:center;justify-content:center;gap:9px">' +
-           (icon || "") + '<span>' + label + '</span></span>' +
+    const b = gbtn(forkRow, label, true);
+    b.html('<span style="display:block;margin:0 auto 7px;width:30px;height:30px">' +
+           (icon || "") + '</span>' +
+           '<span style="display:block">' + label + '</span>' +
            '<span style="display:block;font-weight:400;font-size:12.5px;' +
-           'opacity:0.85;margin-top:3px">' + under + '</span>');
-    b.style("padding", "11px 12px");
-    b.style("line-height", "1.25");
+           'opacity:0.85;margin-top:5px">' + under + '</span>');
+    b.style("padding", "16px 12px 15px");
+    b.style("line-height", "1.3");
+    b.style("width", "100%");
+    b.style("margin-bottom", "0");
+    /* THE ICONS ARE STROKED AT 1.5 ON A 24 BOX, so they have to be told to
+       fill the 30px slot rather than keeping their own width. */
+    b.elt.querySelectorAll("svg").forEach(function (sv) {
+      sv.setAttribute("width", "30");
+      sv.setAttribute("height", "30");
+      sv.style.display = "block";
+    });
     b.mousePressed(fn);
     return b;
   }
 
-  forkBtn("Flower first", "Pick a bloom, then say why", ICO_FLOWER, () => {
+  forkBtn("Flower first", "Choose a bloom, then tell me why", ICO_FLOWER, () => {
     pickedBySelf = true;
     showStep("pick");
   });
-  forkBtn("Write first", "Two questions, and your day picks one", ICO_WRITE, () => {
+  forkBtn("Write first", "Answer two questions, I will choose", ICO_WRITE, () => {
     pickedBySelf = false;
     showStep("prompt1");
   });

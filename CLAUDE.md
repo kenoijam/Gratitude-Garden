@@ -3804,6 +3804,54 @@ himself that says the affordance is there and leaves the choice where it
 belongs. **The test for any new line: could it be read as asking the visitor
 to earn something, or to do something for Hortus? Then it is the wrong line.**
 
+## THE CIRCLE FEATURE DIES SILENTLY, AND IT IS NOT ABOUT SIGNING IN
+
+The author reported that making or joining a circle "doesn't work if you are
+not signed in". **Signing in is not the fault**, and that was established by
+doing it: signed out, with accounts configured, pressing "Make a circle"
+generated `wide-star-newt`, wrote
+`[{"code":"wide-star-newt","name":"Test circle"}]` to `gg_circles` and
+navigated. The account-free design works exactly as written.
+
+- **THE WHOLE FEATURE RUNS ON `window.prompt`, FOUR TIMES.** Naming a new
+  circle, pasting a code, naming a joined circle, and naming one arrived at
+  by link.
+- **A SUPPRESSED DIALOG IS INDISTINGUISHABLE FROM A CANCELLED ONE.** Browsers
+  can stop a page opening dialogs, which Chrome offers as "Prevent this page
+  from creating additional dialogs" the second time one appears, and some
+  embedded contexts do it unasked. A suppressed `prompt` returns **null**,
+  and every call site reads null as "they cancelled" and returns silently.
+  **So the chip does nothing, says nothing, and logs nothing.** That is the
+  report, exactly.
+- **THIS REVERSES THE NOTE THAT DEFENDS THE PROMPT.** It argued the browser's
+  own dialog is "the right weight for a thing that takes two seconds" and
+  that a card "would make making a circle feel like setting up an account".
+  The weight argument is still right; what it did not account for is that a
+  browser dialog is **the one piece of interface the browser can take away**,
+  and a feature that can be silently removed by the user agent is worse than
+  a slightly heavier one that cannot.
+- **NOT YET FIXED.** The replacement is the project's own card, the idiom
+  `.gmeet-card` and `.ga-card` already share.
+
+## THE FORK IS TWO CHOICES SIDE BY SIDE
+
+- **STACKED FULL WIDTH READ AS A LIST, NOT A CHOICE.** The one screen that
+  offers a fork looked like two things to do in order. Side by side is what
+  says either, not both.
+- **THE ICON IS 30px AND ON TOP.** Inline at 15 beside the title it was
+  punctuation; on its own line it is the thing read first, which is what lets
+  somebody choose before reading either label. The icons are stroked at 1.5
+  on a 24 box, so they are resized in the DOM rather than left at their own
+  width.
+- **THE SUBTEXTS WERE NOT PARALLEL, AND THAT WAS THE REAL FAULT.** They read
+  "Pick a bloom, then say why" and "Two questions, and your day picks one":
+  the first describes what YOU do, the second what the SYSTEM does, so the
+  pair could not be compared at all. They are "Choose a bloom, then tell me
+  why" and "Answer two questions, I will choose", same construction, and the
+  only thing that differs between the lines is **who chooses the flower**,
+  which is the only thing that differs between the paths.
+- Measured at 900: both at y 389, 196px each, genuinely level.
+
 ## FOUR FAULTS FOUND BY WALKING THE GARDENS
 
 - **THE SUNFLOWER WAS CLIPPED BY A `+ 10`.** `drawPreviewFlower` ran
