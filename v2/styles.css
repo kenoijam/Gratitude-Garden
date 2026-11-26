@@ -209,7 +209,17 @@ body { padding-left: 0 !important; }
 .hero-text-block { text-align: center; position: relative; z-index: 5; padding: 0 1.5rem; margin-top: auto; margin-bottom: 0; max-width: 740px; width: 100%; animation: fadeUp 0.9s ease both; }
 .hero-eyebrow { font-family: Arial,Helvetica,sans-serif; font-size: 0.72rem; letter-spacing: 0.22em; text-transform: uppercase; color: var(--teal); display: block; margin-bottom: 0.8rem; }
 .hero-title {
-  font-variation-settings: 'SOFT' 50, 'WONK' 0; font-family: 'Fraunces','Georgia',serif; font-size: clamp(2.1rem,3.9vw,3.5rem); line-height: 1.07; color: var(--darkteal); margin-bottom: 1.1rem; }
+  /* THE FLOOR IS 2.9rem AND IT IS THE PHONE BLOCK'S OWN CAP, which is what
+     makes the two meet exactly at 768 instead of falling off a cliff there.
+     It was 2.1rem, and 3.9vw does not reach 2.1rem until 915px, so the whole
+     tablet band sat on that floor at 35.7px while the phone rule's cap holds
+     49.3: measured, the headline DROPPED 28 percent as the screen got WIDER,
+     and at 820 a phone's headline was larger than a tablet's. At 2.9rem the
+     band is flat at 49.3 to 1264 and then rises on 3.9vw exactly as before,
+     so nothing at or above 1264 moves and nothing under 768 moves.
+     Re-measure this if either clamp changes: the two numbers have to stay
+     equal or the cliff comes back. */
+  font-variation-settings: 'SOFT' 50, 'WONK' 0; font-family: 'Fraunces','Georgia',serif; font-size: clamp(2.9rem,3.9vw,3.5rem); line-height: 1.07; color: var(--darkteal); margin-bottom: 1.1rem; }
 .hero-title em { font-family: 'Fraunces','Georgia',serif; font-style: italic; color: var(--teal); }
 /* Solid, never translucent. At `opacity: 0.76` this measured 3.50 against the
    hero sky at 17.85px, the same bug .section-desc carried and for the same
@@ -503,7 +513,7 @@ section { padding: 5rem 5rem; }
      second step down to the 20.4px line under each title. The PHONE size is
      set separately in the 768 block and did not move: 9vw there was chosen to
      clear the 34px control in the corner. */
-  font-variation-settings: 'SOFT' 50, 'WONK' 0; font-family: 'Fraunces','Georgia',serif; font-size: clamp(2rem,3.3vw,3rem); line-height: 1.12; color: var(--darkteal); margin-bottom: 1rem; }
+  font-variation-settings: 'SOFT' 50, 'WONK' 0; font-family: 'Fraunces','Georgia',serif; font-size: clamp(2.4rem,3.3vw,3rem); line-height: 1.12; color: var(--darkteal); margin-bottom: 1rem; }
 .section-title em { font-family: 'Fraunces','Georgia',serif; font-style: italic; color: var(--teal); }
 /* Solid, not 80 percent of dark teal: at 0.8 the colour was mixed with whatever
    was behind it, so on a section that faded the text changed value down the

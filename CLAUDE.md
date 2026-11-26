@@ -595,6 +595,78 @@ else in this block still holds.
 - **Measured after**: 390 document 4249 to 3609, every section 0.41 to 1.20
   screens, no sideways scroll. 1440 document 5493 to 4642.
 
+## A TABLET'S HEADLINE WAS SMALLER THAN A PHONE'S, AND IT IS TWO FLOORS
+
+The type scale is built out of `vw` clamps, and **a clamp's FLOOR governs a
+band of widths that nobody ever measures**, because the attention goes to the
+phone and to 1440. Measured across the whole range, the band between them was
+the only one with no hierarchy left in it.
+
+| | 375 | 767 | 820 before | 820 after | 1440 |
+|---|---|---|---|---|---|
+| `.hero-title` | 36.8 | 51.0 | **35.7** | **49.3** | 56.2 |
+| `.section-title` | 34.9 | 49.3 | **34.0** | **40.8** | 47.5 |
+| `.garden-card-title` | 27.2 | 27.2 | 35.7 | 35.7 | 35.7 |
+
+- **THE HEADLINE DROPPED 28 PERCENT AS THE SCREEN GOT WIDER.** `.hero-title`
+  was `clamp(2.1rem, 3.9vw, 3.5rem)` and 3.9vw does not reach 2.1rem until
+  **915px**, so everything from 768 to 915 sat on a 35.7px floor while the
+  phone rule's own cap holds 49.3. **A phone's headline was larger than a
+  tablet's**, which is the kind of thing only a sweep finds: at any one width
+  the page looks fine.
+- **THE FIX IS THAT THE FLOOR IS NOW THE PHONE RULE'S CAP, 2.9rem, the SAME
+  NUMBER.** That is what makes the two meet at 768 by construction rather
+  than by tuning, and it is why it is one value rather than a new media
+  query. **Keep them equal or the cliff comes back.** 3.9vw passes 2.9rem at
+  1264, so the band is flat at 49.3 to there and then rises exactly as
+  before: **nothing at or above 1264 moves and nothing under 768 moves**,
+  verified at 1440 reading the same 56.2 / 47.5 / 35.7 this file already
+  records.
+- **THE SECTION TITLES HAD THE IDENTICAL FAULT AND THE SAME CURE**, floor
+  2rem to 2.4rem, which is what keeps the 1.18 step under the hero rather
+  than letting it collapse. **This is the flattening this file already
+  records fixing ONCE at desktop** ("three percent apart, so the hero stopped
+  being the biggest thing on the page"): it was fixed there by moving the
+  `vw`, which does nothing for a band governed by a floor, so the same fault
+  was still sitting in the tablet range afterwards. **Fixing a scale at one
+  width does not fix it at another when the two are governed by different
+  terms of the same clamp.**
+- **`.garden-card-title` IS A FLAT 2.1rem AND IS DELIBERATELY LEFT THERE.** A
+  garden card is 354px wide at 820 and about 380 at 1440, so it is nearly the
+  same object at both and its heading should not scale with the window. What
+  was wrong was never the card: at 820 the HERO had shrunk to meet it, and
+  the two measured identically at 35.7 with a 34.0 section title between
+  them, which is three levels inside five percent. With the hero at 49.3 the
+  steps read 1.21 and 1.14.
+- **Measured after at 375, 767, 769, 820, 1024, 1280 and 1440**: the hero is
+  the largest text at every one, the scale never inverts, `scrollWidth`
+  equals `clientWidth` throughout, and the headline holds two lines at 820
+  (66..755 of 820) and three at 375.
+- **A PANE TRAP THAT PRODUCED TWO FALSE ROWS.** `resize_window` followed
+  immediately by a read reports the PREVIOUS width in `innerWidth` while the
+  computed styles are already the new ones, so a sweep written as resize,
+  read, resize, read silently pairs each width with the wrong numbers. Wait
+  between the two, and sanity check a reading against the rule it should
+  satisfy before believing it.
+
+## `GardenLoader` IS UNDEFINED ON EVERY PAGE AFTER THE FIRST, AND IT STAYS
+
+Recorded rather than fixed, deliberately.
+
+- **The early return for `gg_loaded` sits at the TOP of the IIFE and
+  `window.GardenLoader = {...}` at the BOTTOM**, so a return visit inside one
+  session skips the loader AND never makes the export. The module's own
+  contract, which this file states as "ask the module, never the DOM", is
+  therefore only available on the first page of a session.
+- **EVERY CALLER ALREADY GUARDS** (`window.GardenLoader && ...showing()`, and
+  the shared garden's `done()` is inside that same guard), and a missing
+  module reads as "nothing is up", **which is the correct answer when the
+  loader skipped**. So it works, by luck rather than by contract.
+- **IT IS NOT FIXED BECAUSE `garden-loader.js` IS IN BOTH COPIES AND THE ROOT
+  IS FROZEN.** Fixing only v2 would make the before and the after differ in a
+  tenth way, and the experiment's table is its own definition. **If the root
+  is ever unfrozen, move the export above the early return in both.**
+
 ## THE PHONE PASS, AND THE CARD HAD NO GUTTER FOR ITS WHOLE LIFE
 
 Four faults, measured at 390 by 844 in both gardens, and the first of them is
