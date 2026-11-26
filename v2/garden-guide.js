@@ -1536,7 +1536,25 @@
     setTimeout(function () { if (meetEl) meetEl.hidden = true; }, 420);
   }
 
-  function meet() {
+  /* `showMeet`, NOT `meet`, AND THE NAME COLLISION WAS A REAL BUG. This file
+     already had a `function meet()` at the top: the one line that writes
+     `gg_met_hortus` so he introduces himself once ever. A second
+     `function meet()` down here does not shadow it or error; declarations
+     HOIST and the LAST one wins, so every existing call to the marker, from
+     `meetFirst` and from the tour's start, silently became a call to OPEN
+     THIS CARD.
+
+     TWO FAULTS AT ONCE, and only one of them was visible. The card appeared
+     unbidden on both garden pages the moment Hortus said his first line,
+     which is what a screenshot caught. The quiet one was worse: the marker
+     never ran, so `gg_met_hortus` was never set and he would have
+     reintroduced himself on every visit for ever, breaking the rule this
+     file states as **IT SAYS ITS NAME ONCE, EVER**.
+
+     **Third name collision this project has recorded**, after `card4` in the
+     personal garden and `vary()` in the avatar kit. Grep for a function name
+     before declaring one in a file this long. */
+  function showMeet() {
     if (!window.GardenMascot) return;
     meetCss();
     if (!meetEl) {
@@ -1600,7 +1618,7 @@
     say: say,
     /* THE FOOTER'S "Meet Hortus" LINK. See the block above for why a
        character with a once-only introduction needed a way back. */
-    meet: meet,
+    meet: showMeet,
     /* WHAT A GARDEN SKETCH CALLS, from its own `showStep`. An unknown step
        name hushes rather than throwing, so a step added to a sketch later
        simply gets no line until somebody writes one. */

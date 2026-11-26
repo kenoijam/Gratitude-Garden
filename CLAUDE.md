@@ -3799,14 +3799,42 @@ shows: at night.
   button alone grew by `scale(1.06)`. All five lift, and all five deepen the
   shadow, which is the page's own idiom (`.hero-btn`, `.gg-hov`, the flower
   tiles).
-- **STILL TO DO: THE CAMERA.** `#save-btn` is set INLINE by both sketches
-  (`saveBtn.style("background", ...)`), so it is the one button a stylesheet
-  cannot reach. **An inline value is allowed to BE a `var()`**, so the fix is
-  to change those four inline colours in each sketch to the tokens rather than
-  to fight with `!important`. Until that is done the gardens' row has four
-  buttons turning over at night and one staying cream.
+- **THE CAMERA TAKES THE TOKENS INLINE, and that is the trick worth keeping.**
+  `#save-btn` is written by p5.dom with `saveBtn.style("background", ...)`, so
+  it is the one button a stylesheet cannot reach without `!important`. **An
+  inline value is allowed to BE a `var()`**, so the four colours in each
+  sketch are now `var(--gg-ctl-*)` and the button nothing could touch follows
+  the row. Its stylesheet rules take the tokens too: the colours there are a
+  dead copy kept in step, but **`#save-btn:hover` is LIVE**, since the sketch
+  writes no hover inline.
+- **Verified in the shared garden at both hours**: all five buttons report one
+  treatment, and a sweep of their computed background, border, ink and shadow
+  returns **one distinct value across the row**.
 - **Verified at `clock=1`**: music, account and theme all report
   `rgba(15,59,64,0.88)`, `rgba(255,249,227,0.34)` and `rgb(255,249,227)`.
+
+### A THIRD NAME COLLISION, AND ONLY HALF OF IT WAS VISIBLE
+
+**`garden-guide.js` ALREADY HAD A `function meet()`**: the one line that
+writes `gg_met_hortus` so he introduces himself once ever. Declaring a second
+`function meet()` for the card did not shadow it or error. **Declarations
+hoist and the LAST one wins**, so every existing call to the marker, from
+`meetFirst` and from the tour's start, silently became a call to open the
+card.
+
+- **THE VISIBLE HALF: the card opened unbidden on both garden pages** the
+  moment Hortus said his first line. Caught by LOOKING at a screenshot taken
+  for something else entirely, not by any test.
+- **THE QUIET HALF WAS WORSE.** The marker never ran, so `gg_met_hortus` was
+  never set and he would have reintroduced himself on every visit for ever,
+  breaking the rule this file states as **IT SAYS ITS NAME ONCE, EVER**.
+  Nothing on screen would have shown that for a week.
+- It is `showMeet` now; the export stays `GardenGuide.meet`, which is a
+  property and collides with nothing. **Third collision recorded here**, after
+  `card4` in the personal garden and `vary()` in the avatar kit. **Grep for a
+  function name before declaring one in a file this long.**
+- Verified: the card is never built on load, `gg_met_hortus` reads 1 again,
+  and the footer link still opens it, hushes the column and restores it.
 
 ### HORTUS SAYS HELLO IN PLAIN WORDS
 

@@ -309,15 +309,21 @@ input[type="text"]:focus {
   border-radius: 50%;
   align-items: center;
   justify-content: center;
-  background: rgba(255,249,227,0.92);
-  border: 1.5px solid #b7e4e7;
-  color: #1d6466;
-  box-shadow: 0 2px 10px rgba(29,100,102,0.14);
+  /* THE TOKENS, kept in step with the sketch's inline copy the way these
+     rules always have been. `garden-cursor.js` publishes them. */
+  background: var(--gg-ctl-bg);
+  border: 1.5px solid var(--gg-ctl-line);
+  color: var(--gg-ctl-ink);
+  box-shadow: var(--gg-ctl-shadow);
   cursor: pointer;
   z-index: 261;
   pointer-events: auto;
 }
-#save-btn:hover { background: #e1f7f7; transform: translateY(-1px); }
+/* THE HOVER IS LIVE where the colours above are a dead copy: the sketch
+   writes no hover inline, so this is the rule that actually fires. The row's
+   one gesture is a 1px lift and a deeper shadow. */
+#save-btn:hover { background: var(--gg-ctl-bg-hover); transform: translateY(-1px);
+  box-shadow: var(--gg-ctl-shadow-hover); }
 #save-btn svg { width: 18px; height: 18px; display: block; }
 @media (max-width: 768px) {
   /* `!important` on every one, because the sketch sets `top` and `right`

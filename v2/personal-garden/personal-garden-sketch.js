@@ -4378,10 +4378,16 @@ function buildUI() {
   saveBtn.style("border-radius", "50%");
   saveBtn.style("align-items", "center");
   saveBtn.style("justify-content", "center");
-  saveBtn.style("background", "rgba(255,249,227,0.92)");
-  saveBtn.style("border", "1.5px solid #b7e4e7");
-  saveBtn.style("color", "#1d6466");
-  saveBtn.style("box-shadow", "0 2px 10px rgba(29,100,102,0.14)");
+  /* THE CAMERA IS THE ONE BUTTON A STYLESHEET CANNOT REACH, so it takes the
+     tokens INLINE. p5.dom writes these as inline style, and inline beats any
+     rule short of `!important`; what rescues it is that an inline value is
+     allowed to BE a `var()`. So the one control nothing else could touch now
+     follows `--gg-ctl-*` with the four beside it, and turns over at night with
+     them. The tokens are published by `garden-cursor.js`. */
+  saveBtn.style("background", "var(--gg-ctl-bg)");
+  saveBtn.style("border", "1.5px solid var(--gg-ctl-line)");
+  saveBtn.style("color", "var(--gg-ctl-ink)");
+  saveBtn.style("box-shadow", "var(--gg-ctl-shadow)");
   saveBtn.style("cursor", "pointer");
   saveBtn.style("z-index", "261");
 saveBtn.mousePressed(() => {
