@@ -4121,6 +4121,47 @@ knows the size of it before starting.
   measuring. **That is an experiment decision, not a design one**, and it
   belongs to the author.
 
+## RUNNING THE USER TEST ON ONE LAPTOP
+
+**`?reset=1` on any page makes a clean participant.** It clears every key
+this project writes, by PREFIX rather than from a list, so a key added later
+is covered without anybody remembering; it clears `sessionStorage`; it signs
+out of Supabase; and it strips itself from the URL with `location.replace`,
+so a participant who refreshes does not wipe their own session and cannot
+press Back into the reset. `garden-cursor.js` owns it because that file is
+loaded from the HEAD on all four pages, ahead of the letter, the guide and
+the account module, so it runs before anything reads storage.
+
+- **INCOGNITO WORKS, WITH ONE TRAP THAT IS INVISIBLE AFTERWARDS.** Every
+  incognito window shares ONE session until the LAST one is closed. Opening a
+  second incognito window for the next participant resets nothing, and
+  nothing on screen says so, so participant two silently inherits participant
+  one's letter, tour and garden. If incognito is used anyway, **close every
+  incognito window between participants**, not just the tab.
+- **`deepstream-db/` IS LEFT ALONE.** That is p5.party's cache for the live
+  room, not a record of the visitor.
+- **WHAT A RESET DOES NOT UNDO:** a flower already planted in the shared
+  garden. That is in a live room on somebody else's server, not in this
+  browser.
+
+### THREE THINGS TO DECIDE BEFORE THE FIRST SESSION
+
+- **BOTH VERSIONS SHARE ONE SHARED-GARDEN ROOM, AND THAT IS A CONFOUND.**
+  `partyConnect("wss://demoserver.p5party.org", "gratitude_garden")` and
+  `roomKey = "garden-" + todayStr()` are **identical in `/` and `/v2/`**, so
+  a flower planted by a BEFORE participant appears in the AFTER participant's
+  garden and the other way round. The two conditions are not independent in
+  the one feature that is about other people. Changing it is one string in
+  `v2/shared-garden/shared-garden-sketch.js`.
+- **IT IS A PUBLIC DEMO SERVER.** Anyone else in the world running an app
+  named `gratitude_garden` on `demoserver.p5party.org` shares that room, so
+  a stranger's flower can appear mid-session and a participant's gratitude is
+  readable by them.
+- **`DEMO_COUNT` IS 5.** Five invented flowers with invented names and
+  sentences appear in the shared garden. **A participant who reads them will
+  believe five strangers planted today**, which is a claim the study would be
+  making without saying so. Say it in the briefing or set it to 0.
+
 ## THE DESIGN SYSTEM IS IN ONE PLACE NOW (`garden-cursor.js`)
 
 Audited across both gardens, the landing page and the six modules. The

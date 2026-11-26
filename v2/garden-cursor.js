@@ -51,6 +51,61 @@
      parsed, so it is captured here and nowhere later. */
   var TAG = document.currentScript;
 
+  /* ═══════════════════════════════ `?reset=1`: A CLEAN PARTICIPANT, ON PURPOSE
+     FOR USER TESTING ON ONE MACHINE. Everything this project remembers about
+     a visitor is in `localStorage` and `sessionStorage`, and there are about
+     TWENTY keys: the letter, the introduction, the tour, the companion's
+     dismissal, the loader, the music hint, the music state, the theme, the
+     fertilizer, the circles, the gardener, the carry note, both shared-garden
+     markers, the journal, the once-a-day marker, the garden itself and its
+     name. Clearing those by hand between participants is a list nobody gets
+     right twice.
+
+     WHY NOT JUST INCOGNITO. Incognito does work, with one trap that is easy
+     to walk into and impossible to see afterwards: **every incognito window
+     shares ONE session until the LAST one is closed.** Opening a second
+     incognito window for the next participant does not reset anything, and
+     nothing on screen says so, so participant two silently inherits
+     participant one's letter, tour and garden. This is deterministic instead,
+     and it works in an ordinary window.
+
+     IT CLEARS BY PREFIX, NOT BY A LIST, so a key added later is covered
+     without anybody remembering to come back here.
+
+     IT SIGNS OUT TOO. Supabase keeps its session under an `sb-` key, so
+     without this the next participant arrives signed in as the last one,
+     which is the worst version of this bug: their garden, their username,
+     their once-a-day limit.
+
+     `deepstream-db/` IS LEFT ALONE. That is p5.party's own cache for the
+     live room, not a record of the visitor, and clearing it mid-connection
+     is a risk for no gain.
+
+     IT RUNS BEFORE ANYTHING ELSE READS STORAGE, which is why it lives in this
+     file: `garden-cursor.js` is loaded from the HEAD on all four pages, ahead
+     of the letter, the guide and the account module. */
+  (function () {
+    try {
+      if (!/[?&]reset=1\b/.test(location.search)) return;
+      var kill = /^(gg_|gratitude|personal_gratitude|community_garden|sb-)/;
+      var doomed = [];
+      for (var i = 0; i < localStorage.length; i++) {
+        var k = localStorage.key(i);
+        if (k && kill.test(k)) doomed.push(k);
+      }
+      for (var j = 0; j < doomed.length; j++) localStorage.removeItem(doomed[j]);
+      try { sessionStorage.clear(); } catch (e) {}
+      /* THE PARAM HAS TO GO OR EVERY RELOAD RESETS AGAIN, and a participant
+         who refreshes would lose their own garden mid-session. `replace`
+         rather than `assign` so the reset URL is not left in the history for
+         them to press Back into. */
+      var clean = location.pathname +
+        location.search.replace(/[?&]reset=1\b/, "").replace(/^&/, "?") +
+        location.hash;
+      location.replace(clean);
+    } catch (e) {}
+  })();
+
   var STYLE_ID = "gg-cursor-style";
   var INK = "%231d6466";        /* the outline, dark teal, url encoded */
   /* The favicon's own blue. It was 47, the palette's butter yellow, which is
