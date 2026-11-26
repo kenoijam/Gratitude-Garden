@@ -262,7 +262,7 @@
          scrolled to. Longer days than that do scroll, which is the point of
          a fixed height; a photograph on an ordinary day should not. */
       'height:min(86vh,520px);' +
-      'background:snow;border-radius:16px;border:1px solid #d9ece9;' +
+      'background:var(--gg-surface);border-radius:var(--gg-r-card);border:1px solid #d9ece9;' +
       'box-shadow:0 22px 60px rgba(29,100,102,0.30);' +
       'font-family:Arial,Helvetica,sans-serif;color:#1d6466;display:flex;flex-direction:column;' +
       'overflow:hidden;' +
@@ -308,7 +308,7 @@
       'justify-content:space-between;gap:8px;}' +
     '.gj-turn-btn{display:flex;align-items:center;gap:6px;border:0;background:none;' +
       'font-family:inherit;font-size:12.5px;font-weight:700;color:#2c7a7b;' +
-      'padding:7px 9px;border-radius:9px;cursor:pointer;}' +
+      'padding:7px 9px;border-radius:var(--gg-r-sm);cursor:pointer;}' +
     '.gj-turn-btn:hover:not(:disabled){background:#e9f7f5;}' +
     '.gj-turn-btn:disabled{opacity:.32;cursor:not-allowed;}' +
     /* THE MONTH. Seven across, each day showing the flower planted on it, the
@@ -321,7 +321,7 @@
       'color:#8aa9a7;text-transform:uppercase;}' +
     '#gj-month{display:grid;grid-template-columns:repeat(7,1fr);row-gap:4px;column-gap:2px;}' +
     '.gj-cell{display:flex;flex-direction:column;align-items:center;gap:3px;padding:4px 0 4px;' +
-      'border:0;border-radius:12px;background:none;cursor:pointer;font-family:inherit;min-width:0;}' +
+      'border:0;border-radius:var(--gg-r-ctl);background:none;cursor:pointer;font-family:inherit;min-width:0;}' +
     '.gj-cell .gj-slot{width:40px;height:40px;border-radius:50%;display:flex;' +
       'align-items:center;justify-content:center;transition:box-shadow .15s;}' +
     '.gj-cell[data-state="planted"] .gj-slot{background:#f1f8f6;}' +
@@ -334,7 +334,7 @@
     '.gj-cell:focus-visible{outline:2px solid #1d6466;outline-offset:1px;}' +
     '.gj-cell:disabled{cursor:default;}' +
     '.gj-cell .gj-num{font-size:11.5px;color:#5a8f8d;min-width:22px;height:17px;' +
-      'line-height:17px;padding:0 5px;border-radius:999px;text-align:center;box-sizing:border-box;}' +
+      'line-height:17px;padding:0 5px;border-radius:var(--gg-r-pill);text-align:center;box-sizing:border-box;}' +
     '.gj-cell[data-state="future"] .gj-num{color:#b3c7c5;}' +
     '.gj-cell[data-today="1"] .gj-num{background:#1d6466;color:#fff9e3;font-weight:700;}' +
     '.gj-month-note{font-size:12.5px;color:#5a8f8d;padding:7px 2px;}' +
@@ -349,7 +349,7 @@
       '#gj-panel[data-view="day"] .gj-month-note{display:none;}' +
     '.gj-back{display:flex;align-items:center;gap:5px;border:0;background:none;cursor:pointer;' +
       'font-family:inherit;font-size:13px;font-weight:700;color:#1d6466;padding:6px 8px 6px 4px;' +
-      'border-radius:9px;flex:0 0 auto;}' +
+      'border-radius:var(--gg-r-sm);flex:0 0 auto;}' +
     '.gj-back:hover{background:#e9f7f5;}' +
     '#gj-panel[data-view="day"] .gj-month{font-size:15px;text-align:right;}' +
 
@@ -375,7 +375,7 @@
        which is worse than either shape; a square that fills is a thumbnail,
        which is what this is. Cropping costs nothing here only because the
        whole picture is one tap away. */
-    '.gj-shot{width:128px;height:128px;border-radius:10px;' +
+    '.gj-shot{width:128px;height:128px;border-radius:var(--gg-r-sm);' +
       'overflow:hidden;background:#e4efed;margin:2px 0 4px;position:relative;' +
       'display:block;padding:0;border:0;}' +
     '.gj-shot img{width:100%;height:100%;object-fit:cover;display:block;}' +
@@ -395,7 +395,7 @@
       'align-items:center;justify-content:center;padding:26px;' +
       'background:rgba(10,48,44,0.82);opacity:0;transition:opacity .18s ease;}' +
     '.gj-lightbox[data-in="1"]{opacity:1;}' +
-    '.gj-lightbox img{max-width:100%;max-height:100%;border-radius:12px;' +
+    '.gj-lightbox img{max-width:100%;max-height:100%;border-radius:var(--gg-r-ctl);' +
       'box-shadow:0 18px 60px rgba(0,0,0,.42);display:block;}' +
     '.gj-lb-close{position:absolute;top:16px;right:16px;width:38px;height:38px;' +
       'border-radius:50%;border:0;background:rgba(255,249,227,0.92);color:#1d6466;' +

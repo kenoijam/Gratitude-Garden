@@ -510,7 +510,7 @@
       'opacity:1;visibility:visible;transform:none;' +
       'transition:opacity 0.18s ease 0s,transform 0.18s ease 0s,visibility 0s linear 0s;}' +
     '#gg-music-vol .pill{background:var(--gg-ctl-bg);border:1.5px solid var(--gg-ctl-line);' +
-      'border-radius:50px;box-shadow:var(--gg-ctl-shadow);padding:7px 12px;}' +
+      'border-radius:var(--gg-r-pill);box-shadow:var(--gg-ctl-shadow);padding:7px 12px;}' +
     /* The input is 16px tall against a 4px track, so the grab area is the
        whole height of the pill's inside rather than the hairline you can see.
        A 4px input is accurate to about a pixel, which is not a thing anyone
@@ -542,7 +542,7 @@
        that gives way, since reaching for the control means it has done its
        job. */
     '#gg-music-hint{position:absolute;top:100%;right:0;margin-top:9px;width:196px;' +
-      'background:rgba(255,249,227,0.97);border:1.5px solid #b7e4e7;border-radius:14px;' +
+      'background:rgba(255,249,227,0.97);border:1.5px solid #b7e4e7;border-radius:var(--gg-r-ctl);' +
       'box-shadow:0 4px 16px rgba(29,100,102,0.16);padding:10px 12px;' +
       'color:#1d6466;font-size:12.5px;line-height:1.45;text-align:left;' +
       'cursor:pointer;opacity:0;transform:translateY(-6px);pointer-events:none;' +

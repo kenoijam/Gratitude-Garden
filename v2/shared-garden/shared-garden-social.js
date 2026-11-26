@@ -38,7 +38,7 @@
      with a single script tag. */
   var CSS =
     '#gs-panel{position:fixed;top:0;right:0;bottom:0;width:360px;max-width:100%;' +
-      'z-index:500;background:snow;border-left:1px solid #d9ece9;' +
+      'z-index:500;background:var(--gg-surface);border-left:1px solid #d9ece9;' +
       'box-shadow:-8px 0 28px rgba(29,100,102,0.12);' +
       'font-family:Arial,Helvetica,sans-serif;color:#1d6466;' +
       'display:flex;flex-direction:column;' +
@@ -47,7 +47,7 @@
     '@media (prefers-reduced-motion:reduce){#gs-panel{transition:none;}}' +
     /* A full height sheet on a phone would cover the garden it is about. */
     '@media (max-width:560px){#gs-panel{top:auto;left:0;width:auto;height:74vh;' +
-      'border-left:none;border-top:1px solid #d9ece9;border-radius:18px 18px 0 0;' +
+      'border-left:none;border-top:1px solid #d9ece9;border-radius:var(--gg-r-card) 18px 0 0;' +
       'box-shadow:0 -8px 28px rgba(29,100,102,0.16);' +
       'transform:translateY(102%);}}' +
 
@@ -70,7 +70,7 @@
     '#gs-actions{display:flex;align-items:center;gap:10px;padding:14px 20px;' +
       'border-bottom:1px solid #eaf4f2;}' +
     '#gs-like{display:inline-flex;align-items:center;gap:7px;padding:8px 15px;' +
-      'border-radius:50px;border:1.5px solid #b7e4e7;background:rgba(255,249,227,0.92);' +
+      'border-radius:var(--gg-r-pill);border:1.5px solid #b7e4e7;background:rgba(255,249,227,0.92);' +
       'color:#1d6466;font-size:14px;font-weight:700;font-family:inherit;cursor:pointer;' +
       'transition:background .18s,transform .14s,border-color .18s;}' +
     '#gs-like:hover:not(:disabled){background:#e1f7f7;transform:translateY(-1px);}' +
@@ -93,14 +93,14 @@
 
     '#gs-foot{padding:14px 20px 18px;border-top:1px solid #eaf4f2;}' +
     '#gs-foot textarea{width:100%;box-sizing:border-box;min-height:62px;resize:vertical;' +
-      'padding:11px 13px;border:1.5px solid #d9ece9;border-radius:12px;' +
+      'padding:11px 13px;border:1.5px solid #d9ece9;border-radius:var(--gg-r-ctl);' +
       'font-family:inherit;font-size:14px;color:#1d6466;background:#fdfefe;}' +
     '#gs-foot textarea:focus{outline:none;border-color:#7fcdcd;}' +
     '#gs-foot input{width:100%;box-sizing:border-box;padding:11px 13px;margin-bottom:9px;' +
-      'border:1.5px solid #d9ece9;border-radius:12px;font-family:inherit;font-size:14px;' +
+      'border:1.5px solid #d9ece9;border-radius:var(--gg-r-ctl);font-family:inherit;font-size:14px;' +
       'color:#1d6466;background:#fdfefe;}' +
     '#gs-foot input:focus{outline:none;border-color:#7fcdcd;}' +
-    '.gs-btn{width:100%;margin-top:10px;padding:12px 16px;border:none;border-radius:12px;' +
+    '.gs-btn{width:100%;margin-top:10px;padding:12px 16px;border:none;border-radius:var(--gg-r-ctl);' +
       'background:#1d6466;color:#fff9e3;font-size:16px;font-weight:700;' +
       'font-family:inherit;cursor:pointer;transition:transform .15s,background .15s;}' +
     '.gs-btn:hover:not(:disabled){transform:scale(1.02);background:#257e78;}' +
@@ -700,7 +700,7 @@
        tap with two different kinds of card. */
     css.textContent =
       '#gs-peek{position:fixed;z-index:490;width:224px;box-sizing:border-box;padding:14px 16px 14px;' +
-        'background:#fffdf7;border:1px solid rgba(29,100,102,0.14);border-radius:16px;' +
+        'background:#fffdf7;border:1px solid rgba(29,100,102,0.14);border-radius:var(--gg-r-card);' +
         'box-shadow:0 14px 36px rgba(29,100,102,0.22);font-family:Arial,Helvetica,sans-serif;' +
         'color:#1d6466;text-align:left;}' +
       '#gs-peek[hidden]{display:none !important;}' +
@@ -714,7 +714,7 @@
       '#gs-peek .pk-row{display:flex;gap:8px;}' +
       '#gs-peek .pk-row[hidden]{display:none !important;}' +
       '#gs-peek .pk-btn{flex:1 1 0;display:inline-flex;align-items:center;justify-content:center;gap:6px;' +
-        'height:40px;padding:0 12px;border-radius:999px;border:0;background:#1d6466;color:#fff9e3;' +
+        'height:40px;padding:0 12px;border-radius:var(--gg-r-pill);border:0;background:#1d6466;color:#fff9e3;' +
         'font:700 14px Arial,Helvetica,sans-serif;cursor:pointer;}' +
       '#gs-peek .pk-btn svg{width:17px;height:17px;display:block;}' +
       '#gs-peek .pk-like[data-mine="1"] svg path{fill:currentColor;}' +

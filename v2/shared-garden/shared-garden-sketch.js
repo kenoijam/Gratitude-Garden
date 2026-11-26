@@ -312,7 +312,7 @@ function askCard(opts, done) {
       "justify-content:center;padding:24px 16px;background:rgba(20,73,75,0.34);" +
       "opacity:0;transition:opacity .28s ease;}" +
       "#gg-ask[data-show='1']{opacity:1;}" +
-      ".gga-card{width:min(92vw,380px);background:#fffdf7;border-radius:18px;" +
+      ".gga-card{width:min(92vw,380px);background:#fffdf7;border-radius:var(--gg-r-card);" +
       "padding:24px 26px 20px;box-shadow:0 18px 48px rgba(29,100,102,0.22);" +
       "font-family:Arial,Helvetica,sans-serif;text-align:center;" +
       "transform:translateY(14px);transition:transform .32s cubic-bezier(.22,.9,.3,1);}" +
@@ -324,10 +324,10 @@ function askCard(opts, done) {
       /* 16px IS A FLOOR, NOT A PREFERENCE: iOS zooms the page in on a focused
          field under 16 and does not zoom back out. */
       ".gga-field{width:100%;box-sizing:border-box;font-family:inherit;font-size:16px;" +
-      "padding:12px 14px;border:2px solid #bde0d6;border-radius:12px;background:#fdfbf2;" +
+      "padding:12px 14px;border:2px solid #bde0d6;border-radius:var(--gg-r-ctl);background:#fdfbf2;" +
       "color:#1d6466;outline:none;transition:border-color .18s;}" +
       ".gga-field:focus{border-color:#26a69a;}" +
-      ".gga-go{width:100%;margin-top:16px;padding:14px;border:none;border-radius:12px;" +
+      ".gga-go{width:100%;margin-top:16px;padding:14px;border:none;border-radius:var(--gg-r-ctl);" +
       "background:#1d6466;color:#fff9e3;font-size:15px;font-weight:700;cursor:pointer;" +
       "font-family:inherit;transition:background .18s;}" +
       ".gga-go:hover{background:#257e78;}" +
@@ -4229,7 +4229,7 @@ function chip(row, label, onGo, muted) {
   const b = createButton(label).parent(row);
   b.style("padding", "7px 13px");
   b.style("border", "1.5px solid " + (muted ? "#dce9e5" : "#bde0d6"));
-  b.style("border-radius", "999px");
+  b.style("border-radius", "var(--gg-r-pill)");
   b.style("background", muted ? "#f6faf8" : "#ffffff");
   b.style("color", muted ? "#6d8f8a" : "#1d6466");
   b.style("font-family", "Arial, Helvetica, sans-serif");
@@ -4311,7 +4311,7 @@ function whereBtn(label, under, icon, fn) {
   b.style("background", "#26a69a");
   b.style("color", "#fff");
   b.style("border", "none");
-  b.style("border-radius", "12px");
+  b.style("border-radius", "var(--gg-r-ctl)");
   b.style("padding", "11px 12px");
   b.style("font-size", "16px");
   b.style("font-weight", "700");
@@ -4477,7 +4477,7 @@ function paintCircleList() {
     pill.style("display", "inline-flex");
     pill.style("align-items", "stretch");
     pill.style("border", "1.5px solid #bde0d6");
-    pill.style("border-radius", "999px");
+    pill.style("border-radius", "var(--gg-r-pill)");
     pill.style("overflow", "hidden");
     pill.style("background", "#ffffff");
 
@@ -4528,7 +4528,7 @@ circlesBack.addClass("gg-hov");
 circlesBack.style("background", "#e0e0e0");
 circlesBack.style("color", "#666");
 circlesBack.style("border", "none");
-circlesBack.style("border-radius", "12px");
+circlesBack.style("border-radius", "var(--gg-r-ctl)");
 circlesBack.style("padding", "11px");
 circlesBack.style("font-size", "14px");
 circlesBack.style("width", "100%");
@@ -4562,7 +4562,7 @@ gratitudeField.attribute("placeholder", "I am grateful for...");
 gratitudeField.style("width", "100%");
 gratitudeField.style("box-sizing", "border-box");
 gratitudeField.style("border", "2px solid #bde0d6");
-gratitudeField.style("border-radius", "12px");
+gratitudeField.style("border-radius", "var(--gg-r-ctl)");
 gratitudeField.style("height", "110px");
 gratitudeField.style("padding", "18px 16px 16px 16px");
 gratitudeField.style("font-size", "16px");
@@ -4750,7 +4750,7 @@ usernameField.attribute("rows", "1");
 usernameField.style("width", "100%");
 usernameField.style("box-sizing", "border-box");
 usernameField.style("border", "2px solid #bde0d6");
-usernameField.style("border-radius", "12px");
+usernameField.style("border-radius", "var(--gg-r-ctl)");
 usernameField.style("height", "110px");
 usernameField.style("padding", "18px 16px 16px 16px");
 usernameField.style("font-size", "16px");
@@ -5125,7 +5125,7 @@ function buildIdRow() {
     b.style("padding", "10px 4px");
     b.style("min-height", "44px");
     b.style("border", "2px solid #bde0d6");
-    b.style("border-radius", "10px");
+    b.style("border-radius", "var(--gg-r-sm)");
     b.style("font-size", "13.5px");
     b.style("font-weight", "600");
     b.style("cursor", "pointer");
@@ -5594,7 +5594,7 @@ if (back) {
      the one control inside it has to take them back for itself. */
   back.style.cssText = "border:none;cursor:pointer;" +
     "background:#1d6466;color:#fff9e3;font-family:Arial,Helvetica,sans-serif;" +
-    "font-size:12.5px;font-weight:700;padding:6px 14px;border-radius:999px;" +
+    "font-size:12.5px;font-weight:700;padding:6px 14px;border-radius:var(--gg-r-pill);" +
     "line-height:1.1;white-space:nowrap;pointer-events:auto;" +
     "box-shadow:0 2px 8px rgba(29,100,102,0.28);transition:filter .15s,transform .15s;";
   back.onpointerenter = () => { back.style.filter = "brightness(1.12)"; back.style.transform = "scale(1.04)"; };

@@ -4121,6 +4121,62 @@ knows the size of it before starting.
   measuring. **That is an experiment decision, not a design one**, and it
   belongs to the author.
 
+## THE DESIGN SYSTEM IS IN ONE PLACE NOW (`garden-cursor.js`)
+
+Audited across both gardens, the landing page and the six modules. The
+numbers are the finding:
+
+| | distinct values in use |
+|---|---|
+| border radii | **13** (6, 7, 8, 9, 10, 12, 14, 16, 18, 20, 28, 50, 999, 50%) |
+| font sizes, gardens only | **18** (11, 11.5, 12, 12.5, 13, 13.5, 14, 15, 16, 17, 18, 21, 25, 26, 28, 32, 34, 42) |
+| card and field grounds | `snow`, `#ffffff`, `#fdfbf2`, `#cfeef0` |
+| button padding | 14, 12, 11, `14px 16px`, `9px 14px`, `8px 4px` |
+
+**That is not a system with drift in it; it is no system.**
+
+- **THE SKILL NAMES THE OPPOSITE FAULT TOO, so this does not over-correct.**
+  One radius on everything regardless of hierarchy is a named generated-page
+  tell. The answer is neither thirteen nor one: it is a SHORT SCALE where
+  each step means something. `--gg-r-pill` for a chip or a round control,
+  `--gg-r-ctl` 12 for a button, field or tile, `--gg-r-card` 18 for a panel
+  that holds controls, `--gg-r-sm` 8 for a badge or a swatch.
+- **THE TYPE SCALE IS PUBLISHED AND NOT YET APPLIED.** `--gg-t-xs` 12,
+  `--gg-t-sm` 14, `--gg-t-md` 16, `--gg-t-lg` 21, `--gg-t-xl` 34: a modular
+  scale from the 14px body at about 1.25, the major third. **16 IS A FLOOR,
+  NOT A STEP**, since iOS zooms a focused field under 16 and never zooms
+  back. Five sizes against eighteen, and everything between them was a number
+  somebody reached for once.
+- **THREE WHITES SAT INSIDE ONE CARD.** `snow` is `#fffafa`, a PINK-tinted
+  white at hue 0; `#fdfbf2` is cream-tinted at hue 49; `#ffffff` is neutral.
+  There are two now: `--gg-surface` `#fffdf7`, which is the LETTER's own warm
+  white, the one surface in this project that was designed rather than
+  reached for, and `--gg-field` for anything typed into.
+- **IT IS VARIABLES FOR THE SAME REASON `--gg-ctl-*` IS.** The modules append
+  their stylesheets after `garden-cursor.js`, so a shared RULE would need
+  `!important` on every declaration. Custom properties let every selector
+  stay where it is and share only the values, and **an inline p5.dom style is
+  allowed to be a `var()`**, which is what reaches the sketches.
+- **Swept: 0 literal radii left outside `styles.css`**, across both garden
+  stylesheets, both sketches and `garden-account`, `garden-journal`,
+  `garden-guide`, `garden-letter`, `garden-music`, `garden-cursor` and
+  `shared-garden-social`.
+
+### WHAT WAS DELIBERATELY NOT SWEPT
+
+- **THE LANDING PAGE'S OWN RADII.** `styles.css` still holds 30 literals, and
+  that is correct rather than missed: its `.cta-inner` is an 820px card at 28
+  and `.btn-primary` a pill at 50, and **a radius should scale with the
+  element it is on**. Mapping a 460px garden card's 18 onto an 820px landing
+  card would be the one-radius-for-everything fault. If those ever want
+  tokens they need their own step, not these.
+- **THE TYPE SCALE IS DEFINED AND NOT YET APPLIED.** Collapsing eighteen
+  sizes to five moves text on every screen in both gardens, which is a much
+  larger visual change than radii and needs its own pass with contrast
+  re-measured where sizes cross the 16px and 18.66px WCAG thresholds.
+- **BUTTON PADDING AND CONTROL HEIGHT.** Still six paddings. One control
+  height is the next obvious step and it was not taken here.
+
 ## THE CORNER ROW'S SKIN IS DEFINED ONCE (`garden-cursor.js`)
 
 Five round buttons sit in the top right of every page and they were built by

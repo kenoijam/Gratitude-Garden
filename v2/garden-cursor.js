@@ -281,7 +281,7 @@
     "[data-tip]::after{content:attr(data-tip);position:absolute;top:calc(100% + 9px);" +
       "left:50%;background:rgba(29,100,102,0.95);color:#fff9e3;" +
       "font-family:Arial,Helvetica,sans-serif;font-size:11.5px;font-weight:700;" +
-      "line-height:1;letter-spacing:0.01em;padding:7px 10px;border-radius:7px;" +
+      "line-height:1;letter-spacing:0.01em;padding:7px 10px;border-radius:var(--gg-r-sm);" +
       "white-space:nowrap;pointer-events:none;opacity:0;" +
       "transform:translateX(-50%) translateY(-3px);" +
       "z-index:400;box-shadow:0 3px 12px rgba(29,100,102,0.22);" +
@@ -377,7 +377,7 @@
          list ran straight across the flowers and the hills with nothing behind
          it and could not be read. The panel only appears while it is open. */
       "#tips-card[data-open=\"1\"]{background:rgba(255,253,247,0.97) !important;" +
-        "border-radius:16px !important;padding:8px 14px 12px !important;" +
+        "border-radius:var(--gg-r-card) !important;padding:8px 14px 12px !important;" +
         "box-shadow:0 12px 32px rgba(29,100,102,0.22) !important;" +
         "left:10px !important;width:auto !important;right:10px !important;max-width:360px !important;z-index:60 !important;}" +
       "#tips-card[data-open=\"1\"] ul{margin:4px 0 0 !important;padding-left:18px !important;}" +
@@ -528,6 +528,46 @@
 
      Day values are music's and the account's, being the majority; night
      values are the theme button's, being the ones that were correct. */
+  /* ═════════════════════════ THE DESIGN SYSTEM, SUCH AS IT IS, IN ONE PLACE
+     Audited across both gardens, the landing page and the five modules:
+     **THIRTEEN border radii** (6, 7, 8, 10, 12, 14, 16, 18, 20, 28, 50, 999
+     and 50%), **EIGHTEEN font sizes in the gardens alone** (11 to 42), and
+     four different card and field grounds. That is not a system with some
+     drift in it; it is no system.
+
+     THE SKILL NAMES THE OPPOSITE FAULT TOO, and it is worth stating so this
+     does not over-correct: one radius on everything regardless of hierarchy
+     is a generated-page tell. The answer is neither thirteen values nor one.
+     It is a SHORT SCALE where each step means something:
+
+       --gg-r-pill   a chip or a round control: fully round
+       --gg-r-ctl    a button, a field, a tile: 12
+       --gg-r-card   a panel that holds controls: 18
+       --gg-r-sm     a small mark, a badge, a swatch: 8
+
+     THE TYPE IS A MODULAR SCALE FROM THE 14px BODY, at about 1.25, which is
+     the major third The Elements of Typographic Style reaches for first:
+
+       --gg-t-xs  12     small print, chips, counts
+       --gg-t-sm  14     body, subs, card copy
+       --gg-t-md  16     fields and button labels. **16 IS A FLOOR**: iOS
+                         zooms a focused field under 16 and never zooms back
+       --gg-t-lg  21     a heading inside a card
+       --gg-t-xl  34     the page title
+
+     Five sizes against eighteen. Everything between them was a number
+     somebody reached for once.
+
+     THE SURFACES ARE TWO, NOT FOUR. `snow` is `#fffafa`, a PINK-tinted white
+     at hue 0; `#fdfbf2` is a cream-tinted one at hue 49; `#ffffff` is
+     neutral. Three whites inside one card is what the author saw. */
+  var SYS = ":root{" +
+      "--gg-r-pill:999px;--gg-r-ctl:12px;--gg-r-card:18px;--gg-r-sm:8px;" +
+      "--gg-t-xs:12px;--gg-t-sm:14px;--gg-t-md:16px;--gg-t-lg:21px;--gg-t-xl:34px;" +
+      /* THE CARD IS THE LETTER'S OWN `#fffdf7`, which is the warm white this
+         project already uses for the one surface it designed on purpose. */
+      "--gg-surface:#fffdf7;--gg-field:#fdfbf2;--gg-line:#bde0d6;--gg-focus:#26a69a;}";
+
   var CTL = ":root{" +
       "--gg-ctl-bg:rgba(255,249,227,0.92);" +
       "--gg-ctl-bg-hover:#e1f7f7;" +
@@ -555,7 +595,7 @@
         (document.head || document.documentElement).appendChild(tag);
       }
     }
-    tag.textContent = CTL + css(hue) + TIP + SCROLL_HIDE + TIPS + HOME;
+    tag.textContent = SYS + CTL + css(hue) + TIP + SCROLL_HIDE + TIPS + HOME;
   }
 
   apply(DEFAULT_HUE);

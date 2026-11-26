@@ -2847,7 +2847,7 @@ function buildFlowerCard() {
   css.textContent =
     "#gg-flower-card{position:fixed;z-index:520;width:224px;box-sizing:border-box;" +
       "padding:14px 16px 14px;background:#fffdf7;border:1px solid rgba(29,100,102,0.14);" +
-      "border-radius:16px;box-shadow:0 14px 36px rgba(29,100,102,0.22);" +
+      "border-radius:var(--gg-r-card);box-shadow:0 14px 36px rgba(29,100,102,0.22);" +
       "font-family:Arial,Helvetica,sans-serif;color:#1d6466;text-align:left;}" +
     "#gg-flower-card[hidden]{display:none !important;}" +
     "#gg-flower-card .fc-name{display:flex;align-items:center;gap:8px;margin:0 0 2px;" +
@@ -2858,7 +2858,7 @@ function buildFlowerCard() {
     "#gg-flower-card .fc-meaning{margin:0 0 6px;font-size:13px;color:#2f6260;}" +
     "#gg-flower-card .fc-date{margin:0 0 12px;font-size:12px;color:#5a8683;}" +
     "#gg-flower-card .fc-read{display:flex;align-items:center;justify-content:center;gap:6px;" +
-      "width:100%;height:40px;border:0;border-radius:999px;cursor:pointer;" +
+      "width:100%;height:40px;border:0;border-radius:var(--gg-r-pill);cursor:pointer;" +
       "background:#1d6466;color:#fff9e3;font:700 14px Arial,Helvetica,sans-serif;}" +
     "#gg-flower-card .fc-x{position:absolute;top:8px;right:8px;width:28px;height:28px;" +
       "border:0;border-radius:50%;background:transparent;color:#5a8683;cursor:pointer;" +
@@ -3395,7 +3395,7 @@ function buildUI() {
     b.style("background", primary ? "#26a69a" : "#e0e0e0");
     b.style("color", primary ? "#fff" : "#666");
     b.style("border", "none");
-    b.style("border-radius", "12px");
+    b.style("border-radius", "var(--gg-r-ctl)");
     b.style("padding", "12px");
     b.style("font-size", primary ? "16px" : "14px");
     b.style("font-weight", primary ? "700" : "500");
@@ -3564,7 +3564,7 @@ function buildUI() {
     const tile = createDiv().parent(pickGrid);
     tile.addClass("gg-tile");
     tile.style("border", "2px solid #bde0d6");
-    tile.style("border-radius", "12px");
+    tile.style("border-radius", "var(--gg-r-ctl)");
     tile.style("padding", "8px 4px 6px");
     tile.style("cursor", "pointer");
     tile.style("text-align", "center");
@@ -3741,7 +3741,7 @@ function buildUI() {
   whyBox.style("width", "100%");
   whyBox.style("box-sizing", "border-box");
   whyBox.style("border", "2px solid #bde0d6");
-  whyBox.style("border-radius", "12px");
+  whyBox.style("border-radius", "var(--gg-r-ctl)");
   whyBox.style("padding", "12px");
   /* 16px IS A HARD FLOOR ON ANYTHING TYPED INTO. iOS zooms the whole page in
      on a focused field under it and does not zoom back out. */
@@ -3826,7 +3826,7 @@ function buildUI() {
     btn.parent(btnGrid1);
     btn.style("padding", "13px");
     btn.style("border", "2px solid #bde0d6");
-    btn.style("border-radius", "10px");
+    btn.style("border-radius", "var(--gg-r-sm)");
     btn.style("background", "white");
     btn.style("cursor", "pointer");
     btn.style("font-size", "15px");
@@ -3892,7 +3892,7 @@ function buildUI() {
       const c = createButton(w).parent(shadeRow);
       c.style("padding", "7px 12px");
       c.style("border", "1.5px solid #bde0d6");
-      c.style("border-radius", "999px");
+      c.style("border-radius", "var(--gg-r-pill)");
       c.style("background", "white");
       c.style("color", "#2f6260");
       c.style("font-family", "Arial, Helvetica, sans-serif");
@@ -3929,7 +3929,7 @@ function buildUI() {
   continueBtn1.style("background", "#1d6466");
   continueBtn1.style("color", "#fff9e3");
   continueBtn1.style("border", "none");
-  continueBtn1.style("border-radius", "12px");
+  continueBtn1.style("border-radius", "var(--gg-r-ctl)");
   continueBtn1.style("padding", "14px");
   continueBtn1.style("font-size", "15px");
   continueBtn1.style("font-weight", "700");
@@ -3964,7 +3964,7 @@ function buildUI() {
     btn.parent(btnGrid2);
     btn.style("padding", "11px");
     btn.style("border", "2px solid #bde0d6");
-    btn.style("border-radius", "10px");
+    btn.style("border-radius", "var(--gg-r-sm)");
     btn.style("background", "white");
     btn.style("cursor", "pointer");
     btn.style("font-size", "14px");
@@ -4000,7 +4000,7 @@ function buildUI() {
   continueBtn2.style("background", "#1d6466");
   continueBtn2.style("color", "#fff9e3");
   continueBtn2.style("border", "none");
-  continueBtn2.style("border-radius", "12px");
+  continueBtn2.style("border-radius", "var(--gg-r-ctl)");
   continueBtn2.style("padding", "14px");
   continueBtn2.style("font-size", "15px");
   continueBtn2.style("font-weight", "700");
@@ -4052,7 +4052,7 @@ function buildUI() {
   journalField.style("width", "100%");
   journalField.style("box-sizing", "border-box");
   journalField.style("border", "2px solid #bde0d6");
-  journalField.style("border-radius", "12px");
+  journalField.style("border-radius", "var(--gg-r-ctl)");
   journalField.style("height", "150px");
   journalField.style("padding", "14px 16px");
   journalField.style("font-size", "16px");
@@ -4105,7 +4105,7 @@ function buildUI() {
   const photoBtn = createButton(PHOTO_ICON + "<span>Add a photo</span>").parent(photoRow);
   photoBtn.style("background", "none");
   photoBtn.style("border", "2px dashed #bde0d6");
-  photoBtn.style("border-radius", "12px");
+  photoBtn.style("border-radius", "var(--gg-r-ctl)");
   photoBtn.style("padding", "9px 14px");
   photoBtn.style("font-size", "14px");
   photoBtn.style("font-weight", "700");
@@ -4123,7 +4123,7 @@ function buildUI() {
   photoThumb.style("width", "46px");
   photoThumb.style("height", "46px");
   photoThumb.style("object-fit", "cover");
-  photoThumb.style("border-radius", "10px");
+  photoThumb.style("border-radius", "var(--gg-r-sm)");
 
   const photoNote = createSpan("").parent(photoRow);
   photoNote.style("font-size", "12.5px");
@@ -4161,7 +4161,7 @@ function buildUI() {
   continueBtn3.style("background", "#1d6466");
   continueBtn3.style("color", "#fff9e3");
   continueBtn3.style("border", "none");
-  continueBtn3.style("border-radius", "12px");
+  continueBtn3.style("border-radius", "var(--gg-r-ctl)");
   continueBtn3.style("padding", "14px");
   continueBtn3.style("font-size", "15px");
   continueBtn3.style("font-weight", "700");
@@ -4177,7 +4177,7 @@ function buildUI() {
   backBtn3.style("background", "#e0e0e0");
   backBtn3.style("color", "#666");
   backBtn3.style("border", "none");
-  backBtn3.style("border-radius", "12px");
+  backBtn3.style("border-radius", "var(--gg-r-ctl)");
   backBtn3.style("padding", "12px");
   backBtn3.style("font-size", "14px");
   backBtn3.style("font-weight", "500");
@@ -4286,7 +4286,7 @@ function buildUI() {
   gratitudeField.style("width", "100%");
   gratitudeField.style("box-sizing", "border-box");
   gratitudeField.style("border", "2px solid #bde0d6");
-  gratitudeField.style("border-radius", "12px");
+  gratitudeField.style("border-radius", "var(--gg-r-ctl)");
   gratitudeField.style("height", "112px");
   gratitudeField.style("padding", "14px 16px");
   gratitudeField.style("font-size", "16px");
@@ -4302,7 +4302,7 @@ function buildUI() {
   continueBtn4.style("background", "#1d6466");
   continueBtn4.style("color", "#fff9e3");
   continueBtn4.style("border", "none");
-  continueBtn4.style("border-radius", "12px");
+  continueBtn4.style("border-radius", "var(--gg-r-ctl)");
   continueBtn4.style("padding", "14px");
   continueBtn4.style("font-size", "15px");
   continueBtn4.style("font-weight", "700");
@@ -4341,7 +4341,7 @@ function buildUI() {
   backBtn4.style("background", "#e0e0e0");
   backBtn4.style("color", "#666");
   backBtn4.style("border", "none");
-  backBtn4.style("border-radius", "12px");
+  backBtn4.style("border-radius", "var(--gg-r-ctl)");
   backBtn4.style("padding", "12px");
   backBtn4.style("font-size", "14px");
   backBtn4.style("font-weight", "500");
@@ -4398,7 +4398,7 @@ function buildUI() {
   plantBtn.style("background", "#1d6466");
   plantBtn.style("color", "#fff9e3");
   plantBtn.style("border", "none");
-  plantBtn.style("border-radius", "12px");
+  plantBtn.style("border-radius", "var(--gg-r-ctl)");
   plantBtn.style("padding", "14px");
   plantBtn.style("font-size", "15px");
   plantBtn.style("font-weight", "700");
@@ -4450,7 +4450,7 @@ function buildUI() {
   // clearBtn.style("background", "#e57373");
   // clearBtn.style("color", "white");
   // clearBtn.style("border", "none");
-  // clearBtn.style("border-radius", "999px");
+  // clearBtn.style("border-radius", "var(--gg-r-pill)");
   // clearBtn.style("padding", "10px 18px");
   // clearBtn.style("font-size", "13px");
   // clearBtn.style("font-weight", "600");
@@ -4902,7 +4902,7 @@ function showStep(s) {
       if (go) {
         go.style.cssText = "border:none;cursor:pointer;" +
           "background:#1d6466;color:#fff9e3;font-family:Arial,Helvetica,sans-serif;" +
-          "font-size:12.5px;font-weight:700;padding:6px 14px;border-radius:999px;" +
+          "font-size:12.5px;font-weight:700;padding:6px 14px;border-radius:var(--gg-r-pill);" +
           "line-height:1.1;white-space:nowrap;pointer-events:auto;" +
           "box-shadow:0 2px 8px rgba(29,100,102,0.28);transition:filter .15s,transform .15s;";
         go.onpointerenter = () => { go.style.filter = "brightness(1.12)"; go.style.transform = "scale(1.04)"; };

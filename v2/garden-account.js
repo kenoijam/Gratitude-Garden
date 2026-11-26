@@ -69,21 +69,21 @@
         ' center / 100% 100% no-repeat,' +
         'radial-gradient(circle 190px at 85% 18%, rgba(251,228,132,0.9) 0%, rgba(251,228,132,0.42) 34%, rgba(251,228,132,0) 100%),' +
         'linear-gradient(180deg,#cfeef0 0%,#f9ffff 100%);}' +
-    '.ga-card{width:100%;max-width:400px;background:snow;border:1px solid #e6efed;' +
-      'border-radius:16px;padding:26px 24px 22px;box-shadow:0 8px 28px rgba(0,0,0,0.06);' +
+    '.ga-card{width:100%;max-width:400px;background:var(--gg-surface);border:1px solid #e6efed;' +
+      'border-radius:var(--gg-r-card);padding:26px 24px 22px;box-shadow:0 8px 28px rgba(0,0,0,0.06);' +
       'box-sizing:border-box;}' +
     '.ga-card h1{font-family:Fraunces,Georgia,serif;font-size:26px;font-weight:600;' +
       "font-variation-settings:'SOFT' 50,'WONK' 0;color:#0f5132;margin:0 0 6px;text-align:center;}" +
     '.ga-sub{font-size:15px;color:#2c7a7b;line-height:1.5;margin:0 0 18px;text-align:center;}' +
     '.ga-card input{width:100%;box-sizing:border-box;padding:13px 15px;' +
-      'border:1.5px solid #d9ece9;border-radius:12px;font-family:inherit;font-size:16px;' +
+      'border:1.5px solid #d9ece9;border-radius:var(--gg-r-ctl);font-family:inherit;font-size:16px;' +
       'color:#1d6466;background:#fdfefe;}' +
     '.ga-card input:focus{outline:none;border-color:#7fcdcd;}' +
     '.ga-btn{width:100%;box-sizing:border-box;margin-top:16px;padding:14px 18px;border:none;' +
       /* THE PALETTE'S DARK TEAL. `mediumturquoise` with a `snow` label measured
          1.80 against the 4.5 a button label needs; this is the landing page's
          own primary and measures 6.49. */
-      'border-radius:12px;background:#1d6466;color:#fff9e3;font-size:18px;font-weight:700;' +
+      'border-radius:var(--gg-r-ctl);background:#1d6466;color:#fff9e3;font-size:18px;font-weight:700;' +
       'font-family:inherit;cursor:pointer;transition:transform .15s,background .15s;}' +
     '.ga-btn:hover:not(:disabled){transform:scale(1.03);background:#257e78;}' +
     '.ga-btn:disabled{opacity:.55;cursor:not-allowed;transform:none;}' +
@@ -112,7 +112,7 @@
     /* The count rides on the corner of the icon rather than sitting beside a
        label, since there is no label any more. */
     '#ga-friends-btn .ga-pip{display:none;position:absolute;top:-4px;right:-4px;' +
-      'min-width:17px;height:17px;border-radius:9px;background:#e2557e;color:snow;' +
+      'min-width:17px;height:17px;border-radius:var(--gg-r-pill);background:#e2557e;color:var(--gg-surface);' +
       'font-family:Arial,Helvetica,sans-serif;font-size:11px;line-height:17px;' +
       'text-align:center;padding:0 4px;}' +
     '#ga-friends-btn[data-pending="1"] .ga-pip{display:block;}' +
@@ -121,7 +121,7 @@
 
     /* ---- the friends panel ---- */
     '#ga-panel{position:fixed;top:0;right:0;bottom:0;width:360px;max-width:100%;z-index:560;' +
-      'background:snow;border-left:1px solid #d9ece9;box-shadow:-8px 0 28px rgba(29,100,102,0.12);' +
+      'background:var(--gg-surface);border-left:1px solid #d9ece9;box-shadow:-8px 0 28px rgba(29,100,102,0.12);' +
       'font-family:Arial,Helvetica,sans-serif;color:#1d6466;display:flex;flex-direction:column;' +
       'transform:translateX(102%);transition:transform .28s ease,visibility .28s;' +
       /* VISIBILITY AS WELL AS THE TRANSFORM, because 102% of the panel's own
@@ -136,7 +136,7 @@
     '#ga-panel[data-open="1"]{transform:none;visibility:visible;}' +
     '@media (prefers-reduced-motion:reduce){#ga-panel{transition:none;}}' +
     '@media (max-width:560px){#ga-panel{top:auto;left:0;width:auto;height:76vh;border-left:none;' +
-      'border-top:1px solid #d9ece9;border-radius:18px 18px 0 0;' +
+      'border-top:1px solid #d9ece9;border-radius:var(--gg-r-card) 18px 0 0;' +
       /* A fixed 40px past its own height rather than a percentage of it, so
          the clearance does not shrink with the panel. */
       'box-shadow:0 -8px 28px rgba(29,100,102,0.16);' +
@@ -150,7 +150,7 @@
       'font-family:inherit;font-size:13px;text-decoration:underline;cursor:pointer;}' +
     '#ga-rename{margin-top:12px;}' +
     '#ga-rename input{width:100%;box-sizing:border-box;padding:10px 12px;' +
-      'border:1.5px solid #d9ece9;border-radius:12px;font-family:inherit;font-size:14px;' +
+      'border:1.5px solid #d9ece9;border-radius:var(--gg-r-ctl);font-family:inherit;font-size:14px;' +
       'color:#1d6466;background:#fdfefe;}' +
     '#ga-rename input:focus{outline:none;border-color:#7fcdcd;}' +
     '#ga-rename .ga-act{margin-top:9px;justify-content:flex-end;}' +
@@ -163,14 +163,14 @@
       'color:#8aa9a7;margin:18px 0 9px;}' +
     '.ga-h:first-child{margin-top:0;}' +
     '#ga-search{width:100%;box-sizing:border-box;padding:11px 13px;border:1.5px solid #d9ece9;' +
-      'border-radius:12px;font-family:inherit;font-size:14px;color:#1d6466;background:#fdfefe;}' +
+      'border-radius:var(--gg-r-ctl);font-family:inherit;font-size:14px;color:#1d6466;background:#fdfefe;}' +
     '#ga-search:focus{outline:none;border-color:#7fcdcd;}' +
     '.ga-row{display:flex;align-items:center;gap:10px;padding:9px 0;' +
       'border-bottom:1px solid #f1f7f6;}' +
     '.ga-row:last-child{border-bottom:none;}' +
     '.ga-av{width:32px;height:32px;border-radius:50%;flex:0 0 auto;display:flex;' +
       'align-items:center;justify-content:center;font-size:14px;font-weight:700;' +
-      'color:snow;background:#8fcfbe;}' +
+      'color:var(--gg-surface);background:#8fcfbe;}' +
     /* A GARDENER STANDS ON THE GARDEN'S OWN SKY, not on the initial's teal
        disc: the figure is already teal about the middle and the two merged.
        `overflow:hidden` is what makes the circle a crop rather than a frame. */
@@ -183,7 +183,7 @@
       'text-overflow:ellipsis;white-space:nowrap;}' +
     '.ga-who span{font-size:12px;color:#8aa9a7;}' +
     '.ga-act{flex:0 0 auto;display:flex;gap:6px;}' +
-    '.ga-mini{padding:6px 12px;border-radius:50px;border:1.5px solid #b7e4e7;' +
+    '.ga-mini{padding:6px 12px;border-radius:var(--gg-r-pill);border:1.5px solid #b7e4e7;' +
       'background:rgba(255,249,227,0.92);color:#1d6466;font-family:inherit;font-size:12.5px;' +
       'font-weight:700;cursor:pointer;transition:background .18s;}' +
     '.ga-mini:hover:not(:disabled){background:#e1f7f7;}' +
@@ -199,7 +199,7 @@
     '#ga-signin .ga-close{position:absolute;top:16px;right:16px;width:32px;height:32px;' +
       'border-radius:50%;border:1.5px solid #b7e4e7;background:rgba(255,249,227,0.92);' +
       'color:#1d6466;cursor:pointer;display:flex;align-items:center;justify-content:center;}' +
-    '.ga-bq{border:1.5px solid #eaf4f2;border-radius:12px;padding:11px 13px;margin-bottom:10px;}' +
+    '.ga-bq{border:1.5px solid #eaf4f2;border-radius:var(--gg-r-ctl);padding:11px 13px;margin-bottom:10px;}' +
     '.ga-bq b{display:block;font-size:13.5px;color:#0f5132;}' +
     '.ga-bq p{font-size:13px;color:#2f6260;line-height:1.5;margin:4px 0 0;' +
       'overflow-wrap:anywhere;}' +

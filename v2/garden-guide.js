@@ -426,7 +426,7 @@
        page underneath it, which is the rule `#daily-note` already follows in
        the shared garden. */
     ".gg-g-say{pointer-events:auto;position:relative;max-width:260px;",
-    "background:#fffdf7;border-radius:14px;padding:12px 32px 12px 14px;",
+    "background:#fffdf7;border-radius:var(--gg-r-ctl);padding:12px 32px 12px 14px;",
     "box-shadow:0 10px 30px rgba(29,100,102,0.16);",
     "font-family:Arial,Helvetica,sans-serif;font-size:13.5px;line-height:1.5;",
     "color:#2f6260;opacity:0;transform:translateY(6px);",
@@ -446,7 +446,7 @@
        compete with it. */
     ".gg-g-nav{display:none;gap:10px;align-items:center;margin-top:10px;}",
     "#gg-guide[data-tour] .gg-g-nav{display:flex;}",
-    ".gg-g-next{border:none;background:#1d6466;color:#fff9e3;border-radius:999px;",
+    ".gg-g-next{border:none;background:#1d6466;color:#fff9e3;border-radius:var(--gg-r-pill);",
     "padding:7px 16px;font-family:Arial,Helvetica,sans-serif;font-size:12.5px;",
     "font-weight:700;cursor:pointer;transition:transform .15s,filter .15s;}",
     ".gg-g-next:hover{transform:scale(1.04);filter:brightness(1.12);}",
@@ -1515,7 +1515,7 @@
       "#gg-meet[data-show='1']{opacity:1;}" +
       "#gg-meet[hidden]{display:none !important;}" +
       ".gmeet-card{position:relative;width:min(92vw,430px);background:#fffdf7;" +
-      "border-radius:18px;padding:22px 40px 24px;margin:auto;" +
+      "border-radius:var(--gg-r-card);padding:22px 40px 24px;margin:auto;" +
       "box-shadow:0 18px 48px rgba(29,100,102,0.22);text-align:center;" +
       "transform:translateY(16px);transition:transform .52s cubic-bezier(.22,.9,.3,1);}" +
       "#gg-meet[data-show='1'] .gmeet-card{transform:none;}" +
@@ -1526,7 +1526,7 @@
       ".gmeet-body{font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.72;" +
       "color:#2f6260;margin:0 0 20px;}" +
       ".gmeet-go{font-family:Arial,Helvetica,sans-serif;font-size:14px;font-weight:700;" +
-      "border:none;border-radius:50px;padding:11px 22px;min-height:44px;" +
+      "border:none;border-radius:var(--gg-r-pill);padding:11px 22px;min-height:44px;" +
       "background:#1d6466;color:#fff9e3;cursor:pointer;}" +
       ".gmeet-x{position:absolute;top:10px;right:12px;width:30px;height:30px;" +
       "border:none;background:none;color:#7aa6a2;font-size:20px;line-height:1;" +

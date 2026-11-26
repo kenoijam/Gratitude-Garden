@@ -134,7 +134,7 @@
        bottom were already generous; it was only the sides that were tight.
        The close cross lives in the top right, so the extra side room also
        stops the first line running under it. */
-    "border-radius:18px;padding:26px 40px 22px;margin:auto;",
+    "border-radius:var(--gg-r-card);padding:26px 40px 22px;margin:auto;",
     "box-shadow:0 18px 48px rgba(29,100,102,0.22);text-align:center;",
     "transform:translateY(16px);transition:transform .52s cubic-bezier(.22,.9,.3,1);}",
     "#gg-letter[data-show='1'] .gl-card{transform:none;}",
@@ -171,7 +171,7 @@
     "font-size:15px;color:#429288;margin:0 0 18px;}",
 
     ".gl-go{font-family:Arial,Helvetica,sans-serif;font-weight:700;font-size:16px;",
-    "width:100%;min-height:48px;border:none;border-radius:999px;background:#26a69a;",
+    "width:100%;min-height:48px;border:none;border-radius:var(--gg-r-pill);background:#26a69a;",
     "color:#fffdf7;transition:background .2s ease;}",
     ".gl-go:hover{background:#1d8e84;}",
     "@media (hover:none){.gl-go:hover{background:#26a69a;}}",
