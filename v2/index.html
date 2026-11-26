@@ -213,9 +213,6 @@
   <a href="#wisdom" class="side-nav-item" data-section="wisdom" data-label="Today">
     <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M9 21h6M12 3a6 6 0 0 1 6 6c0 2.2-1.2 4.1-3 5.2V17a1 1 0 0 1-1 1h-4a1 1 0 0 1-1-1v-2.8C7.2 13.1 6 11.2 6 9a6 6 0 0 1 6-6z" stroke="#429288" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
   </a>
-  <a href="#about" class="side-nav-item" data-section="about" data-label="About">
-    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="10" stroke="#429288" stroke-width="2"/><line x1="12" y1="8" x2="12" y2="12" stroke="#429288" stroke-width="2" stroke-linecap="round"/><line x1="12" y1="16" x2="12.01" y2="16" stroke="#429288" stroke-width="2" stroke-linecap="round"/></svg>
-  </a>
   <a href="#gardens" class="side-nav-item" data-section="gardens" data-label="The two gardens">
     <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 22V12" stroke="#429288" stroke-width="2" stroke-linecap="round"/><path d="M12 12C12 12 8 10 6 6c3 0 5.5 1.5 6 6z" stroke="#429288" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 12C12 12 16 10 18 6c-3 0-5.5 1.5-6 6z" stroke="#429288" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 22h14" stroke="#429288" stroke-width="2" stroke-linecap="round"/></svg>
   </a>
@@ -231,6 +228,11 @@
       <ellipse cx="12" cy="5.5" rx="2.8" ry="4.5" fill="#429288" opacity="0.85" transform="rotate(315 12 12)"/>
       <circle cx="12" cy="12" r="3.2" fill="#fbe484"/>
     </svg>
+  </a>
+  <!-- v1's OWN ITEM, icon and label unchanged, since the section it points
+       at is v1's section put back. -->
+  <a href="#start" class="side-nav-item" data-section="start" data-label="Begin">
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M5 12h14" stroke="#429288" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="m12 5 7 7-7 7" stroke="#429288" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
   </a>
 </nav>
 
@@ -326,6 +328,17 @@
          that changes daily, and nothing above it competes any more.
          `.hero-subtitle`, `.wide-only` and `.phone-only` are all still in the
          stylesheet, unused, the way every `.cta` rule is. -->
+
+    <!-- THE RULES LINE BELONGS TO THE HEADLINE, NOT TO THE SHARED GARDEN.
+         It sat at the foot of the control column, directly under "or plant in
+         the shared garden", so "one a day, about two minutes, no streaks"
+         read as qualifying THAT LINK when it is true of both gardens and of
+         the whole practice. Under the headline it is part of what the page
+         IS, which is where krillion keeps its own rules line: directly under
+         its tagline and a long way above its button. It also gives the
+         headline a companion, so the identity block is two things rather
+         than one line floating in a lot of sky. -->
+    <p class="hero-meta-rule hero-rule">One a day, about two minutes, no streaks</p>
   </div>
 
   <!-- ══════════ THE HERO IS THE PAGE, AND IT HAS SOMETHING TO PRESS
@@ -380,7 +393,6 @@
          `.hero-meta-links` are all still in the stylesheet, unused. -->
     <p class="hero-meta">
       <a class="hero-link" href="shared-garden/shared-garden-index.html" target="_self" rel="noopener">or plant in the shared garden</a>
-      <span class="hero-meta-rule">One a day, about two minutes, no streaks</span>
     </p>
   </div>
 
@@ -1449,59 +1461,25 @@
   </div>
 </section>
 
-<!-- About: left=text, right=2x2 feature cards -->
-<section class="about" id="about">
+<!-- ══════════ ABOUT IS CUT, AND NOTHING IT SAID IS LOST
+     It had shrunk to a heading and one sentence, and both are said better
+     elsewhere. The heading was "One practice, two places", which is the job
+     of the section directly below it: that is why ITS OWN LEDE HAS NOW BEEN
+     CUT TWICE, both times for being the title again. And the sentence was
+     "One account joins them up: a username, and your garden on any device.
+     Skip it and both still work here", which the FOOTER already carries as
+     `.footer-join-note`, shorter and standing beside the button that acts on
+     it: "One name across both gardens. They work without one."
 
-  <div class="about-title reveal">
-    <h2 class="section-title">One practice, two <em>places.</em></h2>
-  </div>
+     A SECTION WHOSE HEADING BELONGS TO THE NEXT SECTION AND WHOSE ONE
+     SENTENCE BELONGS TO THE FOOTER IS NOT A SECTION. Every `.about*` rule,
+     its grid areas and `.about-more` are still in the stylesheet, unused.
 
-  <div class="about-body reveal">
-    <!-- THE LEDE IS GONE AND THE PARAGRAPH IS THE WHOLE OF THE COPY NOW.
-         It read "One you keep, one you share", which is the SECTION TITLE
-         DIRECTLY ABOVE IT said once more in different words, and the two
-         garden cards in the very next section say it a third time with
-         pictures and a button each. A heading, a lede and a card row all
-         making the same claim is the heading doing no work. What is left is
-         the one thing on this page that nothing else says.
-
-         ITS OWN PREDECESSOR WENT FOR THE SAME REASON: the lede before this
-         was "One practice, two ways, grown from the same eight flowers",
-         which was the title again, so this is the second time the first
-         sentence under that heading has been cut rather than rewritten.
-         **A new lede here has to say something the title does not.**
-
-         AND THE "Read more" FOLD WENT EARLIER. It existed because this was
-         the longest unbroken run of prose on the page, sitting second,
-         before anybody had seen anything. One short paragraph is not that,
-         and a Read more hiding twenty words is a control that costs more
-         than it saves. `data-fold-phone` and `.about-more` are both still
-         live; the footer's two blocks use them. -->
-    <p class="section-desc">
-      One account joins them up: a username, and your garden on any device. Skip it and both still work here.
-    </p>
-  </div>
-
-  <!-- ══════════ THE FOUR CARD ROW IS GONE, AND TWO OF THE FOUR WERE SAID
-       SOMEWHERE ELSE ALREADY. It held "A flower that grows", "The same
-       eight", "One a day" and "No streaks, no scores" under a heading that
-       says ONE PRACTICE, TWO PLACES, and the test for anything on it was
-       that a card had to be true of both gardens. Two of them failed a
-       second test nobody had applied: the flower guide one section down IS
-       the same eight, and the shared card's own small print already says one
-       a day. What was left was two claims in four boxes.
-
-       WHAT STAYS: the heading and the paragraph, which is the one place on
-       this page that says what an account buys AND that you can skip it.
-       About is a heading and one paragraph now, which is short, and short is
-       what the section always wanted to be: it is the second thing on the
-       page and the longest unbroken run of prose here has been cut twice
-       before for sitting there.
-
-       The `.about-right`, `.feature-card` and `.feature-*` rules are all
-       still in `styles.css`, unused, and the grid keeps its `cards` row with
-       nothing in it, so putting the row back is this markup alone. -->
-</section>
+     FIVE EDITS HAD TO AGREE AND THE FIFTH IS THE ONE THAT BITES: this
+     markup, the `.side-nav-item`, `sectionIds`, the `SECTIONS` sparkle list,
+     and `.gardens::before`, which is painted in the colour of the section
+     ABOVE it and so goes from About's cream to the band's dark teal.
+     ══════════════════════════════════════════════════════════════════ -->
 
 <!-- ── Reflect, share, give: the two gardens and the bouquet, one row of three ──
      Each card previews its own flow on a three slide loop, so this row shows
@@ -1720,23 +1698,38 @@
 <!-- FIX 5: Garden Wisdom, "garden" em now yellow on dark bg -->
 
 
-<!-- ══════════ THE CLOSING SECTION IS GONE, AND IT WAS THE SAME TWO BUTTONS
-     TWICE. `#start` held "Your first flower is waiting", one line, and two
-     outline buttons to the Personal Garden and the Shared Garden. `#gardens`,
-     three sections above, already offers both of those places as full cards
-     with a picture, a paragraph, a small print line and a button EACH, so the
-     page's last word was its own middle repeated with the pictures taken off.
-     It measured 553px at 1440.
+<!-- ══════════ THE PAGE ENDS ON SOMETHING TO DO, AS IT DOES IN v1
+     This section was cut from v2, and that cut was right about its CONTENT
+     and wrong about the position. It held an eyebrow, a heading, a line and
+     TWO outline buttons to both gardens, which is what `#gardens` offers one
+     section earlier with a picture, a paragraph, small print and a button
+     each: the page's last word was its own middle with the pictures taken
+     off.
 
-     WHAT STILL CARRIES THE INVITATION: the two garden cards' own buttons, and
-     the footer's sign up, which is the one action on this page that is not
-     offered anywhere else.
+     WHAT EARNS THE PLACE IS BEING LAST, NOT BEING A CHOICE. Somebody who has
+     read to the bottom is as far from anything to press as this page can put
+     them, and below 1100 there is no side rail to get home with. So it is
+     ONE line and ONE button, the same shape the hero carries, rather than
+     the choice offered a third time. The shared garden is deliberately NOT
+     here: it has a full card a section above and a link in the hero, and
+     putting it here rebuilds the pair that was cut.
 
-     PUTTING IT BACK IS THE FIVE EDITS THE NOTE ABOVE LISTS, in reverse: this
-     markup, the `.side-nav-item` with `data-section="start"`, the `sectionIds`
-     array, the `SECTIONS` sparkle list, and `footer::before` back to pale blue
-     from the cream it takes now that the flower guide is the section above
-     it. The `.cta` rules are all still in `styles.css`, unused. -->
+     THE LINE IS A `section-title`, NOT A `section-desc`, AND THAT IS NOT A
+     SIZE CHOICE. The wiggle is a SELECTOR, `[data-wiggle], .section-title
+     em`, so a section with no title is the one section whose heading never
+     springs, which is the exact fault the Fertilizer band had to be given a
+     heading to fix. One line that IS the title satisfies both: one piece of
+     text, and it carries the em the wiggle looks for.
+
+     v1's eyebrow "Ready to begin?" does NOT come back. The design pass
+     deleted six tracked all-caps eyebrows from this page and two of them
+     have already crept back once. ═══════════════════════════════════════ -->
+<section class="cta" id="start">
+  <div class="cta-inner reveal">
+    <h2 class="section-title">Whatever you noticed today is <em>enough</em></h2>
+    <a href="personal-garden/personal-garden-index.html" target="_self" rel="noopener" class="btn-primary">Plant in your own garden</a>
+  </div>
+</section>
 
 <!-- FIX 6: Footer, removed Sampoerna University, Keni to Kenisha Gabriella Wijaya -->
 <footer>
@@ -1882,7 +1875,7 @@
   document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
 
   // FIX 7: Side nav active state tracking
-  const sectionIds = ['home','wisdom','about','gardens','flowers'];
+  const sectionIds = ['home','wisdom','gardens','flowers','start'];
   const sectionEls = sectionIds.map(id => document.getElementById(id)).filter(Boolean);
   const sideItems = document.querySelectorAll('.side-nav-item');
   function updateSideNav() {
@@ -3835,8 +3828,8 @@
     var SECTIONS = [
       /* IN DOCUMENT ORDER, and the boolean is whether the ground is DARK.
          The Fertilizer band moved to second, so it moved here too. */
-      ['.wisdom', true], ['.about', false], ['.gardens', false],
-      ['.catalogue', false], ['footer', true]
+      ['.wisdom', true], ['.gardens', false],
+      ['.catalogue', false], ['.cta', false], ['footer', true]
     ];
 
     var live = [];        /* { el, canvas, ctx, dark, index } */

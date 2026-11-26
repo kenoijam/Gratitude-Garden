@@ -668,9 +668,14 @@ section { padding: 5rem 5rem; }
 /* Cream on white is a soft join, L1.04, so this curve is close to a whisper.
    It is here anyway: every join on the page is a curve, and a consistent idea
    quietly stated beats an inconsistent one. */
+/* DARK TEAL, AND IT MOVED WITH ABOUT. Every curve is painted in the colour
+   of the section ABOVE it. About was cream and sat between the band and this,
+   so cutting it puts the Fertilizer band directly above the gardens and the
+   roll has to be the band's dark teal. Miss this and the gardens wear a cream
+   roll off a dark teal section. */
 .gardens::before {
   content: ''; position: absolute; top: -60px; left: 50%; transform: translateX(-50%);
-  width: 110%; height: 100px; background: var(--paper); border-radius: 0 0 50% 50%;
+  width: 110%; height: 100px; background: var(--band); border-radius: 0 0 50% 50%;
 }
 .gardens-header, .gardens-grid { position: relative; z-index: 1; }
 .gardens-header { text-align: center; margin-bottom: 3rem; }
@@ -1191,12 +1196,12 @@ footer {
 }
 footer::before {
   content: ''; position: absolute; top: -60px; left: 50%; transform: translateX(-50%);
-  /* CREAM, AND IT MOVED WITH THE CLOSING SECTION. Every curve is painted in
-     the colour of the section ABOVE it; `#start` was pale blue, so this was
-     pale blue. With that section gone the flower guide is what the footer
-     follows, and the flower guide is cream. Get this one wrong and the footer
-     wears a roll in a colour that appears nowhere near it. */
-  width: 110%; height: 100px; background: var(--paper); border-radius: 0 0 50% 50%;
+  /* PALE BLUE, AND IT HAS NOW MOVED TWICE WITH THE CLOSING SECTION. Every
+     curve is painted in the colour of the section ABOVE it. `#start` is pale
+     blue, so this is pale blue; while that section was cut the flower guide
+     was what the footer followed and this was cream. Get it wrong and the
+     footer wears a roll in a colour that appears nowhere near it. */
+  width: 110%; height: 100px; background: var(--paper-cool); border-radius: 0 0 50% 50%;
 }
 .footer-top, .footer-bottom { position: relative; z-index: 1; }
 
@@ -2783,8 +2788,43 @@ html[data-daylight] .wisdom :is(.section-title, .section-label, .today-line, .to
    footer, opened as a sheet over the hero.
    ═══════════════════════════════════════════════════════════════════════ */
 
-/* ── the hero is exactly one screen now ─────────────────────────────── */
-.hero { min-height: 100dvh; }
+/* THE COPY SITS HALF THE MEADOW'S TRANSPARENT BAND TOO HIGH WITHOUT THIS.
+   `.hero-text-block` and `.meadow-scene` both carry `margin-top: auto`, so
+   the free space splits evenly between them, and measured at 1440 by 900 it
+   does: 140 above the copy and 140 below it to the canvas's BOX. But the
+   meadow canvas is TRANSPARENT SKY for its first 59px, so the first painted
+   pixel is at 649 rather than 590, the air below is really 199 against 140,
+   and the block's centre lands at 295 against an optical centre of 324.
+
+   THIS FILE ALREADY RECORDED THE TRAP AND THE FIGURE WENT STALE. The note
+   under the hero's centring reads "measure the balance against the meadow's
+   first PAINTED pixel, not its canvas top", with the band at 28px. The band
+   is 59px now, so the error doubled and nobody re-measured. **Re-measure it
+   whenever the meadow's slice, scale or hill heights change.**
+
+   `padding-top` is the whole fix and the arithmetic is exact: it shifts the
+   content down by the band and takes the band out of the free space the two
+   autos divide, so each gets (F - band) / 2 and the copy ends up band/2
+   lower, which is the error. 6.5vh is 58.5px at a 900 window, and it tracks
+   the window because the band is a fraction of a canvas whose own height is
+   a fraction of the window. Measured after at 1440 by 900: 185 above and 186
+   below to the first painted pixel, block centre 324 against an optical
+   centre of 324. (Written as 3.8vh first, which is 34px at 900, not 59:
+   **check a vh against the window it is meant to equal.**)
+
+   THE PHONE NEEDS ITS OWN FIGURE, AND IT IS NOT ITS OWN BAND. At 6.5vh the
+   phone over-corrected and the copy sat LOW: 166 above against 131 below.
+   2.4vh balances it at 149 and 147. The band there measures 56px, so unlike
+   the desktop case the correction is NOT equal to the band, because the 768
+   block changes the hero's own layout underneath it. **That is why both
+   figures are measured rather than derived**: the arithmetic that explains
+   the desktop value does not hold once the phone rules rewrite the box.
+
+   **HOW TO RE-MEASURE EITHER, when the meadow's slice, scale or hills
+   change:** read the meadow canvas back, scan down for the first row with
+   any alpha above 8, and compare the air above the copy with the air from
+   the copy's bottom to that row. They should be equal. */
+.hero { min-height: 100dvh; padding-top: 6.5vh; }
 body { overflow-x: hidden; }
 
 /* THE SIDE RAIL IS BACK, and this is where it was hidden. The one-screen
@@ -2959,6 +2999,10 @@ html[data-dark="1"] .hero-btn-loud { background: var(--cream, #fff9e3); color: #
   display: flex; flex-direction: column; align-items: center; gap: 0.5rem;
   margin: 0.55rem 0 0;
 }
+/* IT IS A BLOCK UNDER THE HEADLINE NOW, so it needs its own margin where it
+   used to inherit `.hero-meta`'s gap. 1.1rem is close enough to the
+   headline's own `margin-bottom` that the two read as one group. */
+.hero-rule { display: block; margin: 1.1rem 0 0; text-align: center; }
 /* THE SHARED GARDEN, AS A LINK RATHER THAN A SECOND BUTTON. It takes the
    ink's full strength and an underline, because it is still a control and the
    rules line under it is not; what makes it quiet is that it is not a box. */
@@ -3003,6 +3047,11 @@ html[data-dark="1"] .hero-ghost { background: rgba(15,59,64,0.45); color: var(--
      edges: measured at 375, the button was 375 wide at left 0. 1.4rem is this
      project's phone gutter, the same number `section`, `.meadow-scene`, `.cta`
      and the footer all take. */
+  /* MEASURED, NOT DERIVED. See the note on `.hero`'s padding-top: the
+     desktop value equals the meadow's transparent band and this one does
+     not, because these rules change the hero's box. Balanced at 390 by 844:
+     149 above the copy against 147 below it to the first painted pixel. */
+  .hero { padding-top: 2.4vh; }
   .hero-actions {
     max-width: 100%; margin-top: 2.2rem; gap: 0.6rem;
     padding: 0 1.4rem; box-sizing: border-box;

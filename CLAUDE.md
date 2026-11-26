@@ -217,12 +217,102 @@ band say the line is new each day. The closed state is **"Pat Hortus to see
 it."** now, so each line does one job: the title what it is, the invitation
 what to do, the note that it changes.
 
+## ABOUT IS CUT AND THE CLOSING SECTION IS BACK: `home, wisdom, gardens, flowers, start`
+
+Still five sections and the footer, and the trade is a section that REPEATED
+for a section that ACTS.
+
+- **ABOUT HAD SHRUNK TO A HEADING AND ONE SENTENCE, AND BOTH WERE SAID
+  BETTER ELSEWHERE.** The heading was "One practice, two places", which is
+  the job of `#gardens` directly below it, and that is why this section's
+  lede had already been cut TWICE for being the title again. The sentence was
+  "One account joins them up: a username, and your garden on any device. Skip
+  it and both still work here", which the FOOTER already carries as
+  `.footer-join-note`, shorter and standing beside the button that acts on
+  it: **"One name across both gardens. They work without one."** So nothing
+  was lost, which was checked before the cut rather than hoped afterwards.
+- **A SECTION WHOSE HEADING BELONGS TO THE NEXT SECTION AND WHOSE ONE
+  SENTENCE BELONGS TO THE FOOTER IS NOT A SECTION.** Every `.about*` rule,
+  its grid areas and `.about-more` are still in the stylesheet, unused.
+- **THE CLOSING SECTION IS BACK, AND THE CUT WAS RIGHT ABOUT ITS CONTENT AND
+  WRONG ABOUT THE POSITION.** It held an eyebrow, a heading, a line and TWO
+  outline buttons to both gardens, which `#gardens` offers one section
+  earlier with a picture, a paragraph, small print and a button each. **What
+  earns the place is being LAST, not being a choice**: somebody who has read
+  to the bottom is as far from anything to press as this page can put them,
+  and below 1100 there is no rail to get home with. It is ONE line and ONE
+  button, the hero's own shape.
+  - **THE SHARED GARDEN IS DELIBERATELY NOT THERE.** It has a full card a
+    section above and a link in the hero, and putting it here rebuilds the
+    pair that was cut.
+  - **THE LINE IS A `section-title`, NOT A `section-desc`, AND THAT IS NOT A
+    SIZE CHOICE.** The wiggle is a SELECTOR, `[data-wiggle], .section-title
+    em`, so a section with no title is the one section whose heading never
+    springs, which is the exact fault the Fertilizer band had to be given a
+    heading to fix. One line that IS the title satisfies both.
+  - **v1's EYEBROW "Ready to begin?" DOES NOT COME BACK.** The design pass
+    deleted six tracked all-caps eyebrows from this page and two of them have
+    already crept back once since.
+  - Its rail item is **v1's own**, icon and label unchanged.
+- **THE FIVE EDITS, TWICE OVER, AND BOTH TIMES THE CURVES WERE THE ONES THAT
+  BITE.** Markup, the `.side-nav-item`, `sectionIds`, the `SECTIONS` sparkle
+  list, and the curve colours, since every curve is painted in the colour of
+  the section ABOVE it. Cutting About puts the band directly above the
+  gardens, so **`.gardens::before` goes cream to `--band`**; restoring the
+  closing section puts it between the flower guide and the footer, so
+  **`footer::before` goes cream back to `--paper-cool`**. Verified by reading
+  all five back: every curve now equals the ground of the section above it.
+
+### THE RULES LINE BELONGED TO THE HEADLINE, NOT TO THE SHARED GARDEN
+
+It sat at the foot of the control column directly under "or plant in the
+shared garden", so "one a day, about two minutes, no streaks" read as
+qualifying THAT LINK when it is true of both gardens and of the whole
+practice. It is under the headline now, which is where krillion keeps its own
+rules line: beneath the tagline and a long way above the button. It also
+gives the headline a companion, so the identity block is two things rather
+than one line floating in a lot of sky.
+
+### THE HERO'S COPY SAT HALF THE MEADOW'S TRANSPARENT BAND TOO HIGH
+
+`.hero-text-block` and `.meadow-scene` both carry `margin-top: auto`, so the
+free space splits evenly, and measured at 1440 by 900 it did: 140 above the
+copy and 140 below it **to the canvas's BOX**. But the meadow canvas is
+transparent sky for its first **59px**, so the first PAINTED pixel is at 649
+rather than 590, the air below was really 199 against 140, and the block's
+centre landed at 295 against an optical centre of 324.
+
+- **THIS FILE ALREADY RECORDED THE TRAP AND THE FIGURE WENT STALE.** The
+  hero's centring note says "measure the balance against the meadow's first
+  PAINTED pixel, not its canvas top", with the band at 28px. It is 59px now,
+  so the error had doubled and nobody had re-measured. **Re-measure whenever
+  the meadow's slice, scale or hill heights change.**
+- **`padding-top` ON `.hero` IS THE WHOLE FIX**, and on desktop the
+  arithmetic is exact: it shifts the content down by the band AND takes the
+  band out of the free space the two autos divide, so each gets
+  `(F - band) / 2` and the copy ends up `band / 2` lower, which is the error.
+  **6.5vh**, which is 58.5px at a 900 window. Measured after: 174 above, 175
+  below.
+- **THE PHONE NEEDS ITS OWN FIGURE AND IT IS NOT ITS OWN BAND.** At 6.5vh it
+  over-corrected, 166 above against 131 below; **2.4vh** balances it at 149
+  and 147. The band there measures 56px, so the correction is NOT equal to
+  the band, because the 768 block rewrites the hero's box underneath it.
+  **That is why both figures are measured rather than derived.**
+- **A `vh` ARITHMETIC SLIP COST A ROUND.** It was written 3.8vh "which is
+  59px at 900"; 3.8vh of 900 is 34. **Check a `vh` against the window it is
+  meant to equal.**
+
 ## THE PAGE IS FIVE SECTIONS NOW, AND THE TYPE AND THE SPACING WERE REDRAWN
 
 Seven things in one pass, all of them measured at 390 and 1440 before and
-after. **`home, wisdom, about, gardens, flowers`**, and the footer.
+after. **`home, wisdom, about, gardens, flowers`**, and the footer. **About
+has since been cut and the closing section put back**, so the live order is
+`home, wisdom, gardens, flowers, start`; see the section below. Everything
+else in this block still holds.
 
-- **THE CLOSING SECTION IS CUT.** `#start` held one heading, one line and two
+- **THE CLOSING SECTION IS CUT, AND IT HAS SINCE COME BACK as one line and
+  one button; the account below is of the cut and still explains the five
+  edits.** `#start` held one heading, one line and two
   outline buttons to the Personal Garden and the Shared Garden, which is
   exactly what `#gardens` already offers as two full cards with a picture, a
   paragraph, a small print line and a button EACH. The page's last word was
@@ -381,6 +471,11 @@ like `garden-music.js` and `garden-daylight.js`.
   first on an HTML file rather than a script or a stylesheet.**
 
 ## ABOUT'S LEDE IS GONE, AND IT IS THE SECOND ONE CUT FOR THE SAME FAULT
+
+**THE WHOLE SECTION HAS SINCE GONE, so this is history rather than a live
+rule. It is kept because the FAULT it names is the live part**: a lede under
+a heading that says the heading again. That is what eventually emptied this
+section, and it is the test any new lede anywhere on the page has to pass.
 
 "One you keep, one you share" was the section title directly above it said
 once more in different words, and the two garden cards in the very next
