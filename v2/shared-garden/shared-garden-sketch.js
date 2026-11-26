@@ -279,6 +279,107 @@ function makeCode() {
   return pick(CODE_A) + "-" + pick(CODE_B) + "-" + pick(CODE_C);
 }
 
+/* ═══════════════════════ ASKING FOR A WORD, WITHOUT `window.prompt`
+   THE WHOLE CIRCLE FEATURE USED TO RUN ON `window.prompt`, FOUR TIMES, AND
+   IT DIED SILENTLY. A browser can stop a page opening dialogs: Chrome offers
+   "Prevent this page from creating additional dialogs" the second time one
+   appears, and some embedded contexts suppress them unasked. **A suppressed
+   `prompt` returns `null`, which is exactly what a CANCEL returns**, and
+   every call site read null as "they changed their mind" and returned. So
+   the chip did nothing, said nothing and logged nothing, which is precisely
+   how it was reported.
+
+   THIS REVERSES THE NOTE THAT DEFENDED THE BROWSER DIALOG. It argued the
+   prompt is "the right weight for a thing that takes two seconds" and that a
+   card "would make making a circle feel like setting up an account". The
+   weight argument still holds and this card is built to it: one line, one
+   field, one button, no chrome. What the old note could not have accounted
+   for is that **a browser dialog is the one piece of interface the user
+   agent can take away**, and a feature that can be silently removed is worse
+   than a slightly heavier one that cannot.
+
+   IT IS A CALLBACK, NOT A RETURN VALUE, and that is the cost. `prompt` is
+   synchronous, so the four call sites read straight down; they take a
+   callback now, and the cancel path is simply never calling it. */
+function askCard(opts, done) {
+  if (document.getElementById("gg-ask")) return;
+
+  if (!document.getElementById("gg-ask-css")) {
+    const st = document.createElement("style");
+    st.id = "gg-ask-css";
+    st.textContent =
+      "#gg-ask{position:fixed;inset:0;z-index:9600;display:flex;align-items:center;" +
+      "justify-content:center;padding:24px 16px;background:rgba(20,73,75,0.34);" +
+      "opacity:0;transition:opacity .28s ease;}" +
+      "#gg-ask[data-show='1']{opacity:1;}" +
+      ".gga-card{width:min(92vw,380px);background:#fffdf7;border-radius:18px;" +
+      "padding:24px 26px 20px;box-shadow:0 18px 48px rgba(29,100,102,0.22);" +
+      "font-family:Arial,Helvetica,sans-serif;text-align:center;" +
+      "transform:translateY(14px);transition:transform .32s cubic-bezier(.22,.9,.3,1);}" +
+      "#gg-ask[data-show='1'] .gga-card{transform:none;}" +
+      ".gga-title{font-family:'Fraunces',Georgia,serif;font-weight:600;" +
+      "font-variation-settings:'SOFT' 50,'WONK' 0;font-size:21px;color:#0f5132;" +
+      "margin:0 0 10px;}" +
+      ".gga-note{font-size:14px;line-height:1.6;color:#5c8d84;margin:0 0 16px;}" +
+      /* 16px IS A FLOOR, NOT A PREFERENCE: iOS zooms the page in on a focused
+         field under 16 and does not zoom back out. */
+      ".gga-field{width:100%;box-sizing:border-box;font-family:inherit;font-size:16px;" +
+      "padding:12px 14px;border:2px solid #bde0d6;border-radius:12px;background:#fdfbf2;" +
+      "color:#1d6466;outline:none;transition:border-color .18s;}" +
+      ".gga-field:focus{border-color:#26a69a;}" +
+      ".gga-go{width:100%;margin-top:16px;padding:14px;border:none;border-radius:12px;" +
+      "background:#1d6466;color:#fff9e3;font-size:15px;font-weight:700;cursor:pointer;" +
+      "font-family:inherit;transition:background .18s;}" +
+      ".gga-go:hover{background:#257e78;}" +
+      ".gga-x{margin-top:8px;width:100%;padding:10px;border:none;background:none;" +
+      "color:#5c8d84;font-family:inherit;font-size:14px;cursor:pointer;}" +
+      "@media (prefers-reduced-motion:reduce){#gg-ask,.gga-card{transition:none;}}";
+    document.head.appendChild(st);
+  }
+
+  const el = document.createElement("div");
+  el.id = "gg-ask";
+  el.innerHTML =
+    '<div class="gga-card" role="dialog" aria-modal="true">' +
+      '<p class="gga-title"></p>' +
+      '<p class="gga-note"></p>' +
+      '<input class="gga-field" type="text" autocomplete="off">' +
+      '<button type="button" class="gga-go"></button>' +
+      '<button type="button" class="gga-x">Not now</button>' +
+    '</div>';
+  /* textContent, NEVER innerHTML, for anything that came off a URL: a circle
+     code is pasted by the visitor and reaches this card unescaped. */
+  el.querySelector(".gga-title").textContent = opts.title || "";
+  el.querySelector(".gga-note").textContent = opts.note || "";
+  el.querySelector(".gga-go").textContent = opts.ok || "Done";
+  const field = el.querySelector(".gga-field");
+  field.value = opts.value || "";
+  if (opts.hint) field.setAttribute("placeholder", opts.hint);
+  document.body.appendChild(el);
+
+  function close() {
+    el.removeAttribute("data-show");
+    setTimeout(() => { if (el.parentNode) el.parentNode.removeChild(el); }, 300);
+    document.removeEventListener("keydown", onKey);
+  }
+  function go() { const v = field.value; close(); done(v); }
+  function onKey(e) {
+    if (e.key === "Escape") close();
+    /* ENTER CONFIRMS, which is what a one-field dialog is for and what the
+       browser's own prompt did. */
+    else if (e.key === "Enter" && document.activeElement === field) { e.preventDefault(); go(); }
+  }
+  el.querySelector(".gga-go").addEventListener("click", go);
+  el.querySelector(".gga-x").addEventListener("click", close);
+  el.addEventListener("click", (e) => { if (e.target === el) close(); });
+  document.addEventListener("keydown", onKey);
+
+  void el.offsetWidth;          /* or the transition is coalesced away */
+  el.setAttribute("data-show", "1");
+  field.focus();
+  field.select();
+}
+
 function circleLink(code) {
   return location.origin + location.pathname + "?circle=" + encodeURIComponent(code);
 }
@@ -4276,28 +4377,46 @@ chip(circleRow, "Make a circle", () => {
      prompt is the browser's, which is plain, and that is the right weight
      for a thing that takes two seconds: a card of its own would make making
      a circle feel like setting up an account, which is what this avoids. */
-  const name = window.prompt(
-    "Name this circle, so you can find it again.\n\nIts code is " + code +
-    ". Anybody you give that to can plant in it.", "Our circle");
-  if (name === null) return;
-  rememberCircle(code, String(name).trim().slice(0, 28) || code);
-  location.href = circleLink(code);
+  askCard({
+    title: "Name this circle",
+    note: "Its code is " + code + ". Anybody you give that to can plant in it.",
+    value: "Our circle",
+    ok: "Make it"
+  }, (name) => {
+    rememberCircle(code, String(name).trim().slice(0, 28) || code);
+    location.href = circleLink(code);
+  });
 });
 
 chip(circleRow, "Join with a code", () => {
-  const v = window.prompt("Paste the circle's code or its link.", "");
-  if (!v) return;
-  let code = cleanCode(v);
-  /* A WHOLE LINK PASTED IN IS THE NORMAL CASE, since that is what somebody
-     is sent. Pulling the code out of it beats telling them off. */
-  const m = String(v).match(/[?&]circle=([^&#\s]+)/);
-  if (m) code = cleanCode(decodeURIComponent(m[1]));
-  if (!code) return;
-  const label = window.prompt(
-    "Joined. What do you call this circle?\n\nThis is only for your own list, so pick anything.",
-    code);
-  rememberCircle(code, (label === null ? code : String(label).trim().slice(0, 28)) || code);
-  location.href = circleLink(code);
+  askCard({
+    title: "Join a circle",
+    note: "Paste the code a friend gave you, or the whole link.",
+    hint: "quiet-fern-moth",
+    ok: "Join"
+  }, (v) => {
+    if (!v) return;
+    let code = cleanCode(v);
+    /* A WHOLE LINK PASTED IN IS THE NORMAL CASE, since that is what somebody
+       is sent. Pulling the code out of it beats telling them off. */
+    const m = String(v).match(/[?&]circle=([^&#\s]+)/);
+    if (m) code = cleanCode(decodeURIComponent(m[1]));
+    if (!code) return;
+    /* THE SECOND CARD OPENS FROM THE FIRST'S CALLBACK, which is the one
+       place the callback shape costs something: with `prompt` these two read
+       as consecutive lines. `askCard` refuses to open over itself, so the
+       close has to have finished, and it has: `done` is called after
+       `close`. */
+    askCard({
+      title: "Joined",
+      note: "What do you call this circle? This is only for your own list.",
+      value: code,
+      ok: "Save it"
+    }, (label) => {
+      rememberCircle(code, String(label).trim().slice(0, 28) || code);
+      location.href = circleLink(code);
+    });
+  });
 });
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -4567,11 +4686,15 @@ if (circleCode) {
      once, and only while the name IS still the code. */
   if (circleName() === circleCode) {
     chip(circleRow, "Name this circle", () => {
-      const label = window.prompt(
-        "What do you call this circle?\n\nThis is only for your own list.", circleCode);
-      if (label === null) return;
-      rememberCircle(circleCode, String(label).trim().slice(0, 28) || circleCode);
-      circleHead.html("You are in the circle <b>" + circleName() + "</b>.");
+      askCard({
+        title: "Name this circle",
+        note: "This is only for your own list, so pick anything.",
+        value: circleCode,
+        ok: "Save it"
+      }, (label) => {
+        rememberCircle(circleCode, String(label).trim().slice(0, 28) || circleCode);
+        circleHead.html("You are in the circle <b>" + circleName() + "</b>.");
+      });
     }, true);
   }
 }
