@@ -3079,10 +3079,43 @@ html[data-dark="1"] .hero-btn-loud { background: var(--cream, #fff9e3); color: #
   letter-spacing: 0.02em; color: var(--ink, #2f6260);
   text-decoration: underline; text-decoration-thickness: 1px;
   text-underline-offset: 4px; text-decoration-color: currentColor;
-  transition: color .2s ease;
+  transition: color .2s ease, transform .18s ease,
+              text-decoration-thickness .18s ease, text-underline-offset .18s ease;
 }
-.hero-link:hover { color: var(--darkteal, #1d6466); }
-@media (hover: none) { .hero-link:hover { color: var(--ink, #2f6260); } }
+/* ══ ITS HOVER DID NOTHING, AND THE COLOUR RULE BELOW IS WHY ══
+   It had one hover, a colour, and the `html[data-ink]` rule further down
+   sets the hovered colour to the SAME value as the resting one, so under
+   the daylight module (which is always) the two were identical: measured,
+   `rgb(15,59,64)` resting and `rgb(15,59,64)` hovered. The one control
+   beside the hero's main button answered a pointer with nothing.
+
+   THAT RULE IS NOT THE BUG AND MUST NOT BE REMOVED. The hero's ink is
+   MEASURED against the sky every recompute, so a hand-picked hover colour
+   is a colour chosen for a different ground and would drift out of
+   contrast at some hours. The same reasoning is already written down for
+   `.cta-link`.
+
+   SO THE HOVER IS NOT A COLOUR. It lifts 2px, which is the lift
+   `.btn-primary` and `.hero-btn` already use, so the pair answers a
+   pointer with one gesture; and the underline thickens and drops a pixel,
+   which is a link's own way of saying it is live. Neither touches the ink,
+   so the measured contrast holds at every hour.
+
+   THE COLOUR HOVER STAYS AS A FALLBACK for a page that fails to load
+   `garden-daylight.js` and therefore carries no `data-ink`. */
+.hero-link:hover {
+  color: var(--darkteal, #1d6466);
+  transform: translateY(-2px);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 5px;
+}
+/* A finger has no hover, so none of it is for touch. */
+@media (hover: none) {
+  .hero-link:hover {
+    color: var(--ink, #2f6260); transform: none;
+    text-decoration-thickness: 1px; text-underline-offset: 4px;
+  }
+}
 .hero-meta-rule {
   font-family: Arial, Helvetica, sans-serif; font-size: 0.76rem;
   letter-spacing: 0.06em; color: var(--ink, #2f6260); opacity: 0.9;

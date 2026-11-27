@@ -870,6 +870,37 @@ interactivity, and specifically for its small invitational labels, the
 - Nobody has read the site itself yet; this is the author's description of
   it recorded so it is not lost, not an analysis of it.
 
+## "or plant in the shared garden" HAD A HOVER THAT DID NOTHING
+
+- **IT HAD ONE HOVER AND IT WAS A COLOUR, AND THE NIGHT RULE CANCELLED IT.**
+  `.hero-link:hover` sets `--darkteal`, and the `html[data-ink]` rule below
+  it sets the HOVERED colour to the same `--dl-sky-ink` as the resting one.
+  `data-ink` is always present once `garden-daylight.js` has run, so the two
+  were identical: measured, `rgb(15,59,64)` resting and `rgb(15,59,64)`
+  hovered. **The one control beside the hero's main button answered a
+  pointer with nothing.**
+- **THAT RULE IS NOT THE BUG AND MUST NOT BE DELETED.** The hero's ink is
+  MEASURED against the sky on every recompute, so a hand-picked hover colour
+  is a colour chosen for a different ground and would drift out of contrast
+  at some hours. The same reasoning is already recorded for `.cta-link`.
+- **SO THE HOVER IS NOT A COLOUR.** It lifts 2px, which is the lift
+  `.btn-primary` and `.hero-btn` already use, so the pair answers a pointer
+  with ONE gesture; and the underline goes 1px to 2px and drops a pixel,
+  which is a link's own way of saying it is live. Neither touches the ink.
+  The colour hover stays as the fallback for a page that never gets
+  `data-ink` because the daylight module failed to load.
+- **`transform` WORKS HERE ONLY BECAUSE THE LINK IS ALREADY `display:
+  block`.** It is ignored on a non-replaced inline element, which an `<a>`
+  is by default, so this was checked before being written rather than after.
+- **THE MEASUREMENT WAS DEFEATED ONCE BY THE TRANSITION, which this file
+  already warns about.** The pane throttles `requestAnimationFrame`, which
+  is what drives CSS transitions, so the first read came back
+  `matrix(1,0,0,1,0,0)` and `1px`: the START values, looking exactly like a
+  rule that had not applied. **Kill the transition before measuring one.**
+  With it off: `matrix(1,0,0,1,0,-2)`, thickness 1px to 2px, offset 4 to 5,
+  ink unchanged.
+- **v2 ONLY**, since the root's hero has no such link at all.
+
 ## THE LOADER CLIPPED THE LAVENDER, AND IT WAS THE ONLY ONE
 
 `garden-loader.js` drew every species at a flat `R = S * 0.26` with its
