@@ -849,6 +849,60 @@ the one everything else sat inside.
   is the right answer rather than a gap** - a tablet has the width a laptop
   has and the phone rules exist to recover width a phone does not have.
 
+## THE VOLUME PANEL WORE A DIFFERENT SKIN FROM EVERY OTHER ICON
+
+Four round icons drop a dark teal LABEL on hover and the fifth dropped a
+cream PILL: two design languages falling out of buttons eight pixels apart.
+
+| | the label | the volume panel, before |
+|---|---|---|
+| background | `rgba(29,100,102,.95)` | `rgba(255,249,227,.92)` |
+| border | none | 1.5px sky |
+| radius | 8px | 999px |
+| shadow | `0 3px 12px /.22` | `0 2px 10px /.14` |
+
+- **IT IS THE LABEL'S VALUES NOW, in BOTH copies**, so the row drops one
+  thing whichever button you are over. Verified by reading the pill's
+  computed style against the label's `::after`: identical on all four.
+- **THE SLIDER HAD TO TURN OVER WITH IT.** Its track and thumb were drawn
+  for a cream ground, and a `#1d6466` thumb on dark teal is the thumb
+  vanishing. Cream thumb, `rgba(255,249,227,0.34)` track, cream focus ring.
+- **TWO THINGS ARE DELIBERATELY STILL DIFFERENT.** The label waits .22s and
+  appears; this opens INSTANTLY and waits to close, because it is a panel
+  somebody moves their pointer INTO and a pointer clipping a corner on the
+  way down must not dismiss it. And it stays RIGHT-anchored where the label
+  is centred: music is the rightmost icon, so a centred panel runs off the
+  window (measured at a 580 window, centred spans 495 to 607 against an edge
+  at 580).
+
+## THE TOUR PARKED HORTUS LOW ON ONE SIDE
+
+The ambient spots are written for somebody SCROLLING PAST, where a low
+figure is fine because the eye is already moving. On the tour he is the
+narrator and the page is scrolled FOR you, so the same spots read as the
+character leaving.
+
+- **MEASURED AT 1280 BY 860, walking all five**: the figure's top went 323
+  (centre stage), then 420, 460, **630**, 500. Step four sat at 630 of an
+  860 window.
+- **AND ALL FOUR WERE ON THE RIGHT EDGE anyway**, although `flowers` asks
+  for the left: `moveTo` clamps a left spot clear of the side nav and falls
+  back to the right when it cannot, so the walk down the page the varied
+  spots were written for had already collapsed into one corner.
+- **A FLOOR PLUS A QUARTER OF THE SPOT, and a plain floor was tried first.**
+  `Math.max(spot, floor)` put all four on the IDENTICAL pixel, since every
+  ambient spot is below the floor: he stopped being low and started being
+  motionless, which trades one fault for another. `floor + spot * 0.25`
+  keeps their order and relative spacing inside the visible band.
+- **A FRACTION OF THE WINDOW, NOT A PIXEL COUNT**, so it holds at any
+  height. Measured after: tops of 298, 308, 350 and 318, a 52px travel, with
+  the bottom third starting at 568.
+- **THE AMBIENT PLACEMENT IS UNTOUCHED.** The lift is inside `tourGo`, so
+  scrolling the page normally still puts him where it always did.
+- **SWEPT AGAIN AT EVERY NEW SPOT**, which is the standing rule whenever one
+  moves: `document.elementFromPoint` every 8px over the whole column with it
+  hidden, at all four steps. Nothing clickable underneath any of them.
+
 ## THE HERO'S BUTTERFLIES NEVER ANSWERED, AND IT WAS TWO COORDINATE SPACES
 
 Both gardens startle a butterfly that is touched; the hero drew its own from

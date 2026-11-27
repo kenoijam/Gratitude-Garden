@@ -497,8 +497,8 @@
        panel closed under the hand reaching for it. The gap is now padding
        INSIDE the panel, so the hit area runs unbroken from the button down
        into the slider while the gap still reads as a gap. */
-    '#gg-music-vol{position:absolute;top:100%;right:0;padding-top:8px;' +
-      'opacity:0;visibility:hidden;transform:translateY(-4px);' +
+    '#gg-music-vol{position:absolute;top:100%;right:0;padding-top:9px;' +
+      'opacity:0;visibility:hidden;transform:translateY(-3px);' +
       /* Opening is instant, closing waits. Without the delay a pointer that
          clips a corner on the way down dismisses the thing it was aiming at.
          `visibility` rather than `pointer-events` because it is reliably
@@ -509,8 +509,32 @@
     '#gg-music:hover #gg-music-vol,#gg-music:focus-within #gg-music-vol{' +
       'opacity:1;visibility:visible;transform:none;' +
       'transition:opacity 0.18s ease 0s,transform 0.18s ease 0s,visibility 0s linear 0s;}' +
-    '#gg-music-vol .pill{background:var(--gg-ctl-bg);border:1.5px solid var(--gg-ctl-line);' +
-      'border-radius:var(--gg-r-pill);box-shadow:var(--gg-ctl-shadow);padding:7px 12px;}' +
+    /* ══ THE PANEL WEARS THE HOVER LABEL'S SKIN ══
+       Every other icon in this row drops a dark teal label on hover and
+       this one dropped a CREAM PILL with a sky border and a lighter
+       shadow: two design languages falling out of buttons eight pixels
+       apart. Measured before: `rgba(255,249,227,.92)` at radius 999 with
+       `0 2px 10px/.14`, against the label's `rgba(29,100,102,.95)` at
+       radius 8 with `0 3px 12px/.22`. It is the label's values now, so
+       the row drops ONE thing whichever button you are over.
+
+       THE SLIDER HAD TO TURN OVER WITH IT. Its track and thumb were
+       drawn for a cream ground: a `#1d6466` thumb on dark teal is the
+       thumb vanishing. Cream thumb, translucent cream track.
+
+       WHAT IS DELIBERATELY NOT MATCHED IS THE TIMING. The label waits
+       .22s and then appears; this opens INSTANTLY and waits to close,
+       because it is a panel somebody moves their pointer INTO and a
+       pointer that clips a corner on the way down must not dismiss the
+       thing it is aiming at. Nobody moves into a label.
+
+       AND IT STAYS RIGHT-ANCHORED, not centred like the label. Music is
+       the RIGHTMOST icon in the row, so a centred panel runs off the
+       window edge: measured at a 580 window, centred would span 495 to
+       607 against an edge at 580. */
+    '#gg-music-vol .pill{background:rgba(29,100,102,0.95);border:none;' +
+      'border-radius:var(--gg-r-sm);box-shadow:0 3px 12px rgba(29,100,102,0.22);' +
+      'padding:7px 10px;}' +
     /* The input is 16px tall against a 4px track, so the grab area is the
        whole height of the pill's inside rather than the hairline you can see.
        A 4px input is accurate to about a pixel, which is not a thing anyone
@@ -518,14 +542,14 @@
     '#gg-music-vol input{width:88px;height:16px;display:block;cursor:pointer;' +
       '-webkit-appearance:none;appearance:none;background:transparent;margin:0;}' +
     '#gg-music-vol input::-webkit-slider-runnable-track{height:4px;border-radius:3px;' +
-      'background:#cfe9ea;}' +
+      'background:rgba(255,249,227,0.34);}' +
     '#gg-music-vol input::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;' +
-      'width:14px;height:14px;border-radius:50%;background:#1d6466;cursor:pointer;' +
+      'width:14px;height:14px;border-radius:50%;background:#fff9e3;cursor:pointer;' +
       'border:none;margin-top:-5px;}' +
-    '#gg-music-vol input::-moz-range-track{height:4px;border-radius:3px;background:#cfe9ea;}' +
+    '#gg-music-vol input::-moz-range-track{height:4px;border-radius:3px;background:rgba(255,249,227,0.34);}' +
     '#gg-music-vol input::-moz-range-thumb{width:14px;height:14px;border-radius:50%;' +
-      'background:#1d6466;cursor:pointer;border:none;}' +
-    '#gg-music-vol input:focus-visible{outline:2px solid #1d6466;outline-offset:3px;}' +
+      'background:#fff9e3;cursor:pointer;border:none;}' +
+    '#gg-music-vol input:focus-visible{outline:2px solid #fff9e3;outline-offset:3px;}' +
     /* While it plays the outer arc breathes, which is the only way to tell
        at a glance that the button is doing something. */
     '#gg-music[data-on="1"] .wave-out{animation:gg-breathe 2.8s ease-in-out infinite;}' +

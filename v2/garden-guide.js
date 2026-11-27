@@ -1223,7 +1223,42 @@
        one points at Hortus, so it belongs where you are looking. */
     var onStage = i === 0;
     stage(onStage);
-    if (!onStage) moveTo(e && e.spot);
+    /* ══ THE TOUR KEEPS HIM UP WHERE HE CAN BE SEEN ══
+       The ambient spots are written for somebody SCROLLING PAST, where a
+       low figure is fine because the eye is already moving down the page.
+       On the tour he is the narrator and the page is being scrolled FOR
+       you, so a low corner reads as the character having left: step one is
+       210px in the middle of the screen and the next step dropped him to
+       140px near the floor.
+
+       MEASURED AT 1280 BY 860 BEFORE THIS, walking all five: the figure's
+       top went 323 (centre stage), then 420, 460, 630, 500. Step four sat
+       at 630 of an 860 window, and every one of the four landed on the
+       RIGHT EDGE even though `flowers` asks for the left, because `moveTo`
+       clamps a left spot clear of the side nav and falls back to the right
+       when it cannot. So the walk down the page the varied spots were
+       written for had already collapsed into one corner.
+
+       ONE FLOOR RATHER THAN FOUR NEW NUMBERS, and it is a FRACTION so it
+       holds at any window height: the lift keeps the variety the spots
+       carry while refusing the bottom third. The ambient placement is
+       untouched, which is what the `tourAt >= 0` test is for. */
+    if (!onStage) {
+      var sp = e && e.spot;
+      if (sp) {
+        /* A FLOOR PLUS A QUARTER OF THE SPOT, NOT `Math.max`. A plain floor
+           was the first attempt and it put all four steps on the IDENTICAL
+           pixel (figure top 359 at 1280 by 860), because every ambient spot
+           is below it: he stopped being low and started being motionless,
+           which trades one fault for another. Keeping a quarter of the
+           original keeps their ORDER and their relative spacing inside the
+           visible band. Measured after: tops of 283, 293, 335 and 303, a
+           50px travel, all of it in the upper half. */
+        var floor = Math.round(window.innerHeight * 0.42);
+        sp = [sp[0], floor + Math.round(sp[1] * 0.25)];
+      }
+      moveTo(sp);
+    }
     setPose(i === TOUR.length - 1 ? "planted" : (e && e.pose) || "welcome");
 
     current = stp.to;
