@@ -4364,6 +4364,33 @@ the account module, so it runs before anything reads storage.
   - Three forms, all verified: `/v2/?reset=1` lands clean on the after,
     `/v2/?reset=1&to=before` lands clean on the before, and `?reset=1` on any
     sub-page clears and stays on that page.
+- **`?replant=1` IS THE SCALPEL WHERE `?reset=1` IS THE HAMMER.** Mid
+  interview the useful thing is "try that once more", and a full reset is
+  the wrong tool: it wipes the garden they just made and sits them through
+  the letter and the whole five step tour again. This clears the TWO
+  once-a-day markers, `gratitude_last_planted` and `gg_shared_last_planted`,
+  and nothing else.
+  - **THE TWO KEYS ARE NAMED, NOT MATCHED BY PREFIX, and that is the
+    opposite choice from the reset deliberately.** The reset sweeps by
+    prefix so a key added later is covered without anybody remembering; here
+    the whole point is that everything else survives, so a prefix would be a
+    trap waiting for the next `gratitude_` key somebody adds.
+  - **IT IS HIDDEN AND MUST STAY HIDDEN.** "One a day, about two minutes, no
+    streaks" is printed on the hero and is one of the arguments the project
+    is making, so a BUTTON offering another flower would contradict the
+    thing being tested and would be a tenth feature the after has and the
+    frozen before does not. A query string nobody is shown is neither.
+  - **TWO THINGS IT CANNOT DO, both outside this browser**: the shared
+    garden also refuses a NAME already in today's room, so a second shared
+    flower needs a different name; and a signed-in account keeps
+    `last_planted` on its own row, which is one more reason the no-account
+    route is the one to use in testing.
+  - Verified end to end: the two markers cleared while the garden, the
+    name, `gg_letter`, `gg_tour_done`, `gg_met_hortus`, the theme and the
+    circles all survived; the personal garden then offered the fork again
+    with the earlier flower still in storage; the shared garden stopped
+    refusing; and `?replant=1&to=before` landed on `/` with the garden
+    intact.
 - **INCOGNITO WORKS, WITH ONE TRAP THAT IS INVISIBLE AFTERWARDS.** Every
   incognito window shares ONE session until the LAST one is closed. Opening a
   second incognito window for the next participant resets nothing, and
