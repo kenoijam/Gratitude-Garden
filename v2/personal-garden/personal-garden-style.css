@@ -588,13 +588,33 @@ button {
      EVERY VALUE FALLS BACK TO THE DAY KEYFRAME, so a page that fails to load
      `garden-daylight.js` gets exactly the gate it had before. Same contract
      `.hero` uses for its own sky. */
+  /* ══ THE HILLS ARE ANCHORED TO THE BOTTOM, AND `0 76%` DID NOT DO THAT ══
+     They were positioned `0 76%`, `0 64%` and `0 55%`, which reads as "start
+     this hill 76 percent of the way down" and is not what a PERCENTAGE
+     BACKGROUND POSITION means. It aligns the IMAGE's 76% point with the
+     CONTAINER's 76% point, so a layer 24% tall lands its top at
+     `(100 - 24) * 0.76 = 57.8%` and its BOTTOM at 81.8%. All three stopped
+     short the same way, and the bottom fifth of the gate was the sky
+     gradient's last stop, a near white `#f9ffff`: a garden floating above a
+     pale band, on the first screen of the garden.
+
+     `0 100%` is bottom-aligned, so each layer occupies exactly the bottom
+     slice its own size asks for and the three tops land at 76, 64 and 55 for
+     real. The sizes did not move; they were right all along and were being
+     measured from the wrong edge.
+
+     THE ROOT COPY NEVER HAD THIS. Its hills are still one SVG data URI whose
+     paths close with `L100,100 L0,100 Z`, so they fill to the bottom by
+     construction. This was introduced in v2 alone when the hills became CSS
+     ellipses so the daylight module could recolour them, which a data URI
+     cannot do. Fixing it REMOVES a difference between the two copies. */
   background:
     radial-gradient(ellipse 120% 46% at 50% 100%, var(--dl-fore, #7ec4b4) 0 99.5%, transparent 100%)
-      0 76% / 100% 24% no-repeat,
+      0 100% / 100% 24% no-repeat,
     radial-gradient(ellipse 120% 52% at 50% 100%, var(--dl-front, #8fcfbe) 0 99.5%, transparent 100%)
-      0 64% / 100% 36% no-repeat,
+      0 100% / 100% 36% no-repeat,
     radial-gradient(ellipse 130% 58% at 50% 100%, var(--dl-back, #a9d9cf) 0 99.5%, transparent 100%)
-      0 55% / 100% 45% no-repeat,
+      0 100% / 100% 45% no-repeat,
     /* sized in pixels, not a percentage: a percentage radius grows with the
        window and turned the sun into a wash over most of the sky. The radius
        rides the keyframe's own `sunR`, so the moon is the small disc the

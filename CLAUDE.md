@@ -849,6 +849,32 @@ the one everything else sat inside.
   is the right answer rather than a gap** - a tablet has the width a laptop
   has and the phone rules exist to recover width a phone does not have.
 
+## THE GATE'S GARDEN STOPPED 18 PERCENT SHORT OF THE BOTTOM (v2 ONLY)
+
+A pale band under the hills on the FIRST screen of the garden, and the cause
+is one of CSS's genuinely counter-intuitive rules.
+
+- **A PERCENTAGE BACKGROUND POSITION IS NOT AN OFFSET.** The three hills were
+  at `0 76%`, `0 64%` and `0 55%`, which reads as "start this hill 76 percent
+  down" and is not what the value means: it aligns the IMAGE's 76% point with
+  the CONTAINER's 76% point, so a layer 24% tall lands its top at
+  `(100 - 24) * 0.76 = 57.8%` and its BOTTOM at **81.8%**. All three stopped
+  short the same way and the bottom fifth was the sky gradient's last stop, a
+  near white `#f9ffff`.
+- **`0 100%` IS THE FIX AND THE SIZES NEVER MOVED.** Bottom-aligned, each
+  layer occupies exactly the bottom slice its own size asks for, so the three
+  tops land at 76, 64 and 55 for real. They were right all along and were
+  being measured from the wrong edge.
+- **THE ROOT NEVER HAD IT, so this REMOVES a difference rather than adding
+  one.** Its hills are still one SVG data URI whose paths close with
+  `L100,100 L0,100 Z` and fill to the bottom by construction. The bug arrived
+  in v2 alone when the hills became CSS ellipses so `garden-daylight.js`
+  could recolour them, which a data URI cannot do: **a custom property cannot
+  reach inside a `url("data:...")`.**
+- Verified at noon and at `?clock=1`, and at 375 wide: the overlay fills the
+  window, the hills reach the bottom edge, the night gate keeps its navy sky
+  and moon, and nothing scrolls sideways.
+
 ## THE SIGN IN GATE WAS A FIXED NOON GARDEN
 
 **`.gg-overlay` is the one place in this project that paints a garden in CSS
