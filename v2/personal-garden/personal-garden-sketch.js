@@ -3241,10 +3241,32 @@ function buildLogo() {
    the planting is a tap further on. "anyway" is the card's own word, out of
    the line this rewrite shortened: "leave it empty if today has none in it,
    and plant anyway". It was reassurance there and it is reassurance here. */
+/* ══ THE GRATITUDE IS REQUIRED NOW, ON THE AUTHOR'S INSTRUCTION ══
+   THIS REVERSES WHAT IS WRITTEN ABOVE, TWICE OVER, and the argument it
+   reverses is on file: an answer produced on demand to get past a screen is
+   a toll rather than an answer, and this is the LAST card, three questions
+   in and one tap from the flower. The author's case is the stronger one for
+   this project: gratitude is the thing the site is named after and the thing
+   it exists to ask for, and a question the site is named after cannot be the
+   one question it lets you walk past.
+
+   THE BUTTON IS NEVER DEAD AND SILENT. An empty box gets "Write one to go
+   on", which NAMES what is wanted, plus the dim that says it cannot be
+   pressed yet. A grey rectangle that does nothing on a press is the fault
+   this project has already fixed on five other buttons.
+
+   IT IS REQUIRED IN BOTH COPIES. Both were optional, so changing both keeps
+   them identical and adds no tenth difference to the experiment. */
 function gladBtnLabel() {
   if (!gladBtn) return;
   const has = gratitudeField && (gratitudeField.elt.value || "").trim() !== "";
-  gladBtn.html(has ? "See Your Flower" : "See Your Flower anyway");
+  gladBtn.html(has ? "See Your Flower" : "Write one to go on");
+  /* `opacity` and `cursor` rather than the `disabled` attribute, because
+     p5.dom writes this button's colours inline and a `[disabled]` rule in
+     the stylesheet could not reach them. The press itself is guarded too,
+     which is what actually enforces it: Enter reaches the same handler. */
+  gladBtn.style("opacity", has ? "1" : "0.55");
+  gladBtn.style("cursor", has ? "pointer" : "not-allowed");
 }
 
 function resetPromptSelections() {
@@ -3322,10 +3344,27 @@ function buildUI() {
     w.style("pointer-events", "auto");
     return w;
   }
+  /* ONE WIDTH FOR EVERY CARD IN THE FLOW, AND `wide` IS NOW A NO-OP.
+     The picker asked for 520 where every other card is 460, so moving
+     through the flow the card stepped out and back in again: fork 460,
+     picker 520, then 460 for the four after it. A card that resizes between
+     steps reads as the page lurching, which is the same fault the bouquet
+     builder was rebuilt to remove when its own card ran 640, 900 and 1040
+     on different steps.
+
+     THE PICKER IS THE ONE THAT MOVED, not the other five, because 520 less
+     56 of padding is 464px of text, about 90 characters a line, where
+     comfortable reading is under 80. Widening the writing cards to match
+     would have fixed the lurch by making four cards harder to read.
+
+     Measured after: the eight tiles are still four across and still wider
+     than the phone draws them. The parameter is kept so the call sites do
+     not have to change and so this decision is visible at the one place
+     that used to implement it. */
   function gcard(wrap, wide) {
     const c = createDiv().addClass("gg-card").parent(wrap);
-    c.style("max-width", wide ? "520px" : "460px");
-    c.style("width", wide ? "min(520px, 94vw)" : "min(460px, 92vw)");
+    c.style("max-width", "460px");
+    c.style("width", "min(460px, 92vw)");
     c.style("box-sizing", "border-box");
     c.style("padding", "24px 28px 20px 28px");
     return c;
@@ -4082,6 +4121,13 @@ function buildUI() {
   journalField.style("height", "150px");
   journalField.style("padding", "14px 16px");
   journalField.style("font-size", "16px");
+  /* 14px UNDER THE FIELD, WHICH IS WHAT THE OTHER CARDS ALREADY HAD. It
+     was 0, so the forward button sat flush against the bottom edge of
+     the box: the card read as tight and the button as part of the
+     field rather than the thing that leaves it. The `why` card has
+     carried 14 since it was written, so this is the odd pair being
+     brought into line rather than a new number. */
+  journalField.style("margin-bottom", "14px");
   journalField.style("resize", "none");
   journalField.style("pointer-events", "auto");
   journalField.input(() => {
@@ -4316,6 +4362,13 @@ function buildUI() {
   gratitudeField.style("height", "112px");
   gratitudeField.style("padding", "14px 16px");
   gratitudeField.style("font-size", "16px");
+  /* 14px UNDER THE FIELD, WHICH IS WHAT THE OTHER CARDS ALREADY HAD. It
+     was 0, so the forward button sat flush against the bottom edge of
+     the box: the card read as tight and the button as part of the
+     field rather than the thing that leaves it. The `why` card has
+     carried 14 since it was written, so this is the odd pair being
+     brought into line rather than a new number. */
+  gratitudeField.style("margin-bottom", "14px");
   gratitudeField.style("resize", "none");
   gratitudeField.style("pointer-events", "auto");
   gratitudeField.input(() => {
@@ -4337,6 +4390,15 @@ function buildUI() {
   continueBtn4.style("margin-bottom", "8px");
   continueBtn4.style("pointer-events", "auto");
   continueBtn4.mousePressed(() => {
+    /* THE GATE. Guarded here and not only on the label, because
+       `GardenEnter` runs this same action from the keyboard: a check that
+       lived in the button's appearance alone would be a second route
+       through the flow with different rules. */
+    if (!gratitudeField || (gratitudeField.elt.value || "").trim() === "") {
+      gladBtnLabel();
+      if (gratitudeField && gratitudeField.elt) gratitudeField.elt.focus();
+      return;
+    }
     /* THE SPECIES IS ALREADY DECIDED BY THE TIME ANYBODY REACHES THIS SCREEN,
        on both paths: picked at the picker, or inferred the moment the second
        mood question was answered. This used to be where the choice was made,
@@ -4926,11 +4988,23 @@ function showStep(s) {
          itself. Same rule the shared garden's own pill follows. */
       const go = document.getElementById("to-shared");
       if (go) {
+        /* ══ LOUDER, BECAUSE THE AUTHOR WALKED PAST IT ══
+           It was 12.5px in 6px of padding, which is smaller than the note
+           above it and the quietest thing on a screen that has just filled
+           with a new flower: the one onward offer the garden makes, and it
+           read as a footnote. 14.5px in 10px by 20px, with the pointer
+           cursor and a deeper shadow.
+
+           A POPUP WAS ASKED FOR AND REFUSED, with the author agreeing: it
+           would land on top of the flower finishing its 5.1 seconds of
+           growth, which is the payoff the whole flow is built to deliver
+           and the worst moment in the product to put a question in. The
+           offer stays something you notice and can ignore. */
         go.style.cssText = "border:none;cursor:pointer;" +
           "background:#1d6466;color:#fff9e3;font-family:Arial,Helvetica,sans-serif;" +
-          "font-size:12.5px;font-weight:700;padding:6px 14px;border-radius:var(--gg-r-pill);" +
+          "font-size:14.5px;font-weight:700;padding:10px 20px;border-radius:var(--gg-r-pill);" +
           "line-height:1.1;white-space:nowrap;pointer-events:auto;" +
-          "box-shadow:0 2px 8px rgba(29,100,102,0.28);transition:filter .15s,transform .15s;";
+          "box-shadow:0 3px 12px rgba(29,100,102,0.34);transition:filter .15s,transform .15s;";
         go.onpointerenter = () => { go.style.filter = "brightness(1.12)"; go.style.transform = "scale(1.04)"; };
         go.onpointerleave = () => { go.style.filter = ""; go.style.transform = ""; };
         go.onclick = () => { carryToShared(); };

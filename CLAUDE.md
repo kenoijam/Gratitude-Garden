@@ -849,6 +849,48 @@ the one everything else sat inside.
   is the right answer rather than a gap** - a tablet has the width a laptop
   has and the phone rules exist to recover width a phone does not have.
 
+## THE HERO'S BUTTERFLIES NEVER ANSWERED, AND IT WAS TWO COORDINATE SPACES
+
+Both gardens startle a butterfly that is touched; the hero drew its own from
+the SAME `GardenLife.meadow` call and nothing ever told them. The landing
+page is the page most visitors see, so it was the one place the life did not
+answer.
+
+- **THERE IS ONE `flyHits` LIST AND TWO CALLERS FILL IT IN DIFFERENT UNITS.**
+  `drift` records PAGE coordinates (it adds `originX` and `scrollY`, since
+  its canvases are sticky and inset); `meadow` records the CANVAS's own
+  units, which in the hero are LOGICAL units of a 1440 wide scene then
+  scaled to fit. The landing page's one listener called
+  `startle(clientX + scrollX, clientY + scrollY)`, so it could only ever
+  reach the `drift` butterflies and the hero's could not be hit at all.
+- **A SECOND CALL IN THE OTHER SPACE WOULD HAVE CROSS-MATCHED.** Both
+  populations are alive at once on that page, so a tap near the top could
+  match a hero butterfly whose LOGICAL coordinates happened to equal the
+  tap's PAGE coordinates, and one nowhere near the finger would bolt. `seen`
+  therefore tags each hit with its space and `startle` searches only the one
+  it was asked for.
+- **THE DEFAULT IS `"canvas"`, WHICH IS WHY NEITHER GARDEN CHANGED.** They
+  call `startle(mouseX, mouseY)` on a canvas that IS the window, so their
+  units and the viewport agree; `meadow` tags `"canvas"` and the default
+  matches it. Only the landing page's full-page dust passes `"page"`.
+- **THE FLOWER STILL WINS THE PRESS.** `tapAt` runs first and the butterfly
+  is asked only when no bloom was found, which is the order both gardens
+  use. **`tapAt` had to start RETURNING whether it hit**; it returned
+  nothing, so the fall-through would have fired on every tap including the
+  ones that landed on a flower.
+- **Verified by dispatching real pointer events on the canvas**: one press
+  produces two calls, `canvas(...)` from the hero and `page(...)` from the
+  dust. On a butterfly: `canvas(170,85)=true` and the page call `false`.
+  Away from one: both false. The gardens' two-argument call still returns a
+  boolean and does not throw.
+- **A MEASUREMENT TRAP THAT INVALIDATED A WHOLE RUN.** The only exposed
+  probe for a butterfly's position IS `startle`, and it has a SIDE EFFECT:
+  scanning for one startles it, thousands of times, so a "control" run that
+  scans is not a control. Both the control and the test measured 0 movement
+  for that reason. **Assert the return value instead of trying to measure
+  the flight**; the flight is unchanged code already measured in the gardens
+  at 37px away and 42px up over 250ms.
+
 ## THE GATE'S GARDEN STOPPED 18 PERCENT SHORT OF THE BOTTOM (v2 ONLY)
 
 A pale band under the hills on the FIRST screen of the garden, and the cause

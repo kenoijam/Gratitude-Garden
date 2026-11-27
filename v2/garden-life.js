@@ -585,7 +585,7 @@
          startle tested in one space against the other never matches. `meadow`
          passes neither an origin nor a scroll, so there the three are the same
          number and a garden can hand `startle` a plain canvas coordinate. */
-      seen(f, now[0] + originX, now[1] + scroll, f.size * u * 1.6, t);
+      seen(f, now[0] + originX, now[1] + scroll, f.size * u * 1.6, t, "page");
     }
 
     ctx.restore();
@@ -605,8 +605,20 @@
      it was last drawn instead, and a stale one is simply skipped. */
   var flyHits = [];
   var SPOOK = 1.5;
-  function seen(f, x, y, r, t) {
-    f._hx = x; f._hy = y; f._hr = r; f._ht = t;
+  /* ══ `space` SAYS WHICH COORDINATE SYSTEM THESE NUMBERS ARE IN ══
+     There is ONE `flyHits` list and two callers that fill it in two
+     different spaces: `drift` records PAGE coordinates (it adds `originX`
+     and `scrollY`, because its canvases are sticky and inset), and `meadow`
+     records the CANVAS's own units, which on the landing page's hero are
+     LOGICAL units of a 1440 wide scene that is then scaled to fit.
+
+     On the landing page both are alive at once, so without a tag a tap
+     anywhere near the top of the page could match a hero butterfly whose
+     logical coordinates happened to equal the page coordinates of the tap,
+     and a butterfly nowhere near the finger would bolt. The tag is what
+     keeps each caller searching only its own. */
+  function seen(f, x, y, r, t, space) {
+    f._hx = x; f._hy = y; f._hr = r; f._ht = t; f._hs = space || "canvas";
     if (flyHits.indexOf(f) >= 0) return;
     /* A REBUILD MAKES NEW OBJECTS, so without this the list grows for ever.
        The population is rebuilt whenever the page's shape changes, which on a
@@ -632,10 +644,17 @@
     return { amp: amp, x: f.spookX * 46 * amp, y: -64 * amp };
   }
 
-  function startle(x, y) {
+  /* `space` DEFAULTS TO "canvas", which is what both gardens already pass
+     without knowing it: they call `startle(mouseX, mouseY)` on a canvas that
+     IS the window, so their canvas units and the viewport agree and nothing
+     over there has to change. The landing page's full page dust passes
+     "page" for itself. */
+  function startle(x, y, space) {
+    var want = space || "canvas";
     var now = clock(), best = null, bd = 1e9;
     for (var i = 0; i < flyHits.length; i++) {
       var f = flyHits[i];
+      if ((f._hs || "canvas") !== want) continue;
       /* NOT DRAWN THIS FRAME, NOT THERE. A butterfly whose band has scrolled
          away, or whose section canvas has been freed, is still in this list
          and is nowhere on the screen. */
@@ -718,7 +737,7 @@
       var fl = f.flap * (1 + 1.7 * (sp ? sp.amp : 0));
       var open = 0.26 + 0.74 * Math.abs(Math.sin(t * fl + f.px));
       drawButterfly(ctx, now[0], now[1], ang, f.size * u, open, f.tint);
-      seen(f, now[0], now[1], f.size * u * 1.6, t);
+      seen(f, now[0], now[1], f.size * u * 1.6, t, "canvas");
     }
 
     ctx.restore();

@@ -247,7 +247,7 @@
     wrap.innerHTML =
       '<div class="gg-auth-card">' +
         '<h1>Your Gratitude Garden</h1>' +
-        '<p class="gg-auth-sub">Sign in so your garden follows you between your phone and your laptop.</p>' +
+        '<p class="gg-auth-sub">Sign in so your garden follows you between your devices.</p>' +
         '<form id="gg-auth-form" autocomplete="on">' +
           '<label for="gg-email">Email</label>' +
           '<input id="gg-email" type="email" autocomplete="email" required />' +
@@ -286,7 +286,7 @@
         ? "New here? Create an account"
         : "Already have a garden? Sign in";
       sub.textContent = mode === "in"
-        ? "Sign in so your garden follows you between your phone and your laptop."
+        ? "Sign in so your garden follows you between your devices."
         : "One garden, on every device you sign in on.";
       hint.style.display = mode === "up" ? "block" : "none";
       forgot.style.display = mode === "in" ? "block" : "none";

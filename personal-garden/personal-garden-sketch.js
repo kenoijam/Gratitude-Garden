@@ -2941,10 +2941,32 @@ function buildLogo() {
    the planting is a tap further on. "anyway" is the card's own word, out of
    the line this rewrite shortened: "leave it empty if today has none in it,
    and plant anyway". It was reassurance there and it is reassurance here. */
+/* ══ THE GRATITUDE IS REQUIRED NOW, ON THE AUTHOR'S INSTRUCTION ══
+   THIS REVERSES WHAT IS WRITTEN ABOVE, TWICE OVER, and the argument it
+   reverses is on file: an answer produced on demand to get past a screen is
+   a toll rather than an answer, and this is the LAST card, three questions
+   in and one tap from the flower. The author's case is the stronger one for
+   this project: gratitude is the thing the site is named after and the thing
+   it exists to ask for, and a question the site is named after cannot be the
+   one question it lets you walk past.
+
+   THE BUTTON IS NEVER DEAD AND SILENT. An empty box gets "Write one to go
+   on", which NAMES what is wanted, plus the dim that says it cannot be
+   pressed yet. A grey rectangle that does nothing on a press is the fault
+   this project has already fixed on five other buttons.
+
+   IT IS REQUIRED IN BOTH COPIES. Both were optional, so changing both keeps
+   them identical and adds no tenth difference to the experiment. */
 function gladBtnLabel() {
   if (!gladBtn) return;
   const has = gratitudeField && (gratitudeField.elt.value || "").trim() !== "";
-  gladBtn.html(has ? "See Your Flower" : "See Your Flower anyway");
+  gladBtn.html(has ? "See Your Flower" : "Write one to go on");
+  /* `opacity` and `cursor` rather than the `disabled` attribute, because
+     p5.dom writes this button's colours inline and a `[disabled]` rule in
+     the stylesheet could not reach them. The press itself is guarded too,
+     which is what actually enforces it: Enter reaches the same handler. */
+  gladBtn.style("opacity", has ? "1" : "0.55");
+  gladBtn.style("cursor", has ? "pointer" : "not-allowed");
 }
 
 function resetPromptSelections() {
@@ -3183,6 +3205,13 @@ function buildUI() {
   journalField.style("height", "150px");
   journalField.style("padding", "14px 16px");
   journalField.style("font-size", "16px");
+  /* 14px UNDER THE FIELD, WHICH IS WHAT THE OTHER CARDS ALREADY HAD. It
+     was 0, so the forward button sat flush against the bottom edge of
+     the box: the card read as tight and the button as part of the
+     field rather than the thing that leaves it. The `why` card has
+     carried 14 since it was written, so this is the odd pair being
+     brought into line rather than a new number. */
+  journalField.style("margin-bottom", "14px");
   journalField.style("resize", "none");
   journalField.style("pointer-events", "auto");
   journalField.input(() => {
@@ -3351,6 +3380,13 @@ function buildUI() {
   gratitudeField.style("height", "112px");
   gratitudeField.style("padding", "14px 16px");
   gratitudeField.style("font-size", "16px");
+  /* 14px UNDER THE FIELD, WHICH IS WHAT THE OTHER CARDS ALREADY HAD. It
+     was 0, so the forward button sat flush against the bottom edge of
+     the box: the card read as tight and the button as part of the
+     field rather than the thing that leaves it. The `why` card has
+     carried 14 since it was written, so this is the odd pair being
+     brought into line rather than a new number. */
+  gratitudeField.style("margin-bottom", "14px");
   gratitudeField.style("resize", "none");
   gratitudeField.style("pointer-events", "auto");
   gratitudeField.input(() => {
@@ -3372,6 +3408,15 @@ function buildUI() {
   continueBtn4.style("margin-bottom", "8px");
   continueBtn4.style("pointer-events", "auto");
   continueBtn4.mousePressed(() => {
+    /* THE GATE. Guarded here and not only on the label, because
+       `GardenEnter` runs this same action from the keyboard: a check that
+       lived in the button's appearance alone would be a second route
+       through the flow with different rules. */
+    if (!gratitudeField || (gratitudeField.elt.value || "").trim() === "") {
+      gladBtnLabel();
+      if (gratitudeField && gratitudeField.elt) gratitudeField.elt.focus();
+      return;
+    }
     /* BOTH TEXTS FEED THE CHOICE. The keyword lists in `flowerMeanings` are
        full of gratitude words, and this is the field most likely to hit them,
        so leaving it out would make the one question about gratitude the one

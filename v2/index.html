@@ -1264,9 +1264,14 @@
     return best;
   }
 
+  /* RETURNS WHETHER IT FOUND A FLOWER, so the caller can let a butterfly
+     have the press when no bloom was under it. It returned nothing before,
+     which would have made the butterfly fall-through fire on every tap
+     including the ones that landed on a flower. */
   function tapAt(clientX, clientY) {
     var best = hitAt(clientX, clientY);
     if (best) burst(best.lx, best.ly, best.hue);
+    return !!best;
   }
 
   /* ── A FLOWER ANSWERS A HOVER, NOT ONLY A TAP ────────────────────────────
@@ -1375,7 +1380,32 @@
   }
 
   c.style.pointerEvents = 'auto';
-  c.addEventListener('pointerdown', function (e) { tapAt(e.clientX, e.clientY); });
+  /* ══ A HERO BUTTERFLY STARTLES, THE WAY A GARDEN ONE DOES ══
+     Both gardens answer a press by asking the butterflies first and only
+     then the flowers, and the hero did neither: its butterflies were drawn
+     by the same `GardenLife.meadow` call but nothing ever told them they
+     had been touched, so the one page most visitors see was the one place
+     the life did not answer.
+
+     IT GOES THROUGH `toLogical`, NOT THE RAW CLIENT POINT. `meadow` records
+     its butterflies in the scene's own LOGICAL units, and this canvas is a
+     1440 wide scene scaled to fit, so a client coordinate would be out by
+     the scale and would miss every time. That is also why the call names
+     the "canvas" space: the full page dust further down this file records
+     ITS butterflies in page coordinates into the same list.
+
+     THE FLOWER STILL WINS. A butterfly resting over a bloom should not eat
+     the tap meant for the flower under it, which is the order both gardens
+     already use: flowers are the point of the garden and butterflies are
+     the life around them. So `tapAt` runs first and the butterfly is only
+     asked when the tap found no flower. */
+  c.addEventListener('pointerdown', function (e) {
+    var hit = tapAt(e.clientX, e.clientY);
+    if (!hit && window.GardenLife && GardenLife.startle && geom) {
+      var p = toLogical(e.clientX, e.clientY);
+      GardenLife.startle(p.x, p.y, "canvas");
+    }
+  });
   /* Listened for on the WHOLE HERO rather than on the canvas, so the meadow
      already knows where the pointer is before it reaches the flowers and the
      parallax works over the copy as well. Passive: it must never hold up a
@@ -4000,7 +4030,7 @@
        also bolts. */
     if (!GardenLife.reduced) {
       document.addEventListener('pointerdown', function (e) {
-        GardenLife.startle(e.clientX + window.scrollX, e.clientY + window.scrollY);
+        GardenLife.startle(e.clientX + window.scrollX, e.clientY + window.scrollY, "page");
       }, { passive: true });
     }
   })();
