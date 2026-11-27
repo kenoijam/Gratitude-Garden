@@ -115,6 +115,13 @@
     /* ONE OF THE EIGHT IF THE PAGE HAS THEM. Chosen here rather than per
        frame, or the flower would change species while it was opening. */
     pick = choose();
+    /* Measured once, beside the choice, for the same reason the choice is
+       made here: a size that changed between frames would be the flower
+       resizing while it opened. */
+    if (pick) {
+      var fit = fitBloom(pick, 132);
+      if (fit) { pick.R = fit.R; pick.headY = fit.headY; }
+    }
 
     var t0 = Date.now();
     function frame() {
@@ -158,12 +165,85 @@
     } catch (e) { return null; }
   }
 
+
+  /* ══════════════ THE LAVENDER WAS CLIPPED, AND IT IS THE ONLY ONE ══════
+     Every species was drawn at a flat `R = S * 0.26` with its origin at a
+     flat `headY = S * 0.40`, which assumes a bloom paints about as far
+     above its origin as below it. Seven of the eight do. **The lavender
+     grows entirely UPWARD out of its origin**, and measured on the
+     catalogue's own drawing it reaches **2.13 R above and nothing below**,
+     so at R 34.3 it wanted 73px of room above a head sitting 52.8px down a
+     132px canvas: the top 20px of the spike was cut off. Measured on all
+     eight, it was the only one that touched an edge.
+
+     IT MEASURES RATHER THAN CARRYING A TABLE. `BLOOM_METRICS` on the
+     landing page already records every painted box, but it is not exported
+     and this file is loaded by pages that do not have it. Rendering the
+     chosen bloom once, offscreen, costs one small `getImageData` during a
+     screen that is already waiting, and it cannot go stale the way a
+     second copy of those figures would.
+
+     IT LOWERS THE HEAD BEFORE IT SHRINKS THE FLOWER. Simply capping R
+     would have left the lavender two thirds the size of every other bloom.
+     The head drops instead, down to 0.60 S, which gives the spike its room
+     and leaves a shorter stem: that is what a lavender actually looks
+     like. R only comes down if even the lowest head is not enough.
+     **The seven that already fitted are untouched**, because their own
+     `up` keeps the head at its original 0.40 S. */
+  function fitBloom(p, S) {
+    var REF = 40, M = 220, half = M / 2;
+    var c = document.createElement("canvas");
+    c.width = M; c.height = M;
+    var x = c.getContext("2d");
+    if (!x) return null;
+    x.translate(half, half);
+    try { p.fn(x, 0, 0, REF, p.hue, p.sat, p.light); } catch (e) { return null; }
+    var d;
+    /* A tainted or zero sized canvas throws; the generic bloom stands. */
+    try { d = x.getImageData(0, 0, M, M).data; } catch (e) { return null; }
+
+    var minX = 1e9, maxX = -1, minY = 1e9, maxY = -1;
+    for (var py = 0; py < M; py++) {
+      for (var px = 0; px < M; px++) {
+        if (d[(py * M + px) * 4 + 3] > 8) {
+          if (px < minX) minX = px;
+          if (px > maxX) maxX = px;
+          if (py < minY) minY = py;
+          if (py > maxY) maxY = py;
+        }
+      }
+    }
+    if (maxX < 0) return null;
+
+    /* How far it paints from its own origin, in multiples of R. */
+    var up = (half - minY) / REF, down = (maxY - half) / REF;
+    var left = (half - minX) / REF, right = (maxX - half) / REF;
+
+    var PAD = 5, cx = S / 2;
+    var R = S * 0.26, headY = S * 0.40;
+
+    /* Room above: drop the head first, then shrink. */
+    if (up > 0.01 && up * R > headY - PAD) {
+      headY = Math.min(S * 0.60, PAD + up * R);
+      if (up * R > headY - PAD) R = (headY - PAD) / up;
+    }
+    /* And it must not reach past the sides or the foot. */
+    if (left  > 0.01) R = Math.min(R, (cx - PAD) / left);
+    if (right > 0.01) R = Math.min(R, (S - PAD - cx) / right);
+    if (down  > 0.01) R = Math.min(R, (S - PAD - headY) / down);
+
+    return R > 0 ? { R: R, headY: headY } : null;
+  }
+
   /* One bloom, drawn in four overlapping stages so nothing pops into being:
      the stem to 0.42, the leaves from 0.22, the petals from 0.40 opening one
      after another, the eye from 0.70. */
   function draw(ctx, S, p) {
     ctx.clearRect(0, 0, S, S);
-    var cx = S / 2, groundY = S * 0.94, headY = S * 0.40;
+    var cx = S / 2, groundY = S * 0.94;
+    /* A tall bloom sits lower so its own top stays on the canvas. See
+       `fitBloom`: seven of the eight keep the original 0.40. */
+    var headY = (pick && pick.headY) || S * 0.40;
 
     var stemP = ease(clamp01(p / 0.42));
     var topY = groundY - (groundY - headY) * stemP;
@@ -196,7 +276,7 @@
       ctx.translate(cx, topY);
       ctx.scale(k, k);
       try {
-        pick.fn(ctx, 0, 0, S * 0.26, pick.hue, pick.sat, pick.light);
+        pick.fn(ctx, 0, 0, pick.R || S * 0.26, pick.hue, pick.sat, pick.light);
       } catch (e) { /* a species that throws must not take the page down */ }
       ctx.restore();
       return;

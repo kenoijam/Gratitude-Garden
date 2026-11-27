@@ -849,6 +849,35 @@ the one everything else sat inside.
   is the right answer rather than a gap** - a tablet has the width a laptop
   has and the phone rules exist to recover width a phone does not have.
 
+## THE LOADER CLIPPED THE LAVENDER, AND IT WAS THE ONLY ONE
+
+`garden-loader.js` drew every species at a flat `R = S * 0.26` with its
+origin at a flat `headY = S * 0.40`, which assumes a bloom paints about as
+far above its origin as below it. **Seven of the eight do.**
+
+- **THE LAVENDER GROWS ENTIRELY UPWARD OUT OF ITS ORIGIN**, and measured on
+  the catalogue's own drawing it reaches **2.13 R above and nothing below**.
+  At R 34.3 that wants 73px of room above a head sitting 52.8px down a 132px
+  canvas, so the top 20px of the spike was cut off. Measured across all
+  eight: it was the only one touching an edge.
+- **IT MEASURES RATHER THAN CARRYING A TABLE.** `BLOOM_METRICS` already
+  records every painted box, but it is not exported and this file runs on
+  pages that do not have it. Rendering the chosen bloom once, offscreen,
+  costs one small `getImageData` during a screen that is already waiting,
+  and it cannot go stale the way a second copy of those figures would.
+- **IT LOWERS THE HEAD BEFORE IT SHRINKS THE FLOWER, and that is the whole
+  point.** Capping R would have left the lavender two thirds the size of
+  every other bloom. The head drops instead, to at most `0.60 S`, which
+  gives the spike its room and leaves a shorter stem: **which is what a
+  lavender actually looks like.** R only comes down if even the lowest head
+  is not enough, which none of the eight needs.
+- **Measured after, all eight**: seven keep R 34.3 at head 52.8, completely
+  unchanged, and the lavender keeps **full size** at head 77.9 with its
+  spike running y 5 to 77. Nothing touches an edge.
+- **v2 ONLY, AND THAT IS NOT AN OVERSIGHT.** The root's loader has no
+  `_ringSpecies` branch at all; it draws the generic six petal bloom, which
+  is symmetric and was never at risk.
+
 ## HORTUS HAD TWO VOICES, AND THE SHORT ONE WAS THE GOOD ONE
 
 Counted rather than judged. The lines he says INSIDE a garden average **6
