@@ -62,7 +62,28 @@
      its own heading. "This is where you plant" is the tour's job; repeating
      "One practice, two places" at somebody who is looking at those words is
      not. */
-  /* ══ HIS TOUR VOICE WAS NOT HIS GARDEN VOICE ══
+  /* ══ WHERE THE EXCLAMATION MARKS GO, AND WHY NOT EVERYWHERE ══
+     Shortening these stripped two that were already there, which made him
+     flatter rather than tighter; they are back. But one on EVERY line stops
+     meaning anything, and on the quiet lines it misfires outright: "No
+     wrong answer here!" reads as over-eager and "Whatever you noticed today
+     is enough!" turns a reassurance into a cheer, which is the praise his
+     tone rules exist to keep out. **Five in the whole set**, at the two
+     greetings, the tour's sign-off, the band's offer and the moment the
+     flower appears. Warmth where somebody arrives or something lands;
+     nothing on the lines whose job is to say that whatever you put is fine.
+
+     ══ THE BAND LINE IS AN OFFER, NOT AN ORDER ══
+     It said "I leave a line on this band each day", which is accurate, dull
+     and never names the feature. The author asked for something closer to
+     "interact with me and I'll give you the fertilizer of the day". The
+     shape is right and the bare imperative is not: **the author's own
+     verdict on "Go on, pat me" was that it felt bad**, and the fix already
+     recorded here is "I like being patted", the affordance stated rather
+     than demanded. This names the fertilizer, which the dull version
+     failed to do, and keeps that form.
+
+     ══ HIS TOUR VOICE WAS NOT HIS GARDEN VOICE ══
      Counted: the lines he says INSIDE a garden average SIX words and the
      ones on the tour averaged SEVENTEEN, with the gardens step at
      twenty-six. Same character, two registers, and the short one is the
@@ -80,8 +101,8 @@
      verbatim from the card and is not touched, and neither is the
      fertilizer list, which is hers to fill. */
   var TOUR = [
-    { to: "home",    line: "Hi, I am Hortus. Let me show you round." },
-    { to: "wisdom",  line: "I leave a line on this band each day." },
+    { to: "home",    line: "Hi, I am Hortus! Let me show you round." },
+    { to: "wisdom",  line: "I keep a fertilizer of the day. I like being patted!" },
     /* THE `about` STEP IS CUT WITH THE SECTION, AND IT WAS A SILENT DEAD
        STEP FOR TWO COMMITS. `tourGo` guards its scroll with
        `if (sec && i > 0)`, so a step whose section no longer exists does not
@@ -100,7 +121,7 @@
        five-edit note elsewhere predates the tour. */
     { to: "gardens", line: "Notice one small thing and plant it. One garden yours, one shared." },
     { to: "flowers", line: "Eight flowers, and each one means something." },
-    { to: "start",   line: "That is everything. Whatever you noticed today is enough." }
+    { to: "start",   line: "That is everything! Whatever you noticed today is enough." }
   ];
 
   /* ────────────────────────────────────────────────────────────── THE NAME
@@ -200,7 +221,7 @@
        kept, so a section can be handed it again later without rewiring
        anything. Nothing on this page uses it now. */
     home:    { pose: "welcome",
-               line: "So glad you came. I will keep you company.",
+               line: "So glad you came! I will keep you company.",
                spot: ["right", 150] },
     /* RETIRED WITH THE SECTION, kept rather than deleted the way every
        `.cta` rule was while that section was cut. The observer only watches
@@ -299,7 +320,7 @@
       prompt2:       { pose: "listen",  line: "Just the biggest thing." },
       prompt3:       { pose: "listen",  line: "As much or as little as you like." },
       prompt4:       { pose: "listen",  line: "Even a small one helps." },
-      flowerPreview: { pose: "planted", line: "There it is." },
+      flowerPreview: { pose: "planted", line: "There it is!" },
       /* PRESENT, NOT GONE. See the note on `silent` in `say`. */
       garden:        { pose: "welcome", line: null, silent: true }
     },
