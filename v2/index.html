@@ -1533,7 +1533,7 @@
         <div class="garden-card-body" style="position:relative;z-index:2;">
           <span class="garden-badge badge-private"><svg class="badge-icon" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="2" y="6" width="10" height="7" rx="1.5" fill="#14494b"/><path d="M4 6V4.5a3 3 0 0 1 6 0V6" stroke="rgba(20,73,75,0.65)" stroke-width="1.5" stroke-linecap="round"/></svg>Reflect</span>
           <h3 class="garden-card-title">The Personal Garden</h3>
-          <p class="garden-card-desc">Answer a few daily prompts, and your words choose a symbolic flower. Sign in and it follows you between devices, every day kept to look back on.</p>
+          <p class="garden-card-desc">Choose a bloom, or answer a few prompts and let your words choose one. Sign in and it follows you between devices, every day kept to look back on.</p>
           <div class="password-note"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="7" cy="7" r="6" stroke="#1d6466" stroke-width="1.5"/><line x1="7" y1="5" x2="7" y2="8" stroke="#1d6466" stroke-width="1.5" stroke-linecap="round"/><circle cx="7" cy="10" r="0.8" fill="#1d6466"/></svg>Private, on every device</div>
         </div>
         <!-- A three slide loop: a step from the flow, the flower it produces,
@@ -1555,7 +1555,7 @@
         <div class="garden-card-body" style="position:relative;z-index:2;">
           <span class="garden-badge badge-public"><svg class="badge-icon" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="7" cy="7" r="6" stroke="rgba(29,100,102,0.6)" stroke-width="1.5" fill="rgba(29,100,102,0.08)"/><ellipse cx="7" cy="7" rx="2.5" ry="6" stroke="rgba(29,100,102,0.6)" stroke-width="1" fill="none"/><line x1="1" y1="7" x2="13" y2="7" stroke="rgba(29,100,102,0.6)" stroke-width="1"/></svg>Share</span>
           <h3 class="garden-card-title">The Shared Garden</h3>
-          <p class="garden-card-desc">Post a moment of gratitude and plant a bloom. Every flower around yours is a real feeling, and signing in lets you like one or write back.</p>
+          <p class="garden-card-desc">Post a moment of gratitude and plant a bloom. Every flower around yours is a real feeling, and the whole meadow starts again tomorrow.</p>
           <div class="password-note public-note">
             <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="7" cy="7" r="6" stroke="#1d6466" stroke-width="1.5"/><line x1="7" y1="5" x2="7" y2="8" stroke="#1d6466" stroke-width="1.5" stroke-linecap="round"/><circle cx="7" cy="10" r="0.8" fill="#1d6466"/></svg>
             Open to all, one a day
@@ -1610,8 +1610,13 @@
            Short, because the column they sit in is 170px: see the note in
            styles.css for why it cannot be wider. -->
       <p class="fr-note fr-note-a">One meaning per flower, everywhere.</p>
-      <p class="fr-note fr-note-b">Your own garden chooses for you. Elsewhere
-        you pick.</p>
+      <!-- TRUE IN v1, HALF TRUE HERE. It read "Your own garden chooses for
+           you. Elsewhere you pick", which describes v1 exactly: there the
+           personal garden always infers the flower from the answers. This
+           copy has a FORK, so in your own garden you can pick the bloom
+           first OR let the day decide, and a note saying the garden chooses
+           is wrong on one of the two paths somebody will actually take. -->
+      <p class="fr-note fr-note-b">Pick your own, or let your day choose.</p>
     </div>
   </div>
 

@@ -636,11 +636,41 @@
     }).catch(function () {});
   }
 
+  /* ╔═══════════════════════════════════════════════════════════════════╗
+     ║  LIKES AND COMMENTS ARE OFF. Set SOCIAL_OFF to false to bring      ║
+     ║  them back. Nothing else was deleted.                              ║
+     ╚═══════════════════════════════════════════════════════════════════╝
+     OFF ON THE AUTHOR'S INSTRUCTION, and retired rather than deleted, which
+     is how this project puts things away: `garden3d`, the bouquet, the guest
+     book and the friends list are all still on disk and unreachable.
+
+     IT RIDES THE `live` FLAG THE MODULE ALREADY HAD, and that is the whole
+     reason this is one line instead of surgery on six call sites. `live` is
+     what the module already checks when no Supabase project is configured,
+     and every one of those checks does exactly what is wanted here: the
+     peek card's heart-and-comment row is hidden (`showPeek`), the counts
+     are never fetched (`loadPeek` returns), a press on the heart does
+     nothing (`peekLike` returns), and `.pk-by` loses its bottom margin so
+     the card closes up neatly without the row. **So the card keeps the
+     species, the gratitude and who planted it, and loses only the two
+     controls.** That state was already reachable and already correct; it
+     just had to be made deliberate.
+
+     IT ALSO STOPS THE QUERIES. With the row gone there is nothing to fill,
+     so skipping the network is free, and it means a project whose SQL has
+     not been run cannot print a setup warning at a participant.
+
+     THE ROOT COPY IS OFF TOO. Likes and comments were in both and are on no
+     row of the experiment's table, so turning them off in one copy would
+     invent a tenth difference; turning them off in both keeps the two
+     identical, which is what the freeze protects. */
+  var SOCIAL_OFF = true;
+
   /* The whole feature is optional. With no project configured, or with the
      Supabase library missing, `open` does nothing and the garden behaves
      exactly as it did before any of this existed. */
   var live = false;
-  if (CFG && window.supabase && window.supabase.createClient) {
+  if (!SOCIAL_OFF && CFG && window.supabase && window.supabase.createClient) {
     /* Borrowed from garden-account.js rather than made here, so this panel
        and the friends list are signed into the same session. */
     sb = (window.GardenAccount && window.GardenAccount.isLive())
@@ -649,7 +679,7 @@
     live = true;
     if (document.body) ready();
     else document.addEventListener("DOMContentLoaded", ready);
-  } else if (!CFG) {
+  } else if (!CFG && !SOCIAL_OFF) {
     console.warn("[Gratitude Garden] Likes and comments are off in the shared garden. " +
       "See the console line above, and SUPABASE-SETUP.md.");
   }

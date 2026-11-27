@@ -849,6 +849,65 @@ the one everything else sat inside.
   is the right answer rather than a gap** - a tablet has the width a laptop
   has and the phone rules exist to recover width a phone does not have.
 
+## LIKES AND COMMENTS ARE OFF, AND THE FLOWER COPY WAS WRITTEN FOR v1
+
+### `SOCIAL_OFF` AT THE TOP OF `shared-garden-social.js`, IN BOTH COPIES
+
+Off on the author's instruction, and **retired rather than deleted**, which
+is how this project puts things away: `garden3d`, the bouquet, the guest
+book and the friends list are all still on disk and unreachable.
+
+- **IT RIDES THE `live` FLAG THE MODULE ALREADY HAD**, which is why it is one
+  line instead of surgery on six call sites. `live` is what the module
+  already checks when no Supabase project is configured, and every one of
+  those checks does exactly what is wanted: the heart-and-comment row is
+  hidden in `showPeek`, the counts are never fetched (`loadPeek` returns),
+  a press on the heart does nothing (`peekLike` returns), and `.pk-by`
+  loses its bottom margin so the card closes up neatly. **That state was
+  already reachable and already correct; it only had to be made
+  deliberate.** Verified: the card reads "Lavender | Warm laundry | Planted
+  by Brandon" with the row hidden.
+- **IT ALSO STOPS THE QUERIES**, so a project whose SQL has not been run
+  cannot print a setup warning at a participant.
+- **BOTH COPIES.** Likes and comments were in both and are on no row of the
+  table, so turning them off in one would invent a tenth difference.
+- **TWO LINES OF COPY WENT WITH THEM**, also in both: the tips card's "Sign
+  in to like or reply" is now "Some blooms here are examples", which is the
+  other thing a visitor cannot see and the thing a participant most needs
+  told; and the landing page's shared card ended "signing in lets you like
+  one or write back", now "the whole meadow starts again tomorrow".
+
+### THE FLOWER COPY SAID THE GARDEN CHOOSES, WHICH IS v1'S BEHAVIOUR
+
+v1's personal garden ALWAYS infers the flower from the answers. v2 forks:
+**Flower first** you pick the bloom, **Words first** your answers pick it.
+Three pieces of copy described only the second, so each was wrong on a path
+somebody will actually take. All three are now v2-only wordings, and v1
+keeps its originals **because they are true of v1**.
+
+| | was | is, in v2 |
+|---|---|---|
+| the ring's side note | "Your own garden chooses for you. Elsewhere you pick." | "Pick your own, or let your day choose." |
+| Hortus on the guide | "Yours is chosen for you." | "Yours is your choice, or your day's." |
+| the personal card | "Answer a few daily prompts, and your words choose a symbolic flower." | "Choose a bloom, or answer a few prompts and let your words choose one." |
+
+- **HORTUS'S LINE STAYS A STATEMENT**, not "pick one or let the day choose",
+  which is the instruction his whole table is written to avoid.
+- Measured after: both garden cards still hold their reserved **four lines**,
+  and the ring note is **170px**, exactly its column, with no sideways
+  scroll at 1280 or 1440.
+
+### A GAP IN THE EXPERIMENT TABLE, FOUND ON THE WAY AND NOT FIXED HERE
+
+The table's last row says **everything else is identical**, and the personal
+garden's FLOW is not: v1 runs `prompt1 -> prompt2 -> prompt3 -> prompt4 ->
+preview`, five cards with two writing boxes, and v2 runs `fork -> pick ->
+why -> prompt2 -> prompt3 -> prompt4 -> preview`, seven cards with three.
+The fork, the picker with its colour slider, the emotion shades and the
+rotating last question all came out of the expert interview and none is on
+the table. **That is the author's call to word, not mine**, which is why no
+row was invented; it is recorded so it is not discovered during a viva.
+
 ## THE VOLUME PANEL WORE A DIFFERENT SKIN FROM EVERY OTHER ICON
 
 Four round icons drop a dark teal LABEL on hover and the fifth dropped a

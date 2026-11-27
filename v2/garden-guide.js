@@ -200,7 +200,11 @@
        its own, never as the next in a sequence.** */
     gardens: { pose: "welcome", line: "Two places to plant what you noticed. Pick whichever suits today.",
                spot: ["right", 260] },
-    flowers: { pose: "planted", line: "Every flower here stands for something. Yours is chosen for you.",
+    /* "Yours is chosen for you" WAS TRUE OF v1 AND IS HALF TRUE HERE.
+       This copy forks: on one path you pick the bloom and on the other
+       your answers do. It is a STATEMENT rather than an instruction,
+       which is the rule every line in this table follows. */
+    flowers: { pose: "planted", line: "Every flower here stands for something. Yours is your choice, or your day's.",
                spot: ["left", 90] },
     /* THE COMPANION STANDS DOWN ON THIS ONE, and that is a fault caught by
        looking rather than a nicety. The Fertilizer of the day band carries

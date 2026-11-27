@@ -5526,7 +5526,10 @@ createElement("h3", "Garden Tips").style("margin-bottom", "8px").parent(tipsCard
    before writing in it. */
 const ul = createElement("ul").parent(tipsCard);
 createElement("li", "Tap a flower to read it").parent(ul);
-createElement("li", "Sign in to like or reply").parent(ul);
+/* The line here used to be "Sign in to like or reply", which is off now.
+   What replaces it is the other thing a visitor cannot see: the five
+   examples are not people. */
+createElement("li", "Some blooms here are examples").parent(ul);
 createElement("li", "The whole meadow empties at midnight").parent(ul);
 createElement("li", "Top right: music, account, theme, history, camera").parent(ul);
 tipsCard.style("display", "none");
