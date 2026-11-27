@@ -4053,8 +4053,22 @@ navigated. The account-free design works exactly as written.
   browser dialog is **the one piece of interface the browser can take away**,
   and a feature that can be silently removed by the user agent is worse than
   a slightly heavier one that cannot.
-- **NOT YET FIXED.** The replacement is the project's own card, the idiom
-  `.gmeet-card` and `.ga-card` already share.
+- **FIXED. `askCard` AT MODULE SCOPE REPLACED ALL FOUR PROMPTS**, in the
+  project's own idiom: `#gg-ask` at z-index 9600 over a tinted veil, a
+  `.gga-card` on the warm surface, a 16px field (the iOS floor), Enter to
+  confirm, Escape or the veil to cancel. It writes a pasted code with
+  `textContent` rather than `innerHTML`, since that string comes off the
+  clipboard.
+  - **Verified end to end rather than by reading**: pressing "Make a circle"
+    raises the card and NOT a browser dialog, naming it "Test circle"
+    navigates to `?circle=open-stem-robin`, the room becomes
+    `garden-v2-<date>-open-stem-robin`, `gg_circles` holds the pair, and the
+    garden's own note reads "You are in the circle Test circle" with Copy
+    the link beside it.
+  - **A CIRCLE IS STILL EMPTY ON ARRIVAL, BY DESIGN**, since `demoFlowers`
+    returns nothing when `circleCode` is set. Measured: 0 flowers. **That is
+    the right behaviour and a poor demo**, so a user test that wants a
+    populated circle has to seed one beforehand; see the testing section.
 
 ## EVERY FORWARD BUTTON IN THE PERSONAL GARDEN FAILED AA
 
