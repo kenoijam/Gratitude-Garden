@@ -849,6 +849,27 @@ the one everything else sat inside.
   is the right answer rather than a gap** - a tablet has the width a laptop
   has and the phone rules exist to recover width a phone does not have.
 
+## A REFERENCE FOR INTERACTIONS, RECORDED AND NOT YET ACTED ON
+
+**`https://www.urjasrivastava.com/`**, given by the author for its
+interactivity, and specifically for its small invitational labels, the
+"pick me up" kind of text attached to an object rather than to a heading.
+
+- **THE IDIOM ALREADY EXISTS HERE and that is the place to start from
+  rather than inventing a second one**: the hero's flowers name what they
+  stand for on hover, the corner icons carry `data-tip` labels, Hortus
+  speaks a line per section, the gardeners on the landing page answer a
+  hover with a bubble, and the Fertilizer band is uncovered by patting him.
+  What that reference seems to offer is the same device applied to objects
+  that currently say nothing.
+- **NOT BUILT, AND THE TIMING IS THE REASON.** Every new interaction in v2
+  is another difference the experiment's table does not list, days before
+  the sessions. **Anything added now is untested and unlisted at once.**
+  The honest order is: run the test, then build off what the participants
+  actually say, with this reference in hand.
+- Nobody has read the site itself yet; this is the author's description of
+  it recorded so it is not lost, not an analysis of it.
+
 ## THE LOADER CLIPPED THE LAVENDER, AND IT WAS THE ONLY ONE
 
 `garden-loader.js` drew every species at a flat `R = S * 0.26` with its
