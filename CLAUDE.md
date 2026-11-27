@@ -612,6 +612,48 @@ else in this block still holds.
 - **Measured after**: 390 document 4249 to 3609, every section 0.41 to 1.20
   screens, no sideways scroll. 1440 document 5493 to 4642.
 
+## BOTH ENTRY SCREENS ASK A QUESTION NOW, AND ONE OF THEM NAMED ITSELF
+
+The author spotted it: entering a garden, nothing tells you where you are.
+Measured, the fault was sharper than that and it was an inconsistency rather
+than an absence.
+
+| | said | where |
+|---|---|---|
+| personal fork | "Which way today?" | ABOVE the card |
+| shared where | "The Shared Garden" | INSIDE the card |
+
+**One asked the question and never said where you were; the other said where
+you were and never asked the question.** The shared one is now "Who should
+see it?".
+
+- **"WHO SHOULD SEE IT?" IS THE AXIS, and "where should it go" is not.** Both
+  choices ARE the shared garden, so "where" names nothing; the only thing
+  that differs between "anyone who opens it today" and "only the people you
+  give the code to" is who reads it afterwards.
+- **THE SUB LOST ITS SECOND SENTENCE.** It read "One flower either way. Only
+  who can read it changes", and that second half is now the heading directly
+  above it, which is the lede-repeats-the-title fault already cut twice from
+  About. What is left says the thing the title does not: choosing a circle
+  does not buy a second flower.
+- **THE TITLE STAYS INSIDE THE CARD, AND THAT IS A DECISION.** Every title in
+  the SHARED garden is inside its card (where, circles, username, select,
+  confirm and the meadow); every title in the PERSONAL garden is above it.
+  Moving this one out would fix a difference between the gardens by
+  inventing a worse one inside this one, and moving all six is a different
+  job. **The two gardens still disagree about placement and that is now the
+  only axis they disagree on.**
+- **NAMING THE GARDEN ON ENTRY WAS WEIGHED AND REFUSED**, with two options
+  written out: the name as the big title with the question demoted into the
+  card, and a quiet name line above the question. Both were turned down by
+  the author. The first partly reverses "the step's question is the page
+  title"; the second is structurally the eyebrow pattern this project
+  deleted six of. **What answers "where am I" is the button they pressed to
+  get here**, which on the landing page says "Plant in your own garden" or
+  "or plant in the shared garden".
+- **THIS SCREEN IS v2 ONLY**, since the root has no `where-wrap` at all:
+  circles are a listed difference, so the screen that offers them is too.
+
 ## THE TWO FIRST SCREENS ARE ONE OBJECT NOW, AND HORTUS TOOK A LINE
 
 Both gardens open on the same KIND of question, two choices with nothing

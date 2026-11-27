@@ -4285,8 +4285,32 @@ whereWrap.style("z-index", "100");
 whereWrap.style("pointer-events", "auto");
 
 const whereCard = createDiv().addClass("gg-card").parent(whereWrap);
-createElement("h1", "The Shared Garden").addClass("gg-title").parent(whereCard);
-const whereSub = createP("One flower either way. Only who can read it changes.")
+/* ═══════════ THE STEP'S QUESTION IS THE TITLE, NOT THE GARDEN'S NAME
+   It read "The Shared Garden", which is the one entry screen in either
+   garden that NAMED itself instead of asking anything: the personal
+   garden's fork says "Which way today?" and this said where you were and
+   never what was being decided. The two screens ask the same KIND of
+   question and now both ask it.
+
+   "Who should see it?" IS THE AXIS, not "where should it go": both choices
+   are the shared garden, and the only thing that differs between "anyone
+   who opens it today" and "only the people you give the code to" is who
+   reads it afterwards.
+
+   IT STAYS INSIDE THE CARD, and that is deliberate rather than a
+   half-finished job. Every title in THIS garden is inside its card
+   (circles, username, select, confirm and the meadow itself); every title
+   in the personal garden is above it. Moving this one out would fix a
+   difference between the gardens by inventing a worse one inside this one,
+   and moving all six is a different job. */
+createElement("h1", "Who should see it?").addClass("gg-title").parent(whereCard);
+/* THE SECOND SENTENCE WENT WITH THE TITLE CHANGE. It read "One flower
+   either way. Only who can read it changes", and the second half is now the
+   heading directly above it, which is the lede-repeats-the-title fault this
+   project has already cut twice from About. What is left is the half the
+   title does NOT say: that choosing a circle does not buy you a second
+   flower, you still plant one today. */
+const whereSub = createP("One flower either way.")
   .addClass("gg-sub").parent(whereCard);
 whereSub.style("margin-bottom", "18px");
 
