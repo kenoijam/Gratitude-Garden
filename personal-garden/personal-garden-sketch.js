@@ -2961,12 +2961,17 @@ function gladBtnLabel() {
   if (!gladBtn) return;
   const has = gratitudeField && (gratitudeField.elt.value || "").trim() !== "";
   gladBtn.html(has ? "See Your Flower" : "Write one to go on");
-  /* `opacity` and `cursor` rather than the `disabled` attribute, because
-     p5.dom writes this button's colours inline and a `[disabled]` rule in
-     the stylesheet could not reach them. The press itself is guarded too,
-     which is what actually enforces it: Enter reaches the same handler. */
+  /* `opacity` rather than the `disabled` attribute, because p5.dom writes
+     this button's colours inline and a `[disabled]` rule in the stylesheet
+     could not reach them. The press itself is guarded too, which is what
+     actually enforces it: Enter reaches the same handler.
+
+     NO `cursor` HERE, AND THAT IS NOT AN OMISSION. `garden-cursor.js` writes
+     every one of its rules with `!important` precisely so the flower cursor
+     cannot be beaten, so a `not-allowed` set from here loses and reading it
+     back returns the flower. Measured: the computed cursor is the SVG data
+     URI whatever this sets. The label and the dim carry the state. */
   gladBtn.style("opacity", has ? "1" : "0.55");
-  gladBtn.style("cursor", has ? "pointer" : "not-allowed");
 }
 
 function resetPromptSelections() {
@@ -3396,6 +3401,14 @@ function buildUI() {
 
   const continueBtn4 = createButton("See Your Flower anyway").parent(cardGlad);
   gladBtn = continueBtn4;
+  /* SET IT AT BUILD, or the card is first seen carrying the literal the
+     button was CREATED with. The other two calls are in the field's own
+     input handler and in `resetPromptSelections`, and neither has run
+     when somebody reaches this card for the first time in a visit: the
+     gate was refusing the press correctly while the button still read
+     "See Your Flower anyway" at full opacity, which is the worst of
+     both, a control that looks ready and does nothing. */
+  gladBtnLabel();
   continueBtn4.style("background", "#4db6ac");
   continueBtn4.style("color", "white");
   continueBtn4.style("border", "none");
