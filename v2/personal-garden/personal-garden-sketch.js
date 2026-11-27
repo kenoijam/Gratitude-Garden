@@ -4541,26 +4541,27 @@ saveBtn.mousePressed(() => {
   tipsCard = createDiv().id("tips-card").parent(gardenWrap);
   tipsCard.style("pointer-events", "none");
   createElement("h3", "Garden Tips").parent(tipsCard);
-  /* Five fragments, about five words each, and the brevity is the point: this
-     card sits in the corner of a garden somebody is looking at, so it has to
-     be read at a glance rather than studied. They were full sentences and ran
-     to twelve words, which is a paragraph in that corner.
+  /* FOUR FRAGMENTS, AND THE TEST IS THAT A LINE NAMES SOMETHING INVISIBLE.
+     This card sits in the corner of a garden somebody is looking at, so it
+     has to be read at a glance; the older rule was brevity, about five words
+     a line, and the rule that matters more is whether the line is worth
+     having at all. **A tip earns its place only if the visitor could not
+     find the thing by looking.**
 
-     What they SAY was rewritten too. Nothing here said a flower can be
-     hovered for its meaning, or that every day already planted is still there
-     to look back at. */
+     "Sparkles mark your newest bloom" IS CUT ON THAT TEST. The sparkles are
+     plainly visible and knowing which bloom is newest changes nothing
+     anybody can do: it described the decoration rather than telling anybody
+     anything. What is left is four things you cannot see: that a flower
+     opens its day, that the title is secretly a field, where the garden is
+     actually kept, and what the unlabelled icons in the corner are. */
   const ul = createElement("ul").parent(tipsCard);
-  /* The tip has to name what the flower actually does now. Hovering gives a
-     glance; the day itself is a tap away, and nothing else on the page says
-     so, which is exactly what this card is for. */
   createElement("li", "Tap a flower to read that day").parent(ul);
-  createElement("li", "Sparkles mark your newest bloom").parent(ul);
+  createElement("li", "Click the name to rename it").parent(ul);
   const savedWhere = (window.GardenStore && window.GardenStore.signedIn)
     ? "Saved to your account, any device"
     : "Saved in this browser";
   createElement("li", savedWhere).parent(ul);
-  createElement("li", "Click the name to rename it").parent(ul);
-  createElement("li", "Top right: music, account, history, camera").parent(ul);
+  createElement("li", "Top right: music, account, theme, history, camera").parent(ul);
   tipsCard.style("display", "none");
 
   const nameWrap = createDiv().id("name-wrap").parent(gardenWrap);

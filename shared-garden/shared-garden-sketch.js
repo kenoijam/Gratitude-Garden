@@ -3989,10 +3989,27 @@ createElement("h3", "Garden Tips").style("margin-bottom", "8px").parent(tipsCard
    What they SAY was rewritten too. Two of the originals had gone stale, since
    Save PNG is a camera in the row of icons now, and nothing anywhere said a
    flower can be liked, replied to, or looked back at by the day. */
+/* THE TEST IS THAT A LINE NAMES SOMETHING INVISIBLE, which is the same test
+   the personal garden's card now passes. A tip earns its place only if the
+   visitor could not find the thing by looking.
+
+   "Hover a flower for its message" SAID THE ONE WORD A PHONE CANNOT DO. The
+   personal garden's equivalent has always said "Tap", and the pointer
+   handler here branches on `pointerType` so a finger gets a tap and a mouse
+   gets a hover: the card named the mouse half only, on a page most of these
+   participants will open on a phone. "Tap a flower to read it" is true of
+   both and is the word that works on the device that cannot do the other.
+
+   "One flower a day, resets nightly" WAS TWO FACTS AND ONLY ONE OF THEM IS
+   INVISIBLE. The hero already says "one a day, about two minutes, no
+   streaks", and in the garden the daily note says so again to anybody who
+   has planted. What nothing anywhere says is that the whole meadow is gone
+   in the morning, which is the thing somebody would actually want to know
+   before writing in it. */
 const ul = createElement("ul").parent(tipsCard);
-createElement("li", "Hover a flower for its message").parent(ul);
+createElement("li", "Tap a flower to read it").parent(ul);
 createElement("li", "Sign in to like or reply").parent(ul);
-createElement("li", "One flower a day, resets nightly").parent(ul);
+createElement("li", "The whole meadow empties at midnight").parent(ul);
 createElement("li", "Top right: music, account, history, camera").parent(ul);
 tipsCard.style("display", "none");
 

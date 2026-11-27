@@ -4865,6 +4865,48 @@ Two things live in this one file, and they are together because both are needed 
 - **The control carries a GALLERY icon, not a camera, and keeps its words.** The input is `accept="image/*"` with no `capture`, so a phone offers the camera and the camera roll both; a camera icon would promise only the first. The label stays because an unlabelled dashed box in the middle of a form is a guess, and this is the one control on that step nobody is looking for. `createButton` writes its argument as innerHTML, which is what lets the icon be inline SVG rather than a file; the button needs `display: inline-flex` or the icon sits on the text's baseline and rides high.
 - **It needs Step 8 of `SUPABASE-SETUP.md`**, which adds the `photo` column, the private `entries` bucket and four storage policies. Without it the column query fails the way every other missing column does here, with a 400 and an error object rather than a throw.
 
+## THE TIPS CARD: A LINE EARNS ITS PLACE BY NAMING SOMETHING INVISIBLE
+
+The older rule was BREVITY, about five words a line. The rule that matters
+more is whether the line is worth having: **a tip earns its place only if
+the visitor could not find the thing by looking.** Four lines each now.
+
+| | personal | shared |
+|---|---|---|
+| 1 | Tap a flower to read that day | Tap a flower to read it |
+| 2 | Click the name to rename it | Sign in to like or reply |
+| 3 | Saved to your account / in this browser | The whole meadow empties at midnight |
+| 4 | the corner icons | the corner icons |
+
+- **"Sparkles mark your newest bloom" IS CUT, and it is the clearest failure
+  of the test.** The sparkles are plainly visible, and knowing which bloom is
+  the newest changes nothing anybody can do with the page: it described the
+  decoration instead of telling anybody anything.
+- **"Hover a flower for its message" NAMED THE ONE WORD A PHONE CANNOT DO.**
+  The personal garden's equivalent has always said "Tap", and the shared
+  garden's pointer handler branches on `pointerType` so a finger gets a tap
+  and a mouse gets a hover: the card named the mouse half only, on a page
+  most participants open on a phone.
+- **"One flower a day, resets nightly" WAS TWO FACTS AND ONE WAS ALREADY
+  EVERYWHERE.** The hero says "one a day, about two minutes, no streaks" and
+  the daily note says it again to anybody who has planted. What nothing
+  anywhere said is that the meadow is GONE in the morning, which is the half
+  somebody would actually want to know before writing in it.
+- **THE ICON LINE WAS WRONG IN v2 AND NOBODY HAD NOTICED.** It named four
+  (music, account, history, camera) in both copies, but v2 added the THEME
+  button, so that row is five there. v2's line names five and the root's
+  names four. **This is the one line that is allowed to differ**, and it
+  differs because a listed feature differs; checked by reading the live row
+  rather than the note, which is also how the id turned up as `gg-theme`
+  rather than the `gg-theme-btn` the obvious guess would use.
+- **CHANGED IN BOTH COPIES, IDENTICALLY, AND THAT IS WHY IT IS ALLOWED.** The
+  tips were character for character the same in `/` and `/v2/`, so improving
+  only v2 would have invented a tenth difference. Changing both keeps them
+  equal, which is what the freeze is protecting; it is text with no logic
+  behind it, so the risk is not the porting kind.
+- Verified in all four cards: each renders its four lines and each names the
+  icons its own copy actually has.
+
 ## The Garden Tips card, on both gardens
 
 **Every tip is a FRAGMENT of about five words, not a sentence.** This card sits in the corner of a garden somebody is looking at, so it has to be read at a glance rather than studied. They were full sentences running to eleven and twelve words, which is a paragraph in that corner.
