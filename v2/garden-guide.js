@@ -62,9 +62,26 @@
      its own heading. "This is where you plant" is the tour's job; repeating
      "One practice, two places" at somebody who is looking at those words is
      not. */
+  /* ══ HIS TOUR VOICE WAS NOT HIS GARDEN VOICE ══
+     Counted: the lines he says INSIDE a garden average SIX words and the
+     ones on the tour averaged SEVENTEEN, with the gardens step at
+     twenty-six. Same character, two registers, and the short one is the
+     one people liked. These are cut to the gardens' length.
+
+     TWO INSTRUCTIONS CAME OUT WITH THE WORDS, which is the tone rule
+     paying off rather than a coincidence: "Pat me on this band to read
+     today's" and "Go and plant it" both told the visitor to do something,
+     and this file already records that his lines are NOT instructions
+     because every card says what to do in its own heading. Nothing is lost
+     by dropping them: the band's own closed state reads "Pat Hortus to see
+     it", so the one place that needs the instruction still carries it.
+
+     WHAT WAS PROTECTED. The fork's line is the AUTHOR'S OWN SENTENCE moved
+     verbatim from the card and is not touched, and neither is the
+     fertilizer list, which is hers to fill. */
   var TOUR = [
-    { to: "home",    line: "Hi, I am Hortus! Give me a moment and I will show you round." },
-    { to: "wisdom",  line: "I bring one line of encouragement a day. Pat me on this band to read today's." },
+    { to: "home",    line: "Hi, I am Hortus. Let me show you round." },
+    { to: "wisdom",  line: "I leave a line on this band each day." },
     /* THE `about` STEP IS CUT WITH THE SECTION, AND IT WAS A SILENT DEAD
        STEP FOR TWO COMMITS. `tourGo` guards its scroll with
        `if (sec && i > 0)`, so a step whose section no longer exists does not
@@ -81,9 +98,9 @@
        `.side-nav-item`, `sectionIds`, the `SECTIONS` sparkle list, the curve
        colours, AND THIS FILE: `TOUR` and `SAYS` both key on section ids. The
        five-edit note elsewhere predates the tour. */
-    { to: "gardens", line: "The whole idea: notice one small thing, and plant it. Here are the two places to do that, one yours alone and one shared with everybody." },
-    { to: "flowers", line: "Every flower stands for something, and the same eight grow in both gardens." },
-    { to: "start",   line: "That is everything! Whatever you noticed today is enough. I will be here as you go." }
+    { to: "gardens", line: "Notice one small thing and plant it. One garden yours, one shared." },
+    { to: "flowers", line: "Eight flowers, and each one means something." },
+    { to: "start",   line: "That is everything. Whatever you noticed today is enough." }
   ];
 
   /* ────────────────────────────────────────────────────────────── THE NAME
@@ -183,7 +200,7 @@
        kept, so a section can be handed it again later without rewiring
        anything. Nothing on this page uses it now. */
     home:    { pose: "welcome",
-               line: "So glad you came! Wander wherever you like, and I will keep you company.",
+               line: "So glad you came. I will keep you company.",
                spot: ["right", 150] },
     /* RETIRED WITH THE SECTION, kept rather than deleted the way every
        `.cta` rule was while that section was cut. The observer only watches
@@ -198,13 +215,13 @@
        past, and at nothing at all for somebody arriving straight here, which
        these lines have always had to survive: **an ambient line is read on
        its own, never as the next in a sequence.** */
-    gardens: { pose: "welcome", line: "Two places to plant what you noticed. Pick whichever suits today.",
+    gardens: { pose: "welcome", line: "Two places to plant what you noticed.",
                spot: ["right", 260] },
     /* "Yours is chosen for you" WAS TRUE OF v1 AND IS HALF TRUE HERE.
        This copy forks: on one path you pick the bloom and on the other
        your answers do. It is a STATEMENT rather than an instruction,
        which is the rule every line in this table follows. */
-    flowers: { pose: "planted", line: "Every flower here stands for something. Yours is your choice, or your day's.",
+    flowers: { pose: "planted", line: "Your flower is your choice, or your day's.",
                spot: ["left", 90] },
     /* THE COMPANION STANDS DOWN ON THIS ONE, and that is a fault caught by
        looking rather than a nicety. The Fertilizer of the day band carries
@@ -232,7 +249,7 @@
        column has to keep its lower edge above 715, which is a `bottom` of at
        least 185; 220 leaves the tour's taller column, nav row and all, with
        35px to spare. */
-    start:   { pose: "planted", line: "Whatever you noticed today is enough. Go and plant it.",
+    start:   { pose: "planted", line: "Whatever you noticed today is enough.",
                spot: ["right", 220] }
   };
 

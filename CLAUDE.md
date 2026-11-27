@@ -849,6 +849,34 @@ the one everything else sat inside.
   is the right answer rather than a gap** - a tablet has the width a laptop
   has and the phone rules exist to recover width a phone does not have.
 
+## HORTUS HAD TWO VOICES, AND THE SHORT ONE WAS THE GOOD ONE
+
+Counted rather than judged. The lines he says INSIDE a garden average **6
+words**; the tour averaged **17**, with the gardens step at **26**. Same
+character, two registers.
+
+| | before | after |
+|---|---|---|
+| tour | 17.0 words | **9.2** |
+| landing, ambient | 11.8 | **8.2** |
+| the gardens | 6.0 | 6.0, untouched |
+
+- **TWO INSTRUCTIONS CAME OUT WITH THE WORDS**, which is the tone rule
+  paying off rather than luck. "Pat me on this band to read today's" and
+  "Go and plant it" both told the visitor to do something, and this file
+  already records that his lines are NOT instructions because every card
+  says what to do in its own heading. **Nothing is lost**: the band's own
+  closed state reads "Pat Hortus to see it", so the one place that needs
+  the instruction still carries it.
+- **THE 26 WORD STEP WAS A MERGE SCAR.** `gardens` had absorbed the cut
+  `about` step's line, so it carried the whole idea AND the two places in
+  one breath. It still carries both, in 12 words.
+- **TWO THINGS WERE PROTECTED.** The fork's line is the author's own
+  sentence moved verbatim off the card, and the fertilizer list is hers to
+  fill. Neither was touched.
+- Verified in the running tour: all five read in a bubble that is now one
+  size at every step rather than growing for the long ones.
+
 ## LIKES AND COMMENTS ARE OFF, AND THE FLOWER COPY WAS WRITTEN FOR v1
 
 ### `SOCIAL_OFF` AT THE TOP OF `shared-garden-social.js`, IN BOTH COPIES
